@@ -1,6 +1,6 @@
 name: ♻️ Refactor
 description: 리팩토링 이슈를 생성합니다. 코드 리팩토링 이슈 템플릿입니다.
-title: "[♻️ Refactor]"
+title: "[♻️ Refactor] "
 labels:
   - "♻️ Refactor"
 body:
