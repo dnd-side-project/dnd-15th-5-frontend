@@ -1,0 +1,40 @@
+name: 🚨 Bug
+description: 버그 이슈를 생성합니다. 버그 및 오류 이슈 템플릿입니다.
+title: "[🚨 BUG] "
+labels:
+  - "🚨 Bug"
+body:
+  - type: input
+    id: parentKey
+    attributes:
+      label: "🎟️ 작업 종류 (Feature Type)"
+      description: 작업 종류의 Jira Ticket Number를 기입해주세요
+      placeholder: KAN-3
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "🚨 버그 설명"
+      description: 어떤 문제가 발생했는지 적어주세요.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "💥 재현 방법"
+      description: "발생한 상황을 설명해주세요 (ex: 어떤 페이지에서 어떤 행동을 했을 때)."
+
+  - type: textarea
+    id: expectedBehavior
+    attributes:
+      label: "💡 기대한 동작"
+      description: 어떻게 동작해야 했는지 적어주세요.
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: "📸 참고 자료 (선택)"
+      description: 스크린샷, 에러 메시지 등
