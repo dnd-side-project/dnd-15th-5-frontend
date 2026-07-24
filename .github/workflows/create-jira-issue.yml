@@ -32,23 +32,23 @@ jobs:
         run: |
           echo "Detected issue title: $ISSUE_TITLE"
           if echo "$ISSUE_TITLE" | grep -Fqi '[🚨 BUG]'; then
-            echo "ISSUE_TYPE=버그" >> $GITHUB_ENV
+            echo "ISSUE_TYPE=Bug" >> $GITHUB_ENV
             echo "TEMPLATE_PATH=.github/ISSUE_TEMPLATE/bug-report.yml" >> $GITHUB_ENV
             echo "Bug issue detected based on title."
           elif echo "$ISSUE_TITLE" | grep -Fqi '[✨ Feature]'; then
-            echo "ISSUE_TYPE=작업" >> $GITHUB_ENV
+            echo "ISSUE_TYPE=Task" >> $GITHUB_ENV
             echo "TEMPLATE_PATH=.github/ISSUE_TEMPLATE/feature-report.yml" >> $GITHUB_ENV
             echo "Feature issue detected based on title."
           elif echo "$ISSUE_TITLE" | grep -Fqi '[♻️ Refactor]'; then
-            echo "ISSUE_TYPE=작업" >> $GITHUB_ENV
+            echo "ISSUE_TYPE=Task" >> $GITHUB_ENV
             echo "TEMPLATE_PATH=.github/ISSUE_TEMPLATE/refactor-report.yml" >> $GITHUB_ENV
             echo "Refactor issue detected based on title."
           elif echo "$ISSUE_TITLE" | grep -Fqi '[🔧 Chore]'; then
-            echo "ISSUE_TYPE=작업" >> $GITHUB_ENV
+            echo "ISSUE_TYPE=Task" >> $GITHUB_ENV
             echo "TEMPLATE_PATH=.github/ISSUE_TEMPLATE/chore-report.yml" >> $GITHUB_ENV
             echo "Chore issue detected based on title."
           else
-            echo "ISSUE_TYPE=작업" >> $GITHUB_ENV
+            echo "ISSUE_TYPE=Task" >> $GITHUB_ENV
             echo "TEMPLATE_PATH=.github/ISSUE_TEMPLATE/feature-report.yml" >> $GITHUB_ENV
             echo "No specific issue type detected. Defaulting to Feature settings."
           fi
