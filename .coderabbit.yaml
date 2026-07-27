@@ -1,0 +1,29 @@
+language: ko-KR
+early_access: false
+
+reviews:
+  profile: chill
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - '^develop$'
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'docs/ARCHITECTURE.md'
+      - 'docs/CONVENTIONS.md'
+      - 'docs/GITFLOW.md'
