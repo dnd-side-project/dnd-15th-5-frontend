@@ -1,0 +1,53 @@
+name: "Chromatic-Storybook Deployment"
+
+on:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - "**/*.stories.ts"
+      - "**/*.stories.tsx"
+      - "**/*.mdx"
+
+jobs:
+  chromatic-deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish to Chromatic
+        id: chromatic
+        uses: chromaui/action@latest
+        with:
+          exitZeroOnChanges: true
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment PR with Storybook link
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            🎨 **스토리북 배포 링크 확인**
+
+            - 🔗 Storybook: ${{ steps.chromatic.outputs.storybookUrl }}
+            - 🧩 Build: ${{ steps.chromatic.outputs.buildUrl }}
