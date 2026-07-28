@@ -14,10 +14,6 @@ jobs:
 
     permissions:
       contents: read
-      pages: write
-      deployments: write
-      id-token: write
-      issues: write
       pull-requests: write
 
     env:
