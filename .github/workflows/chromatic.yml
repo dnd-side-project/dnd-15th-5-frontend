@@ -42,7 +42,7 @@ jobs:
 
       - name: Record deployment time
         id: deployment-time
-        run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
+        run: echo "deployed_at=$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S')" >> "$GITHUB_OUTPUT"
 
       - name: Comment PR with Storybook link
         uses: thollander/actions-comment-pull-request@v3
@@ -52,4 +52,4 @@ jobs:
             🎨 **스토리북 배포 링크 확인**
 
             - 🔗 Preview: ${{ steps.chromatic.outputs.storybookUrl }}
-            - 🕒 배포 일시: <t:${{ steps.deployment-time.outputs.timestamp }}:F>
+            - 🕒 배포 일시: ${{ steps.deployment-time.outputs.deployed_at }} (KST)
