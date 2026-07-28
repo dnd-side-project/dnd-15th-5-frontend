@@ -2,12 +2,7 @@ name: "Chromatic-Storybook Deployment"
 
 on:
   pull_request:
-    branches:
-      - develop
-    paths:
-      - "**/*.stories.ts"
-      - "**/*.stories.tsx"
-      - "**/*.mdx"
+    branches: ["develop", feat/**, refactor/**, fix/**, chore/**]
 
 jobs:
   chromatic-deploy:
@@ -23,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -44,6 +40,10 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Record deployment time
+        id: deployment-time
+        run: echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
+
       - name: Comment PR with Storybook link
         uses: thollander/actions-comment-pull-request@v3
         with:
@@ -51,5 +51,5 @@ jobs:
           message: |
             🎨 **스토리북 배포 링크 확인**
 
-            - 🔗 Storybook: ${{ steps.chromatic.outputs.storybookUrl }}
-            - 🧩 Build: ${{ steps.chromatic.outputs.buildUrl }}
+            - 🔗 Preview: ${{ steps.chromatic.outputs.storybookUrl }}
+            - 🕒 배포 일시: <t:${{ steps.deployment-time.outputs.timestamp }}:F>
