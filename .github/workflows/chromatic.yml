@@ -46,6 +46,7 @@ jobs:
       - name: Comment PR with Storybook link
         uses: thollander/actions-comment-pull-request@v3
         with:
+          comment-tag: chromatic-storybook
           message: |
             🎨 **스토리북 배포 링크 확인**
 
