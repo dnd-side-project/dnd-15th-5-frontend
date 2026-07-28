@@ -70,7 +70,7 @@
 
 ## 3. Directory Structure
 
-```
+```text
 src/
 ├── app/                # 앱 진입점, 전역 설정
 │   ├── providers/
@@ -98,7 +98,7 @@ src/
 
 ### Feature 내부 구조 (기본형)
 
-```
+```text
 features/receipt/
 ├── components/
 ├── hooks/
@@ -130,7 +130,7 @@ features/receipt/
 
 ### Feature 내부 구조 (화면이 여러 개인 경우)
 
-```
+```text
 features/report/
 ├── components/
 │   ├── common/     # feature 안에서 2곳 이상 쓰는 것
@@ -170,7 +170,7 @@ features/report/
 
 ## 5. Dependency Direction
 
-```
+```text
 app → pages → features → shared
 ```
 
@@ -198,9 +198,9 @@ app → pages → features → shared
 
 ## 7. Form & Validation
 
-> 세부 적용 범위는 와이어프레임 확인 후 결정
+> 적용 범위는 와이어프레임 확인 후 결정 — 그 전까지는 아래 규칙을 확정된 것으로 간주하지 않는다
 
-- React Hook Form + Zod 사용
+- 폼 적용이 확정되면 React Hook Form + Zod 사용
 - 단순 입력은 Local State 사용
 
 ---
