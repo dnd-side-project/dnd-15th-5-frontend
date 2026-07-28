@@ -11,6 +11,7 @@ on:
 
 jobs:
   chromatic-deploy:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
 
     permissions:
