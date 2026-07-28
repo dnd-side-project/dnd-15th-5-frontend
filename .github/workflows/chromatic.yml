@@ -1,0 +1,55 @@
+name: "Chromatic-Storybook Deployment"
+
+on:
+  pull_request:
+    branches: ["develop", feat/**, refactor/**, fix/**, chore/**]
+
+jobs:
+  chromatic-deploy:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+
+      - name: Setup node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Publish to Chromatic
+        id: chromatic
+        uses: chromaui/action@14cfaef73576e69f95f47f60058063f46ca38719 # v18.1.0
+        with:
+          exitZeroOnChanges: true
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Record deployment time
+        id: deployment-time
+        run: echo "deployed_at=$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S')" >> "$GITHUB_OUTPUT"
+
+      - name: Comment PR with Storybook link
+        uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
+        with:
+          comment-tag: chromatic-storybook
+          message: |
+            🎨 **스토리북 배포 링크 확인**
+
+            - 🔗 Preview: ${{ steps.chromatic.outputs.storybookUrl }}
+            - 🕒 배포 일시: ${{ steps.deployment-time.outputs.deployed_at }} (KST)
