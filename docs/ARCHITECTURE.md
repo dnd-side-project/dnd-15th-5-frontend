@@ -92,9 +92,7 @@ src/
     └── lib
 ```
 
-`pages`, `features` 하위 도메인 이름은 동일하게 맞춘다.
-
-`auth` / `onboarding` / `receipt` / `report` / `map` / `shop` / `mypage` / `notification`
+`pages`는 라우트 또는 화면 목적을 기준으로 구성하고, `features`는 비즈니스 기능과 도메인을 기준으로 구성한다. 두 계층의 이름은 필요할 때만 동일하게 사용한다.
 
 ### Feature 내부 구조 (기본형)
 
@@ -238,22 +236,7 @@ app → pages → features → shared
 
 ### pnpm 선택 이유
 
-| 항목 | 내용 |
-| --- | --- |
-| 설치 속도 | 동일 패키지 재사용 |
-| 디스크 효율 | 중복 패키지 최소화 |
-| 호환성 | npm 생태계와 높은 호환성 |
-| 사용성 | npm과 유사한 명령어 |
-| 유지보수 | Yarn Berry보다 낮은 러닝 커브 |
-
-### 비교
-
-| Package Manager | 장점 | 단점 |
-| --- | --- | --- |
-| npm | 기본 내장, 높은 호환성 | 설치 속도 및 디스크 효율 |
-| Yarn Classic | 안정적인 Lockfile | 유지보수 중심 |
-| Yarn Berry | PnP, Zero Install | 설정 복잡도 및 러닝 커브 |
-| pnpm | 속도, 용량, 호환성 | 엄격한 의존성 관리 |
+속도·디스크 효율이 좋고 npm 생태계와 호환성이 높으면서도 명령어가 npm과 유사해 러닝 커브가 낮다.
 
 ### 사용 규칙
 

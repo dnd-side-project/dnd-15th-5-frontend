@@ -42,6 +42,20 @@
 | 이벤트 함수 | `handle + 동사` | `handleSubmit` |
 | Event Props | `on + 동사` | `onSubmit` |
 
+### 함수 선언 방식
+
+- Page, Component는 선언식 함수로 작성
+- 그 외 함수는 화살표 함수로 작성
+
+```tsx
+// Page, Component
+export default function Page() {}
+
+// 그 외
+const change = () => {};
+export const get = () => {};
+```
+
 ### 이벤트 이름
 
 - 대상이 명확하도록 작성
