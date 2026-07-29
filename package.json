@@ -12,7 +12,15 @@
     "preview": "vite preview",
     "test": "jest",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,cjs,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,scss,yml,yaml}": "prettier --write"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -50,8 +58,10 @@
     "eslint-plugin-storybook": "^10.5.5",
     "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^17.7.0",
+    "husky": "^9.1.7",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
+    "lint-staged": "^17.2.0",
     "prettier": "^3.9.6",
     "storybook": "^10.5.5",
     "ts-jest": "^29.4.12",
