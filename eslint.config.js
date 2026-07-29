@@ -7,6 +7,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import react from 'eslint-plugin-react';
 import importX from 'eslint-plugin-import-x';
+import unusedImports from 'eslint-plugin-unused-imports';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import tseslint from 'typescript-eslint';
 import pluginQuery from '@tanstack/eslint-plugin-query';
@@ -32,6 +33,7 @@ export default defineConfig([
       boundaries,
       react,
       'import-x': importX,
+      'unused-imports': unusedImports,
     },
     settings: {
       react: {
@@ -63,6 +65,18 @@ export default defineConfig([
       'react/self-closing-comp': 'warn',
       'react/jsx-pascal-case': 'error',
       'react/prop-types': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'warn',
+        {
+          vars: 'all',
+          varsIgnorePattern: '^_',
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+        },
+      ],
       'import-x/order': [
         'error',
         {
