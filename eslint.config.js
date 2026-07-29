@@ -5,6 +5,9 @@ import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import react from 'eslint-plugin-react';
+import importX from 'eslint-plugin-import-x';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import tseslint from 'typescript-eslint';
 import pluginQuery from '@tanstack/eslint-plugin-query';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
@@ -27,13 +30,23 @@ export default defineConfig([
     },
     plugins: {
       boundaries,
+      react,
+      'import-x': importX,
     },
     settings: {
+      react: {
+        version: 'detect',
+      },
       'import/resolver': {
         typescript: {
           project: './tsconfig.app.json',
         },
       },
+      'import-x/resolver-next': [
+        createTypeScriptImportResolver({
+          project: './tsconfig.app.json',
+        }),
+      ],
       'boundaries/include': ['src/**/*.{ts,tsx}'],
       'boundaries/elements': [
         { type: 'app', pattern: 'src/app', partialMatch: false },
@@ -44,6 +57,30 @@ export default defineConfig([
     },
     rules: {
       ...boundaries.configs.recommended.rules,
+      'react/jsx-uses-react': 'off',
+      'react/jsx-uses-vars': 'error',
+      'react/jsx-key': 'error',
+      'react/self-closing-comp': 'warn',
+      'react/jsx-pascal-case': 'error',
+      'react/prop-types': 'off',
+      'import-x/order': [
+        'error',
+        {
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'type'],
+          pathGroups: [
+            {
+              pattern: '@/**',
+              group: 'internal',
+              position: 'before',
+            },
+          ],
+          'newlines-between': 'always',
+          alphabetize: {
+            order: 'asc',
+            caseInsensitive: true,
+          },
+        },
+      ],
       'boundaries/dependencies': [
         'error',
         {
