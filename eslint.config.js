@@ -29,6 +29,11 @@ export default defineConfig([
       boundaries,
     },
     settings: {
+      'import/resolver': {
+        typescript: {
+          project: './tsconfig.app.json',
+        },
+      },
       'boundaries/include': ['src/**/*.{ts,tsx}'],
       'boundaries/elements': [
         { type: 'app', pattern: 'src/app', partialMatch: false },
