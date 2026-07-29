@@ -59,6 +59,10 @@ export default defineConfig([
     },
     rules: {
       ...boundaries.configs.recommended.rules,
+      curly: ['error'],
+      'no-var': 'error',
+      'no-console': 'warn',
+      'no-debugger': 'warn',
       'react/jsx-uses-react': 'off',
       'react/jsx-uses-vars': 'error',
       'react/jsx-key': 'error',
