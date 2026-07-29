@@ -1,7 +1,7 @@
 const config = {
   parserPreset: {
     parserOpts: {
-      headerPattern: '^(?<type>.+):\\s(?<subject>.+)$',
+      headerPattern: /^(?<type>[^:]+):\s(?<subject>.+)$/,
       headerCorrespondence: ['type', 'subject'],
     },
   },
