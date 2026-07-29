@@ -59,7 +59,6 @@ export default defineConfig([
     },
     rules: {
       ...boundaries.configs.recommended.rules,
-      curly: ['error'],
       'no-var': 'error',
       'no-console': 'warn',
       'no-debugger': 'warn',
@@ -147,4 +146,9 @@ export default defineConfig([
   },
   ...storybook.configs['flat/recommended'],
   eslintConfigPrettier,
+  {
+    rules: {
+      curly: 'error',
+    },
+  },
 ]);
