@@ -53,7 +53,12 @@ export default defineConfig([
       'boundaries/elements': [
         { type: 'app', pattern: 'src/app', partialMatch: false },
         { type: 'pages', pattern: 'src/pages', partialMatch: false },
-        { type: 'features', pattern: 'src/features', partialMatch: false },
+        {
+          type: 'features',
+          pattern: 'src/features/*',
+          capture: ['featureName'],
+          partialMatch: false,
+        },
         { type: 'shared', pattern: 'src/shared', partialMatch: false },
       ],
     },
@@ -126,11 +131,17 @@ export default defineConfig([
             {
               from: { element: { type: 'features' } },
               allow: {
-                to: {
-                  element: {
-                    types: { anyOf: ['features', 'shared'] },
+                to: [
+                  {
+                    element: {
+                      type: 'features',
+                      captured: {
+                        featureName: '{{ from.element.captured.featureName }}',
+                      },
+                    },
                   },
-                },
+                  { element: { type: 'shared' } },
+                ],
               },
             },
             {

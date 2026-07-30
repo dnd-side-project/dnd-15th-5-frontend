@@ -4,43 +4,44 @@
 
 ### Directory
 
-| 대상 | 규칙 | 예시 |
-| --- | --- | --- |
+| 대상     | 규칙         | 예시           |
+| -------- | ------------ | -------------- |
 | 디렉토리 | `kebab-case` | `user-profile` |
 
 ### File
 
-| 대상 | 규칙 | 예시 |
-| --- | --- | --- |
-| Component | `PascalCase` | `ReceiptCard.tsx` |
-| 일반 TypeScript | `camelCase` | `formatDate.ts` |
-| Custom Hook | `use + camelCase` | `useReceipt.ts` |
-| Schema | `camelCase` | `receiptSchema.ts` |
-| Store | `camelCase` | `authStore.ts` |
-| Asset | `kebab-case` | `ic-arrow-left.svg` |
-| Page Component | `PascalCase + Page` | `MainPage.tsx` |
-| Storybook | `컴포넌트명 + .stories` | `ReceiptCard.stories.tsx` |
+| 대상            | 규칙                    | 예시                      |
+| --------------- | ----------------------- | ------------------------- |
+| Component       | `PascalCase`            | `ReceiptCard.tsx`         |
+| 일반 TypeScript | `camelCase`             | `formatDate.ts`           |
+| Custom Hook     | `use + camelCase`       | `useReceipt.ts`           |
+| Schema          | `camelCase`             | `receiptSchema.ts`        |
+| Store           | `camelCase`             | `authStore.ts`            |
+| Asset           | `kebab-case`            | `ic-arrow-left.svg`       |
+| Page Component  | `PascalCase + Page`     | `MainPage.tsx`            |
+| Storybook       | `컴포넌트명 + .stories` | `ReceiptCard.stories.tsx` |
 
 - Storybook 파일은 대상 컴포넌트와 같은 위치에 둔다
 - 스키마가 늘어나면 `schemas/` 폴더로 분리한다
 
 ### Number
 
-- 숫자는 두 자리로 통일
+- 숫자는 두 자리로 통일한다.
+- 한 자리 숫자는 앞에 `0`을 붙인다.
 - `01`, `02`, `03`
 
 ---
 
 ## 2. Function & Variable
 
-| 대상 | 규칙 | 예시 |
-| --- | --- | --- |
-| Component | `PascalCase` | `ReceiptCard` |
-| Page Component | `PascalCase + Page` | `MainPage` |
-| 변수 | `camelCase` | `receiptList` |
-| 함수 | `camelCase` | `formatDate` |
-| 이벤트 함수 | `handle + 동사` | `handleSubmit` |
-| Event Props | `on + 동사` | `onSubmit` |
+| 대상           | 규칙                | 예시           |
+| -------------- | ------------------- | -------------- |
+| Component      | `PascalCase`        | `ReceiptCard`  |
+| Page Component | `PascalCase + Page` | `MainPage`     |
+| 변수           | `camelCase`         | `receiptList`  |
+| 함수           | `camelCase`         | `formatDate`   |
+| 이벤트 함수    | `handle + 동사`     | `handleSubmit` |
+| Event Props    | `on + 동사`         | `onSubmit`     |
 
 ### 함수 선언 방식
 
@@ -70,25 +71,35 @@ export const get = () => {};
 
 ---
 
-## 3. Boolean
+## 3. 코드 작성 원칙
 
-| Prefix | 사용 기준 | 예시 |
-| --- | --- | --- |
-| `is` | 상태 | `isLoading` |
-| `has` | 보유 여부 | `hasToken` |
-
----
-
-## 4. Constant
-
-| 대상 | 규칙 | 예시 |
-| --- | --- | --- |
-| 일반 상수 | `UPPER_SNAKE_CASE` | `API_BASE_URL` |
-| CVA 스타일 상수 | `camelCase` | `buttonVariants` |
+- 하나의 함수는 하나의 역할만 담당한다.
+- 중복되는 코드는 함수나 컴포넌트로 분리해 재사용한다.
+- UI 렌더링 로직과 데이터 처리 로직을 분리한다.
+- early return 등을 활용해 불필요한 중첩을 최소화한다.
+- 매직 넘버를 직접 사용하지 않고 의미가 드러나는 상수로 분리한다.
 
 ---
 
-## 5. Props & Type
+## 4. Boolean
+
+| Prefix | 사용 기준 | 예시        |
+| ------ | --------- | ----------- |
+| `is`   | 상태      | `isLoading` |
+| `has`  | 보유 여부 | `hasToken`  |
+
+---
+
+## 5. Constant
+
+| 대상            | 규칙               | 예시             |
+| --------------- | ------------------ | ---------------- |
+| 일반 상수       | `UPPER_SNAKE_CASE` | `API_BASE_URL`   |
+| CVA 스타일 상수 | `camelCase`        | `buttonVariants` |
+
+---
+
+## 6. Props & Type
 
 - `interface` 대신 `type` 사용
 - Component Props는 `ComponentNameProps`
@@ -100,7 +111,7 @@ export const get = () => {};
 
 ---
 
-## 6. Import
+## 7. Import
 
 ### 경로
 
@@ -110,7 +121,7 @@ export const get = () => {};
 
 ---
 
-## 7. `index.ts`
+## 8. `index.ts`
 
 - 외부에서 사용할 항목만 Export
 - Export된 항목만 관리
@@ -120,22 +131,22 @@ export const get = () => {};
 
 ---
 
-## 8. Asset
+## 9. Asset
 
 ### Format
 
-| 형식 | 사용 기준 |
-| --- | --- |
-| SVG | 아이콘, 로고, 단순 일러스트 |
-| PNG | 투명 이미지, 복잡한 UI 이미지 |
+| 형식 | 사용 기준                     |
+| ---- | ----------------------------- |
+| SVG  | 아이콘, 로고, 단순 일러스트   |
+| PNG  | 투명 이미지, 복잡한 UI 이미지 |
 
 ### Prefix
 
-| Prefix | 대상 |
-| --- | --- |
-| `ic-` | Icon |
-| `img-` | Image |
-| `logo-` | Logo |
+| Prefix  | 대상  |
+| ------- | ----- |
+| `ic-`   | Icon  |
+| `img-`  | Image |
+| `logo-` | Logo  |
 
 ### Rule
 
@@ -147,7 +158,7 @@ export const get = () => {};
 
 ---
 
-## 9. TSDoc
+## 10. TSDoc
 
 ### 작성 대상
 
@@ -168,15 +179,15 @@ export const get = () => {};
 
 ---
 
-## 10. Comment
+## 11. Comment
 
-| Prefix | 사용 기준 |
-| --- | --- |
-| `TODO` | 추후 구현 또는 수정 |
-| `BUG` | 확인된 버그 |
-| `NOTE` | 중요한 제약 또는 동작 |
+| Prefix     | 사용 기준             |
+| ---------- | --------------------- |
+| `TODO`     | 추후 구현 또는 수정   |
+| `BUG`      | 확인된 버그           |
+| `NOTE`     | 중요한 제약 또는 동작 |
 | `OPTIMIZE` | 성능 개선 및 리팩토링 |
-| `INFO` | 참고 정보 |
+| `INFO`     | 참고 정보             |
 
 ### Rule
 
@@ -186,4 +197,4 @@ export const get = () => {};
 
 ---
 
-Git/브랜치/커밋/PR 컨벤션은 [GITFLOW.md](./GITFLOW.md)를, 기술 스택과 폴더 구조는 [ARCHITECTURE.md](./ARCHITECTURE.md)를 참고하세요.
+Git/브랜치/커밋/PR 컨벤션은 [GIT_WORKFLOW.md](./GIT_WORKFLOW.md)를, 기술 스택과 폴더 구조는 [ARCHITECTURE.md](./ARCHITECTURE.md)를 참고하세요.
