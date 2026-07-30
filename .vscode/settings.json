@@ -1,0 +1,45 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "js/ts.format.enabled": false,
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "css.validate": false,
+  "scss.validate": false,
+  "less.validate": false,
+  "tailwindCSS.classFunctions": ["cva", "cx", "cn"],
+  "todohighlight.keywords": [
+    {
+      "text": "NOTE",
+      "color": "#ffffff",
+      "backgroundColor": "#FF7F00",
+      "overviewRulerColor": "#FF7F00"
+    },
+    {
+      "text": "BUG",
+      "color": "#ffffff",
+      "backgroundColor": "#F44336",
+      "overviewRulerColor": "#F44336"
+    },
+    {
+      "text": "INFO",
+      "color": "#ffffff",
+      "backgroundColor": "#2196F3",
+      "overviewRulerColor": "#2196F3"
+    },
+    {
+      "text": "OPTIMIZE",
+      "color": "#ffffff",
+      "backgroundColor": "#9C27B0",
+      "overviewRulerColor": "#9C27B0"
+    }
+  ]
+}
