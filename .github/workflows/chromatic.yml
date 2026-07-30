@@ -1,8 +1,8 @@
-name: "Chromatic-Storybook Deployment"
+name: 'Chromatic-Storybook Deployment'
 
 on:
   pull_request:
-    branches: ["develop", feat/**, refactor/**, fix/**, chore/**]
+    branches: ['develop', feat/**, refactor/**, fix/**, chore/**]
 
 jobs:
   chromatic-deploy:

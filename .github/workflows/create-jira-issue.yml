@@ -84,8 +84,8 @@ jobs:
         with:
           project: KAN
           issuetype: ${{ env.ISSUE_TYPE }}
-          summary: "${{ github.event.issue.title }}"
-          description: "${{ steps.md2jira.outputs.output-text }}"
+          summary: '${{ github.event.issue.title }}'
+          description: '${{ steps.md2jira.outputs.output-text }}'
           fields: |
             {
               "parent": {

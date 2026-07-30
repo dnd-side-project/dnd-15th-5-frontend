@@ -2,7 +2,7 @@ name: Preview
 
 on:
   pull_request:
-    branches: ["develop"]
+    branches: ['develop']
 
 concurrency:
   group: vercel-preview-${{ github.event.pull_request.number }}
