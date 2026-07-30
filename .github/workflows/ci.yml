@@ -32,21 +32,26 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
+        id: install
         run: pnpm install --frozen-lockfile
 
       - name: TypeScript type check
+        if: ${{ always() && steps.install.outcome == 'success' }}
         id: typecheck
         run: pnpm exec tsc --noEmit
 
       - name: ESLint check
+        if: ${{ always() && steps.install.outcome == 'success' }}
         id: lint
         run: pnpm lint
 
       - name: Prettier check
+        if: ${{ always() && steps.install.outcome == 'success' }}
         id: prettier
         run: pnpm format:check
 
       - name: Build check
+        if: ${{ always() && steps.install.outcome == 'success' }}
         id: build
         run: pnpm build
 
