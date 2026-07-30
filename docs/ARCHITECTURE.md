@@ -4,31 +4,31 @@
 
 ### Core
 
-| 구분 | 기술 |
-| --- | --- |
-| Framework | React, Vite |
-| Language | TypeScript |
-| Package Manager | pnpm |
-| UI Documentation | Storybook |
+| 구분             | 기술        |
+| ---------------- | ----------- |
+| Framework        | React, Vite |
+| Language         | TypeScript  |
+| Package Manager  | pnpm        |
+| UI Documentation | Storybook   |
 
 ### State & Data
 
-| 구분 | 기술 |
-| --- | --- |
-| Server State | TanStack Query |
-| Client State | Zustand |
-| Form | React Hook Form |
-| Validation | Zod |
-| HTTP Client | Axios |
+| 구분         | 기술            | 상태      |
+| ------------ | --------------- | --------- |
+| Server State | TanStack Query  | 적용 완료 |
+| HTTP Client  | Axios           | 적용 완료 |
+| Client State | Zustand         | 검토 중   |
+| Form         | React Hook Form | 검토 중   |
+| Validation   | Zod             | 검토 중   |
 
-> Zustand, React Hook Form, Zod는 와이어프레임 확인 후 사용 범위 확정
+> Zustand, React Hook Form, Zod는 와이어프레임 확인 후 사용 범위를 확정한다.
 
 ### Styling
 
-| 구분 | 기술 |
-| --- | --- |
-| CSS | Tailwind CSS |
-| Component Variant | CVA |
+| 구분              | 기술         |
+| ----------------- | ------------ |
+| CSS               | Tailwind CSS |
+| Component Variant | CVA          |
 
 ### Code Quality
 
@@ -39,9 +39,9 @@
 
 ### Native & External
 
-| 기능 | 기술 |
-| --- | --- |
-| 지도 | 네이버 지도 |
+| 기능 | 기술      |
+| ---- | --------- |
+| 지도 | 구글 지도 |
 
 > React Native WebView와 Capacitor 중 PoC 비교 후 결정 (약 1주)
 > 카메라, 푸시 알림 구현 방식은 래핑 방식 확정 후 결정
@@ -53,9 +53,9 @@
 
 ### 공통화 기준
 
-- 사용처가 2곳 이상일 때 공통 영역으로 분리
-- 하나의 기능에서만 사용하면 해당 Feature 내부에서 관리
-- 공통 Type, Constant가 아니라면 Feature 내부에서 관리
+- 하나의 Feature 안에서 여러 곳이 사용하면 해당 Feature 내부에서 공통화
+- 둘 이상의 Feature 또는 도메인에서 사용하면 `shared`로 이동
+- 둘 이상의 Feature에서 사용하는 Type, Constant만 `shared`에서 관리
 
 ### 파일 분리 기준
 
@@ -64,7 +64,7 @@
 - 과도한 폴더 분리 지양
 - 관련 코드는 최대한 가까운 위치에서 관리
 
-> `index.ts` 규칙은 [CONVENTIONS.md](./CONVENTIONS.md) 7번 참고
+> `index.ts` 규칙은 [CONVENTIONS.md](./CONVENTIONS.md) 8번 참고
 
 ---
 
@@ -92,7 +92,8 @@ src/
     └── lib
 ```
 
-`pages`는 라우트 또는 화면 목적을 기준으로 구성하고, `features`는 비즈니스 기능과 도메인을 기준으로 구성한다. 두 계층의 이름은 필요할 때만 동일하게 사용한다.
+`pages`는 라우트 또는 화면 목적을 기준으로 구성하고, `features`는 비즈니스 기능과 도메인을 기준으로 구성한다.
+두 계층의 이름은 필요할 때만 동일하게 사용한다.
 
 ### Feature 내부 구조 (기본형)
 
@@ -157,12 +158,12 @@ features/report/
 
 ## 4. Component 위치 기준
 
-| 범위 | 위치 |
-| --- | --- |
-| 전역 공통 UI (Button, Modal 등) | `shared/ui` |
-| 레이아웃 (Header, TabBar 등) | `shared/layout` |
-| 특정 기능 전용 | `features/{feature}/components` |
-| 화면 조합 | `pages/{page}` |
+| 범위                            | 위치                            |
+| ------------------------------- | ------------------------------- |
+| 전역 공통 UI (Button, Modal 등) | `shared/ui`                     |
+| 레이아웃 (Header, TabBar 등)    | `shared/layout`                 |
+| 특정 기능 전용                  | `features/{feature}/components` |
+| 화면 조합                       | `pages/{page}`                  |
 
 ---
 
@@ -181,16 +182,16 @@ app → pages → features → shared
 ## 6. State Management
 
 - 서버 상태: TanStack Query
-- 전역 상태: Zustand
+- 전역 상태: Zustand (적용 범위 확정 후 사용)
 - 로컬 상태: useState, useReducer
 - Context: Theme 및 Provider 용도
 
 ### Store 위치
 
-| 범위 | 위치 |
-| --- | --- |
-| 해당 도메인에서만 사용 | `features/{feature}/stores` |
-| 2곳 이상에서 사용 | `shared/stores` |
+| 범위                       | 위치                        |
+| -------------------------- | --------------------------- |
+| 하나의 Feature에서만 사용  | `features/{feature}/stores` |
+| 둘 이상의 Feature에서 사용 | `shared/stores`             |
 
 ---
 
@@ -229,6 +230,8 @@ app → pages → features → shared
 
 - Tailwind CSS 사용
 - Variant는 CVA 사용
+- variant가 2~3개를 넘으면 cva로, 조건부 클래스가 단순하면 cn() + 삼항/객체로 처리한다.
+- 상세 규칙은 `docs/CONVENTIONS.md`를 따른다
 
 ---
 
@@ -260,4 +263,4 @@ app → pages → features → shared
 
 ---
 
-코드 네이밍 규칙은 [CONVENTIONS.md](./CONVENTIONS.md)를, Git/브랜치/커밋/PR 규칙은 [GITFLOW.md](./GITFLOW.md)를 참고하세요.
+코드 네이밍 규칙은 [CONVENTIONS.md](./CONVENTIONS.md)를, Git/브랜치/커밋/PR 규칙은 [GIT_WORKFLOW.md](./GIT_WORKFLOW.md)를 참고하세요.
