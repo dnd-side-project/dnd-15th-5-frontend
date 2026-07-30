@@ -1,0 +1,20 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+dist-ssr
+build
+coverage
+storybook-static
+
+# Generated and environment-specific files
+pnpm-lock.yaml
+.env*
+
+# Other commonly ignored files
+*.log
+.vscode
+
+# Documentation files
+*.md
