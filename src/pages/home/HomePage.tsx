@@ -3,7 +3,7 @@ import MobileLayout from '@/shared/layout/MobileLayout';
 
 export default function HomePage() {
   return (
-    <MobileLayout noPadding>
+    <MobileLayout hasPadding={false}>
       <div className="h-screen w-full">
         <GoogleMapView />
       </div>
