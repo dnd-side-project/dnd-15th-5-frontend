@@ -17,11 +17,7 @@
 | ------------ | --------------- | --------- |
 | Server State | TanStack Query  | 적용 완료 |
 | HTTP Client  | Axios           | 적용 완료 |
-| Client State | Zustand         | 검토 중   |
-| Form         | React Hook Form | 검토 중   |
-| Validation   | Zod             | 검토 중   |
-
-> Zustand, React Hook Form, Zod는 와이어프레임 확인 후 사용 범위를 확정한다.
+| Client State | Zustand         | 적용 완료 |
 
 ### Styling
 
@@ -99,38 +95,56 @@ src/
 
 ```text
 features/receipt/
+├── api/
+│   ├── services/
+│   │   ├── getReceipts.ts
+│   │   ├── postReceipt.ts
+│   │   └── index.ts
+│   ├── queries/
+│   │   ├── useReceiptListQuery.ts
+│   │   ├── useReceiptDetailQuery.ts
+│   │   └── index.ts
+│   ├── mutations/
+│   │   ├── useCreateReceiptMutation.ts
+│   │   ├── useDeleteReceiptMutation.ts
+│   │   └── index.ts
+│   ├── queryKeys.ts
+│   ├── dto.ts          # DTO 타입만
+│   └── index.ts
 ├── components/
 ├── hooks/
 ├── stores/         # 해당 도메인 전용 전역 상태
-├── apis/
-│   ├── getReceipts.ts
-│   ├── postReceipt.ts
-│   └── index.ts
-├── queries/
-│   ├── useReceiptListQuery.ts
-│   ├── useReceiptDetailQuery.ts
-│   └── index.ts
-├── mutations/
-│   ├── useCreateReceiptMutation.ts
-│   ├── useDeleteReceiptMutation.ts
-│   └── index.ts
-├── queryKeys.ts
 ├── schemas.ts
-├── types.ts        # DTO 타입만
+├── types.ts        # DTO가 아닌 feature 공통 타입
 ├── constants.ts
 ├── utils/
 └── index.ts
 ```
 
-- `queries`, `mutations`는 훅 하나당 파일 하나
-- 파일명은 훅 이름과 동일하게 (`useReceiptListQuery.ts` → `useReceiptListQuery`)
+- API 호출, 쿼리, 뮤테이션, 쿼리 키, DTO 타입은 전부 `api/` 아래에 모아서 관리
+- `services`, `queries`, `mutations`는 함수·훅 하나당 파일 하나
+- 파일명은 함수·훅 이름과 동일하게 (`useReceiptListQuery.ts` → `useReceiptListQuery`, `getReceipts.ts` → `getReceipts`)
 - 폴더 안 `index.ts`에서 모아서 export
-- 쿼리 키는 `queryKeys.ts`에서 한 곳으로 관리
+- 쿼리 키는 `api/queryKeys.ts`에서 한 곳으로 관리
+- `types.ts`는 DTO가 아닌 feature 공통 타입(여러 컴포넌트/훅이 공유하는 도메인 타입 등)을 관리. DTO와 화면에서 쓰는 모양이 갈라지면 그때 `api/dto.ts`와 `types.ts`를 구분해서 쓴다
+- 폴더명·파일명 앞에 feature 이름을 다시 붙이지 않는다 (`features/receipt/api/dto.ts`, `features/receipt/api/services/getReceipts.ts`처럼 경로와 함수명이 이미 역할을 드러내므로 `receipt.dto.ts` 같은 접두어는 중복)
 
 ### Feature 내부 구조 (화면이 여러 개인 경우)
 
 ```text
 features/report/
+├── api/
+│   ├── services/
+│   │   ├── getReportStreak.ts
+│   │   ├── getReportMonthly.ts
+│   │   └── index.ts
+│   ├── queries/
+│   │   ├── useReportStreakQuery.ts
+│   │   ├── useReportMonthlyQuery.ts
+│   │   └── index.ts
+│   ├── queryKeys.ts
+│   ├── dto.ts
+│   └── index.ts
 ├── components/
 │   ├── common/     # feature 안에서 2곳 이상 쓰는 것
 │   ├── streak/
@@ -139,10 +153,7 @@ features/report/
 │   ├── common/
 │   ├── streak/
 │   └── monthly/
-├── apis/
-├── queries/
-├── mutations/
-├── queryKeys.ts
+├── stores/
 ├── schemas.ts
 ├── types.ts
 ├── constants.ts
@@ -150,9 +161,9 @@ features/report/
 └── index.ts
 ```
 
-- 필요한 폴더만 만든다
+- 화면 단위로 나눌지는 컴포넌트 개수 보고 판단하고, 필요한 폴더만 만든다 (`mutations/`처럼 안 쓰면 비워두지 말고 아예 생략)
 - 파일이 적으면 파일 하나로 관리, 많아지면 화면·역할 단위 폴더로 확장
-- 화면 단위로 나눌지는 컴포넌트 개수 보고 판단
+- `api/` 내부 구조(`services`, `queries`, `mutations`, `queryKeys.ts`, `dto.ts`)는 기본형과 동일한 규칙을 따른다
 
 ---
 
@@ -213,7 +224,7 @@ app → pages → features → shared
 - 공통 에러 핸들링 로직
 - 여러 Feature에서 공통으로 사용하는 API 함수
 
-### 기능별 API (`src/features/{feature}/apis`)
+### 기능별 API (`src/features/{feature}/api/services`)
 
 - 해당 Feature 전용 API 요청 함수
 - `shared/apis`에서 만든 공통 Axios 인스턴스를 가져와서 사용
@@ -221,8 +232,8 @@ app → pages → features → shared
 
 ### 규칙
 
-- 인증/토큰 처리는 `src/shared/apis`에서만 관리하고, 기능별 `apis`에서 직접 헤더를 설정하지 않는다
-- 기능별 `apis`는 공통 인스턴스를 import해서 엔드포인트 함수만 작성한다
+- 인증/토큰 처리는 `src/shared/apis`에서만 관리하고, 기능별 `api/services`에서 직접 헤더를 설정하지 않는다
+- 기능별 `api/services`는 공통 인스턴스를 import해서 엔드포인트 함수만 작성한다
 
 ---
 

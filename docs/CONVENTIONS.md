@@ -106,7 +106,8 @@ export const get = () => {};
 - HTML Element Props 확장 시 `ComponentProps` 사용
 - Type Import는 `import type` 사용
 - 공통 Type이 아니면 Feature 내부에서 관리
-- `features/{feature}/types.ts`에는 DTO 타입만 작성
+- `features/{feature}/api/dto.ts`에는 DTO 타입만 작성
+- `features/{feature}/types.ts`에는 DTO가 아닌 feature 공통 타입 작성
 - Component Props 등 그 외 타입은 사용하는 파일 안에 선언
 
 ---
