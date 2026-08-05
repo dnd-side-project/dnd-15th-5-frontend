@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">chapchap</string>
+    <string name="title_activity_main">chapchap</string>
+    <string name="package_name">com.chapchap.app</string>
+    <string name="custom_url_scheme">com.chapchap.app</string>
+</resources>

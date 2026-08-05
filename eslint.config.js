@@ -16,7 +16,7 @@ import boundaries from 'eslint-plugin-boundaries';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores(['dist', 'storybook-static']),
+  globalIgnores(['android', 'dist', 'ios', 'storybook-static']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
