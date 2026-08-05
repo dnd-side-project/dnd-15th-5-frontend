@@ -91,6 +91,59 @@ src/
 `pages`는 라우트 또는 화면 목적을 기준으로 구성하고, `features`는 비즈니스 기능과 도메인을 기준으로 구성한다.
 두 계층의 이름은 필요할 때만 동일하게 사용한다.
 
+### Pages 구조
+
+`pages`는 라우트 단위 화면을 관리하며 비즈니스 로직을 직접 구현하지 않는다.
+각 페이지는 `features`와 `shared`의 컴포넌트를 조합한다.
+
+실제 URL은 `src/app/routes/routePaths.ts`를 기준으로 한다.
+
+```text
+pages/
+├── login/
+│   └── LoginPage.tsx
+├── agreement/
+│   └── AgreementPage.tsx
+├── onboarding/
+│   └── OnboardingPage.tsx
+├── home/
+│   ├── HomePage.tsx
+│   ├── search/
+│   │   └── MapSearchPage.tsx
+│   └── shop/
+│       └── ShopDetailPage.tsx
+├── record/
+│   ├── RecordMethodPage.tsx
+│   ├── manual/
+│   │   └── ManualRecordPage.tsx
+│   ├── shop/
+│   │   └── search/
+│   │       └── ShopSearchPage.tsx
+│   ├── receipt/
+│   │   ├── ReceiptCameraPage.tsx
+│   │   └── confirm/
+│   │       └── ReceiptConfirmPage.tsx
+│   └── complete/
+│       └── RecordCompletePage.tsx
+├── report/
+│   ├── ReportPage.tsx
+│   ├── ReportDetailPage.tsx
+│   ├── history/
+│   │   └── SpendingHistoryPage.tsx
+│   ├── frequent-shops/
+│   │   └── FrequentShopListPage.tsx
+│   └── monthly-records/
+│       └── MonthlyRecordListPage.tsx
+├── notifications/
+│   └── NotificationPage.tsx
+├── my-page/
+│   └── MyPage.tsx
+└── not-found/
+    └── NotFoundPage.tsx
+```
+
+페이지를 추가하거나 이동할 때는 이 구조와 `src/app/routes`의 라우트 설정을 함께 수정한다.
+
 ### Feature 내부 구조 (기본형)
 
 ```text
