@@ -1,3 +1,5 @@
+import { Outlet } from 'react-router-dom';
+
 import { cn } from '@/shared/lib/cn';
 
 import type { PropsWithChildren } from 'react';
@@ -15,7 +17,7 @@ export default function MobileLayout({ children, hasPadding = true }: MobileLayo
     <div className="flex min-h-screen justify-center bg-layout-bg">
       {/* TODO: 디자인 확정되면 max-w 값 수정 */}
       <div className={cn('min-h-screen w-full max-w-[480px] bg-white', hasPadding && 'px-4')}>
-        {children}
+        {children ?? <Outlet />}
       </div>
     </div>
   );
