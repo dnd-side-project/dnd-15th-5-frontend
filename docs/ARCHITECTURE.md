@@ -121,10 +121,7 @@ pages/
 │   │       └── ShopSearchPage.tsx
 │   ├── receipt/
 │   │   ├── ReceiptCameraPage.tsx
-│   │   └── confirm/
-│   │       └── ReceiptConfirmPage.tsx
-│   └── complete/
-│       └── RecordCompletePage.tsx
+│   │   └── ReceiptRecordPage.tsx
 ├── report/
 │   ├── ReportPage.tsx
 │   ├── ReportDetailPage.tsx

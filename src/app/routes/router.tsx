@@ -9,10 +9,9 @@ import MyPage from '@/pages/my-page/MyPage';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import NotificationPage from '@/pages/notifications/NotificationPage';
 import OnboardingPage from '@/pages/onboarding/OnboardingPage';
-import RecordCompletePage from '@/pages/record/complete/RecordCompletePage';
 import ManualRecordPage from '@/pages/record/manual/ManualRecordPage';
-import ReceiptConfirmPage from '@/pages/record/receipt/confirm/ReceiptConfirmPage';
 import ReceiptCameraPage from '@/pages/record/receipt/ReceiptCameraPage';
+import ReceiptRecordPage from '@/pages/record/receipt/ReceiptRecordPage';
 import RecordMethodPage from '@/pages/record/RecordMethodPage';
 import ShopSearchPage from '@/pages/record/shop/search/ShopSearchPage';
 import FrequentShopListPage from '@/pages/report/frequent-shops/FrequentShopListPage';
@@ -110,12 +109,8 @@ export const router = createBrowserRouter([
             element: <ShopSearchPage />,
           },
           {
-            path: ROUTE_PATHS.receiptConfirm,
-            element: <ReceiptConfirmPage />,
-          },
-          {
-            path: ROUTE_PATHS.recordComplete,
-            element: <RecordCompletePage />,
+            path: ROUTE_PATHS.receiptRecord,
+            element: <ReceiptRecordPage />,
           },
           {
             path: ROUTE_PATHS.spendingHistory,
