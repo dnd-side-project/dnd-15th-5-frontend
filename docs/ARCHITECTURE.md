@@ -141,22 +141,41 @@ pages/
 
 페이지를 추가하거나 이동할 때는 이 구조와 `src/app/routes`의 라우트 설정을 함께 수정한다.
 
+### Features 구조
+
+`features`는 화면이 아닌 비즈니스 도메인을 기준으로 구성한다.
+수기 입력과 영수증 입력은 모두 기록 생성 흐름에 속하므로 `receipt`를 별도 Feature로 분리하지 않고 `record`에서 관리한다.
+영수증 관련 코드의 규모가 커지면 `features/record/receipt`와 같이 하위 영역으로 구분한다.
+
+```text
+features/
+├── auth/
+├── map/
+├── my-page/
+├── notification/
+├── onboarding/
+├── profile/
+├── record/
+├── report/
+└── shop/
+```
+
 ### Feature 내부 구조 (기본형)
 
 ```text
-features/receipt/
+features/record/
 ├── api/
 │   ├── services/
-│   │   ├── getReceipts.ts
-│   │   ├── postReceipt.ts
+│   │   ├── getRecords.ts
+│   │   ├── postRecord.ts
 │   │   └── index.ts
 │   ├── queries/
-│   │   ├── useReceiptListQuery.ts
-│   │   ├── useReceiptDetailQuery.ts
+│   │   ├── useRecordListQuery.ts
+│   │   ├── useRecordDetailQuery.ts
 │   │   └── index.ts
 │   ├── mutations/
-│   │   ├── useCreateReceiptMutation.ts
-│   │   ├── useDeleteReceiptMutation.ts
+│   │   ├── useCreateRecordMutation.ts
+│   │   ├── useDeleteRecordMutation.ts
 │   │   └── index.ts
 │   ├── queryKeys.ts
 │   ├── dto.ts          # DTO 타입만
@@ -173,11 +192,11 @@ features/receipt/
 
 - API 호출, 쿼리, 뮤테이션, 쿼리 키, DTO 타입은 전부 `api/` 아래에 모아서 관리
 - `services`, `queries`, `mutations`는 함수·훅 하나당 파일 하나
-- 파일명은 함수·훅 이름과 동일하게 (`useReceiptListQuery.ts` → `useReceiptListQuery`, `getReceipts.ts` → `getReceipts`)
+- 파일명은 함수·훅 이름과 동일하게 (`useRecordListQuery.ts` → `useRecordListQuery`, `getRecords.ts` → `getRecords`)
 - 폴더 안 `index.ts`에서 모아서 export
 - 쿼리 키는 `api/queryKeys.ts`에서 한 곳으로 관리
 - `types.ts`는 DTO가 아닌 feature 공통 타입(여러 컴포넌트/훅이 공유하는 도메인 타입 등)을 관리. DTO와 화면에서 쓰는 모양이 갈라지면 그때 `api/dto.ts`와 `types.ts`를 구분해서 쓴다
-- 폴더명·파일명 앞에 feature 이름을 다시 붙이지 않는다 (`features/receipt/api/dto.ts`, `features/receipt/api/services/getReceipts.ts`처럼 경로와 함수명이 이미 역할을 드러내므로 `receipt.dto.ts` 같은 접두어는 중복)
+- 폴더명·파일명 앞에 feature 이름을 다시 붙이지 않는다 (`features/record/api/dto.ts`, `features/record/api/services/getRecords.ts`처럼 경로와 함수명이 이미 역할을 드러내므로 `record.dto.ts` 같은 접두어는 중복)
 
 ### Feature 내부 구조 (화면이 여러 개인 경우)
 
