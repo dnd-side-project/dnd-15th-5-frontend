@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { useCurrentPosition } from './useCurrentPosition';
 
@@ -73,5 +73,36 @@ describe('useCurrentPosition', () => {
     expect(mockCheckPermissions).not.toHaveBeenCalled();
     expect(mockRequestPermissions).not.toHaveBeenCalled();
     expect(result.current.position).toEqual({ lat: 37.5665, lng: 126.978 });
+  });
+
+  it('현재 위치를 다시 요청한다', async () => {
+    mockIsNativePlatform.mockReturnValue(false);
+
+    const { result } = renderHook(() => useCurrentPosition());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    mockGetCurrentPosition.mockResolvedValueOnce({
+      coords: {
+        accuracy: 10,
+        altitude: null,
+        altitudeAccuracy: null,
+        course: null,
+        heading: null,
+        headingAccuracy: null,
+        latitude: 37.5001,
+        longitude: 127.0365,
+        magneticHeading: null,
+        speed: null,
+        trueHeading: null,
+      },
+      timestamp: Date.now(),
+    });
+
+    await act(async () => {
+      await result.current.refreshPosition();
+    });
+
+    expect(mockGetCurrentPosition).toHaveBeenCalledTimes(2);
+    expect(result.current.position).toEqual({ lat: 37.5001, lng: 127.0365 });
   });
 });

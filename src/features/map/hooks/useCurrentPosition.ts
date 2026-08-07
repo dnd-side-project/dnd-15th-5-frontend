@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type Position = {
   lat: number;
@@ -11,6 +11,7 @@ type UseCurrentPositionResult = {
   position: Position | null;
   isLoading: boolean;
   error: Error | null;
+  refreshPosition: () => Promise<void>;
 };
 
 const getLocationPermission = async () => {
@@ -41,42 +42,48 @@ export const useCurrentPosition = (): UseCurrentPositionResult => {
   const [position, setPosition] = useState<Position | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const requestIdRef = useRef(0);
 
-  useEffect(() => {
-    let isActive = true;
+  const refreshPosition = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    setIsLoading(true);
 
-    const loadCurrentPosition = async () => {
-      try {
-        await getLocationPermission();
-        const result = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          maximumAge: 30_000,
-          timeout: 10_000,
-        });
+    try {
+      await getLocationPermission();
+      const result = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        maximumAge: 30_000,
+        timeout: 10_000,
+      });
 
-        if (!isActive) {
-          return;
-        }
-
-        setPosition({ lat: result.coords.latitude, lng: result.coords.longitude });
-        setError(null);
-      } catch (locationError) {
-        if (isActive) {
-          setError(normalizeLocationError(locationError));
-        }
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
+      if (requestId !== requestIdRef.current) {
+        return;
       }
-    };
 
-    void loadCurrentPosition();
-
-    return () => {
-      isActive = false;
-    };
+      setPosition({ lat: result.coords.latitude, lng: result.coords.longitude });
+      setError(null);
+    } catch (locationError) {
+      if (requestId === requestIdRef.current) {
+        setError(normalizeLocationError(locationError));
+      }
+    } finally {
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
+    }
   }, []);
 
-  return { position, isLoading, error };
+  useEffect(() => {
+    const requestTimerId = window.setTimeout(() => {
+      void refreshPosition();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(requestTimerId);
+      requestIdRef.current += 1;
+    };
+  }, [refreshPosition]);
+
+  return { position, isLoading, error, refreshPosition };
 };

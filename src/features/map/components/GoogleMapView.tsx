@@ -19,6 +19,7 @@ export default function GoogleMapView() {
         mapId={GOOGLE_MAPS_MAP_ID}
         defaultCenter={MAP_DEFAULT_CENTER}
         defaultZoom={MAP_DEFAULT_ZOOM}
+        disableDefaultUI
         gestureHandling="greedy"
       >
         <MapMarkers markers={markers} />
