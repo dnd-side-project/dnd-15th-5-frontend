@@ -9,9 +9,9 @@ type MobileLayoutProps = PropsWithChildren;
  */
 export default function MobileLayout({ children }: MobileLayoutProps) {
   return (
-    <div className="flex min-h-screen justify-center bg-layout-bg">
+    <div className="flex min-h-dvh justify-center bg-layout-bg">
       {/* TODO: 디자인 확정되면 max-w 값 수정 */}
-      <div className="min-h-screen w-full max-w-120 bg-white">{children ?? <Outlet />}</div>
+      <div className="min-h-dvh w-full max-w-120 bg-white">{children ?? <Outlet />}</div>
     </div>
   );
 }

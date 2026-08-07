@@ -84,7 +84,7 @@ export default function ReceiptCamera({ onClose }: ReceiptCameraProps) {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[15%] bg-black/75" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[21%] bg-black/80 backdrop-blur-[2px]" />
 
-      <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-5 pt-[max(1rem,env(safe-area-inset-top))] text-white">
+      <header className="absolute top-0 right-0 left-0 z-10 flex items-center justify-between pt-[max(1rem,env(safe-area-inset-top))] pr-[max(1.25rem,env(safe-area-inset-right))] pl-[max(1.25rem,env(safe-area-inset-left))] text-white">
         <button
           type="button"
           aria-label="카메라 닫기"
@@ -98,7 +98,7 @@ export default function ReceiptCamera({ onClose }: ReceiptCameraProps) {
       </header>
 
       <div
-        className="pointer-events-none absolute inset-x-6 top-[17%] bottom-[23%] z-10"
+        className="pointer-events-none absolute top-[17%] right-[max(1.5rem,env(safe-area-inset-right))] bottom-[23%] left-[max(1.5rem,env(safe-area-inset-left))] z-10"
         aria-hidden="true"
       >
         <span className="absolute top-0 left-0 h-10 w-10 rounded-tl-lg border-t-2 border-l-2 border-white" />
@@ -128,7 +128,7 @@ export default function ReceiptCamera({ onClose }: ReceiptCameraProps) {
         </div>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 z-20 grid h-[21%] grid-cols-3 items-center px-8 pb-[env(safe-area-inset-bottom)] text-white">
+      <div className="absolute right-0 bottom-0 left-0 z-20 grid h-[21%] grid-cols-3 items-center pr-[max(2rem,env(safe-area-inset-right))] pb-[env(safe-area-inset-bottom)] pl-[max(2rem,env(safe-area-inset-left))] text-white">
         <button
           type="button"
           aria-label="갤러리에서 사진 선택"
