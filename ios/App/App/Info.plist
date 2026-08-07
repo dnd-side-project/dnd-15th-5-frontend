@@ -26,6 +26,10 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>사진 촬영을 위해 카메라 접근 권한이 필요합니다.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>내 주변의 매장을 지도에서 보여주기 위해 위치 정보가 필요합니다.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>내 주변의 매장을 지도에서 보여주기 위해 위치 정보가 필요합니다.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>촬영한 사진을 사진 보관함에 저장하기 위해 접근 권한이 필요합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

@@ -1,9 +1,20 @@
-import { AdvancedMarker } from '@vis.gl/react-google-maps';
+import { AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
+import { useEffect } from 'react';
 
 import { useCurrentPosition } from '../hooks/useCurrentPosition';
 
 export default function CurrentLocationMarker() {
+  const map = useMap();
   const { position } = useCurrentPosition();
+
+  useEffect(() => {
+    if (!map || !position) {
+      return;
+    }
+
+    map.panTo(position);
+    map.setZoom(16);
+  }, [map, position]);
 
   if (!position) {
     return null;
