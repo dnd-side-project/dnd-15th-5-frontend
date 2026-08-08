@@ -18,8 +18,7 @@
     },
     "test": {},
     "typecheck": {
-      "dependsOn": ["^typecheck"],
-      "outputs": ["node_modules/.tmp/**"]
+      "dependsOn": ["^typecheck"]
     }
   }
 }

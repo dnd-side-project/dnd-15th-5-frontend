@@ -11,6 +11,7 @@ storybook-static
 
 # Native generated files
 **/.expo/
+**/expo-env.d.ts
 **/ios/**/.build/
 **/android/.gradle/
 **/android/**/build/

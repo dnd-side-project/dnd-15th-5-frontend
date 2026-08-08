@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "turbo run dev",
+    "dev:mobile": "turbo run dev --filter=@dnd/mobile",
     "dev:web": "turbo run dev --filter=@dnd/web",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
@@ -12,13 +13,23 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "pnpm --filter @dnd/web preview",
+    "android": "pnpm --filter @dnd/mobile android",
+    "ios": "pnpm --filter @dnd/mobile ios",
     "test": "turbo run test",
     "storybook": "pnpm --filter @dnd/web storybook",
     "build-storybook": "turbo run build-storybook --filter=@dnd/web",
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,cjs,mjs}": [
+    "apps/web/**/*.{js,jsx,ts,tsx,cjs,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "apps/mobile/**/*.{js,jsx,ts,tsx,cjs,mjs}": [
+      "pnpm --filter @dnd/mobile exec eslint --fix",
+      "prettier --write"
+    ],
+    "{*.{js,jsx,ts,tsx,cjs,mjs},packages/**/*.{js,jsx,ts,tsx,cjs,mjs}}": [
       "eslint --fix",
       "prettier --write"
     ],
