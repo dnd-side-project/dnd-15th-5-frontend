@@ -1,23 +1,25 @@
 {
-  "name": "dnd-15th-5-monorepo",
+  "name": "chapchap-monorepo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "turbo run dev",
-    "dev:mobile": "turbo run dev --filter=@dnd/mobile",
-    "dev:web": "turbo run dev --filter=@dnd/web",
+    "dev:mobile": "turbo run dev --filter=@chapchap/mobile",
+    "dev:web": "turbo run dev --filter=@chapchap/web",
     "build": "turbo run build",
+    "build:android": "turbo run build:android --filter=@chapchap/mobile",
+    "build:ios": "turbo run build:ios --filter=@chapchap/mobile",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "preview": "pnpm --filter @dnd/web preview",
-    "android": "pnpm --filter @dnd/mobile android",
-    "ios": "pnpm --filter @dnd/mobile ios",
+    "preview": "pnpm --filter @chapchap/web preview",
+    "android": "pnpm --filter @chapchap/mobile android",
+    "ios": "pnpm --filter @chapchap/mobile ios",
     "test": "turbo run test",
-    "storybook": "pnpm --filter @dnd/web storybook",
-    "build-storybook": "turbo run build-storybook --filter=@dnd/web",
+    "storybook": "pnpm --filter @chapchap/web storybook",
+    "build-storybook": "turbo run build-storybook --filter=@chapchap/web",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -26,7 +28,7 @@
       "prettier --write"
     ],
     "apps/mobile/**/*.{js,jsx,ts,tsx,cjs,mjs}": [
-      "pnpm --filter @dnd/mobile exec eslint --fix",
+      "pnpm --filter @chapchap/mobile exec eslint --fix",
       "prettier --write"
     ],
     "{*.{js,jsx,ts,tsx,cjs,mjs},packages/**/*.{js,jsx,ts,tsx,cjs,mjs}}": [

@@ -12,9 +12,8 @@ storybook-static
 # Native generated files
 **/.expo/
 **/expo-env.d.ts
-**/ios/**/.build/
-**/android/.gradle/
-**/android/**/build/
+**/ios/
+**/android/
 
 # Generated and environment-specific files
 pnpm-lock.yaml

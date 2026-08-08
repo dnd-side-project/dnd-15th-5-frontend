@@ -1,5 +1,6 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "globalEnv": ["VITE_*", "EXPO_PUBLIC_*"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -9,6 +10,12 @@
       "dependsOn": ["^build"],
       "outputs": ["storybook-static/**"]
     },
+    "build:android": {
+      "cache": false
+    },
+    "build:ios": {
+      "cache": false
+    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -16,7 +23,9 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "test": {},
+    "test": {
+      "dependsOn": ["^build"]
+    },
     "typecheck": {
       "dependsOn": ["^typecheck"]
     }

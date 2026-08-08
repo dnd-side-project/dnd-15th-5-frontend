@@ -1,6 +1,6 @@
-# DND Mobile
+# Chapchap Mobile
 
-Expo와 React Native로 구성한 DND 모바일 애플리케이션입니다.
+Expo와 React Native로 구성한 Chapchap 모바일 애플리케이션입니다.
 
 ## 실행
 
@@ -16,7 +16,7 @@ pnpm dev:mobile
 ```bash
 pnpm ios
 pnpm android
-pnpm --filter @dnd/mobile web
+pnpm --filter @chapchap/mobile web
 ```
 
 Expo Router 라우트는 `src/app`에 추가합니다.
