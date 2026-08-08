@@ -38,7 +38,7 @@ jobs:
       - name: TypeScript type check
         if: ${{ always() && steps.install.outcome == 'success' }}
         id: typecheck
-        run: pnpm exec tsc -b
+        run: pnpm typecheck
 
       - name: ESLint check
         if: ${{ always() && steps.install.outcome == 'success' }}

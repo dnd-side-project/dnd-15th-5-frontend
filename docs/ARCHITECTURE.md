@@ -67,7 +67,7 @@
 ## 3. Directory Structure
 
 ```text
-src/
+apps/web/src/
 ├── app/                # 앱 진입점, 전역 설정
 │   ├── providers/
 │   ├── routes/
@@ -96,7 +96,7 @@ src/
 `pages`는 라우트 단위 화면을 관리하며 비즈니스 로직을 직접 구현하지 않는다.
 각 페이지는 `features`와 `shared`의 컴포넌트를 조합한다.
 
-실제 URL은 `src/app/routes/routePaths.ts`를 기준으로 한다.
+실제 URL은 `apps/web/src/app/routes/routePaths.ts`를 기준으로 한다.
 
 ```text
 pages/
@@ -139,7 +139,7 @@ pages/
     └── NotFoundPage.tsx
 ```
 
-페이지를 추가하거나 이동할 때는 이 구조와 `src/app/routes`의 라우트 설정을 함께 수정한다.
+페이지를 추가하거나 이동할 때는 이 구조와 `apps/web/src/app/routes`의 라우트 설정을 함께 수정한다.
 
 ### Features 구조
 
@@ -286,14 +286,14 @@ app → pages → features → shared
 
 ## 8. API Structure
 
-### 공통 API (`src/shared/apis`)
+### 공통 API (`apps/web/src/shared/apis`)
 
 - Axios 인스턴스 생성 및 설정 (baseURL, timeout 등)
 - 인증 토큰을 포함한 인터셉터(Request/Response Interceptor) 설정
 - 공통 에러 핸들링 로직
 - 여러 Feature에서 공통으로 사용하는 API 함수
 
-### 기능별 API (`src/features/{feature}/api/services`)
+### 기능별 API (`apps/web/src/features/{feature}/api/services`)
 
 - 해당 Feature 전용 API 요청 함수
 - `shared/apis`에서 만든 공통 Axios 인스턴스를 가져와서 사용
@@ -301,7 +301,7 @@ app → pages → features → shared
 
 ### 규칙
 
-- 인증/토큰 처리는 `src/shared/apis`에서만 관리하고, 기능별 `api/services`에서 직접 헤더를 설정하지 않는다
+- 인증/토큰 처리는 `apps/web/src/shared/apis`에서만 관리하고, 기능별 `api/services`에서 직접 헤더를 설정하지 않는다
 - 기능별 `api/services`는 공통 인스턴스를 import해서 엔드포인트 함수만 작성한다
 
 ---

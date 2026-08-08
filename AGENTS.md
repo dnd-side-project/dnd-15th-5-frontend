@@ -34,7 +34,7 @@ pnpm preview   # 빌드 결과 미리보기
 
 - 디렉토리 구조, 의존 방향(`app → pages → features → shared`), 상태관리 규칙: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 네이밍, Import(`@/` alias), Props/Type, TSDoc, 주석 규칙: [docs/CONVENTIONS.md](docs/CONVENTIONS.md)
-- 인증/토큰 처리는 `src/shared/apis`에서만. feature별 `apis`는 공통 인스턴스만 가져다 쓴다.
+- 인증/토큰 처리는 `apps/web/src/shared/apis`에서만. feature별 `apis`는 공통 인스턴스만 가져다 쓴다.
 
 ## Git 작업
 
@@ -52,5 +52,5 @@ pnpm preview   # 빌드 결과 미리보기
 
 ## Gotchas
 
-- `tsconfig.app.json`은 Vite 번들러 전용 옵션(`moduleResolution: bundler`)을 쓰기 때문에 Jest가 그대로 못 읽는다. `jest.config.cjs` 안에 별도 inline tsconfig를 두고 있다.
+- `apps/web/tsconfig.app.json`은 Vite 번들러 전용 옵션(`moduleResolution: bundler`)을 쓰기 때문에 Jest가 그대로 못 읽는다. `apps/web/jest.config.cjs` 안에 별도 inline tsconfig를 두고 있다.
 - 앱 배포 방식, CI/CD, 환경변수 관리 전략은 미확정. 관련 작업 전에 먼저 확인할 것.

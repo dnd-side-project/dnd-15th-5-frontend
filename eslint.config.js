@@ -1,4 +1,6 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import { fileURLToPath } from 'node:url';
+
 import storybook from 'eslint-plugin-storybook';
 
 import js from '@eslint/js';
@@ -15,8 +17,10 @@ import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import boundaries from 'eslint-plugin-boundaries';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
+const webTsconfigPath = fileURLToPath(new URL('./apps/web/tsconfig.app.json', import.meta.url));
+
 export default defineConfig([
-  globalIgnores(['dist', 'storybook-static']),
+  globalIgnores(['**/dist/**', '**/storybook-static/**', '**/.turbo/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -41,25 +45,26 @@ export default defineConfig([
       },
       'import/resolver': {
         typescript: {
-          project: './tsconfig.app.json',
+          project: webTsconfigPath,
         },
       },
       'import-x/resolver-next': [
         createTypeScriptImportResolver({
-          project: './tsconfig.app.json',
+          project: webTsconfigPath,
         }),
       ],
-      'boundaries/include': ['src/**/*.{ts,tsx}'],
+      'boundaries/root-path': import.meta.dirname,
+      'boundaries/include': ['apps/web/src/**/*.{ts,tsx}'],
       'boundaries/elements': [
-        { type: 'app', pattern: 'src/app', partialMatch: false },
-        { type: 'pages', pattern: 'src/pages', partialMatch: false },
+        { type: 'app', pattern: 'apps/web/src/app', partialMatch: false },
+        { type: 'pages', pattern: 'apps/web/src/pages', partialMatch: false },
         {
           type: 'features',
-          pattern: 'src/features/*',
+          pattern: 'apps/web/src/features/*',
           capture: ['featureName'],
           partialMatch: false,
         },
-        { type: 'shared', pattern: 'src/shared', partialMatch: false },
+        { type: 'shared', pattern: 'apps/web/src/shared', partialMatch: false },
       ],
     },
     rules: {
