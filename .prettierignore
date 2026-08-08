@@ -8,6 +8,12 @@ build
 coverage
 storybook-static
 
+# Native generated files
+**/.expo/
+**/ios/**/.build/
+**/android/.gradle/
+**/android/**/build/
+
 # Generated and environment-specific files
 pnpm-lock.yaml
 .env*

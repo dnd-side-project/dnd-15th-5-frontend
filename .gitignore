@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Native generated files
+**/.expo/
+**/ios/**/.build/
+**/android/.gradle/
+**/android/**/build/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
