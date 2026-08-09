@@ -26,7 +26,7 @@ export default function ShopSearchInput({ onSearch }: ShopSearchInputProps) {
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
         placeholder="장소를 검색해주세요"
-        className="min-w-0 flex-1 bg-transparent outline-none"
+        className="min-w-0 flex-1 bg-transparent"
       />
       <button type="submit" aria-label="검색">
         {/* TODO: 아이콘 시스템 세팅되면 shared/assets의 ic-search.svg로 교체 */}
