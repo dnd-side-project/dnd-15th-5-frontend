@@ -121,7 +121,8 @@ apps/web/src/
 `pages`는 라우트 단위 화면을 관리하며 비즈니스 로직을 직접 구현하지 않는다.
 각 페이지는 `features`와 `shared`의 컴포넌트를 조합한다.
 
-실제 URL은 `apps/web/src/app/routes/routePaths.ts`를 기준으로 한다.
+실제 URL은 `apps/web/src/shared/constants/routePaths.ts`를 기준으로 한다.
+(`pages`와 `features`에서도 화면 이동에 사용해야 하므로 `app`이 아닌 `shared`에서 관리한다.)
 
 ```text
 pages/

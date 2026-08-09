@@ -58,6 +58,8 @@ pnpm preview       # 웹 빌드 결과 미리보기
 - 웹과 모바일의 일반 컴포넌트·훅·유틸 테스트는 대상 파일과 같은 폴더에 `ComponentName.test.tsx`처럼 둔다.
 - `apps/mobile/src/app`은 Expo Router의 라우트·레이아웃 전용이므로 테스트 파일을 두지 않는다.
 - 모바일 라우트·레이아웃 테스트는 `apps/mobile/__tests__`에 둔다.
+- 테스트 대상은 feature 로직과 사용자 플로우 위주로 한다.
+- 공통 컴포넌트는 인터랙션이 있는 것만 테스트하고, 레이아웃이나 표시 전용 UI는 생략한다.
 - `render()`가 던지는 에러는 Jest가 알아서 실패 처리하므로 `expect(() => render(...)).not.toThrow()` 같은 래핑은 하지 않는다.
 
 ## CI/CD와 Gotchas
