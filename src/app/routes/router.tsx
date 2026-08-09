@@ -19,11 +19,10 @@ import SpendingHistoryPage from '@/pages/report/history/SpendingHistoryPage';
 import MonthlyRecordListPage from '@/pages/report/monthly-records/MonthlyRecordListPage';
 import ReportDetailPage from '@/pages/report/ReportDetailPage';
 import ReportPage from '@/pages/report/ReportPage';
+import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import AppMainLayout from '@/shared/layout/AppMainLayout';
 import MobileLayout from '@/shared/layout/MobileLayout';
 import PaddedLayout from '@/shared/layout/PaddedLayout';
-
-import { ROUTE_PATHS, ROUTE_PATTERNS } from './routePaths';
 
 export const router = createBrowserRouter([
   {
