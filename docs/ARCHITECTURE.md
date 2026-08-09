@@ -4,12 +4,13 @@
 
 ### Core
 
-| 구분             | 기술        |
-| ---------------- | ----------- |
-| Framework        | React, Vite |
-| Language         | TypeScript  |
-| Package Manager  | pnpm        |
-| UI Documentation | Storybook   |
+| 구분             | 기술                       |
+| ---------------- | -------------------------- |
+| Web              | React, Vite                 |
+| Mobile           | Expo, React Native          |
+| Language         | TypeScript                 |
+| Monorepo         | pnpm workspace, Turborepo |
+| UI Documentation | Storybook                  |
 
 ### State & Data
 
@@ -17,7 +18,7 @@
 | ------------ | --------------- | --------- |
 | Server State | TanStack Query  | 적용 완료 |
 | HTTP Client  | Axios           | 적용 완료 |
-| Client State | Zustand         | 적용 완료 |
+| Client State | Zustand         | 사용 확정 |
 
 ### Styling
 
@@ -35,13 +36,14 @@
 
 ### Native & External
 
-| 기능 | 기술      |
-| ---- | --------- |
-| 지도 | 구글 지도 |
+| 기능             | 기술 및 소유권                 |
+| ---------------- | ------------------------------ |
+| 모바일 앱        | Expo + React Native            |
+| WebView 연동     | 패키지만 설치, 추후 구현       |
+| 알림·푸시        | 추후 네이티브 구현             |
+| 영수증 촬영·기록 | 추후 네이티브 구현             |
 
-> React Native WebView와 Capacitor 중 PoC 비교 후 결정 (약 1주)
-> 카메라, 푸시 알림 구현 방식은 래핑 방식 확정 후 결정
-> 웹 앱 코드(React + Vite + TS)는 어느 쪽으로 가도 그대로 사용
+> 모바일의 세부 디렉터리 구조는 아직 확정하지 않는다.
 
 ---
 
@@ -65,6 +67,29 @@
 ---
 
 ## 3. Directory Structure
+
+### Monorepo
+
+```text
+.
+├── apps/
+│   ├── web/                    # React + Vite
+│   └── mobile/                 # Expo + React Native
+├── packages/
+│   ├── eslint-config/          # 공통 ESLint base 설정
+│   └── typescript-config/      # 공통 TypeScript base 설정
+├── docs/
+├── pnpm-workspace.yaml
+└── turbo.json
+```
+
+- 애플리케이션은 `apps/*`, 재사용 패키지와 공통 개발 설정은 `packages/*`에서 관리한다.
+- workspace 패키지는 `workspace:*`로 참조한다.
+- `packages/*-config`에는 플랫폼에 독립적인 공통 base만 두고 웹·모바일 전용 설정은 각 앱에서 관리한다.
+
+### Web
+
+아래 구조와 규칙은 `apps/web`에만 적용한다.
 
 ```text
 apps/web/src/
@@ -249,6 +274,8 @@ features/report/
 
 ## 5. Dependency Direction
 
+아래 의존 방향과 ESLint Boundary 검사는 `apps/web/src`에만 적용한다.
+
 ```text
 app → pages → features → shared
 ```
@@ -262,7 +289,7 @@ app → pages → features → shared
 ## 6. State Management
 
 - 서버 상태: TanStack Query
-- 전역 상태: Zustand (적용 범위 확정 후 사용)
+- 전역 상태: Zustand
 - 로컬 상태: useState, useReducer
 - Context: Theme 및 Provider 용도
 
@@ -275,16 +302,7 @@ app → pages → features → shared
 
 ---
 
-## 7. Form & Validation
-
-> 적용 범위는 와이어프레임 확인 후 결정 — 그 전까지는 아래 규칙을 확정된 것으로 간주하지 않는다
-
-- 폼 적용이 확정되면 React Hook Form + Zod 사용
-- 단순 입력은 Local State 사용
-
----
-
-## 8. API Structure
+## 7. API Structure
 
 ### 공통 API (`apps/web/src/shared/apis`)
 
@@ -306,7 +324,7 @@ app → pages → features → shared
 
 ---
 
-## 9. Styling
+## 8. Styling
 
 - Tailwind CSS 사용
 - Variant는 CVA 사용
@@ -315,7 +333,7 @@ app → pages → features → shared
 
 ---
 
-## 10. Package Manager
+## 9. Package Manager
 
 ### pnpm 선택 이유
 
@@ -331,12 +349,8 @@ app → pages → features → shared
 
 ---
 
-## 11. Pending
+## 10. Pending
 
-- Zustand 적용 범위
-- React Hook Form 적용 범위
-- Zod 적용 범위
-- 앱 래핑 방식 (RN WebView vs Capacitor)
 - 앱 배포 방식
 - 환경 변수 관리
 - CI/CD

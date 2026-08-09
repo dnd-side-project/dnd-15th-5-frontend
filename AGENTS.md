@@ -8,7 +8,9 @@ AI 도구가 이 저장소에서 작업할 때 따르는 공통 지침입니다.
 
 ## Project Overview
 
-React + Vite + TypeScript 기반 프론트엔드. 네이티브 앱(iOS/Android) 래핑 방식은 React Native WebView와 Capacitor 중 미정.
+pnpm workspace와 Turborepo로 관리하는 Chapchap 모노레포. 웹은 React + Vite + TypeScript,
+모바일은 Expo + React Native 기반이다. WebView 연동과 알림·영수증 네이티브 기능은 추후
+구현하며, 현재 모바일 앱은 기본 스캐폴드만 유지한다.
 
 ## Commands
 
@@ -26,13 +28,14 @@ pnpm preview   # 빌드 결과 미리보기
 
 적용 완료: React, Vite, TypeScript, TanStack Query, Axios, Tailwind CSS, CVA.
 
-적용 예정 또는 검토 중: Zustand, React Hook Form, Zod.
+사용 확정: Zustand. 실제 도입 시점과 상태 범위는 기능 구현에 맞춰 결정한다.
 
-> Zustand, React Hook Form, Zod의 실제 적용 범위와 **네이티브 래퍼(React Native WebView vs Capacitor)**는 아직 미확정이다. 확정된 것처럼 가정하지 않는다.
+> 네이티브 기능 범위는 알림과 영수증으로 제한하며, 범위를 확대하기 전에 먼저 확인한다.
 
 ## Architecture & Code Style
 
-- 디렉토리 구조, 의존 방향(`app → pages → features → shared`), 상태관리 규칙: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 웹 디렉토리 구조, 의존 방향(`app → pages → features → shared`), 상태관리 규칙: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 모바일 내부 디렉토리 규칙은 아직 확정하지 않는다.
 - 네이밍, Import(`@/` alias), Props/Type, TSDoc, 주석 규칙: [docs/CONVENTIONS.md](docs/CONVENTIONS.md)
 - 인증/토큰 처리는 `apps/web/src/shared/apis`에서만. feature별 `apis`는 공통 인스턴스만 가져다 쓴다.
 
@@ -47,7 +50,9 @@ pnpm preview   # 빌드 결과 미리보기
 ## Testing
 
 - Jest + React Testing Library. 설정은 `jest.config.cjs`, 셋업은 `jest.setup.ts`.
-- 테스트 파일은 대상 파일과 같은 폴더에 `ComponentName.test.tsx`로 둔다.
+- 웹과 모바일의 일반 컴포넌트·훅·유틸 테스트는 대상 파일과 같은 폴더에 `ComponentName.test.tsx`처럼 둔다.
+- `apps/mobile/src/app`은 Expo Router의 라우트·레이아웃 전용이므로 테스트 파일을 두지 않는다.
+- 모바일 라우트·레이아웃 테스트는 `apps/mobile/__tests__`에 둔다.
 - `render()`가 던지는 에러는 Jest가 알아서 실패 처리하므로 `expect(() => render(...)).not.toThrow()` 같은 래핑은 하지 않는다.
 
 ## Gotchas
