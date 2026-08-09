@@ -16,14 +16,27 @@ type ShopSearchProps = {
  */
 export default function ShopSearch({ onSelectShop }: ShopSearchProps) {
   const [keyword, setKeyword] = useState('');
-  const { data: shops, isFetching, isError } = useShopSearchQuery(keyword);
+  const { query, isLibraryLoading } = useShopSearchQuery(keyword);
+  const { data: shops, isFetching, isError, refetch } = query;
+
+  const handleSearch = (nextKeyword: string) => {
+    const trimmedNextKeyword = nextKeyword.trim();
+
+    // 같은 검색어를 다시 제출하면 검색어 상태가 그대로여서 쿼리가 다시 실행되지 않으므로 직접 재요청한다
+    if (trimmedNextKeyword.length > 0 && trimmedNextKeyword === keyword.trim()) {
+      refetch();
+      return;
+    }
+
+    setKeyword(nextKeyword);
+  };
 
   return (
     <>
-      <ShopSearchInput onSearch={setKeyword} />
+      <ShopSearchInput onSearch={handleSearch} />
       <ShopSearchResultList
         shops={shops ?? []}
-        isLoading={isFetching}
+        isLoading={isFetching || isLibraryLoading}
         isError={isError}
         hasKeyword={keyword.trim().length > 0}
         onSelect={onSelectShop}

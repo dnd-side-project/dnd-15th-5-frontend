@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import ShopSearch from './ShopSearch';
@@ -7,11 +7,13 @@ import ShopSearch from './ShopSearch';
 import type { PropsWithChildren } from 'react';
 
 const searchByText = jest.fn();
+let isLibraryLoaded = true;
 
 jest.mock('@vis.gl/react-google-maps', () => ({
-  useMapsLibrary: () => ({
-    Place: { searchByText: (...args: unknown[]) => searchByText(...args) },
-  }),
+  useMapsLibrary: () =>
+    isLibraryLoaded
+      ? { Place: { searchByText: (...args: unknown[]) => searchByText(...args) } }
+      : null,
 }));
 
 const renderShopSearch = (onSelectShop = jest.fn()) => {
@@ -41,6 +43,7 @@ describe('ShopSearch', () => {
   beforeEach(() => {
     searchByText.mockReset();
     searchByText.mockResolvedValue(searchResponse);
+    isLibraryLoaded = true;
   });
 
   it('검색어를 입력하고 제출하면 결과 목록을 보여준다', async () => {
@@ -72,6 +75,33 @@ describe('ShopSearch', () => {
     await user.click(screen.getByRole('button', { name: '검색' }));
 
     expect(await screen.findByText('검색 결과가 없습니다')).toBeInTheDocument();
+  });
+
+  it('Places 라이브러리 로드 전에 제출하면 결과 없음 대신 로딩을 보여준다', async () => {
+    isLibraryLoaded = false;
+    const user = userEvent.setup();
+    renderShopSearch();
+
+    await user.type(screen.getByPlaceholderText('장소를 검색해주세요'), '투썸플레이스');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    expect(await screen.findByText('검색 중...')).toBeInTheDocument();
+    expect(screen.queryByText('검색 결과가 없습니다')).not.toBeInTheDocument();
+  });
+
+  it('같은 검색어를 다시 제출하면 다시 요청한다', async () => {
+    const user = userEvent.setup();
+    renderShopSearch();
+
+    await user.type(screen.getByPlaceholderText('장소를 검색해주세요'), '투썸플레이스');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    expect(await screen.findByText('투썸플레이스 신논현점')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    await waitFor(() => {
+      expect(searchByText).toHaveBeenCalledTimes(2);
+    });
   });
 
   it('결과를 선택하면 선택한 장소를 전달한다', async () => {

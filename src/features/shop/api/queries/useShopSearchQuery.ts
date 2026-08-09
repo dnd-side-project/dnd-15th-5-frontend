@@ -8,6 +8,8 @@ import { searchShops } from '../services';
  * 키워드로 장소를 검색하는 쿼리 훅.
  *
  * Places 라이브러리는 비동기로 로드되므로, 로드가 끝나고 키워드가 있을 때만 요청한다.
+ * 로드 전에는 쿼리가 비활성 상태라 결과가 비어 있으므로, 이를 "결과 없음"과 구분할 수 있도록
+ * `isLibraryLoading`을 함께 반환한다.
  */
 export const useShopSearchQuery = (keyword: string) => {
   const placesLibrary = useMapsLibrary('places');
@@ -15,7 +17,7 @@ export const useShopSearchQuery = (keyword: string) => {
 
   // placesLibrary는 로드 후 값이 바뀌지 않는 SDK 인스턴스라 캐시 키에 포함하지 않는다
   // eslint-disable-next-line @tanstack/query/exhaustive-deps
-  return useQuery({
+  const query = useQuery({
     queryKey: SHOP_QUERY_KEYS.search(trimmedKeyword),
     queryFn: () => {
       if (!placesLibrary) {
@@ -26,4 +28,6 @@ export const useShopSearchQuery = (keyword: string) => {
     },
     enabled: Boolean(placesLibrary) && trimmedKeyword.length > 0,
   });
+
+  return { query, isLibraryLoading: !placesLibrary };
 };
