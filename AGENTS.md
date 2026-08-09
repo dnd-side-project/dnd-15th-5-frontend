@@ -48,6 +48,8 @@ pnpm preview   # 빌드 결과 미리보기
 
 - Jest + React Testing Library. 설정은 `jest.config.cjs`, 셋업은 `jest.setup.ts`.
 - 테스트 파일은 대상 파일과 같은 폴더에 `ComponentName.test.tsx`로 둔다.
+- 테스트 대상은 feature 로직과 사용자 플로우 위주로 한다.
+- 공통 컴포넌트는 인터랙션이 있는 것만 테스트하고, 레이아웃이나 표시 전용 UI는 생략한다.
 - `render()`가 던지는 에러는 Jest가 알아서 실패 처리하므로 `expect(() => render(...)).not.toThrow()` 같은 래핑은 하지 않는다.
 
 ## Gotchas
