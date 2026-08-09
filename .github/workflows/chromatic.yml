@@ -26,7 +26,7 @@ jobs:
       - name: Setup node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
@@ -39,6 +39,7 @@ jobs:
           exitZeroOnChanges: true
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          workingDir: apps/web
 
       - name: Record deployment time
         id: deployment-time

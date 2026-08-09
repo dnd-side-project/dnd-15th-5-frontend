@@ -8,16 +8,23 @@ AI 도구가 이 저장소에서 작업할 때 따르는 공통 지침입니다.
 
 ## Project Overview
 
-React + Vite + TypeScript 기반 프론트엔드. 네이티브 앱(iOS/Android) 래핑 방식은 React Native WebView와 Capacitor 중 미정.
+pnpm workspace와 Turborepo로 관리하는 Chapchap 모노레포. 웹은 React + Vite + TypeScript,
+모바일은 Expo + React Native 기반이다. WebView 연동과 알림·영수증 네이티브 기능은 추후
+구현하며, 현재 모바일 앱은 기본 스캐폴드만 유지한다.
 
 ## Commands
 
 ```bash
-pnpm dev       # 개발 서버
-pnpm build     # tsc -b && vite build
-pnpm lint      # eslint
-pnpm test      # jest
-pnpm preview   # 빌드 결과 미리보기
+pnpm dev           # 웹과 모바일 개발 서버
+pnpm dev:web       # Vite 웹 개발 서버
+pnpm dev:mobile    # Expo 모바일 개발 서버
+pnpm build         # 웹 Vite build와 모바일 Expo export
+pnpm build:ios     # iOS Release 빌드
+pnpm build:android # Android Release 빌드
+pnpm lint          # 전체 workspace ESLint
+pnpm typecheck     # 전체 workspace TypeScript 검사
+pnpm test          # 전체 workspace Jest
+pnpm preview       # 웹 빌드 결과 미리보기
 ```
 
 - 패키지 매니저는 **pnpm만** 사용한다. `package-lock.json`/`yarn.lock`을 생성하지 말 것.
@@ -26,15 +33,16 @@ pnpm preview   # 빌드 결과 미리보기
 
 적용 완료: React, Vite, TypeScript, TanStack Query, Axios, Tailwind CSS, CVA.
 
-적용 예정 또는 검토 중: Zustand, React Hook Form, Zod.
+사용 확정: Zustand. 실제 도입 시점과 상태 범위는 기능 구현에 맞춰 결정한다.
 
-> Zustand, React Hook Form, Zod의 실제 적용 범위와 **네이티브 래퍼(React Native WebView vs Capacitor)**는 아직 미확정이다. 확정된 것처럼 가정하지 않는다.
+> 네이티브 기능 범위는 알림과 영수증으로 제한하며, 범위를 확대하기 전에 먼저 확인한다.
 
 ## Architecture & Code Style
 
-- 디렉토리 구조, 의존 방향(`app → pages → features → shared`), 상태관리 규칙: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 웹 디렉토리 구조, 의존 방향(`app → pages → features → shared`), 상태관리 규칙: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 모바일 내부 디렉토리 규칙은 아직 확정하지 않는다.
 - 네이밍, Import(`@/` alias), Props/Type, TSDoc, 주석 규칙: [docs/CONVENTIONS.md](docs/CONVENTIONS.md)
-- 인증/토큰 처리는 `src/shared/apis`에서만. feature별 `apis`는 공통 인스턴스만 가져다 쓴다.
+- 인증/토큰 처리는 `apps/web/src/shared/apis`에서만. feature별 `apis`는 공통 인스턴스만 가져다 쓴다.
 
 ## Git 작업
 
@@ -46,13 +54,17 @@ pnpm preview   # 빌드 결과 미리보기
 
 ## Testing
 
-- Jest + React Testing Library. 설정은 `jest.config.cjs`, 셋업은 `jest.setup.ts`.
-- 테스트 파일은 대상 파일과 같은 폴더에 `ComponentName.test.tsx`로 둔다.
+- Jest + React Testing Library. 앱별 설정은 `apps/*/jest.config.cjs`, 웹 셋업은 `apps/web/jest.setup.ts`에서 관리한다.
+- 웹과 모바일의 일반 컴포넌트·훅·유틸 테스트는 대상 파일과 같은 폴더에 `ComponentName.test.tsx`처럼 둔다.
+- `apps/mobile/src/app`은 Expo Router의 라우트·레이아웃 전용이므로 테스트 파일을 두지 않는다.
+- 모바일 라우트·레이아웃 테스트는 `apps/mobile/__tests__`에 둔다.
 - 테스트 대상은 feature 로직과 사용자 플로우 위주로 한다.
 - 공통 컴포넌트는 인터랙션이 있는 것만 테스트하고, 레이아웃이나 표시 전용 UI는 생략한다.
 - `render()`가 던지는 에러는 Jest가 알아서 실패 처리하므로 `expect(() => render(...)).not.toThrow()` 같은 래핑은 하지 않는다.
 
-## Gotchas
+## CI/CD와 Gotchas
 
-- `tsconfig.app.json`은 Vite 번들러 전용 옵션(`moduleResolution: bundler`)을 쓰기 때문에 Jest가 그대로 못 읽는다. `jest.config.cjs` 안에 별도 inline tsconfig를 두고 있다.
-- 앱 배포 방식, CI/CD, 환경변수 관리 전략은 미확정. 관련 작업 전에 먼저 확인할 것.
+- GitHub Actions는 루트 Turbo 명령으로 lint, typecheck, test, format, build를 검사한다. `pnpm build`의 모바일 검증 범위는 Expo export이며 Android/iOS 네이티브 빌드는 CI에서 실행하지 않는다.
+- Vercel과 Chromatic은 `apps/web`을 웹 앱 기준 디렉토리로 사용한다.
+- `apps/web/tsconfig.app.json`은 Vite 번들러 전용 옵션(`moduleResolution: bundler`)을 쓰기 때문에 Jest가 그대로 못 읽는다. `apps/web/jest.config.cjs` 안에 별도 inline tsconfig를 둔다.
+- Turbo build 입력에는 각 workspace의 `.env`, `.env.*`를 포함한다. 환경 파일 패턴을 바꿀 때 `turbo.json`도 함께 갱신한다.

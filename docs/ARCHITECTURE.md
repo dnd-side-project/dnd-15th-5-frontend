@@ -4,12 +4,13 @@
 
 ### Core
 
-| 구분             | 기술        |
-| ---------------- | ----------- |
-| Framework        | React, Vite |
-| Language         | TypeScript  |
-| Package Manager  | pnpm        |
-| UI Documentation | Storybook   |
+| 구분             | 기술                       |
+| ---------------- | -------------------------- |
+| Web              | React, Vite                 |
+| Mobile           | Expo, React Native          |
+| Language         | TypeScript                 |
+| Monorepo         | pnpm workspace, Turborepo |
+| UI Documentation | Storybook                  |
 
 ### State & Data
 
@@ -17,7 +18,7 @@
 | ------------ | --------------- | --------- |
 | Server State | TanStack Query  | 적용 완료 |
 | HTTP Client  | Axios           | 적용 완료 |
-| Client State | Zustand         | 적용 완료 |
+| Client State | Zustand         | 사용 확정 |
 
 ### Styling
 
@@ -35,13 +36,14 @@
 
 ### Native & External
 
-| 기능 | 기술      |
-| ---- | --------- |
-| 지도 | 구글 지도 |
+| 기능             | 기술 및 소유권                 |
+| ---------------- | ------------------------------ |
+| 모바일 앱        | Expo + React Native            |
+| WebView 연동     | 패키지만 설치, 추후 구현       |
+| 알림·푸시        | 추후 네이티브 구현             |
+| 영수증 촬영·기록 | 추후 네이티브 구현             |
 
-> React Native WebView와 Capacitor 중 PoC 비교 후 결정 (약 1주)
-> 카메라, 푸시 알림 구현 방식은 래핑 방식 확정 후 결정
-> 웹 앱 코드(React + Vite + TS)는 어느 쪽으로 가도 그대로 사용
+> 모바일의 세부 디렉터리 구조는 아직 확정하지 않는다.
 
 ---
 
@@ -66,8 +68,31 @@
 
 ## 3. Directory Structure
 
+### Monorepo
+
 ```text
-src/
+.
+├── apps/
+│   ├── web/                    # React + Vite
+│   └── mobile/                 # Expo + React Native
+├── packages/
+│   ├── eslint-config/          # 공통 ESLint base 설정
+│   └── typescript-config/      # 공통 TypeScript base 설정
+├── docs/
+├── pnpm-workspace.yaml
+└── turbo.json
+```
+
+- 애플리케이션은 `apps/*`, 재사용 패키지와 공통 개발 설정은 `packages/*`에서 관리한다.
+- workspace 패키지는 `workspace:*`로 참조한다.
+- `packages/*-config`에는 플랫폼에 독립적인 공통 base만 두고 웹·모바일 전용 설정은 각 앱에서 관리한다.
+
+### Web
+
+아래 구조와 규칙은 `apps/web`에만 적용한다.
+
+```text
+apps/web/src/
 ├── app/                # 앱 진입점, 전역 설정
 │   ├── providers/
 │   ├── routes/
@@ -96,7 +121,7 @@ src/
 `pages`는 라우트 단위 화면을 관리하며 비즈니스 로직을 직접 구현하지 않는다.
 각 페이지는 `features`와 `shared`의 컴포넌트를 조합한다.
 
-실제 URL은 `src/shared/constants/routePaths.ts`를 기준으로 한다.
+실제 URL은 `apps/web/src/shared/constants/routePaths.ts`를 기준으로 한다.
 (`pages`와 `features`에서도 화면 이동에 사용해야 하므로 `app`이 아닌 `shared`에서 관리한다.)
 
 ```text
@@ -140,7 +165,7 @@ pages/
     └── NotFoundPage.tsx
 ```
 
-페이지를 추가하거나 이동할 때는 이 구조와 `src/app/routes`의 라우트 설정을 함께 수정한다.
+페이지를 추가하거나 이동할 때는 이 구조와 `apps/web/src/app/routes`의 라우트 설정을 함께 수정한다.
 
 ### Features 구조
 
@@ -250,6 +275,8 @@ features/report/
 
 ## 5. Dependency Direction
 
+아래 의존 방향과 ESLint Boundary 검사는 `apps/web/src`에만 적용한다.
+
 ```text
 app → pages → features → shared
 ```
@@ -263,7 +290,7 @@ app → pages → features → shared
 ## 6. State Management
 
 - 서버 상태: TanStack Query
-- 전역 상태: Zustand (적용 범위 확정 후 사용)
+- 전역 상태: Zustand
 - 로컬 상태: useState, useReducer
 - Context: Theme 및 Provider 용도
 
@@ -276,25 +303,16 @@ app → pages → features → shared
 
 ---
 
-## 7. Form & Validation
+## 7. API Structure
 
-> 적용 범위는 와이어프레임 확인 후 결정 — 그 전까지는 아래 규칙을 확정된 것으로 간주하지 않는다
-
-- 폼 적용이 확정되면 React Hook Form + Zod 사용
-- 단순 입력은 Local State 사용
-
----
-
-## 8. API Structure
-
-### 공통 API (`src/shared/apis`)
+### 공통 API (`apps/web/src/shared/apis`)
 
 - Axios 인스턴스 생성 및 설정 (baseURL, timeout 등)
 - 인증 토큰을 포함한 인터셉터(Request/Response Interceptor) 설정
 - 공통 에러 핸들링 로직
 - 여러 Feature에서 공통으로 사용하는 API 함수
 
-### 기능별 API (`src/features/{feature}/api/services`)
+### 기능별 API (`apps/web/src/features/{feature}/api/services`)
 
 - 해당 Feature 전용 API 요청 함수
 - `shared/apis`에서 만든 공통 Axios 인스턴스를 가져와서 사용
@@ -302,12 +320,12 @@ app → pages → features → shared
 
 ### 규칙
 
-- 인증/토큰 처리는 `src/shared/apis`에서만 관리하고, 기능별 `api/services`에서 직접 헤더를 설정하지 않는다
+- 인증/토큰 처리는 `apps/web/src/shared/apis`에서만 관리하고, 기능별 `api/services`에서 직접 헤더를 설정하지 않는다
 - 기능별 `api/services`는 공통 인스턴스를 import해서 엔드포인트 함수만 작성한다
 
 ---
 
-## 9. Styling
+## 8. Styling
 
 - Tailwind CSS 사용
 - Variant는 CVA 사용
@@ -316,7 +334,7 @@ app → pages → features → shared
 
 ---
 
-## 10. Package Manager
+## 9. Package Manager
 
 ### pnpm 선택 이유
 
@@ -332,12 +350,8 @@ app → pages → features → shared
 
 ---
 
-## 11. Pending
+## 10. Pending
 
-- Zustand 적용 범위
-- React Hook Form 적용 범위
-- Zod 적용 범위
-- 앱 래핑 방식 (RN WebView vs Capacitor)
 - 앱 배포 방식
 - 환경 변수 관리
 - CI/CD
