@@ -15,11 +15,16 @@ pnpm workspace와 Turborepo로 관리하는 Chapchap 모노레포. 웹은 React 
 ## Commands
 
 ```bash
-pnpm dev       # 개발 서버
-pnpm build     # tsc -b && vite build
-pnpm lint      # eslint
-pnpm test      # jest
-pnpm preview   # 빌드 결과 미리보기
+pnpm dev           # 웹과 모바일 개발 서버
+pnpm dev:web       # Vite 웹 개발 서버
+pnpm dev:mobile    # Expo 모바일 개발 서버
+pnpm build         # 웹 Vite build와 모바일 Expo export
+pnpm build:ios     # iOS Release 빌드
+pnpm build:android # Android Release 빌드
+pnpm lint          # 전체 workspace ESLint
+pnpm typecheck     # 전체 workspace TypeScript 검사
+pnpm test          # 전체 workspace Jest
+pnpm preview       # 웹 빌드 결과 미리보기
 ```
 
 - 패키지 매니저는 **pnpm만** 사용한다. `package-lock.json`/`yarn.lock`을 생성하지 말 것.
@@ -49,13 +54,15 @@ pnpm preview   # 빌드 결과 미리보기
 
 ## Testing
 
-- Jest + React Testing Library. 설정은 `jest.config.cjs`, 셋업은 `jest.setup.ts`.
+- Jest + React Testing Library. 앱별 설정은 `apps/*/jest.config.cjs`, 웹 셋업은 `apps/web/jest.setup.ts`에서 관리한다.
 - 웹과 모바일의 일반 컴포넌트·훅·유틸 테스트는 대상 파일과 같은 폴더에 `ComponentName.test.tsx`처럼 둔다.
 - `apps/mobile/src/app`은 Expo Router의 라우트·레이아웃 전용이므로 테스트 파일을 두지 않는다.
 - 모바일 라우트·레이아웃 테스트는 `apps/mobile/__tests__`에 둔다.
 - `render()`가 던지는 에러는 Jest가 알아서 실패 처리하므로 `expect(() => render(...)).not.toThrow()` 같은 래핑은 하지 않는다.
 
-## Gotchas
+## CI/CD와 Gotchas
 
-- `apps/web/tsconfig.app.json`은 Vite 번들러 전용 옵션(`moduleResolution: bundler`)을 쓰기 때문에 Jest가 그대로 못 읽는다. `apps/web/jest.config.cjs` 안에 별도 inline tsconfig를 두고 있다.
-- 앱 배포 방식, CI/CD, 환경변수 관리 전략은 미확정. 관련 작업 전에 먼저 확인할 것.
+- GitHub Actions는 루트 Turbo 명령으로 lint, typecheck, test, format, build를 검사한다. `pnpm build`의 모바일 검증 범위는 Expo export이며 Android/iOS 네이티브 빌드는 CI에서 실행하지 않는다.
+- Vercel과 Chromatic은 `apps/web`을 웹 앱 기준 디렉토리로 사용한다.
+- `apps/web/tsconfig.app.json`은 Vite 번들러 전용 옵션(`moduleResolution: bundler`)을 쓰기 때문에 Jest가 그대로 못 읽는다. `apps/web/jest.config.cjs` 안에 별도 inline tsconfig를 둔다.
+- Turbo build 입력에는 각 workspace의 `.env`, `.env.*`를 포함한다. 환경 파일 패턴을 바꿀 때 `turbo.json`도 함께 갱신한다.
