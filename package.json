@@ -24,7 +24,7 @@
   },
   "lint-staged": {
     "apps/web/**/*.{js,jsx,ts,tsx,cjs,mjs}": [
-      "eslint --fix",
+      "pnpm --filter @chapchap/web exec eslint --fix",
       "prettier --write"
     ],
     "apps/mobile/**/*.{js,jsx,ts,tsx,cjs,mjs}": [
@@ -38,25 +38,13 @@
     "*.{json,css,scss,yml,yaml}": "prettier --write"
   },
   "devDependencies": {
+    "@chapchap/eslint-config": "workspace:*",
     "@commitlint/cli": "^21.2.1",
-    "@eslint/js": "^9.39.5",
-    "@tanstack/eslint-plugin-query": "^5.101.4",
     "eslint": "^9.39.5",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-import-resolver-typescript": "^4.4.5",
-    "eslint-plugin-boundaries": "^7.1.0",
-    "eslint-plugin-import-x": "^4.17.1",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.3",
-    "eslint-plugin-storybook": "^10.5.5",
-    "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^17.7.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.2.0",
     "prettier": "^3.9.6",
     "turbo": "^2.10.9",
-    "typescript-eslint": "^8.62.0",
     "typescript": "~6.0.2"
   },
   "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
