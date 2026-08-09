@@ -39,6 +39,7 @@ jobs:
           exitZeroOnChanges: true
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          workingDir: apps/web
 
       - name: Record deployment time
         id: deployment-time

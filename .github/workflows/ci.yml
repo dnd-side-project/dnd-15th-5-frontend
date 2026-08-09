@@ -35,15 +35,20 @@ jobs:
         id: install
         run: pnpm install --frozen-lockfile
 
+      - name: ESLint check
+        if: ${{ always() && steps.install.outcome == 'success' }}
+        id: lint
+        run: pnpm lint
+
       - name: TypeScript type check
         if: ${{ always() && steps.install.outcome == 'success' }}
         id: typecheck
         run: pnpm typecheck
 
-      - name: ESLint check
+      - name: Test
         if: ${{ always() && steps.install.outcome == 'success' }}
-        id: lint
-        run: pnpm lint
+        id: test
+        run: pnpm test
 
       - name: Prettier check
         if: ${{ always() && steps.install.outcome == 'success' }}
@@ -63,8 +68,9 @@ jobs:
             echo ""
             echo "| 항목 | 결과 |"
             echo "| --- | --- |"
-            echo "| 🧠 TypeScript 타입 체크 | ${{ steps.typecheck.outcome }} |"
             echo "| 🧹 ESLint 검사 | ${{ steps.lint.outcome }} |"
+            echo "| 🧠 TypeScript 타입 체크 | ${{ steps.typecheck.outcome }} |"
+            echo "| 🧪 테스트 | ${{ steps.test.outcome }} |"
             echo "| 🎨 Prettier 검사 | ${{ steps.prettier.outcome }} |"
             echo "| 🏗️ Build 검증 | ${{ steps.build.outcome }} |"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -81,8 +87,9 @@ jobs:
               '',
               '| 항목 | 결과 |',
               '| --- | --- |',
-              `| 🧠 TypeScript 타입 체크 | ${'${{ steps.typecheck.outcome }}'} |`,
               `| 🧹 ESLint 검사 | ${'${{ steps.lint.outcome }}'} |`,
+              `| 🧠 TypeScript 타입 체크 | ${'${{ steps.typecheck.outcome }}'} |`,
+              `| 🧪 테스트 | ${'${{ steps.test.outcome }}'} |`,
               `| 🎨 Prettier 검사 | ${'${{ steps.prettier.outcome }}'} |`,
               `| 🏗️ Build 검증 | ${'${{ steps.build.outcome }}'} |`,
             ].join('\n')
