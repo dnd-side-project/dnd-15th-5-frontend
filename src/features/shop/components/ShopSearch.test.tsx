@@ -8,8 +8,17 @@ import type { PropsWithChildren } from 'react';
 
 const searchByText = jest.fn();
 let isLibraryLoaded = true;
+let apiLoadingStatus = 'LOADED';
 
 jest.mock('@vis.gl/react-google-maps', () => ({
+  APILoadingStatus: {
+    NOT_LOADED: 'NOT_LOADED',
+    LOADING: 'LOADING',
+    LOADED: 'LOADED',
+    FAILED: 'FAILED',
+    AUTH_FAILURE: 'AUTH_FAILURE',
+  },
+  useApiLoadingStatus: () => apiLoadingStatus,
   useMapsLibrary: () =>
     isLibraryLoaded
       ? { Place: { searchByText: (...args: unknown[]) => searchByText(...args) } }
@@ -44,6 +53,7 @@ describe('ShopSearch', () => {
     searchByText.mockReset();
     searchByText.mockResolvedValue(searchResponse);
     isLibraryLoaded = true;
+    apiLoadingStatus = 'LOADED';
   });
 
   it('검색어를 입력하고 제출하면 결과 목록을 보여준다', async () => {
@@ -87,6 +97,31 @@ describe('ShopSearch', () => {
 
     expect(await screen.findByText('검색 중...')).toBeInTheDocument();
     expect(screen.queryByText('검색 결과가 없습니다')).not.toBeInTheDocument();
+  });
+
+  it('지도 API 로드에 실패하면 로딩 대신 실패 문구를 보여준다', async () => {
+    isLibraryLoaded = false;
+    apiLoadingStatus = 'FAILED';
+    const user = userEvent.setup();
+    renderShopSearch();
+
+    await user.type(screen.getByPlaceholderText('장소를 검색해주세요'), '투썸플레이스');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    expect(await screen.findByText('검색에 실패했습니다')).toBeInTheDocument();
+    expect(screen.queryByText('검색 중...')).not.toBeInTheDocument();
+  });
+
+  it('API 키 인증에 실패하면 실패 문구를 보여준다', async () => {
+    isLibraryLoaded = false;
+    apiLoadingStatus = 'AUTH_FAILURE';
+    const user = userEvent.setup();
+    renderShopSearch();
+
+    await user.type(screen.getByPlaceholderText('장소를 검색해주세요'), '투썸플레이스');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    expect(await screen.findByText('검색에 실패했습니다')).toBeInTheDocument();
   });
 
   it('같은 검색어를 다시 제출하면 다시 요청한다', async () => {

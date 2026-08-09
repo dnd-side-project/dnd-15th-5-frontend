@@ -16,7 +16,7 @@ type ShopSearchProps = {
  */
 export default function ShopSearch({ onSelectShop }: ShopSearchProps) {
   const [keyword, setKeyword] = useState('');
-  const { query, isLibraryLoading } = useShopSearchQuery(keyword);
+  const { query, isLibraryLoading, isLibraryError } = useShopSearchQuery(keyword);
   const { data: shops, isFetching, isError, refetch } = query;
 
   const handleSearch = (nextKeyword: string) => {
@@ -37,7 +37,7 @@ export default function ShopSearch({ onSelectShop }: ShopSearchProps) {
       <ShopSearchResultList
         shops={shops ?? []}
         isLoading={isFetching || isLibraryLoading}
-        isError={isError}
+        isError={isError || isLibraryError}
         hasKeyword={keyword.trim().length > 0}
         onSelect={onSelectShop}
       />
