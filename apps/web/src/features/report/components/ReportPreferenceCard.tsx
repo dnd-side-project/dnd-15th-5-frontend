@@ -5,6 +5,11 @@ type ReportPreferenceCardProps = {
 };
 
 // TODO: 디자인 시스템 확정 후 컬러·타이포그래피 토큰과 카드 유형별 variant를 적용한다.
+/**
+ * 사용자의 리포트 취향 결과를 이미지 영역, 제목, 설명, 태그로 표현하는 카드.
+ *
+ * 설명은 저장용 카드처럼 상세 문구가 필요한 경우에만 표시한다.
+ */
 export default function ReportPreferenceCard({
   description,
   tags,
