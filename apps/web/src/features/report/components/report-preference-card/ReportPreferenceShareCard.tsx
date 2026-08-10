@@ -1,5 +1,3 @@
-import { PREFERENCE_METRIC_LABELS } from '../../constants';
-
 import ReportPreferenceCard from './ReportPreferenceCard';
 
 import type { PreferenceMetric } from '../../types';
@@ -9,6 +7,16 @@ type ReportPreferenceShareCardProps = {
   metrics: readonly PreferenceMetric[];
   tags: readonly string[];
   title: string;
+};
+
+const PREFERENCE_METRIC_LABELS: Record<
+  PreferenceMetric['key'],
+  { leftLabel: string; rightLabel: string }
+> = {
+  shop: { leftLabel: '신규 탐색형', rightLabel: '단골 반복형' },
+  area: { leftLabel: '동네 확장형', rightLabel: '동네 집중형' },
+  time: { leftLabel: '낮소비형', rightLabel: '밤소비형' },
+  routine: { leftLabel: '즉흥형', rightLabel: '규칙형' },
 };
 
 // TODO: 디자인 시스템 확정 후 컬러·타이포그래피 토큰과 카드 유형별 variant를 적용한다.

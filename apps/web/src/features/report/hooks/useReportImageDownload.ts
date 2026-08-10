@@ -3,8 +3,9 @@ import { useCallback, useRef, useState } from 'react';
 
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
-import { REPORT_IMAGE_CAPTURE_SCALE } from '../constants';
 import { convertBlobToBase64, downloadBlob } from '../utils/reportImage';
+
+const REPORT_IMAGE_CAPTURE_SCALE = 2;
 
 /**
  * 지정한 DOM 영역을 2배 해상도의 PNG로 변환해 저장한다.

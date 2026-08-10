@@ -1,4 +1,4 @@
-import { REPORT_IMAGE_URL_REVOKE_DELAY_MS } from '../constants';
+const OBJECT_URL_REVOKE_DELAY_MS = 1_000;
 
 /** PNG Blob을 네이티브 브리지로 전달할 수 있는 Base64 문자열로 변환한다. */
 export const convertBlobToBase64 = (blob: Blob) =>
@@ -34,5 +34,5 @@ export const downloadBlob = (blob: Blob, fileName: string) => {
   document.body.appendChild(downloadLink);
   downloadLink.click();
   downloadLink.remove();
-  window.setTimeout(() => URL.revokeObjectURL(imageUrl), REPORT_IMAGE_URL_REVOKE_DELAY_MS);
+  window.setTimeout(() => URL.revokeObjectURL(imageUrl), OBJECT_URL_REVOKE_DELAY_MS);
 };
