@@ -1,8 +1,8 @@
-import { PREFERENCE_METRIC_LABELS } from '../constants';
+import { PREFERENCE_METRIC_LABELS } from '../../constants';
 
 import ReportPreferenceCard from './ReportPreferenceCard';
 
-import type { PreferenceMetric } from '../types';
+import type { PreferenceMetric } from '../../types';
 
 type ReportPreferenceShareCardProps = {
   description: string;
