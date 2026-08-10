@@ -1,0 +1,19 @@
+{
+  "name": "@chapchap/shared",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./bridge": "./src/bridge/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@chapchap/eslint-config": "workspace:*",
+    "@chapchap/typescript-config": "workspace:*",
+    "eslint": "^9.39.5",
+    "typescript": "~6.0.2"
+  }
+}

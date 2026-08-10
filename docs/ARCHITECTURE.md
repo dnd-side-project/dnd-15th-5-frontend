@@ -76,6 +76,7 @@
 │   ├── web/                    # React + Vite
 │   └── mobile/                 # Expo + React Native
 ├── packages/
+│   ├── shared/                 # 웹과 모바일이 함께 쓰는 코드 (브릿지 메시지 규약 등)
 │   ├── eslint-config/          # 공통 ESLint base 설정
 │   └── typescript-config/      # 공통 TypeScript base 설정
 ├── docs/
@@ -86,6 +87,8 @@
 - 애플리케이션은 `apps/*`, 재사용 패키지와 공통 개발 설정은 `packages/*`에서 관리한다.
 - workspace 패키지는 `workspace:*`로 참조한다.
 - `packages/*-config`에는 플랫폼에 독립적인 공통 base만 두고 웹·모바일 전용 설정은 각 앱에서 관리한다.
+- `packages/shared`에는 웹과 모바일이 모두 사용하는 런타임 코드만 둔다. 양쪽에서 동작해야 하므로 DOM API와 React Native API를 사용하지 않으며, 타입·상수·순수 함수 위주로 관리한다.
+- 웹이나 모바일 한쪽에서만 쓰는 코드는 `packages/shared`가 아니라 해당 앱 안에서 관리한다.
 
 ### Web
 
