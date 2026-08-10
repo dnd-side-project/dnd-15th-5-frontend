@@ -3,6 +3,7 @@ import { Asset, requestPermissionsAsync } from 'expo-media-library';
 
 const DEFAULT_IMAGE_FILE_NAME = 'chapchap-report';
 const MAX_IMAGE_FILE_NAME_LENGTH = 80;
+let temporaryFileSequence = 0;
 
 const createTemporaryFileName = (fileName: string) => {
   const nameWithoutPath = fileName.split(/[\\/]/).pop() ?? '';
@@ -14,7 +15,9 @@ const createTemporaryFileName = (fileName: string) => {
     .trim()
     .slice(0, MAX_IMAGE_FILE_NAME_LENGTH);
 
-  return `${Date.now()}-${safeName || DEFAULT_IMAGE_FILE_NAME}.png`;
+  const sequence = temporaryFileSequence++;
+
+  return `${Date.now()}-${sequence}-${safeName || DEFAULT_IMAGE_FILE_NAME}.png`;
 };
 
 /**

@@ -35,6 +35,10 @@ describe('saveImageToLibrary', () => {
     mockCreateAsset.mockResolvedValue({} as Asset);
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('쓰기 전용 사진 권한을 요청하고 PNG를 사진 보관함에 저장한다', async () => {
     await saveImageToLibrary('base64-image', '리포트.png');
 
@@ -51,6 +55,22 @@ describe('saveImageToLibrary', () => {
       '저장할 이미지 정보가 올바르지 않습니다'
     );
     expect(mockRequestPermissions).not.toHaveBeenCalled();
+  });
+
+  it('같은 시각에 시작한 요청마다 고유한 임시 파일 이름을 생성한다', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(1_000);
+
+    await Promise.all([
+      saveImageToLibrary('first-image', '리포트.png'),
+      saveImageToLibrary('second-image', '리포트.png'),
+    ]);
+
+    const firstFileName = MockFile.mock.calls[0]?.[1];
+    const secondFileName = MockFile.mock.calls[1]?.[1];
+
+    expect(firstFileName).toMatch(/^1000-\d+-리포트\.png$/);
+    expect(secondFileName).toMatch(/^1000-\d+-리포트\.png$/);
+    expect(firstFileName).not.toBe(secondFileName);
   });
 
   it('사진 권한이 거절되면 파일을 만들지 않는다', async () => {
