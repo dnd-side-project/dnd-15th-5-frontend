@@ -1,8 +1,13 @@
+import type { BridgeMessageType } from '@chapchap/shared/bridge';
+
 /**
- * 네이티브 응답을 기다리는 최대 시간(ms).
+ * 네이티브 요청 종류별 응답 제한 시간(ms).
  *
- * TODO: 현재 값은 즉시 응답하는 요청 기준이다. 카메라 촬영처럼 사용자가 화면에서
- * 시간을 쓰는 요청은 이 시간을 넘길 수 있으므로, 카메라 작업 시 요청별로 제한 시간을
- * 지정할 수 있게 바꿀지 결정한다.
+ * 사용자 입력이 필요한 요청은 즉시 처리되는 요청보다 충분한 대기 시간을 둔다.
+ * `BridgeMessageType`이 추가되면 대응하는 제한 시간도 반드시 정의해야 한다.
  */
-export const BRIDGE_REQUEST_TIMEOUT_MS = 10_000;
+export const BRIDGE_REQUEST_TIMEOUT_MS = {
+  ping: 10_000,
+  // 사진 보관함 권한을 처음 선택하는 시간을 포함한다.
+  saveImage: 120_000,
+} as const satisfies Record<BridgeMessageType, number>;

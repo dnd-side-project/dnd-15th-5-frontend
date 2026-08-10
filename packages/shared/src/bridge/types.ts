@@ -19,6 +19,10 @@ export type BridgeMessageMap = {
     payload: { sentAt: number };
     result: { platform: string; receivedAt: number };
   };
+  saveImage: {
+    payload: { base64: string; fileName: string };
+    result: { saved: true };
+  };
 };
 
 export type BridgeMessageType = keyof BridgeMessageMap;

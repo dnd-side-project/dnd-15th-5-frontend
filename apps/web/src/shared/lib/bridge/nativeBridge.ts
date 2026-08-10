@@ -123,7 +123,7 @@ export const requestToNative = <TType extends BridgeMessageType>(
     const timeoutId = setTimeout(() => {
       pendingRequests.delete(id);
       reject(new Error(`네이티브 응답이 오지 않아 요청이 만료되었습니다: ${type}`));
-    }, BRIDGE_REQUEST_TIMEOUT_MS);
+    }, BRIDGE_REQUEST_TIMEOUT_MS[type]);
 
     pendingRequests.set(id, {
       resolve: resolve as (result: unknown) => void,

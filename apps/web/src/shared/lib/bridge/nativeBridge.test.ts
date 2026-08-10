@@ -85,7 +85,7 @@ describe('nativeBridge', () => {
       ok: true,
       result: { platform: 'ios', receivedAt: 1 },
     });
-    jest.advanceTimersByTime(BRIDGE_REQUEST_TIMEOUT_MS);
+    jest.advanceTimersByTime(BRIDGE_REQUEST_TIMEOUT_MS.ping);
 
     await expect(resultPromise).rejects.toThrow('만료');
     jest.useRealTimers();
@@ -100,8 +100,23 @@ describe('nativeBridge', () => {
     await expect(requestToNative('ping', { sentAt: 0 })).rejects.toThrow('전송 실패');
 
     // 대기 목록이 정리됐다면, 뒤늦게 같은 요청의 응답이 와도 아무 일도 일어나지 않는다
-    jest.advanceTimersByTime(BRIDGE_REQUEST_TIMEOUT_MS);
+    jest.advanceTimersByTime(BRIDGE_REQUEST_TIMEOUT_MS.ping);
     expect(jest.getTimerCount()).toBe(0);
+    jest.useRealTimers();
+  });
+
+  it('이미지 저장은 사용자 권한 선택을 고려한 제한 시간을 적용한다', async () => {
+    jest.useFakeTimers();
+    const resultPromise = requestToNative('saveImage', {
+      base64: 'base64-image',
+      fileName: '리포트.png',
+    });
+
+    jest.advanceTimersByTime(BRIDGE_REQUEST_TIMEOUT_MS.saveImage - 1);
+    expect(jest.getTimerCount()).toBe(1);
+
+    jest.advanceTimersByTime(1);
+    await expect(resultPromise).rejects.toThrow('만료');
     jest.useRealTimers();
   });
 
