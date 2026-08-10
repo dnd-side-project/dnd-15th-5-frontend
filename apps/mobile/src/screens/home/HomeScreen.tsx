@@ -8,9 +8,6 @@ import { createBridgeResponse, createResponseScript } from '@/bridge';
 
 import type { WebViewMessageEvent } from 'react-native-webview';
 
-// TODO: 현재는 개발 서버 주소를 사용한다. 웹 배포 주소가 정해지면 환경별로 분리한다
-const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL;
-
 /**
  * 웹 화면을 WebView로 띄우는 앱의 기본 화면.
  *
@@ -18,6 +15,8 @@ const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL;
  * 웹 주소가 설정되지 않았거나 화면을 불러오지 못하면 원인을 알 수 있도록 안내 화면을 보여준다.
  */
 export default function HomeScreen() {
+  // 개발 빌드는 .env의 로컬 개발 서버를, preview·production 빌드는 eas.json에 지정한 배포 주소를 사용한다
+  const webUrl = process.env.EXPO_PUBLIC_WEB_URL;
   const webViewRef = useRef<WebView>(null);
   const [loadErrorMessage, setLoadErrorMessage] = useState<string | null>(null);
 
@@ -33,7 +32,7 @@ export default function HomeScreen() {
     webViewRef.current?.injectJavaScript(createResponseScript(response));
   };
 
-  if (!WEB_URL) {
+  if (!webUrl) {
     return (
       <View style={styles.guide}>
         <Text style={styles.guideTitle}>웹 주소가 설정되지 않았습니다</Text>
@@ -48,7 +47,7 @@ export default function HomeScreen() {
     return (
       <View style={styles.guide}>
         <Text style={styles.guideTitle}>웹 화면을 불러오지 못했습니다</Text>
-        <Text style={styles.guideDescription}>{WEB_URL}</Text>
+        <Text style={styles.guideDescription}>{webUrl}</Text>
         <Text style={styles.guideDescription}>{loadErrorMessage}</Text>
       </View>
     );
@@ -58,7 +57,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container}>
       <WebView
         ref={webViewRef}
-        source={{ uri: WEB_URL }}
+        source={{ uri: webUrl }}
         onMessage={handleBridgeMessage}
         startInLoadingState
         renderLoading={() => <ActivityIndicator style={styles.loading} size="large" />}

@@ -34,11 +34,13 @@ describe('createResponseScript', () => {
   });
 
   it('따옴표가 포함된 응답도 깨지지 않는다', () => {
-    const errorResponse = {
-      ...response,
+    const errorResponse: BridgeResponse = {
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: 'request-01',
+      type: 'ping',
       ok: false,
       error: { message: `'따옴표'와 "쌍따옴표"가 포함된 오류` },
-    } as BridgeResponse;
+    };
 
     const script = createResponseScript(errorResponse);
 

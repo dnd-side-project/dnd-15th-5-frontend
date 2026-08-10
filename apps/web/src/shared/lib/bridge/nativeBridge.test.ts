@@ -91,6 +91,20 @@ describe('nativeBridge', () => {
     jest.useRealTimers();
   });
 
+  it('요청 전송에 실패하면 대기 요청을 남기지 않고 거부한다', async () => {
+    jest.useFakeTimers();
+    postMessage.mockImplementation(() => {
+      throw new Error('전송 실패');
+    });
+
+    await expect(requestToNative('ping', { sentAt: 0 })).rejects.toThrow('전송 실패');
+
+    // 대기 목록이 정리됐다면, 뒤늦게 같은 요청의 응답이 와도 아무 일도 일어나지 않는다
+    jest.advanceTimersByTime(BRIDGE_REQUEST_TIMEOUT_MS);
+    expect(jest.getTimerCount()).toBe(0);
+    jest.useRealTimers();
+  });
+
   it('WebView 환경이 아니면 요청하지 않고 거부한다', async () => {
     setNativeWebView(false);
 
