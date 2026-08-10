@@ -263,6 +263,29 @@ features/report/
 - 파일이 적으면 파일 하나로 관리, 많아지면 화면·역할 단위 폴더로 확장
 - `api/` 내부 구조(`services`, `queries`, `mutations`, `queryKeys.ts`, `dto.ts`)는 기본형과 동일한 규칙을 따른다
 
+### Mobile
+
+아래 구조와 규칙은 `apps/mobile`에만 적용한다.
+
+```text
+apps/mobile/src/
+├── app/                # Expo Router 라우트·레이아웃 전용
+│   ├── _layout.tsx
+│   └── index.tsx
+├── screens/            # 화면 단위 컴포넌트, feature 조합만 담당
+│   └── home/
+│       └── HomeScreen.tsx
+├── bridge/             # 웹(WebView)과 주고받는 메시지 처리
+├── features/           # 도메인 단위 기능
+├── native/             # 카메라·위치 등 네이티브 기능 래퍼
+└── shared/             # 모바일 앱 안에서만 쓰는 공통 코드
+```
+
+- `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 관리한다. 웹의 `app/routes`와 `pages` 관계와 같다.
+- 화면 컴포넌트는 `화면명 + Screen`으로 작성한다 (`HomeScreen`).
+- 웹과 모바일이 함께 쓰는 코드는 `apps/mobile/src/shared`가 아니라 `packages/shared`에 둔다.
+- 필요한 폴더만 만든다. 사용처가 생기기 전에는 만들지 않는다.
+
 ---
 
 ## 4. Component 위치 기준
