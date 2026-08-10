@@ -1,6 +1,6 @@
-# Chapchap Mobile
+# ChapChap Mobile
 
-Expo와 React Native로 구성한 Chapchap 모바일 애플리케이션입니다.
+Expo와 React Native로 구성한 ChapChap 모바일 애플리케이션입니다.
 
 ## 실행
 

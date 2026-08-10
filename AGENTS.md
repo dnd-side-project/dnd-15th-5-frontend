@@ -8,7 +8,7 @@ AI 도구가 이 저장소에서 작업할 때 따르는 공통 지침입니다.
 
 ## Project Overview
 
-pnpm workspace와 Turborepo로 관리하는 Chapchap 모노레포. 웹은 React + Vite + TypeScript,
+pnpm workspace와 Turborepo로 관리하는 ChapChap 모노레포. 웹은 React + Vite + TypeScript,
 모바일은 Expo + React Native 기반이다. 모바일 앱은 웹 화면을 WebView로 띄우는 구조이며,
 웹과 네이티브가 주고받는 브릿지까지 적용되어 있다. 알림·영수증 촬영 같은 네이티브 기능은
 이 브릿지 위에 얹어 추후 구현한다.
