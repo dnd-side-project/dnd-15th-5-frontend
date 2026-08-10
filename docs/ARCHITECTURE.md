@@ -39,11 +39,12 @@
 | 기능             | 기술 및 소유권                 |
 | ---------------- | ------------------------------ |
 | 모바일 앱        | Expo + React Native            |
-| WebView 연동     | 패키지만 설치, 추후 구현       |
+| WebView 연동     | 적용 완료                      |
+| 웹·네이티브 브릿지 | 적용 완료 (요청·응답 규약은 `packages/shared`) |
 | 알림·푸시        | 추후 네이티브 구현             |
-| 영수증 촬영·기록 | 추후 네이티브 구현             |
+| 영수증 촬영·기록 | 추후 네이티브 구현 (브릿지 위에 얹는다) |
 
-> 모바일의 세부 디렉터리 구조는 아직 확정하지 않는다.
+> 실기기 테스트는 개발 빌드로 진행한다. Expo Go는 지원 SDK가 낮아 이 프로젝트를 실행할 수 없다.
 
 ---
 
@@ -301,7 +302,9 @@ apps/mobile/src/
 
 ## 5. Dependency Direction
 
-아래 의존 방향과 ESLint Boundary 검사는 `apps/web/src`에만 적용한다.
+### Web
+
+아래 의존 방향은 ESLint Boundary 검사로 강제하며 `apps/web/src`에만 적용한다.
 
 ```text
 app → pages → features → shared
@@ -310,6 +313,19 @@ app → pages → features → shared
 - feature 간 직접 import 금지 (공통으로 올리거나 pages에서 조합)
 - `shared`는 어떤 feature도 import하지 않는다
 - `pages`에는 비즈니스 로직을 두지 않는다
+
+### Mobile
+
+`apps/mobile/src`에 적용한다. ESLint로 강제하지 않으므로 코드 리뷰에서 확인한다.
+
+```text
+app → screens → features → bridge · native → shared
+```
+
+- `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 조합한다
+- `bridge`·`native`는 네이티브 기능 계층이므로 `screens`·`features`가 가져다 쓰고, 반대로 화면을 참조하지 않는다
+- feature 간 직접 import 금지 (공통으로 올리거나 `screens`에서 조합)
+- 웹과 공유하는 타입·상수는 `packages/shared`에서 가져온다
 
 ---
 
