@@ -19,6 +19,7 @@
 | Store           | `camelCase`             | `authStore.ts`            |
 | Asset           | `kebab-case`            | `ic-arrow-left.svg`       |
 | Page Component  | `PascalCase + Page`     | `MainPage.tsx`            |
+| Screen Component (모바일) | `PascalCase + Screen` | `HomeScreen.tsx`      |
 | Storybook       | `컴포넌트명 + .stories` | `ReceiptCard.stories.tsx` |
 
 - Storybook 파일은 대상 컴포넌트와 같은 위치에 둔다
@@ -38,6 +39,7 @@
 | -------------- | ------------------- | -------------- |
 | Component      | `PascalCase`        | `ReceiptCard`  |
 | Page Component | `PascalCase + Page` | `MainPage`     |
+| Screen Component (모바일) | `PascalCase + Screen` | `HomeScreen` |
 | 변수           | `camelCase`         | `receiptList`  |
 | 함수           | `camelCase`         | `formatDate`   |
 | 이벤트 함수    | `handle + 동사`     | `handleSubmit` |

@@ -39,11 +39,12 @@
 | 기능             | 기술 및 소유권                 |
 | ---------------- | ------------------------------ |
 | 모바일 앱        | Expo + React Native            |
-| WebView 연동     | 패키지만 설치, 추후 구현       |
+| WebView 연동     | 적용 완료                      |
+| 웹·네이티브 브릿지 | 적용 완료 (요청·응답 규약은 `packages/shared`) |
 | 알림·푸시        | 추후 네이티브 구현             |
-| 영수증 촬영·기록 | 추후 네이티브 구현             |
+| 영수증 촬영·기록 | 추후 네이티브 구현 (브릿지 위에 얹는다) |
 
-> 모바일의 세부 디렉터리 구조는 아직 확정하지 않는다.
+> 실기기 테스트는 개발 빌드로 진행한다. Expo Go는 지원 SDK가 낮아 이 프로젝트를 실행할 수 없다.
 
 ---
 
@@ -76,6 +77,7 @@
 │   ├── web/                    # React + Vite
 │   └── mobile/                 # Expo + React Native
 ├── packages/
+│   ├── shared/                 # 웹과 모바일이 함께 쓰는 코드 (브릿지 메시지 규약 등)
 │   ├── eslint-config/          # 공통 ESLint base 설정
 │   └── typescript-config/      # 공통 TypeScript base 설정
 ├── docs/
@@ -86,6 +88,8 @@
 - 애플리케이션은 `apps/*`, 재사용 패키지와 공통 개발 설정은 `packages/*`에서 관리한다.
 - workspace 패키지는 `workspace:*`로 참조한다.
 - `packages/*-config`에는 플랫폼에 독립적인 공통 base만 두고 웹·모바일 전용 설정은 각 앱에서 관리한다.
+- `packages/shared`에는 웹과 모바일이 모두 사용하는 런타임 코드만 둔다. 양쪽에서 동작해야 하므로 DOM API와 React Native API를 사용하지 않으며, 타입·상수·순수 함수 위주로 관리한다.
+- 웹이나 모바일 한쪽에서만 쓰는 코드는 `packages/shared`가 아니라 해당 앱 안에서 관리한다.
 
 ### Web
 
@@ -260,6 +264,29 @@ features/report/
 - 파일이 적으면 파일 하나로 관리, 많아지면 화면·역할 단위 폴더로 확장
 - `api/` 내부 구조(`services`, `queries`, `mutations`, `queryKeys.ts`, `dto.ts`)는 기본형과 동일한 규칙을 따른다
 
+### Mobile
+
+아래 구조와 규칙은 `apps/mobile`에만 적용한다.
+
+```text
+apps/mobile/src/
+├── app/                # Expo Router 라우트·레이아웃 전용
+│   ├── _layout.tsx
+│   └── index.tsx
+├── screens/            # 화면 단위 컴포넌트, feature 조합만 담당
+│   └── home/
+│       └── HomeScreen.tsx
+├── bridge/             # 웹(WebView)과 주고받는 메시지 처리
+├── features/           # 도메인 단위 기능
+├── native/             # 카메라·위치 등 네이티브 기능 래퍼
+└── shared/             # 모바일 앱 안에서만 쓰는 공통 코드
+```
+
+- `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 관리한다. 웹의 `app/routes`와 `pages` 관계와 같다.
+- 화면 컴포넌트는 `화면명 + Screen`으로 작성한다 (`HomeScreen`).
+- 웹과 모바일이 함께 쓰는 코드는 `apps/mobile/src/shared`가 아니라 `packages/shared`에 둔다.
+- 필요한 폴더만 만든다. 사용처가 생기기 전에는 만들지 않는다.
+
 ---
 
 ## 4. Component 위치 기준
@@ -275,7 +302,9 @@ features/report/
 
 ## 5. Dependency Direction
 
-아래 의존 방향과 ESLint Boundary 검사는 `apps/web/src`에만 적용한다.
+### Web
+
+아래 의존 방향은 ESLint Boundary 검사로 강제하며 `apps/web/src`에만 적용한다.
 
 ```text
 app → pages → features → shared
@@ -284,6 +313,19 @@ app → pages → features → shared
 - feature 간 직접 import 금지 (공통으로 올리거나 pages에서 조합)
 - `shared`는 어떤 feature도 import하지 않는다
 - `pages`에는 비즈니스 로직을 두지 않는다
+
+### Mobile
+
+`apps/mobile/src`에 적용한다. ESLint로 강제하지 않으므로 코드 리뷰에서 확인한다.
+
+```text
+app → screens → features → bridge · native → shared
+```
+
+- `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 조합한다
+- `bridge`·`native`는 네이티브 기능 계층이므로 `screens`·`features`가 가져다 쓰고, 반대로 화면을 참조하지 않는다
+- feature 간 직접 import 금지 (공통으로 올리거나 `screens`에서 조합)
+- 웹과 공유하는 타입·상수는 `packages/shared`에서 가져온다
 
 ---
 

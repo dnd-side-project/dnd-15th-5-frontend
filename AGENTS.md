@@ -9,8 +9,9 @@ AI 도구가 이 저장소에서 작업할 때 따르는 공통 지침입니다.
 ## Project Overview
 
 pnpm workspace와 Turborepo로 관리하는 Chapchap 모노레포. 웹은 React + Vite + TypeScript,
-모바일은 Expo + React Native 기반이다. WebView 연동과 알림·영수증 네이티브 기능은 추후
-구현하며, 현재 모바일 앱은 기본 스캐폴드만 유지한다.
+모바일은 Expo + React Native 기반이다. 모바일 앱은 웹 화면을 WebView로 띄우는 구조이며,
+웹과 네이티브가 주고받는 브릿지까지 적용되어 있다. 알림·영수증 촬영 같은 네이티브 기능은
+이 브릿지 위에 얹어 추후 구현한다.
 
 ## Commands
 
@@ -40,7 +41,7 @@ pnpm preview       # 웹 빌드 결과 미리보기
 ## Architecture & Code Style
 
 - 웹 디렉토리 구조, 의존 방향(`app → pages → features → shared`), 상태관리 규칙: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- 모바일 내부 디렉토리 규칙은 아직 확정하지 않는다.
+- 모바일 디렉토리 구조(`app`/`screens`/`features`/`bridge`/`native`/`shared`): [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 네이밍, Import(`@/` alias), Props/Type, TSDoc, 주석 규칙: [docs/CONVENTIONS.md](docs/CONVENTIONS.md)
 - 인증/토큰 처리는 `apps/web/src/shared/apis`에서만. feature별 `apis`는 공통 인스턴스만 가져다 쓴다.
 
