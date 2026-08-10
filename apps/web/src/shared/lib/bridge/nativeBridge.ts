@@ -83,8 +83,8 @@ const startListening = () => {
     return;
   }
 
-  // 네이티브가 보낸 메시지가 플랫폼에 따라 window 또는 document로 전달되므로 둘 다 듣는다.
-  // 같은 응답이 두 번 와도 첫 처리에서 대기 목록에서 지워지므로 중복 처리되지 않는다.
+  // INFO: 네이티브가 보낸 메시지가 플랫폼에 따라 window 또는 document로 전달되므로 둘 다 듣는다.
+  // INFO: 같은 응답이 두 번 와도 첫 처리에서 대기 목록에서 지워지므로 중복 처리되지 않는다.
   window.addEventListener('message', handleNativeMessage);
   document.addEventListener('message', handleNativeMessage as EventListener);
   isListening = true;
@@ -134,7 +134,7 @@ export const requestToNative = <TType extends BridgeMessageType>(
     try {
       nativeWebView.postMessage(JSON.stringify(request));
     } catch (error) {
-      // 전송에 실패하면 응답이 올 수 없으므로 대기 요청과 타이머를 즉시 정리한다
+      // INFO: 전송에 실패하면 응답이 올 수 없으므로 대기 요청과 타이머를 즉시 정리한다
       clearTimeout(timeoutId);
       pendingRequests.delete(id);
       reject(error instanceof Error ? error : new Error('네이티브로 요청을 보내지 못했습니다'));

@@ -1,9 +1,8 @@
 import { domToBlob } from 'modern-screenshot';
 import { useCallback, useRef, useState } from 'react';
 
+import { convertBlobToBase64, downloadBlob } from '@/features/report/utils/reportImage';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
-
-import { convertBlobToBase64, downloadBlob } from '../utils/reportImage';
 
 const REPORT_IMAGE_CAPTURE_SCALE = 2;
 

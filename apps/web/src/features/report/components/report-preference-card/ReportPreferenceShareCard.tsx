@@ -1,6 +1,6 @@
-import ReportPreferenceCard from './ReportPreferenceCard';
+import type { PreferenceMetric } from '@/features/report/types';
 
-import type { PreferenceMetric } from '../../types';
+import ReportPreferenceCard from './ReportPreferenceCard';
 
 type ReportPreferenceShareCardProps = {
   description: string;

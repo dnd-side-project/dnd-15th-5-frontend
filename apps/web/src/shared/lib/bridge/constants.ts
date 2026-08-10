@@ -8,6 +8,6 @@ import type { BridgeMessageType } from '@chapchap/shared/bridge';
  */
 export const BRIDGE_REQUEST_TIMEOUT_MS = {
   ping: 10_000,
-  // 사진 보관함 권한을 처음 선택하는 시간을 포함한다.
+  // NOTE: 사진 보관함 권한을 처음 선택하는 시간을 포함한다.
   saveImage: 120_000,
 } as const satisfies Record<BridgeMessageType, number>;
