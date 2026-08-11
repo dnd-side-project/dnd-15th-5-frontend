@@ -6,16 +6,32 @@ import GoogleMapView from './GoogleMapView';
 import type { PropsWithChildren } from 'react';
 
 const requestPosition = jest.fn();
+let clickableIcons: boolean | undefined;
+let disableDefaultUI: boolean | undefined;
 
 jest.mock('@vis.gl/react-google-maps', () => ({
-  Map: ({ children, onClick }: PropsWithChildren<{ onClick?: () => void }>) => (
-    <>
-      <button type="button" onClick={onClick}>
-        지도 영역
-      </button>
-      {children}
-    </>
-  ),
+  Map: ({
+    children,
+    onClick,
+    clickableIcons: nextClickableIcons,
+    disableDefaultUI: nextDisableDefaultUI,
+  }: PropsWithChildren<{
+    onClick?: () => void;
+    clickableIcons?: boolean;
+    disableDefaultUI?: boolean;
+  }>) => {
+    clickableIcons = nextClickableIcons;
+    disableDefaultUI = nextDisableDefaultUI;
+
+    return (
+      <>
+        <button type="button" onClick={onClick}>
+          지도 영역
+        </button>
+        {children}
+      </>
+    );
+  },
 }));
 
 jest.mock('../../hooks/useCurrentPosition', () => ({
@@ -46,6 +62,15 @@ jest.mock(
 describe('GoogleMapView', () => {
   beforeEach(() => {
     requestPosition.mockReset();
+    clickableIcons = undefined;
+    disableDefaultUI = undefined;
+  });
+
+  it('Google 기본 UI와 POI 아이콘 클릭을 비활성화한다', () => {
+    render(<GoogleMapView />);
+
+    expect(disableDefaultUI).toBe(true);
+    expect(clickableIcons).toBe(false);
   });
 
   it('현재 위치 오류 안내가 표시된 상태에서 지도를 누르면 안내를 숨긴다', async () => {

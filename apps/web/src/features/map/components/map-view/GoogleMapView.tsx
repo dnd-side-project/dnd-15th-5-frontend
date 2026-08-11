@@ -38,6 +38,8 @@ export default function GoogleMapView() {
       defaultCenter={MAP_DEFAULT_CENTER}
       defaultZoom={MAP_DEFAULT_ZOOM}
       gestureHandling="greedy"
+      disableDefaultUI
+      clickableIcons={false}
       onClick={handleMapClick}
     >
       <CurrentLocationCameraController position={position} />
