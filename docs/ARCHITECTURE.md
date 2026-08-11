@@ -384,11 +384,12 @@ app → screens → features → bridge · native → shared
 | 타이포그래피 | `apps/web/src/app/styles/typography.css`  | `apps/mobile/src/shared/design/typography.ts` |
 | 그림자       | `apps/web/src/app/styles/shadows.css`     | `apps/mobile/src/shared/design/shadows.ts`    |
 | 모서리 반경  | `apps/web/src/app/styles/radius.css`      | `apps/mobile/src/shared/design/radius.ts`     |
-| 글꼴         | `apps/web/src/app/styles/fonts.css`       | 미적용, 기기 기본 글꼴 사용                   |
+| 글꼴         | `apps/web/src/app/styles/fonts.css`       | `apps/mobile/src/shared/design/fonts.ts`      |
 
 - 웹은 Tailwind가 CSS에서 토큰을 읽고 모바일은 CSS를 쓸 수 없어 상수로 관리한다. **토큰을 추가하거나 값을 바꿀 때는 두 곳을 함께 수정한다.**
 - 타이포그래피 토큰은 크기·행간·굵기를 함께 적용하므로 `text-body-01-bold`처럼 하나만 사용한다.
 - 시안에서 행간이 `Auto`인 항목은 웹이 글꼴 기본 행간(`normal`), 모바일이 140%를 사용한다. 모바일이 숫자만 받기 때문이며 의도한 차이다.
+- 글꼴은 웹이 CDN에서, 모바일이 `app.json`의 expo-font 설정으로 앱 빌드에 포함해 사용한다. 모바일은 Android에서 사용자 글꼴에 `fontWeight`가 적용되지 않으므로, 굵기마다 글꼴을 직접 지정한다.
 - 시안에 없는 값이 필요하면 임의로 토큰을 만들지 말고 디자이너에게 확인한다.
 
 ---
