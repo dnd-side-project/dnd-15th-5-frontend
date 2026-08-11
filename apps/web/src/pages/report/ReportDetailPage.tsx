@@ -17,7 +17,7 @@ export default function ReportDetailPage() {
         <ReportPreferenceCard tags={tags} title={title} />
         {/* TODO: 버튼 디자인 변경 필요 */}
         <button
-          className="mt-4 w-full cursor-pointer rounded-2xl bg-[#172851] p-4 text-[0.95rem] font-extrabold text-white disabled:cursor-wait disabled:opacity-60"
+          className="mt-4 w-full cursor-pointer rounded-2xl bg-[#172851] p-4 text-[0.95rem] font-extrabold text-neutral-00 disabled:cursor-wait disabled:opacity-60"
           disabled={isDownloading}
           onClick={downloadImage}
           type="button"
@@ -26,7 +26,7 @@ export default function ReportDetailPage() {
         </button>
         {/* TODO: 에러 토스트로 변경 */}
         {hasDownloadError && (
-          <p className="mt-2 text-center text-xs text-red-600" role="alert">
+          <p className="mt-2 text-center text-caption-01-regular text-notification" role="alert">
             이미지 저장에 실패했어요. 다시 시도해 주세요.
           </p>
         )}

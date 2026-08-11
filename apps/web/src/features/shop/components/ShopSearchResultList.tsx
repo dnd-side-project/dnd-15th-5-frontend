@@ -28,15 +28,19 @@ export default function ShopSearchResultList({
   }
 
   if (isLoading) {
-    return <p className="py-6 text-center text-gray-500">검색 중...</p>;
+    return <p className="py-6 text-center text-body-02-regular text-neutral-500">검색 중...</p>;
   }
 
   if (isError) {
-    return <p className="py-6 text-center text-gray-500">검색에 실패했습니다</p>;
+    return (
+      <p className="py-6 text-center text-body-02-regular text-neutral-500">검색에 실패했습니다</p>
+    );
   }
 
   if (shops.length === 0) {
-    return <p className="py-6 text-center text-gray-500">검색 결과가 없습니다</p>;
+    return (
+      <p className="py-6 text-center text-body-02-regular text-neutral-500">검색 결과가 없습니다</p>
+    );
   }
 
   return (

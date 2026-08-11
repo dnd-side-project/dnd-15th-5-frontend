@@ -21,7 +21,10 @@ export default function ShopSearchInput({ onSearch }: ShopSearchInputProps) {
 
   return (
     // TODO: 디자인 확정되면 스타일 수정
-    <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 bg-gray-100 px-4 py-3">
+    <form
+      onSubmit={handleSearchSubmit}
+      className="flex items-center gap-2 bg-neutral-100 px-4 py-3"
+    >
       <input
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}

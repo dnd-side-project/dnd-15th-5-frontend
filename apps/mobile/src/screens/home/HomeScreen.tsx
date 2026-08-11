@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
 import { createBridgeResponse, createResponseScript } from '@/bridge';
+import { COLORS, TYPOGRAPHY } from '@/shared/design';
 
 import type { WebViewMessageEvent } from 'react-native-webview';
 
@@ -73,7 +74,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.neutral00,
   },
   loading: {
     flex: 1,
@@ -83,17 +84,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.neutral00,
   },
   guideTitle: {
-    color: '#111827',
-    fontSize: 18,
-    fontWeight: '700',
+    ...TYPOGRAPHY.title02Bold,
+    color: COLORS.neutral700,
     marginBottom: 8,
   },
   guideDescription: {
-    color: '#4b5563',
-    fontSize: 14,
+    ...TYPOGRAPHY.body02Regular,
+    color: COLORS.neutral600,
     textAlign: 'center',
     marginTop: 4,
   },
