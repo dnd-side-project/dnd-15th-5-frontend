@@ -9,10 +9,14 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.chapchap"
+      "bundleIdentifier": "com.chapchap",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "주변 매장과 현재 위치를 지도에 표시하기 위해 위치 정보가 필요합니다."
+      }
     },
     "android": {
       "package": "com.chapchap",
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -27,6 +31,15 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "주변 매장과 현재 위치를 지도에 표시하기 위해 위치 정보가 필요합니다.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "motionUsagePermission": false
+        }
+      ],
       [
         "expo-build-properties",
         {
