@@ -50,6 +50,17 @@
           "savePhotosPermission": "ChapChap이 리포트 이미지를 사진 보관함에 저장하도록 허용해 주세요.",
           "granularPermissions": []
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./node_modules/pretendard/dist/public/static/alternative/Pretendard-Regular.ttf",
+            "./node_modules/pretendard/dist/public/static/alternative/Pretendard-Medium.ttf",
+            "./node_modules/pretendard/dist/public/static/alternative/Pretendard-SemiBold.ttf",
+            "./node_modules/pretendard/dist/public/static/alternative/Pretendard-Bold.ttf"
+          ]
+        }
       ]
     ],
     "experiments": {
