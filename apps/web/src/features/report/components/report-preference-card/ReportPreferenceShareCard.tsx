@@ -46,7 +46,7 @@ export default function ReportPreferenceShareCard({
                 <span>{leftLabel}</span>
                 <span>{rightLabel}</span>
               </div>
-              <div className="relative h-1.5 rounded-full bg-[#a9b8ff]">
+              <div className="relative h-1.5 rounded-full bg-primary-300">
                 <span
                   className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-[#4c65ed] bg-neutral-00"
                   style={{ left: `${metric.value}%` }}
