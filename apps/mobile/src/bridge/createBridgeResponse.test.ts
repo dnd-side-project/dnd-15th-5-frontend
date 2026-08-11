@@ -1,8 +1,14 @@
 import { BRIDGE_MESSAGE_KIND } from '@chapchap/shared/bridge';
 
+import { saveImageToLibrary } from '@/native/saveImageToLibrary';
+
 import { createBridgeResponse } from './createBridgeResponse';
 
 import type { BridgeRequest } from '@chapchap/shared/bridge';
+
+jest.mock('@/native/saveImageToLibrary', () => ({ saveImageToLibrary: jest.fn() }));
+
+const mockSaveImageToLibrary = jest.mocked(saveImageToLibrary);
 
 const createRequest = (overrides: Partial<BridgeRequest> = {}): BridgeRequest =>
   ({
@@ -14,6 +20,11 @@ const createRequest = (overrides: Partial<BridgeRequest> = {}): BridgeRequest =>
   }) as BridgeRequest;
 
 describe('createBridgeResponse', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockSaveImageToLibrary.mockResolvedValue();
+  });
+
   it('요청을 처리하고 같은 식별자로 응답한다', async () => {
     const response = await createBridgeResponse(createRequest());
 
@@ -29,5 +40,45 @@ describe('createBridgeResponse', () => {
 
     expect(response.ok).toBe(false);
     expect(response).toHaveProperty('error.message', expect.stringContaining('처리할 수 없는'));
+  });
+
+  it('이미지 저장 요청을 처리하고 성공 응답을 반환한다', async () => {
+    const request: BridgeRequest<'saveImage'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-02',
+      type: 'saveImage',
+      payload: { base64: 'base64-image', fileName: '리포트.png' },
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(mockSaveImageToLibrary).toHaveBeenCalledWith('base64-image', '리포트.png');
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { saved: true },
+    });
+  });
+
+  it('이미지 저장 실패 사유를 웹에 전달한다', async () => {
+    mockSaveImageToLibrary.mockRejectedValue(new Error('사진 저장 권한이 필요합니다'));
+    const request: BridgeRequest<'saveImage'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-03',
+      type: 'saveImage',
+      payload: { base64: 'base64-image', fileName: '리포트.png' },
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: false,
+      error: { message: '사진 저장 권한이 필요합니다' },
+    });
   });
 });
