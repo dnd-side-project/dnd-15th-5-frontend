@@ -1,9 +1,20 @@
-import { render } from '@testing-library/react-native';
+import { render, waitFor } from '@testing-library/react-native';
 
 import HomeScreen from './HomeScreen';
 
+const mockRequestForegroundPermissionsAsync = jest.fn();
+
+jest.mock('expo-location', () => ({
+  requestForegroundPermissionsAsync: () => mockRequestForegroundPermissionsAsync(),
+}));
+
 describe('<HomeScreen />', () => {
   const originalWebUrl = process.env.EXPO_PUBLIC_WEB_URL;
+
+  beforeEach(() => {
+    mockRequestForegroundPermissionsAsync.mockReset();
+    mockRequestForegroundPermissionsAsync.mockResolvedValue({ status: 'granted' });
+  });
 
   afterEach(() => {
     process.env.EXPO_PUBLIC_WEB_URL = originalWebUrl;
@@ -17,11 +28,25 @@ describe('<HomeScreen />', () => {
     getByText('웹 주소가 설정되지 않았습니다');
   });
 
-  it('웹 주소가 있으면 안내 문구 대신 웹 화면을 띄운다', async () => {
+  it('위치 권한 요청을 마친 뒤 웹 화면을 띄운다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173';
 
-    const { queryByText } = await render(<HomeScreen />);
+    const { getByTestId } = await render(<HomeScreen />);
 
-    expect(queryByText('웹 주소가 설정되지 않았습니다')).toBeNull();
+    await waitFor(() => {
+      expect(mockRequestForegroundPermissionsAsync).toHaveBeenCalledTimes(1);
+      expect(getByTestId('home-webview')).toBeTruthy();
+    });
+  });
+
+  it('위치 권한 요청이 실패해도 웹 화면을 띄운다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173';
+    mockRequestForegroundPermissionsAsync.mockRejectedValue(new Error('권한 요청 실패'));
+
+    const { getByTestId } = await render(<HomeScreen />);
+
+    await waitFor(() => {
+      expect(getByTestId('home-webview')).toBeTruthy();
+    });
   });
 });
