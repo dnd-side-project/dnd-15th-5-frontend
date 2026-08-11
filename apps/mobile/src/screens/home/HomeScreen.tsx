@@ -1,11 +1,11 @@
 import { isBridgeRequest, parseBridgeMessage } from '@chapchap/shared/bridge';
-import * as Location from 'expo-location';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
 import { createBridgeResponse, createResponseScript } from '@/bridge';
+import { useForegroundLocationPermission } from '@/native/location';
 
 import type { WebViewMessageEvent } from 'react-native-webview';
 
@@ -19,30 +19,8 @@ export default function HomeScreen() {
   // 개발 빌드는 .env의 로컬 개발 서버를, preview·production 빌드는 eas.json에 지정한 배포 주소를 사용한다
   const webUrl = process.env.EXPO_PUBLIC_WEB_URL;
   const webViewRef = useRef<WebView>(null);
-  const hasRequestedLocationPermission = useRef(false);
   const [loadErrorMessage, setLoadErrorMessage] = useState<string | null>(null);
-  const [isLocationPermissionRequestComplete, setIsLocationPermissionRequestComplete] =
-    useState(false);
-
-  useEffect(() => {
-    if (!webUrl || hasRequestedLocationPermission.current) {
-      return;
-    }
-
-    hasRequestedLocationPermission.current = true;
-
-    const requestLocationPermission = async () => {
-      try {
-        await Location.requestForegroundPermissionsAsync();
-      } catch {
-        // 네이티브 권한 요청 자체가 실패해도 웹의 위치 오류 처리 흐름은 사용할 수 있어야 한다.
-      } finally {
-        setIsLocationPermissionRequestComplete(true);
-      }
-    };
-
-    void requestLocationPermission();
-  }, [webUrl]);
+  const isLocationPermissionRequestComplete = useForegroundLocationPermission(Boolean(webUrl));
 
   const handleBridgeMessage = async (event: WebViewMessageEvent) => {
     const message = parseBridgeMessage(event.nativeEvent.data);
