@@ -374,6 +374,23 @@ app → screens → features → bridge · native → shared
 - variant가 2~3개를 넘으면 cva로, 조건부 클래스가 단순하면 cn() + 삼항/객체로 처리한다.
 - 상세 규칙은 `docs/CONVENTIONS.md`를 따른다
 
+### 디자인 토큰
+
+색상·타이포그래피·그림자·모서리 반경은 시안의 토큰만 사용하고 값을 직접 적지 않는다.
+
+| 대상         | 웹 (Tailwind `@theme`)                    | 모바일 (상수)                                 |
+| ------------ | ----------------------------------------- | --------------------------------------------- |
+| 색상         | `apps/web/src/app/styles/colors.css`      | `apps/mobile/src/shared/design/colors.ts`     |
+| 타이포그래피 | `apps/web/src/app/styles/typography.css`  | `apps/mobile/src/shared/design/typography.ts` |
+| 그림자       | `apps/web/src/app/styles/shadows.css`     | `apps/mobile/src/shared/design/shadows.ts`    |
+| 모서리 반경  | `apps/web/src/app/styles/radius.css`      | `apps/mobile/src/shared/design/radius.ts`     |
+| 글꼴         | `apps/web/src/app/styles/fonts.css`       | 미적용, 기기 기본 글꼴 사용                   |
+
+- 웹은 Tailwind가 CSS에서 토큰을 읽고 모바일은 CSS를 쓸 수 없어 상수로 관리한다. **토큰을 추가하거나 값을 바꿀 때는 두 곳을 함께 수정한다.**
+- 타이포그래피 토큰은 크기·행간·굵기를 함께 적용하므로 `text-body-01-bold`처럼 하나만 사용한다.
+- 시안에서 행간이 `Auto`인 항목은 웹이 글꼴 기본 행간(`normal`), 모바일이 140%를 사용한다. 모바일이 숫자만 받기 때문이며 의도한 차이다.
+- 시안에 없는 값이 필요하면 임의로 토큰을 만들지 말고 디자이너에게 확인한다.
+
 ---
 
 ## 9. Package Manager

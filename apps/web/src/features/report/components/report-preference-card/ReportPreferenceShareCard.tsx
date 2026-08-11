@@ -34,7 +34,7 @@ export default function ReportPreferenceShareCard({
   title,
 }: ReportPreferenceShareCardProps) {
   return (
-    <article className="w-69 overflow-hidden rounded-[15px] bg-[#506FAF]">
+    <article className="w-69 overflow-hidden rounded-15 bg-[#506FAF]">
       <ReportPreferenceCard description={description} tags={tags} title={title} />
       <div className="flex flex-col gap-1.5 rounded-2xl bg-neutral-00 px-6 py-5">
         {metrics.map((metric) => {
