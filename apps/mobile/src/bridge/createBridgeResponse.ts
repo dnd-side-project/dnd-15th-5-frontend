@@ -24,15 +24,24 @@ export const createBridgeResponse = async (request: BridgeRequest): Promise<Brid
   }
 
   try {
-    const result = await handler(request.payload);
-
-    return {
-      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
-      id: request.id,
-      type: request.type,
-      ok: true,
-      result,
-    };
+    switch (request.type) {
+      case 'ping':
+        return {
+          kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+          id: request.id,
+          type: request.type,
+          ok: true,
+          result: await BRIDGE_HANDLERS.ping(request.payload),
+        };
+      case 'saveImage':
+        return {
+          kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+          id: request.id,
+          type: request.type,
+          ok: true,
+          result: await BRIDGE_HANDLERS.saveImage(request.payload),
+        };
+    }
   } catch (error) {
     return {
       kind: BRIDGE_MESSAGE_KIND.RESPONSE,

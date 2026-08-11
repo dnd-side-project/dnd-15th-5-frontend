@@ -1,5 +1,7 @@
 import { Platform } from 'react-native';
 
+import { saveImageToLibrary } from '@/native/saveImageToLibrary';
+
 import type { BridgeMessageMap, BridgeMessageType } from '@chapchap/shared/bridge';
 
 type BridgeHandler<TType extends BridgeMessageType> = (
@@ -21,4 +23,9 @@ type BridgeHandlerMap = {
  */
 export const BRIDGE_HANDLERS: BridgeHandlerMap = {
   ping: () => ({ platform: Platform.OS, receivedAt: Date.now() }),
+  saveImage: async ({ base64, fileName }) => {
+    await saveImageToLibrary(base64, fileName);
+
+    return { saved: true };
+  },
 };
