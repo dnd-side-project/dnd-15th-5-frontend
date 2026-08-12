@@ -1,6 +1,6 @@
 @import './fonts.css';
 @import 'tailwindcss';
-@import './colors.css';
-@import './typography.css';
-@import './shadows.css';
-@import './radius.css';
+@import '@chapchap/shared/design/colors.css';
+@import '@chapchap/shared/design/typography.css';
+@import '@chapchap/shared/design/shadows.css';
+@import '@chapchap/shared/design/radius.css';
