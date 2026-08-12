@@ -9,6 +9,9 @@ dist/
 web-build/
 expo-env.d.ts
 
+# Uniwind (Metro가 빌드할 때 생성한다)
+src/uniwind-types.d.ts
+
 # Native
 .kotlin/
 *.orig.*
