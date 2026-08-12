@@ -398,10 +398,23 @@ app → screens → features → bridge · native → shared
 | 웹     | `apps/web/src/app/styles/index.css` |
 | 모바일 | `apps/mobile/src/global.css`        |
 
-- 타이포그래피 토큰은 크기·행간·굵기를 함께 적용하므로 `text-body-01-bold`처럼 하나만 사용한다.
+- 타이포그래피 토큰은 크기·행간·굵기를 함께 적용하므로 웹은 `text-body-01-bold`처럼 하나만 사용한다.
+- **모바일은 글꼴 유틸리티를 함께 붙인다.** `text-body-01-bold`는 CSS `font-weight`만 지정하는데, Android는 번들한 글꼴에 `fontWeight`가 적용되지 않아 굵기별 글꼴을 직접 지정해야 한다. 토큰 이름의 굵기와 같은 것을 짝지어 쓴다.
+
+  ```tsx
+  <Text className="font-pretendard-bold text-body-01-bold">
+  ```
+
+  | 토큰 굵기  | 모바일에서 함께 쓸 유틸리티 |
+  | ---------- | --------------------------- |
+  | `regular`  | `font-pretendard-regular`   |
+  | `medium`   | `font-pretendard-medium`    |
+  | `semibold` | `font-pretendard-semibold`  |
+  | `bold`     | `font-pretendard-bold`      |
+
 - 행간은 `140%`가 아니라 `1.4`처럼 단위 없는 배수로 적는다. 웹은 결과가 같고, 모바일은 Uniwind가 배수에 글자 크기를 곱해 숫자로 변환한다.
 - 시안에서 행간이 `Auto`인 항목은 `normal`로 두고 두 플랫폼 모두 글꼴 기본 행간을 사용한다.
-- 글꼴만 플랫폼별로 정의가 다르다. 웹은 CDN에서 가변 글꼴 하나(`apps/web/src/app/styles/fonts.css`)를 받고, 모바일은 `app.json`의 expo-font 설정으로 굵기별 글꼴을 앱 빌드에 포함한 뒤 `apps/mobile/src/global.css`에서 `font-pretendard-bold`처럼 굵기마다 유틸리티를 정의한다. Android에서 사용자 글꼴에 `fontWeight`가 적용되지 않기 때문이다.
+- 글꼴만 플랫폼별로 정의가 다르다. 웹은 CDN에서 가변 글꼴 하나(`apps/web/src/app/styles/fonts.css`)를 받아 `font-weight`로 굵기를 조절하므로 글꼴 유틸리티가 필요 없다. 모바일은 `app.json`의 expo-font 설정으로 굵기별 글꼴을 앱 빌드에 포함하고 `apps/mobile/src/global.css`에서 유틸리티로 정의한다.
 - 색상은 `--color-*: initial`로 Tailwind 기본 팔레트를 꺼둬서 시안에 있는 색만 쓸 수 있다. `bg-red-500`이나 `bg-neutral-800`처럼 시안에 없는 색은 클래스가 아예 생성되지 않는다.
 - 시안에 없는 값이 필요하면 임의로 토큰을 만들지 말고 디자이너에게 확인한다.
 
