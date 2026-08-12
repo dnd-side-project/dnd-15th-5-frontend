@@ -22,10 +22,11 @@
 
 ### Styling
 
-| 구분              | 기술         |
-| ----------------- | ------------ |
-| CSS               | Tailwind CSS |
-| Component Variant | CVA          |
+| 구분              | 기술                       |
+| ----------------- | -------------------------- |
+| CSS               | Tailwind CSS               |
+| RN 스타일         | Uniwind (Tailwind 바인딩)  |
+| Component Variant | CVA                        |
 
 ### Code Quality
 
@@ -77,7 +78,9 @@
 │   ├── web/                    # React + Vite
 │   └── mobile/                 # Expo + React Native
 ├── packages/
-│   ├── shared/                 # 웹과 모바일이 함께 쓰는 코드 (브릿지 메시지 규약 등)
+│   ├── shared/                 # 웹과 모바일이 함께 쓰는 코드
+│   │   ├── src/                # 브릿지 메시지 규약 등 런타임 코드
+│   │   └── design/             # 디자인 토큰 CSS
 │   ├── eslint-config/          # 공통 ESLint base 설정
 │   └── typescript-config/      # 공통 TypeScript base 설정
 ├── docs/
@@ -88,7 +91,8 @@
 - 애플리케이션은 `apps/*`, 재사용 패키지와 공통 개발 설정은 `packages/*`에서 관리한다.
 - workspace 패키지는 `workspace:*`로 참조한다.
 - `packages/*-config`에는 플랫폼에 독립적인 공통 base만 두고 웹·모바일 전용 설정은 각 앱에서 관리한다.
-- `packages/shared`에는 웹과 모바일이 모두 사용하는 런타임 코드만 둔다. 양쪽에서 동작해야 하므로 DOM API와 React Native API를 사용하지 않으며, 타입·상수·순수 함수 위주로 관리한다.
+- `packages/shared/src`에는 웹과 모바일이 모두 사용하는 런타임 코드만 둔다. 양쪽에서 동작해야 하므로 DOM API와 React Native API를 사용하지 않으며, 타입·상수·순수 함수 위주로 관리한다.
+- `packages/shared/design`에는 두 앱이 함께 읽는 디자인 토큰 CSS만 둔다. 한쪽에서만 쓰는 스타일은 해당 앱의 진입 CSS에서 관리한다.
 - 웹이나 모바일 한쪽에서만 쓰는 코드는 `packages/shared`가 아니라 해당 앱 안에서 관리한다.
 
 ### Web
@@ -270,6 +274,7 @@ features/report/
 
 ```text
 apps/mobile/src/
+├── global.css          # Tailwind·Uniwind 진입점, 공유 디자인 토큰 import
 ├── app/                # Expo Router 라우트·레이아웃 전용
 │   ├── _layout.tsx
 │   └── index.tsx
@@ -369,7 +374,7 @@ app → screens → features → bridge · native → shared
 
 ## 8. Styling
 
-- Tailwind CSS 사용
+- Tailwind CSS 사용. 모바일은 Uniwind로 같은 `className`을 RN 스타일로 변환한다
 - Variant는 CVA 사용
 - variant가 2~3개를 넘으면 cva로, 조건부 클래스가 단순하면 cn() + 삼항/객체로 처리한다.
 - 상세 규칙은 `docs/CONVENTIONS.md`를 따른다
@@ -378,18 +383,25 @@ app → screens → features → bridge · native → shared
 
 색상·타이포그래피·그림자·모서리 반경은 시안의 토큰만 사용하고 값을 직접 적지 않는다.
 
-| 대상         | 웹 (Tailwind `@theme`)                    | 모바일 (상수)                                 |
-| ------------ | ----------------------------------------- | --------------------------------------------- |
-| 색상         | `apps/web/src/app/styles/colors.css`      | `apps/mobile/src/shared/design/colors.ts`     |
-| 타이포그래피 | `apps/web/src/app/styles/typography.css`  | `apps/mobile/src/shared/design/typography.ts` |
-| 그림자       | `apps/web/src/app/styles/shadows.css`     | `apps/mobile/src/shared/design/shadows.ts`    |
-| 모서리 반경  | `apps/web/src/app/styles/radius.css`      | `apps/mobile/src/shared/design/radius.ts`     |
-| 글꼴         | `apps/web/src/app/styles/fonts.css`       | `apps/mobile/src/shared/design/fonts.ts`      |
+토큰은 `packages/shared/design`의 Tailwind `@theme` CSS 한 곳에서만 정의하고 웹과 모바일이 같은 파일을 읽는다.
+모바일은 [Uniwind](https://uniwind.dev)가 Metro에서 이 CSS를 읽어 `className`을 RN 스타일로 바꿔주므로, 웹과 같은 유틸리티 이름을 그대로 쓴다.
 
-- 웹은 Tailwind가 CSS에서 토큰을 읽고 모바일은 CSS를 쓸 수 없어 상수로 관리한다. **토큰을 추가하거나 값을 바꿀 때는 두 곳을 함께 수정한다.**
+| 대상         | 정의 위치                                |
+| ------------ | ---------------------------------------- |
+| 색상         | `packages/shared/design/colors.css`      |
+| 타이포그래피 | `packages/shared/design/typography.css`  |
+| 그림자       | `packages/shared/design/shadows.css`     |
+| 모서리 반경  | `packages/shared/design/radius.css`      |
+
+| 앱     | 진입 CSS                          |
+| ------ | --------------------------------- |
+| 웹     | `apps/web/src/app/styles/index.css` |
+| 모바일 | `apps/mobile/src/global.css`        |
+
 - 타이포그래피 토큰은 크기·행간·굵기를 함께 적용하므로 `text-body-01-bold`처럼 하나만 사용한다.
-- 시안에서 행간이 `Auto`인 항목은 웹이 글꼴 기본 행간(`normal`), 모바일이 140%를 사용한다. 모바일이 숫자만 받기 때문이며 의도한 차이다.
-- 글꼴은 웹이 CDN에서, 모바일이 `app.json`의 expo-font 설정으로 앱 빌드에 포함해 사용한다. 모바일은 Android에서 사용자 글꼴에 `fontWeight`가 적용되지 않으므로, 굵기마다 글꼴을 직접 지정한다.
+- 행간은 `140%`가 아니라 `1.4`처럼 단위 없는 배수로 적는다. 웹은 결과가 같고, 모바일은 Uniwind가 배수에 글자 크기를 곱해 숫자로 변환한다.
+- 시안에서 행간이 `Auto`인 항목은 `normal`로 두고 두 플랫폼 모두 글꼴 기본 행간을 사용한다.
+- 글꼴만 플랫폼별로 정의가 다르다. 웹은 CDN에서 가변 글꼴 하나(`apps/web/src/app/styles/fonts.css`)를 받고, 모바일은 `app.json`의 expo-font 설정으로 굵기별 글꼴을 앱 빌드에 포함한 뒤 `apps/mobile/src/global.css`에서 `font-pretendard-bold`처럼 굵기마다 유틸리티를 정의한다. Android에서 사용자 글꼴에 `fontWeight`가 적용되지 않기 때문이다.
 - 시안에 없는 값이 필요하면 임의로 토큰을 만들지 말고 디자이너에게 확인한다.
 
 ---
