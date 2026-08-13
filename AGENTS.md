@@ -22,7 +22,9 @@ pnpm dev:mobile    # Expo 모바일 개발 서버
 pnpm build         # 웹 Vite build와 모바일 Expo export
 pnpm build:ios     # iOS Release 빌드
 pnpm build:android # Android Release 빌드
-pnpm lint          # 전체 workspace ESLint
+pnpm lint          # SVG 최적화 검사와 전체 workspace ESLint
+pnpm optimize:icons # 웹·모바일·공통 SVG 아이콘 최적화
+pnpm check:icons   # SVG 아이콘 최적화 상태 검사
 pnpm typecheck     # 전체 workspace TypeScript 검사
 pnpm test          # 전체 workspace Jest
 pnpm preview       # 웹 빌드 결과 미리보기
