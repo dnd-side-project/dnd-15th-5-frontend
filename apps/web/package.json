@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "lint": "eslint .",
+    "optimize:icons": "svgo --config svgo.config.mjs --folder src/shared/assets/icons --final-newline",
     "preview": "vite preview",
     "test": "jest",
     "storybook": "storybook dev -p 6006",
@@ -56,8 +57,10 @@
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
     "storybook": "^10.5.5",
+    "svgo": "^4.0.2",
     "ts-jest": "^29.4.12",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vite-plugin-svgr": "^5.2.0"
   }
 }
