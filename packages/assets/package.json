@@ -1,9 +1,0 @@
-{
-  "name": "@chapchap/assets",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "exports": {
-    "./icons/*.svg": "./src/icons/*.svg"
-  }
-}

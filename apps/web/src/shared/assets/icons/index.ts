@@ -1,5 +1,5 @@
-import StatusErrorIcon from '@chapchap/assets/icons/ic-status-error.svg?react';
-import StatusSuccessIcon from '@chapchap/assets/icons/ic-status-success.svg?react';
+import StatusErrorIcon from '@chapchap/shared/assets/icons/ic-status-error.svg?react';
+import StatusSuccessIcon from '@chapchap/shared/assets/icons/ic-status-success.svg?react';
 
 import AddIcon from './ic-add.svg?react';
 import AvatarIcon from './ic-avatar.svg?react';

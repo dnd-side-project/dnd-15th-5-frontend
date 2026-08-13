@@ -43,9 +43,6 @@ importers:
 
   apps/mobile:
     dependencies:
-      '@chapchap/assets':
-        specifier: workspace:*
-        version: link:../../packages/assets
       '@chapchap/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -155,9 +152,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@chapchap/assets':
-        specifier: workspace:*
-        version: link:../../packages/assets
       '@chapchap/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -294,8 +288,6 @@ importers:
       vite-plugin-svgr:
         specifier: ^5.2.0
         version: 5.2.0(typescript@6.0.3)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.21.0)(yaml@2.9.0))
-
-  packages/assets: {}
 
   packages/eslint-config:
     dependencies:
