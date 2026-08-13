@@ -1,22 +1,47 @@
-export { default as addIcon } from './ic-add.svg';
-export { default as arrowLeftIcon } from './ic-arrow-left.svg';
-export { default as avatarIcon } from './ic-avatar.svg';
-export { default as checkIcon } from './ic-check.svg';
-export { default as chevronRightIcon } from './ic-chevron-right.svg';
-export { default as crownIcon } from './ic-crown.svg';
-export { default as galleryIcon } from './ic-gallery.svg';
-export { default as googleIcon } from './ic-google.svg';
-export { default as kakaoIcon } from './ic-kakao.svg';
-export { default as likeIcon } from './ic-like.svg';
-export { default as locationPinIcon } from './ic-location-pin.svg';
-export { default as mapIcon } from './ic-map.svg';
-export { default as navigationHomeIcon } from './ic-navigation-home.svg';
-export { default as navigationRecordIcon } from './ic-navigation-record.svg';
-export { default as navigationReportIcon } from './ic-navigation-report.svg';
-export { default as notificationDefaultIcon } from './ic-notification-default.svg';
-export { default as notificationUnreadIcon } from './ic-notification-unread.svg';
-export { default as searchIcon } from './ic-search.svg';
-export { default as shareIcon } from './ic-share.svg';
-export { default as shopRecommendIcon } from './ic-shop-recommend.svg';
-export { default as statusErrorIcon } from './ic-status-error.svg';
-export { default as statusSuccessIcon } from './ic-status-success.svg';
+import AddIcon from './ic-add.svg';
+import AvatarIcon from './ic-avatar.svg';
+import CheckIcon from './ic-check.svg';
+import ChevronLeftIcon from './ic-chevron-left.svg';
+import ChevronRightIcon from './ic-chevron-right.svg';
+import CrownIcon from './ic-crown.svg';
+import GalleryIcon from './ic-gallery.svg';
+import GoogleIcon from './ic-google.svg';
+import KakaoIcon from './ic-kakao.svg';
+import LikeIcon from './ic-like.svg';
+import LocationPinIcon from './ic-location-pin.svg';
+import MapIcon from './ic-map.svg';
+import NavigationHomeIcon from './ic-navigation-home.svg';
+import NavigationRecordIcon from './ic-navigation-record.svg';
+import NavigationReportIcon from './ic-navigation-report.svg';
+import NotificationDefaultIcon from './ic-notification-default.svg';
+import NotificationUnreadIcon from './ic-notification-unread.svg';
+import SearchIcon from './ic-search.svg';
+import ShareIcon from './ic-share.svg';
+import ShopRecommendIcon from './ic-shop-recommend.svg';
+import StatusErrorIcon from './ic-status-error.svg';
+import StatusSuccessIcon from './ic-status-success.svg';
+
+export {
+  AddIcon,
+  AvatarIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CrownIcon,
+  GalleryIcon,
+  GoogleIcon,
+  KakaoIcon,
+  LikeIcon,
+  LocationPinIcon,
+  MapIcon,
+  NavigationHomeIcon,
+  NavigationRecordIcon,
+  NavigationReportIcon,
+  NotificationDefaultIcon,
+  NotificationUnreadIcon,
+  SearchIcon,
+  ShareIcon,
+  ShopRecommendIcon,
+  StatusErrorIcon,
+  StatusSuccessIcon,
+};

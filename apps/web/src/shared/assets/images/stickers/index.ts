@@ -1,9 +1,21 @@
-export { default as cafeCoffeeImage } from './img-cafe-coffee.png';
-export { default as cafeDonutImage } from './img-cafe-donut.png';
-export { default as cafeIceCreamImage } from './img-cafe-ice-cream.png';
-export { default as entertainmentDartImage } from './img-entertainment-dart.png';
-export { default as entertainmentLpImage } from './img-entertainment-lp.png';
-export { default as entertainmentMicrophoneImage } from './img-entertainment-microphone.png';
-export { default as restaurantFriesImage } from './img-restaurant-fries.png';
-export { default as restaurantPizzaImage } from './img-restaurant-pizza.png';
-export { default as restaurantSpatulaImage } from './img-restaurant-spatula.png';
+import CafeCoffeeImage from './img-cafe-coffee.png';
+import CafeDonutImage from './img-cafe-donut.png';
+import CafeIceCreamImage from './img-cafe-ice-cream.png';
+import EntertainmentDartImage from './img-entertainment-dart.png';
+import EntertainmentLpImage from './img-entertainment-lp.png';
+import EntertainmentMicrophoneImage from './img-entertainment-microphone.png';
+import RestaurantFriesImage from './img-restaurant-fries.png';
+import RestaurantPizzaImage from './img-restaurant-pizza.png';
+import RestaurantSpatulaImage from './img-restaurant-spatula.png';
+
+export {
+  CafeCoffeeImage,
+  CafeDonutImage,
+  CafeIceCreamImage,
+  EntertainmentDartImage,
+  EntertainmentLpImage,
+  EntertainmentMicrophoneImage,
+  RestaurantFriesImage,
+  RestaurantPizzaImage,
+  RestaurantSpatulaImage,
+};
