@@ -16,13 +16,13 @@ export default function ReportPreferenceCard({
   title,
 }: ReportPreferenceCardProps) {
   return (
-    <article className="box-border w-69 overflow-hidden rounded-[15px] bg-[#506FAF] px-3.5 pb-6 pt-3.5">
+    <article className="box-border w-69 overflow-hidden rounded-15 bg-[#506FAF] px-3.5 pb-6 pt-3.5">
       {/* TODO: 이미지 영역에 이미지 넣기 */}
       <div
         aria-label="이미지 영역"
-        className="box-border h-65 w-62 rounded-2xl border border-black"
+        className="box-border h-65 w-62 rounded-2xl border border-neutral-900"
       />
-      <div className="flex flex-col items-center pt-3.5 text-center text-white">
+      <div className="flex flex-col items-center pt-3.5 text-center text-neutral-00">
         <h1 className="m-0 text-[1.35rem] font-black">{title}</h1>
         {description && (
           <p className="m-0 mt-3 text-xs leading-5 whitespace-pre-line">{description}</p>

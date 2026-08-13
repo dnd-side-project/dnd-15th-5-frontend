@@ -22,11 +22,11 @@ export default function ShopSearchResultItem({ shop, onSelect }: ShopSearchResul
             className="size-16 shrink-0 rounded-lg object-cover"
           />
         ) : (
-          <div className="size-16 shrink-0 rounded-lg bg-gray-200" />
+          <div className="size-16 shrink-0 rounded-lg bg-neutral-200" />
         )}
         <div className="min-w-0">
-          <p className="truncate font-bold">{shop.name}</p>
-          <p className="flex items-center gap-1 truncate text-sm text-gray-500">
+          <p className="truncate text-body-01-bold">{shop.name}</p>
+          <p className="flex items-center gap-1 truncate text-body-02-regular text-neutral-500">
             {/* TODO: 아이콘 시스템 세팅되면 shared/assets의 ic-location-pin.svg로 교체 */}
             <svg
               width="14"

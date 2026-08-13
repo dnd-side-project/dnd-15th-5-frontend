@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "exports": {
-    "./bridge": "./src/bridge/index.ts"
+    "./bridge": "./src/bridge/index.ts",
+    "./design/*.css": "./design/*.css"
   },
   "scripts": {
     "lint": "eslint .",

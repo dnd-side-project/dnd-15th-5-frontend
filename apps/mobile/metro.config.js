@@ -1,4 +1,5 @@
 const { getDefaultConfig } = require('expo/metro-config');
+const { withUniwindConfig } = require('uniwind/metro');
 
 const config = getDefaultConfig(__dirname);
 const { assetExts, sourceExts } = config.resolver;
@@ -7,4 +8,7 @@ config.transformer.babelTransformerPath = require.resolve('react-native-svg-tran
 config.resolver.assetExts = assetExts.filter((extension) => extension !== 'svg');
 config.resolver.sourceExts = [...sourceExts, 'svg'];
 
-module.exports = config;
+module.exports = withUniwindConfig(config, {
+  cssEntryFile: './src/global.css',
+  dtsFile: './src/uniwind-types.d.ts',
+});
