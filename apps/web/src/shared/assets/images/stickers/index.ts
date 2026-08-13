@@ -1,0 +1,9 @@
+export { default as cafeCoffeeImage } from './img-cafe-coffee.png';
+export { default as cafeDonutImage } from './img-cafe-donut.png';
+export { default as cafeIceCreamImage } from './img-cafe-ice-cream.png';
+export { default as entertainmentDartImage } from './img-entertainment-dart.png';
+export { default as entertainmentLpImage } from './img-entertainment-lp.png';
+export { default as entertainmentMicrophoneImage } from './img-entertainment-microphone.png';
+export { default as restaurantFriesImage } from './img-restaurant-fries.png';
+export { default as restaurantPizzaImage } from './img-restaurant-pizza.png';
+export { default as restaurantSpatulaImage } from './img-restaurant-spatula.png';
