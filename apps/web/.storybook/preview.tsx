@@ -1,13 +1,31 @@
 /// <reference types="vite/client" />
 
-import type { Preview } from '@storybook/react-vite';
-
 import '@/app/styles/index.css';
+
+import type { Preview } from '@storybook/react-vite';
 
 const preview: Preview = {
   tags: ['autodocs'],
+  decorators: [
+    (Story) => (
+      <div className="flex w-screen items-center justify-center">
+        <div className="w-full max-w-120 px-4">
+          <Story />
+        </div>
+      </div>
+    ),
+  ],
   parameters: {
     layout: 'centered',
+    backgrounds: {
+      default: 'neutral-100',
+      options: {
+        'neutral-100': {
+          name: 'Neutral 100',
+          value: '#f5f5f5',
+        },
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
