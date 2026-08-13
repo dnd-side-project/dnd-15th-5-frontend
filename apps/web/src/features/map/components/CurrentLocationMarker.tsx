@@ -11,7 +11,7 @@ export default function CurrentLocationMarker() {
 
   return (
     <AdvancedMarker position={position}>
-      <div className="h-4 w-4 rounded-full border-2 border-white bg-blue-500 shadow-md" />
+      <div className="h-4 w-4 rounded-full border-2 border-neutral-00 bg-primary-600 shadow-rank" />
     </AdvancedMarker>
   );
 }

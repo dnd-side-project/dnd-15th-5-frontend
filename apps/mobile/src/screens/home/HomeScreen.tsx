@@ -1,12 +1,34 @@
 import { isBridgeRequest, parseBridgeMessage } from '@chapchap/shared/bridge';
 import { useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
 import { createBridgeResponse, createResponseScript } from '@/bridge';
 
 import type { WebViewMessageEvent } from 'react-native-webview';
+
+type GuideProps = {
+  title: string;
+  descriptions: string[];
+};
+
+/** 웹 화면을 띄울 수 없을 때 원인을 알려주는 안내 화면. */
+function Guide({ title, descriptions }: GuideProps) {
+  return (
+    <View className="flex-1 items-center justify-center bg-neutral-00 px-6">
+      <Text className="mb-2 font-pretendard-bold text-title-02-bold text-neutral-700">{title}</Text>
+      {descriptions.map((description, index) => (
+        <Text
+          key={index}
+          className="mt-1 text-center font-pretendard-regular text-body-02-regular text-neutral-600"
+        >
+          {description}
+        </Text>
+      ))}
+    </View>
+  );
+}
 
 /**
  * 웹 화면을 WebView로 띄우는 앱의 기본 화면.
@@ -34,33 +56,27 @@ export default function HomeScreen() {
 
   if (!webUrl) {
     return (
-      <View style={styles.guide}>
-        <Text style={styles.guideTitle}>웹 주소가 설정되지 않았습니다</Text>
-        <Text style={styles.guideDescription}>
-          apps/mobile/.env에 EXPO_PUBLIC_WEB_URL을 설정한 뒤 다시 실행해주세요.
-        </Text>
-      </View>
+      <Guide
+        title="웹 주소가 설정되지 않았습니다"
+        descriptions={['apps/mobile/.env에 EXPO_PUBLIC_WEB_URL을 설정한 뒤 다시 실행해주세요.']}
+      />
     );
   }
 
   if (loadErrorMessage) {
     return (
-      <View style={styles.guide}>
-        <Text style={styles.guideTitle}>웹 화면을 불러오지 못했습니다</Text>
-        <Text style={styles.guideDescription}>{webUrl}</Text>
-        <Text style={styles.guideDescription}>{loadErrorMessage}</Text>
-      </View>
+      <Guide title="웹 화면을 불러오지 못했습니다" descriptions={[webUrl, loadErrorMessage]} />
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-neutral-00">
       <WebView
         ref={webViewRef}
         source={{ uri: webUrl }}
         onMessage={handleBridgeMessage}
         startInLoadingState
-        renderLoading={() => <ActivityIndicator style={styles.loading} size="large" />}
+        renderLoading={() => <ActivityIndicator className="flex-1" size="large" />}
         onError={({ nativeEvent }) => setLoadErrorMessage(nativeEvent.description)}
         onHttpError={({ nativeEvent }) =>
           setLoadErrorMessage(`HTTP ${nativeEvent.statusCode} 응답을 받았습니다`)
@@ -69,32 +85,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  loading: {
-    flex: 1,
-  },
-  guide: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    backgroundColor: '#ffffff',
-  },
-  guideTitle: {
-    color: '#111827',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  guideDescription: {
-    color: '#4b5563',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-});

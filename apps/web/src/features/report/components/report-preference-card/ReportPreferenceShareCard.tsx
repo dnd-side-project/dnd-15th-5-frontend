@@ -34,9 +34,9 @@ export default function ReportPreferenceShareCard({
   title,
 }: ReportPreferenceShareCardProps) {
   return (
-    <article className="w-69 overflow-hidden rounded-[15px] bg-[#506FAF]">
+    <article className="w-69 overflow-hidden rounded-15 bg-[#506FAF]">
       <ReportPreferenceCard description={description} tags={tags} title={title} />
-      <div className="flex flex-col gap-1.5 rounded-2xl bg-white px-6 py-5">
+      <div className="flex flex-col gap-1.5 rounded-2xl bg-neutral-00 px-6 py-5">
         {metrics.map((metric) => {
           const { leftLabel, rightLabel } = PREFERENCE_METRIC_LABELS[metric.key];
 
@@ -46,9 +46,9 @@ export default function ReportPreferenceShareCard({
                 <span>{leftLabel}</span>
                 <span>{rightLabel}</span>
               </div>
-              <div className="relative h-1.5 rounded-full bg-[#a9b8ff]">
+              <div className="relative h-1.5 rounded-full bg-primary-300">
                 <span
-                  className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-[#4c65ed] bg-white"
+                  className="absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-[#4c65ed] bg-neutral-00"
                   style={{ left: `${metric.value}%` }}
                 />
               </div>
