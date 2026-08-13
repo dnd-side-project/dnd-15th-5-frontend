@@ -9,10 +9,10 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.chapchap"
+      "bundleIdentifier": "kr.chapchap.app"
     },
     "android": {
-      "package": "com.chapchap",
+      "package": "kr.chapchap.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
