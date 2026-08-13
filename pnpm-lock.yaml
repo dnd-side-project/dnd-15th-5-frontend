@@ -31,6 +31,9 @@ importers:
       prettier:
         specifier: ^3.9.6
         version: 3.9.6
+      svgo:
+        specifier: ^4.0.2
+        version: 4.0.2
       turbo:
         specifier: ^2.10.9
         version: 2.10.9
@@ -273,9 +276,6 @@ importers:
       storybook:
         specifier: ^10.5.5
         version: 10.5.5(@types/react@19.2.17)(prettier@3.9.6)(react@19.2.3)
-      svgo:
-        specifier: ^4.0.2
-        version: 4.0.2
       ts-jest:
         specifier: ^29.4.12
         version: 29.4.12(@babel/core@7.29.7)(@jest/transform@30.4.1)(@jest/types@30.4.1)(babel-jest@30.4.1(@babel/core@7.29.7))(esbuild@0.28.1)(jest-util@30.4.1)(jest@30.4.2(@types/node@22.20.1))(typescript@6.0.3)
