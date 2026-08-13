@@ -4,3 +4,11 @@
 @import '@chapchap/shared/design/typography.css';
 @import '@chapchap/shared/design/shadows.css';
 @import '@chapchap/shared/design/radius.css';
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}

@@ -1,0 +1,95 @@
+import { fn } from 'storybook/test';
+
+import { Button } from './Button';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
+
+const meta = {
+  title: 'Shared/Button',
+  component: Button,
+  args: {
+    onClick: fn(),
+  },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'icon-primary', 'icon'],
+    },
+    size: {
+      control: 'select',
+      options: ['xlarge', 'large', 'medium', 'small'],
+    },
+    children: {
+      control: 'text',
+    },
+    disabled: {
+      control: 'boolean',
+    },
+    className: {
+      control: 'text',
+    },
+  },
+} satisfies Meta<typeof Button>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Primary: Story = {
+  args: {
+    children: '상세보기',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+    children: '카카오톡으로 공유하기',
+    size: 'medium',
+  },
+};
+
+export const SecondaryWithIcon: Story = {
+  args: {
+    variant: 'secondary',
+    size: 'medium',
+    children: (
+      <>
+        <span aria-hidden="true" className="text-title-01-semibold">
+          ⇩
+        </span>
+        이미지 저장
+      </>
+    ),
+  },
+};
+
+export const IconPrimary: Story = {
+  args: {
+    variant: 'icon-primary',
+    'aria-label': '기록 추가',
+    children: (
+      <span aria-hidden="true" className="text-title-01-semibold">
+        +
+      </span>
+    ),
+  },
+};
+
+export const Icon: Story = {
+  args: {
+    variant: 'icon',
+    'aria-label': '뒤로 가기',
+    children: (
+      <span aria-hidden="true" className="text-title-01-semibold">
+        ‹
+      </span>
+    ),
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    children: '다음으로',
+    disabled: true,
+  },
+};
