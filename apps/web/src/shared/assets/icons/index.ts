@@ -1,3 +1,6 @@
+import StatusErrorIcon from '@chapchap/assets/icons/ic-status-error.svg?react';
+import StatusSuccessIcon from '@chapchap/assets/icons/ic-status-success.svg?react';
+
 import AddIcon from './ic-add.svg?react';
 import AvatarIcon from './ic-avatar.svg?react';
 import CheckIcon from './ic-check.svg?react';
@@ -18,9 +21,6 @@ import NotificationUnreadIcon from './ic-notification-unread.svg?react';
 import SearchIcon from './ic-search.svg?react';
 import ShareIcon from './ic-share.svg?react';
 import ShopRecommendIcon from './ic-shop-recommend.svg?react';
-import StatusErrorIcon from './ic-status-error.svg?react';
-import StatusSuccessIcon from './ic-status-success.svg?react';
-
 export {
   AddIcon,
   AvatarIcon,
