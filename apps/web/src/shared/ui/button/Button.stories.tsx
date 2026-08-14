@@ -2,7 +2,7 @@ import { fn } from 'storybook/test';
 
 import { AddIcon, ChevronLeftIcon, ShareIcon } from '@/shared/assets/icons';
 
-import { Button } from './Button';
+import { Button } from '.';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -19,7 +19,7 @@ const meta = {
     },
     size: {
       control: 'select',
-      options: ['xlarge', 'large', 'medium', 'small'],
+      options: ['large', 'medium', 'small', 'icon'],
     },
     children: {
       control: 'text',
@@ -74,6 +74,7 @@ export const IconPrimary: Story = {
 export const Icon: Story = {
   args: {
     variant: 'icon',
+    size: 'icon',
     'aria-label': '뒤로 가기',
     children: <ChevronLeftIcon aria-hidden="true" />,
   },
