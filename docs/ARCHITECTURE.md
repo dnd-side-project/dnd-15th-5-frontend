@@ -79,8 +79,9 @@
 │   └── mobile/                 # Expo + React Native
 ├── packages/
 │   ├── shared/                 # 웹과 모바일이 함께 쓰는 코드
-│   │   ├── src/                # 브릿지 메시지 규약 등 런타임 코드
-│   │   └── design/             # 디자인 토큰 CSS
+│   │   ├── assets/             # 웹과 모바일이 함께 쓰는 에셋
+│   │   ├── design/             # 디자인 토큰 CSS
+│   │   └── src/                # 브릿지 메시지 규약 등 런타임 코드
 │   ├── eslint-config/          # 공통 ESLint base 설정
 │   └── typescript-config/      # 공통 TypeScript base 설정
 ├── docs/
@@ -92,6 +93,7 @@
 - workspace 패키지는 `workspace:*`로 참조한다.
 - `packages/*-config`에는 플랫폼에 독립적인 공통 base만 두고 웹·모바일 전용 설정은 각 앱에서 관리한다.
 - `packages/shared/src`에는 웹과 모바일이 모두 사용하는 런타임 코드만 둔다. 양쪽에서 동작해야 하므로 DOM API와 React Native API를 사용하지 않으며, 타입·상수·순수 함수 위주로 관리한다.
+- `packages/shared/assets`에는 웹과 모바일이 같은 원본을 사용하는 에셋만 둔다. 플랫폼별 변환은 각 앱의 빌드 설정에서 처리한다.
 - `packages/shared/design`에는 두 앱이 함께 읽는 디자인 토큰 CSS만 둔다. 한쪽에서만 쓰는 스타일은 해당 앱의 진입 CSS에서 관리한다.
 - 웹이나 모바일 한쪽에서만 쓰는 코드는 `packages/shared`가 아니라 해당 앱 안에서 관리한다.
 
@@ -285,6 +287,7 @@ apps/mobile/src/
 ├── features/           # 도메인 단위 기능
 ├── native/             # 카메라·위치 등 네이티브 기능 래퍼
 └── shared/             # 모바일 앱 안에서만 쓰는 공통 코드
+    └── assets/         # 모바일 전용 아이콘·이미지
 ```
 
 - `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 관리한다. 웹의 `app/routes`와 `pages` 관계와 같다.

@@ -6,6 +6,7 @@ module.exports = {
     url: 'http://localhost/',
   },
   moduleNameMapper: {
+    '\\.svg\\?react$': '<rootDir>/test/svgMock.tsx',
     '^@/shared/lib/env$': '<rootDir>/src/shared/lib/env.mock.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
   },

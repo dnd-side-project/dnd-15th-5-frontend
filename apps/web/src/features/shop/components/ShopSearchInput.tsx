@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { SearchIcon } from '@/shared/assets/icons';
+
 import type { FormEvent } from 'react';
 
 type ShopSearchInputProps = {
@@ -32,19 +34,7 @@ export default function ShopSearchInput({ onSearch }: ShopSearchInputProps) {
         className="min-w-0 flex-1 bg-transparent"
       />
       <button type="submit" aria-label="검색">
-        {/* TODO: 아이콘 시스템 세팅되면 shared/assets의 ic-search.svg로 교체 */}
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-hidden="true"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <line x1="16.5" y1="16.5" x2="21" y2="21" strokeLinecap="round" />
-        </svg>
+        <SearchIcon className="size-6 text-neutral-500" aria-hidden="true" />
       </button>
     </form>
   );
