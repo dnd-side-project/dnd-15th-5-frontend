@@ -35,7 +35,7 @@ export type ButtonProps = BaseButtonProps &
  * 사용자 동작을 실행하는 공통 버튼입니다.
  *
  * Base UI의 키보드 조작과 비활성화 동작을 지원합니다.
- * 로딩 중에는 기존 크기를 유지한 채 스피너를 표시하고 사용자 동작을 차단합니다.
+ * 로딩 중에는 기존 크기와 포커스를 유지한 채 스피너를 표시하고 사용자 동작을 차단합니다.
  * `primary`와 `secondary`는 `large` 또는 `medium`일 때 전체 너비로 렌더링됩니다.
  * 50px 높이 등 기본 스타일에 없는 값은 `className`으로 지정합니다.
  * `icon`과 `icon-primary` variant에는 버튼의 목적을 설명하는 `aria-label`이 반드시 필요합니다.
@@ -93,6 +93,7 @@ export function Button(props: ButtonProps) {
       aria-busy={isLoading || undefined}
       className={cn(buttonVariants({ size: resolvedSize, variant }), className)}
       disabled={disabled || isLoading}
+      focusableWhenDisabled={isLoading}
     >
       {isLoading ? (
         <>
