@@ -54,7 +54,7 @@
       [
         "expo-media-library",
         {
-          "photosPermission": false,
+          "photosPermission": "ChapChap이 영수증 사진을 선택하도록 사진 보관함 접근을 허용해 주세요.",
           "savePhotosPermission": "ChapChap이 리포트 이미지를 사진 보관함에 저장하도록 허용해 주세요.",
           "granularPermissions": []
         }
