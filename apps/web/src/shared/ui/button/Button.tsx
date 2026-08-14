@@ -1,6 +1,7 @@
 import { Button as BaseButton } from '@base-ui/react/button';
 
 import { cn } from '@/shared/lib/cn';
+import { Spinner } from '@/shared/ui/spinner';
 
 import { buttonVariants } from './buttonVariants';
 
@@ -21,6 +22,7 @@ type BaseButtonProps = Omit<
 
 type ButtonActionProps = {
   disabled?: ComponentProps<typeof BaseButton>['disabled'];
+  isLoading?: boolean;
   onClick?: ComponentProps<typeof BaseButton>['onClick'];
 };
 
@@ -33,6 +35,7 @@ export type ButtonProps = BaseButtonProps &
  * 사용자 동작을 실행하는 공통 버튼입니다.
  *
  * Base UI의 키보드 조작과 비활성화 동작을 지원합니다.
+ * 로딩 중에는 기존 크기를 유지한 채 스피너를 표시하고 사용자 동작을 차단합니다.
  * `primary`와 `secondary`는 `large` 또는 `medium`일 때 전체 너비로 렌더링됩니다.
  * 50px 높이 등 기본 스타일에 없는 값은 `className`으로 지정합니다.
  * `icon`과 `icon-primary` variant에는 버튼의 목적을 설명하는 `aria-label`이 반드시 필요합니다.
@@ -66,18 +69,41 @@ export type ButtonProps = BaseButtonProps &
  * @param props.className - 스타일을 확장하거나 재정의할 Tailwind CSS 클래스입니다.
  * @param props.type - 네이티브 버튼 타입입니다. 기본값은 `button`이며, 폼을 제출할 때는 `submit`을 지정합니다.
  * @param props.disabled - 버튼을 비활성화합니다.
+ * @param props.isLoading - 로딩 상태를 표시하고 버튼을 비활성화합니다.
  * @param props.onClick - 버튼을 실행했을 때 호출됩니다.
  * @param props.aria-label - 아이콘 전용 variant의 목적을 설명하는 접근성 이름입니다.
  */
 export function Button(props: ButtonProps) {
-  const { className, size, type = 'button', variant = 'primary', ...restProps } = props;
+  const {
+    children,
+    className,
+    disabled,
+    isLoading = false,
+    size,
+    type = 'button',
+    variant = 'primary',
+    ...restProps
+  } = props;
   const resolvedSize = size ?? (variant === 'icon' ? 'icon' : 'large');
 
   return (
     <BaseButton
-      type={type}
-      className={cn(buttonVariants({ size: resolvedSize, variant }), className)}
       {...restProps}
-    />
+      type={type}
+      aria-busy={isLoading || undefined}
+      className={cn(buttonVariants({ size: resolvedSize, variant }), className)}
+      disabled={disabled || isLoading}
+    >
+      {isLoading ? (
+        <>
+          <Spinner className="absolute" />
+          <span className="inline-flex items-center justify-center gap-[inherit] opacity-0">
+            {children}
+          </span>
+        </>
+      ) : (
+        children
+      )}
+    </BaseButton>
   );
 }

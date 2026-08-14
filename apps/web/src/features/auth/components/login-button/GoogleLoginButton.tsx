@@ -3,7 +3,10 @@ import { Button } from '@/shared/ui/button';
 
 import type { ComponentProps } from 'react';
 
-type GoogleLoginButtonProps = Pick<ComponentProps<typeof Button>, 'disabled' | 'onClick'>;
+type GoogleLoginButtonProps = Pick<
+  ComponentProps<typeof Button>,
+  'disabled' | 'isLoading' | 'onClick'
+>;
 
 export default function GoogleLoginButton(props: GoogleLoginButtonProps) {
   return (

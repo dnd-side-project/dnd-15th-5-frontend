@@ -27,6 +27,9 @@ const meta = {
     disabled: {
       control: 'boolean',
     },
+    isLoading: {
+      control: 'boolean',
+    },
     className: {
       control: 'text',
     },
@@ -84,5 +87,12 @@ export const Disabled: Story = {
   args: {
     children: '다음으로',
     disabled: true,
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    children: '다음으로',
+    isLoading: true,
   },
 };

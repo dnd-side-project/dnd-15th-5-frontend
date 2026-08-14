@@ -3,7 +3,10 @@ import { Button } from '@/shared/ui/button';
 
 import type { ComponentProps } from 'react';
 
-type KakaoLoginButtonProps = Pick<ComponentProps<typeof Button>, 'disabled' | 'onClick'>;
+type KakaoLoginButtonProps = Pick<
+  ComponentProps<typeof Button>,
+  'disabled' | 'isLoading' | 'onClick'
+>;
 
 export default function KakaoLoginButton(props: KakaoLoginButtonProps) {
   return (

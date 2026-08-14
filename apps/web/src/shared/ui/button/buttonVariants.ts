@@ -2,7 +2,7 @@ import { cva } from 'class-variance-authority';
 
 export const buttonVariants = cva(
   [
-    'inline-flex shrink-0 items-center justify-center border-0',
+    'relative inline-flex shrink-0 items-center justify-center border-0',
     'transition-colors outline-none select-none',
     'focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1',
   ],
