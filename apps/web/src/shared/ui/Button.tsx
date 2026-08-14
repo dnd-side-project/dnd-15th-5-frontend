@@ -9,7 +9,14 @@ import type { ComponentProps } from 'react';
 
 type BaseButtonProps = Omit<
   ComponentProps<typeof BaseButton>,
-  'aria-label' | 'children' | 'className' | 'disabled' | 'onClick'
+  | 'aria-label'
+  | 'children'
+  | 'className'
+  | 'disabled'
+  | 'focusableWhenDisabled'
+  | 'nativeButton'
+  | 'onClick'
+  | 'render'
 >;
 
 type ButtonActionProps = {
