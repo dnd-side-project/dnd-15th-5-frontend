@@ -26,7 +26,9 @@ export const openReceiptCamera = async (): Promise<{ opened: true }> => {
       throw new Error('카메라 권한이 필요합니다');
     }
 
-    router.push('/camera');
+    // NOTE: push 대신 navigate를 써서, 첫 요청이 끝난 직후 같은 요청이 다시 와도
+    // 이미 열려 있는 촬영 화면을 중복으로 쌓지 않는다.
+    router.navigate('/camera');
 
     return { opened: true };
   } finally {

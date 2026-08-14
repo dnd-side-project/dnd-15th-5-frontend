@@ -19,6 +19,8 @@ export default function ReceiptConfirmScreen() {
       <Pressable
         onPress={() => router.back()}
         hitSlop={12}
+        accessibilityRole="button"
+        accessibilityLabel="이전 화면으로 돌아가기"
         style={{ marginTop: insets.top + 12 }}
         className="px-5 py-3"
       >

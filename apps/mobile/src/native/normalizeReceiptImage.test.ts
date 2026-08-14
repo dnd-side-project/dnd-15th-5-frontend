@@ -97,7 +97,7 @@ describe('normalizeReceiptImage', () => {
     expect(result).toEqual({ uri: 'file://pass-3.jpg' });
   });
 
-  it('최소 화질까지 낮춰도 5MB를 넘으면 더 이상 시도하지 않고 마지막 결과를 반환한다', async () => {
+  it('최소 화질까지 낮춰도 5MB를 넘으면 더 이상 시도하지 않고 오류를 던진다', async () => {
     const saveResults = Array.from({ length: 8 }, (_, index) => ({
       uri: `file://pass-${index}.jpg`,
     }));
@@ -105,14 +105,11 @@ describe('normalizeReceiptImage', () => {
     mockManipulate.mockReturnValue(context as never);
     MockFile.mockImplementation(() => ({ size: MAX_FILE_SIZE_BYTES + 1 }) as never);
 
-    const result = await normalizeReceiptImage({
-      uri: 'file://original.jpg',
-      width: 2000,
-      height: 3000,
-    });
+    await expect(
+      normalizeReceiptImage({ uri: 'file://original.jpg', width: 2000, height: 3000 })
+    ).rejects.toThrow('이미지 용량을 5MB 이하로 줄이지 못했습니다');
 
     // NOTE: 0.8에서 시작해 0.1씩 낮추면 0.1(최소치)까지 총 8번(0.8~0.1) 저장을 시도한다.
     expect(mockSaveAsync).toHaveBeenCalledTimes(8);
-    expect(result).toEqual({ uri: 'file://pass-7.jpg' });
   });
 });

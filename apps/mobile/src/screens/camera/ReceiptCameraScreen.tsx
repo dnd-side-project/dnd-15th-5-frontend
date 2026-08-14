@@ -33,9 +33,10 @@ export default function ReceiptCameraScreen() {
       const normalized = await normalizeReceiptImage(picture);
 
       router.replace({ pathname: '/receipt-confirm', params: { uri: normalized.uri } });
-    } catch {
+    } catch (error) {
       // NOTE: 촬영에 실패해도 화면을 유지해 다시 시도할 수 있게 한다.
       setIsProcessing(false);
+      Alert.alert('사진을 처리하지 못했습니다', error instanceof Error ? error.message : undefined);
     }
   };
 
@@ -77,7 +78,13 @@ export default function ReceiptCameraScreen() {
       <View pointerEvents="none" className="absolute inset-x-0 top-0 h-33.5 bg-neutral-900/80" />
       <View pointerEvents="none" className="absolute inset-x-0 bottom-0 h-44.5 bg-neutral-900/80" />
 
-      <Pressable onPress={() => router.back()} hitSlop={12} className="absolute left-5 top-19.25">
+      <Pressable
+        onPress={() => router.back()}
+        hitSlop={12}
+        accessibilityRole="button"
+        accessibilityLabel="이전 화면으로 돌아가기"
+        className="absolute left-5 top-19.25"
+      >
         {/* NOTE: react-native-svg 컴포넌트라 색은 className이 아닌 color prop으로 지정한다. #ffffff = neutral-00 */}
         <ChevronLeftIcon width={10} height={18} color="#ffffff" />
       </Pressable>
@@ -86,6 +93,8 @@ export default function ReceiptCameraScreen() {
         onPress={handlePickFromLibrary}
         disabled={isProcessing}
         hitSlop={12}
+        accessibilityRole="button"
+        accessibilityLabel="사진 보관함에서 선택"
         className={`absolute bottom-[74.5px] left-10 h-15 w-15 items-center justify-center rounded-full bg-neutral-900/80 ${isProcessing ? 'opacity-40' : ''}`}
       >
         {/* #ffffff = neutral-00 */}
@@ -95,6 +104,8 @@ export default function ReceiptCameraScreen() {
       <Pressable
         onPress={handleCapture}
         disabled={!isCameraReady || isProcessing}
+        accessibilityRole="button"
+        accessibilityLabel="영수증 촬영"
         className={`absolute bottom-16.75 left-39.75 h-18.75 w-18.75 items-center justify-center rounded-full bg-neutral-00 ${!isCameraReady || isProcessing ? 'opacity-40' : ''}`}
       >
         <View className="h-15 w-15 rounded-full border-[3px] border-neutral-900" />

@@ -47,5 +47,9 @@ export const normalizeReceiptImage = async ({
     result = await image.saveAsync({ format: SaveFormat.JPEG, compress: quality });
   }
 
+  if (new File(result.uri).size > MAX_FILE_SIZE_BYTES) {
+    throw new Error('이미지 용량을 5MB 이하로 줄이지 못했습니다');
+  }
+
   return result;
 };
