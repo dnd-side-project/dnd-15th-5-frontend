@@ -1,5 +1,7 @@
 import { MemoryRouter } from 'react-router-dom';
 
+import { AddIcon } from '@/shared/assets/icons';
+
 import { LinkButton } from './LinkButton';
 
 import type { LinkButtonProps } from './LinkButton';
@@ -54,10 +56,6 @@ export const IconPrimary: Story = {
     to: '/record',
     variant: 'icon-primary',
     'aria-label': '기록 추가',
-    children: (
-      <span aria-hidden="true" className="text-title-01-semibold">
-        +
-      </span>
-    ),
+    children: <AddIcon aria-hidden="true" />,
   },
 };

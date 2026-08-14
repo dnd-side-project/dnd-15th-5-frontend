@@ -1,5 +1,7 @@
 import { fn } from 'storybook/test';
 
+import { AddIcon, ChevronLeftIcon, ShareIcon } from '@/shared/assets/icons';
+
 import { Button } from './Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -54,9 +56,7 @@ export const SecondaryWithIcon: Story = {
     size: 'medium',
     children: (
       <>
-        <span aria-hidden="true" className="text-title-01-semibold">
-          ⇩
-        </span>
+        <ShareIcon aria-hidden="true" />
         이미지 저장
       </>
     ),
@@ -67,11 +67,7 @@ export const IconPrimary: Story = {
   args: {
     variant: 'icon-primary',
     'aria-label': '기록 추가',
-    children: (
-      <span aria-hidden="true" className="text-title-01-semibold">
-        +
-      </span>
-    ),
+    children: <AddIcon aria-hidden="true" />,
   },
 };
 
@@ -79,11 +75,7 @@ export const Icon: Story = {
   args: {
     variant: 'icon',
     'aria-label': '뒤로 가기',
-    children: (
-      <span aria-hidden="true" className="text-title-01-semibold">
-        ‹
-      </span>
-    ),
+    children: <ChevronLeftIcon aria-hidden="true" />,
   },
 };
 
