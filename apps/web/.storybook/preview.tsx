@@ -8,7 +8,7 @@ const preview: Preview = {
   tags: ['autodocs'],
   decorators: [
     (Story) => (
-      <div className="flex w-screen items-center justify-center">
+      <div className="flex w-full items-center justify-center">
         <div className="w-full max-w-120 px-4">
           <Story />
         </div>
