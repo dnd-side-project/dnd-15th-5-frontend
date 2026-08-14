@@ -52,6 +52,23 @@
         }
       ],
       [
+        "expo-camera",
+        {
+          "cameraPermission": "ChapChap이 영수증을 촬영하도록 카메라 접근을 허용해 주세요.",
+          "microphonePermission": "ChapChap은 마이크를 사용하지 않습니다.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ChapChap이 영수증 사진을 선택하도록 사진 보관함 접근을 허용해 주세요.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
         "expo-font",
         {
           "fonts": [

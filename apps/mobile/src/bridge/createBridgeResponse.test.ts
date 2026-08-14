@@ -1,5 +1,6 @@
 import { BRIDGE_MESSAGE_KIND } from '@chapchap/shared/bridge';
 
+import { openReceiptCamera } from '@/native/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/saveImageToLibrary';
 
 import { createBridgeResponse } from './createBridgeResponse';
@@ -7,8 +8,10 @@ import { createBridgeResponse } from './createBridgeResponse';
 import type { BridgeRequest } from '@chapchap/shared/bridge';
 
 jest.mock('@/native/saveImageToLibrary', () => ({ saveImageToLibrary: jest.fn() }));
+jest.mock('@/native/openReceiptCamera', () => ({ openReceiptCamera: jest.fn() }));
 
 const mockSaveImageToLibrary = jest.mocked(saveImageToLibrary);
+const mockOpenReceiptCamera = jest.mocked(openReceiptCamera);
 
 const createRequest = (overrides: Partial<BridgeRequest> = {}): BridgeRequest =>
   ({
@@ -79,6 +82,46 @@ describe('createBridgeResponse', () => {
       type: request.type,
       ok: false,
       error: { message: '사진 저장 권한이 필요합니다' },
+    });
+  });
+
+  it('영수증 촬영 요청을 처리하고 카메라 화면이 열렸다는 응답을 전달한다', async () => {
+    mockOpenReceiptCamera.mockResolvedValue({ opened: true });
+    const request: BridgeRequest<'captureReceipt'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-04',
+      type: 'captureReceipt',
+      payload: {},
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { opened: true },
+    });
+  });
+
+  it('카메라 권한이 없으면 촬영 요청을 실패로 응답한다', async () => {
+    mockOpenReceiptCamera.mockRejectedValue(new Error('카메라 권한이 필요합니다'));
+    const request: BridgeRequest<'captureReceipt'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-06',
+      type: 'captureReceipt',
+      payload: {},
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: false,
+      error: { message: '카메라 권한이 필요합니다' },
     });
   });
 });
