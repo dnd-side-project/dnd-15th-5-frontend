@@ -1,9 +1,19 @@
 echo "🔎 SVG 아이콘 최적화 상태를 확인합니다..."
 
-pnpm check:icons || {
-  echo "⚠️ SVG 아이콘 최적화가 필요합니다. 커밋이 중단됩니다."
-  exit 1
-}
+pnpm check:icons
+icon_check_status=$?
+
+case "$icon_check_status" in
+  0) ;;
+  1)
+    echo "⚠️ SVG 아이콘 최적화가 필요합니다. 커밋이 중단됩니다."
+    exit 1
+    ;;
+  *)
+    echo "⚠️ SVG 아이콘 검사를 실행하지 못했습니다. 커밋이 중단됩니다."
+    exit "$icon_check_status"
+    ;;
+esac
 
 echo "✅ SVG 아이콘 최적화 상태를 확인했습니다."
 
