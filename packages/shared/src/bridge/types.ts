@@ -11,8 +11,7 @@ export const BRIDGE_MESSAGE_KIND = {
  * 웹이 네이티브에 요청할 수 있는 동작과 각각의 요청·응답 타입.
  * 여기에 항목을 추가하면 웹과 네이티브 양쪽에서 타입 검사가 함께 이뤄진다.
  *
- * TODO: ping은 브릿지 동작 확인용이며 실제 기능에서 사용하지 않는다.
- * 카메라 등 실제 요청 타입이 추가되면 계속 둘지 결정한다.
+ * NOTE: ping은 브릿지 동작 확인용이며 실제 기능에서 사용하지 않는다.
  */
 export type BridgeMessageMap = {
   ping: {
@@ -22,6 +21,12 @@ export type BridgeMessageMap = {
   saveImage: {
     payload: { base64: string; fileName: string };
     result: { saved: true };
+  };
+  // NOTE: 영수증 촬영·인식·기록은 앱에서만 제공하는 기능이라, 이 요청은 네이티브 카메라
+  // 화면을 여는 데까지만 관여한다. 촬영 결과는 웹으로 돌아오지 않고 네이티브 화면 안에서 이어진다.
+  captureReceipt: {
+    payload: Record<string, never>;
+    result: { opened: true };
   };
 };
 
