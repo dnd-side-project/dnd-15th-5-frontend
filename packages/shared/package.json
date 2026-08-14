@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "exports": {
+    "./assets/icons/*.svg": "./assets/icons/*.svg",
     "./bridge": "./src/bridge/index.ts",
     "./design/*.css": "./design/*.css"
   },
