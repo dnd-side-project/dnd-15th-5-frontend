@@ -158,6 +158,10 @@ export const get = () => {};
 - 추가 전 경량화
 - 중복 Asset 확인
 - 역할이 드러나는 이름 사용
+- 웹 전용 에셋은 `apps/web/src/shared/assets`, 모바일 전용 에셋은 `apps/mobile/src/shared/assets`에서 관리
+- 웹과 모바일이 같은 원본을 사용하는 에셋은 `packages/shared/assets`에서 관리
+- SVG 추가·수정 후 `pnpm optimize:icons` 실행
+- `pnpm check:icons`로 최적화 상태를 검사하며, Husky pre-commit과 `pnpm lint`에서도 자동 검사
 
 ---
 

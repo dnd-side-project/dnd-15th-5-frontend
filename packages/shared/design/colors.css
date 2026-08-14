@@ -1,0 +1,36 @@
+/*
+ * Tailwind 기본 색상 팔레트를 끄고 시안에 있는 색만 쓰도록 제한한다.
+ * 끄지 않으면 `bg-neutral-800`처럼 시안에 없는 색이 기본 팔레트로 조용히 통과한다.
+ * `transparent`, `current`처럼 값이 없는 키워드는 팔레트와 무관해서 그대로 쓸 수 있다.
+ */
+@theme {
+  --color-*: initial;
+
+  /* Neutral */
+  --color-neutral-900: #000000;
+  --color-neutral-700: #1f1f1f;
+  --color-neutral-600: #4b4b4b;
+  --color-neutral-500: #8e8e8e;
+  --color-neutral-400: #cacaca;
+  --color-neutral-300: #e1e1e1;
+  --color-neutral-200: #eeeeee;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-50: #fafafa;
+  --color-neutral-00: #ffffff;
+
+  /* Primary */
+  --color-primary-700: #1a34c7;
+  --color-primary-600: #2a4bef;
+  --color-primary-500: #4a6bff;
+  --color-primary-400: #7a93ff;
+  --color-primary-300: #a6b6ff;
+  --color-primary-200: #cbd5ff;
+  --color-primary-100: #e5eaff;
+  --color-primary-50: #f9ffff;
+
+  /* Semantic */
+  --color-notification: #ff5252;
+
+  /* Brand */
+  --color-kakao: #fee500;
+}

@@ -12,6 +12,7 @@ storybook-static
 # Native generated files
 **/.expo/
 **/expo-env.d.ts
+**/uniwind-types.d.ts
 **/ios/
 **/android/
 
