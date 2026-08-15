@@ -29,6 +29,16 @@ type PendingRequest = {
   timeoutId: ReturnType<typeof setTimeout>;
 };
 
+export class NativeBridgeRequestError extends Error {
+  readonly reason: 'timeout';
+
+  constructor(reason: 'timeout', message: string) {
+    super(message);
+    this.name = 'NativeBridgeRequestError';
+    this.reason = reason;
+  }
+}
+
 /** 응답을 기다리는 요청들. 응답이 도착하거나 제한 시간이 지나면 제거된다. */
 const pendingRequests = new Map<string, PendingRequest>();
 
@@ -122,7 +132,12 @@ export const requestToNative = <TType extends BridgeMessageType>(
   return new Promise<BridgeResult<TType>>((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       pendingRequests.delete(id);
-      reject(new Error(`네이티브 응답이 오지 않아 요청이 만료되었습니다: ${type}`));
+      reject(
+        new NativeBridgeRequestError(
+          'timeout',
+          `네이티브 응답이 오지 않아 요청이 만료되었습니다: ${type}`
+        )
+      );
     }, BRIDGE_REQUEST_TIMEOUT_MS[type]);
 
     pendingRequests.set(id, {

@@ -4,8 +4,12 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
-import { createBridgeResponse, createResponseScript } from '@/bridge';
-import { useForegroundLocationPermission } from '@/native/location';
+import {
+  createBridgeResponse,
+  createResponseScript,
+  getUrlOrigin,
+  isTrustedBridgeUrl,
+} from '@/bridge';
 
 import type { WebViewMessageEvent } from 'react-native-webview';
 
@@ -40,13 +44,17 @@ function Guide({ title, descriptions }: GuideProps) {
 export default function HomeScreen() {
   // 개발 빌드는 .env의 로컬 개발 서버를, preview·production 빌드는 eas.json에 지정한 배포 주소를 사용한다
   const webUrl = process.env.EXPO_PUBLIC_WEB_URL;
+  const trustedWebOrigin = webUrl ? getUrlOrigin(webUrl) : null;
   const webViewRef = useRef<WebView>(null);
   const [loadErrorMessage, setLoadErrorMessage] = useState<string | null>(null);
-  const isLocationPermissionRequestComplete = useForegroundLocationPermission(Boolean(webUrl));
   // NOTE: source에 매번 새 객체를 넘기면 값이 같아도 WebView가 다시 로드할 수 있어 재사용한다.
   const webViewSource = useMemo(() => (webUrl ? { uri: webUrl } : undefined), [webUrl]);
 
   const handleBridgeMessage = async (event: WebViewMessageEvent) => {
+    if (!trustedWebOrigin || !isTrustedBridgeUrl(event.nativeEvent.url, trustedWebOrigin)) {
+      return;
+    }
+
     const message = parseBridgeMessage(event.nativeEvent.data);
 
     if (!isBridgeRequest(message)) {
@@ -55,7 +63,8 @@ export default function HomeScreen() {
 
     const response = await createBridgeResponse(message);
 
-    webViewRef.current?.injectJavaScript(createResponseScript(response));
+    // NOTE: 처리 중 외부 페이지로 이동해도 위치 등 네이티브 응답을 전달하지 않는다.
+    webViewRef.current?.injectJavaScript(createResponseScript(response, trustedWebOrigin));
   };
 
   if (!webUrl) {
@@ -73,14 +82,6 @@ export default function HomeScreen() {
     );
   }
 
-  if (!isLocationPermissionRequestComplete) {
-    return (
-      <SafeAreaView className="flex-1 bg-neutral-00">
-        <ActivityIndicator className="flex-1" size="large" />
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-neutral-00">
       <WebView
@@ -91,7 +92,6 @@ export default function HomeScreen() {
         // https://github.com/react-native-webview/react-native-webview/issues/2963
         style={{ height: '99.9%', width: '100%' }}
         source={webViewSource}
-        geolocationEnabled
         onMessage={handleBridgeMessage}
         startInLoadingState
         // NOTE: 위 이슈와 같은 계열의 iOS 문제로, 콘텐츠 프로세스가 죽으면 페이지 이동 없이

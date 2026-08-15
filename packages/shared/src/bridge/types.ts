@@ -14,6 +14,16 @@ export const BRIDGE_MESSAGE_KIND = {
  * NOTE: ping은 브릿지 동작 확인용이며 실제 기능에서 사용하지 않는다.
  */
 export type BridgeMessageMap = {
+  getCurrentPosition: {
+    payload: Record<string, never>;
+    result:
+      | {
+          status: 'success';
+          position: { lat: number; lng: number; accuracy: number };
+        }
+      | { status: 'permissionDenied' }
+      | { status: 'servicesDisabled' };
+  };
   ping: {
     payload: { sentAt: number };
     result: { platform: string; receivedAt: number };

@@ -1,1 +1,1 @@
-export { isNativeApp, requestToNative } from './nativeBridge';
+export { isNativeApp, NativeBridgeRequestError, requestToNative } from './nativeBridge';

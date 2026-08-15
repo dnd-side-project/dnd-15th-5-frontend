@@ -38,8 +38,8 @@ jest.mock('../../hooks/useCurrentPosition', () => ({
   useCurrentPosition: () => ({
     position: null,
     isLoading: false,
-    error: { code: 1, message: '권한 거부' },
-    isGeolocationSupported: true,
+    error: { reason: 'permissionDenied', message: '위치 오류' },
+    isCurrentPositionSupported: true,
     requestPosition,
   }),
 }));
@@ -49,12 +49,18 @@ jest.mock('../current-location/CurrentLocationCameraController', () => () => nul
 jest.mock(
   '../current-location/CurrentLocationButton',
   () =>
-    ({ showError, onRequestPosition }: { showError: boolean; onRequestPosition: () => void }) => (
+    ({
+      errorMessage,
+      onRequestPosition,
+    }: {
+      errorMessage: string | null;
+      onRequestPosition: () => void;
+    }) => (
       <>
         <button type="button" onClick={onRequestPosition}>
           현재 위치 요청
         </button>
-        {showError && <p role="status">위치 오류</p>}
+        {errorMessage && <p role="status">{errorMessage}</p>}
       </>
     )
 );

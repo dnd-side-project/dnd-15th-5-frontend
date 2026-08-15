@@ -1,55 +1,22 @@
 import { ControlPosition, MapControl, useMap } from '@vis.gl/react-google-maps';
 
-import { isNativeApp } from '@/shared/lib/bridge';
-
 import type { MapPosition } from '../../types';
-
-const GEOLOCATION_PERMISSION_DENIED_CODE = 1;
 
 type CurrentLocationButtonProps = {
   position: MapPosition | null;
   isLoading: boolean;
-  error: GeolocationPositionError | null;
-  isGeolocationSupported: boolean;
-  showError: boolean;
+  errorMessage: string | null;
   onRequestPosition: () => void;
-};
-
-const getLocationStatusMessage = (
-  isGeolocationSupported: boolean,
-  error: GeolocationPositionError | null,
-  isNativeEnvironment: boolean
-) => {
-  if (!isGeolocationSupported) {
-    return '현재 위치를 사용할 수 없는 환경입니다.';
-  }
-
-  if (error?.code === GEOLOCATION_PERMISSION_DENIED_CODE) {
-    return isNativeEnvironment
-      ? '기기 설정에서 위치 권한을 허용해주세요.'
-      : '브라우저 설정에서 위치 권한을 허용해주세요.';
-  }
-
-  if (error) {
-    return '위치를 불러오지 못했습니다. 다시 시도해주세요.';
-  }
-
-  return null;
 };
 
 export default function CurrentLocationButton({
   position,
   isLoading,
-  error,
-  isGeolocationSupported,
-  showError,
+  errorMessage,
   onRequestPosition,
 }: CurrentLocationButtonProps) {
   const map = useMap();
   const isDisabled = !map || isLoading;
-  const errorMessage = showError
-    ? getLocationStatusMessage(isGeolocationSupported, error, isNativeApp())
-    : null;
 
   const handleCurrentLocationClick = () => {
     if (!map) {

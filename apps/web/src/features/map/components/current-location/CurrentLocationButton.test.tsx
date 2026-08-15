@@ -8,7 +8,6 @@ import type { PropsWithChildren } from 'react';
 const panTo = jest.fn();
 const requestPosition = jest.fn();
 let map: { panTo: typeof panTo } | null = { panTo };
-let nativeApp = false;
 
 jest.mock('@vis.gl/react-google-maps', () => ({
   ControlPosition: { RIGHT_BOTTOM: 9 },
@@ -16,16 +15,11 @@ jest.mock('@vis.gl/react-google-maps', () => ({
   useMap: () => map,
 }));
 
-jest.mock('@/shared/lib/bridge', () => ({
-  isNativeApp: () => nativeApp,
-}));
-
 describe('<CurrentLocationButton />', () => {
   beforeEach(() => {
     panTo.mockReset();
     requestPosition.mockReset();
     map = { panTo };
-    nativeApp = false;
   });
 
   it('현재 위치가 없으면 버튼을 눌러 위치를 다시 요청한다', async () => {
@@ -34,9 +28,7 @@ describe('<CurrentLocationButton />', () => {
       <CurrentLocationButton
         position={null}
         isLoading={false}
-        error={null}
-        isGeolocationSupported
-        showError={false}
+        errorMessage={null}
         onRequestPosition={requestPosition}
       />
     );
@@ -53,9 +45,7 @@ describe('<CurrentLocationButton />', () => {
       <CurrentLocationButton
         position={position}
         isLoading={false}
-        error={null}
-        isGeolocationSupported
-        showError={false}
+        errorMessage={null}
         onRequestPosition={requestPosition}
       />
     );
@@ -71,9 +61,7 @@ describe('<CurrentLocationButton />', () => {
       <CurrentLocationButton
         position={null}
         isLoading
-        error={null}
-        isGeolocationSupported
-        showError={false}
+        errorMessage={null}
         onRequestPosition={requestPosition}
       />
     );
@@ -81,15 +69,12 @@ describe('<CurrentLocationButton />', () => {
     expect(screen.getByRole('button', { name: '현재 위치로 이동' })).toBeDisabled();
   });
 
-  it('최초 위치 권한 요청이 거부돼도 바로 안내를 보여주지 않는다', () => {
-    const permissionDenied = { code: 1, message: '권한 거부' } as GeolocationPositionError;
+  it('오류 메시지가 전달되지 않으면 안내를 보여주지 않는다', () => {
     render(
       <CurrentLocationButton
         position={null}
         isLoading={false}
-        error={permissionDenied}
-        isGeolocationSupported
-        showError={false}
+        errorMessage={null}
         onRequestPosition={requestPosition}
       />
     );
@@ -97,15 +82,12 @@ describe('<CurrentLocationButton />', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
-  it('웹에서 재요청하면 브라우저 권한 설정 안내를 보여준다', () => {
-    const permissionDenied = { code: 1, message: '권한 거부' } as GeolocationPositionError;
+  it('전달된 오류 메시지를 보여준다', () => {
     render(
       <CurrentLocationButton
         position={null}
         isLoading={false}
-        error={permissionDenied}
-        isGeolocationSupported
-        showError
+        errorMessage="브라우저 설정에서 위치 권한을 허용해주세요."
         onRequestPosition={requestPosition}
       />
     );
@@ -113,22 +95,5 @@ describe('<CurrentLocationButton />', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       '브라우저 설정에서 위치 권한을 허용해주세요.'
     );
-  });
-
-  it('앱에서 재요청하면 기기 권한 설정 안내를 보여준다', () => {
-    const permissionDenied = { code: 1, message: '권한 거부' } as GeolocationPositionError;
-    nativeApp = true;
-    render(
-      <CurrentLocationButton
-        position={null}
-        isLoading={false}
-        error={permissionDenied}
-        isGeolocationSupported
-        showError
-        onRequestPosition={requestPosition}
-      />
-    );
-
-    expect(screen.getByRole('status')).toHaveTextContent('기기 설정에서 위치 권한을 허용해주세요.');
   });
 });

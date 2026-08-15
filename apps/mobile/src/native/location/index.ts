@@ -1,1 +1,1 @@
-export { useForegroundLocationPermission } from './useForegroundLocationPermission';
+export { getCurrentPosition } from './getCurrentPosition';
