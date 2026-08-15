@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import { saveImageToLibrary } from '@/native/saveImageToLibrary';
+import { saveImageToLibrary } from '@/native/save-image';
 
 import type { BridgeMessageMap, BridgeMessageType } from '@chapchap/shared/bridge';
 

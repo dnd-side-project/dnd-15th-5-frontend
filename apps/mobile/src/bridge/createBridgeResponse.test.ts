@@ -1,12 +1,12 @@
 import { BRIDGE_MESSAGE_KIND } from '@chapchap/shared/bridge';
 
-import { saveImageToLibrary } from '@/native/saveImageToLibrary';
+import { saveImageToLibrary } from '@/native/save-image';
 
 import { createBridgeResponse } from './createBridgeResponse';
 
 import type { BridgeRequest } from '@chapchap/shared/bridge';
 
-jest.mock('@/native/saveImageToLibrary', () => ({ saveImageToLibrary: jest.fn() }));
+jest.mock('@/native/save-image', () => ({ saveImageToLibrary: jest.fn() }));
 
 const mockSaveImageToLibrary = jest.mocked(saveImageToLibrary);
 
