@@ -10,4 +10,7 @@ export const BRIDGE_REQUEST_TIMEOUT_MS = {
   ping: 10_000,
   // NOTE: 사진 보관함 권한을 처음 선택하는 시간을 포함한다.
   saveImage: 120_000,
+  // NOTE: 카메라 화면을 여는 데까지만 기다리며, 촬영 자체는 기다리지 않는다.
+  // 첫 실행에는 OS 카메라 권한 팝업에 사용자가 응답할 시간이 포함된다.
+  captureReceipt: 30_000,
 } as const satisfies Record<BridgeMessageType, number>;
