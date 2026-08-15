@@ -1,3 +1,4 @@
+import ChevronLeftIcon from '@chapchap/shared/assets/icons/ic-chevron-left.svg?react';
 import StatusErrorIcon from '@chapchap/shared/assets/icons/ic-status-error.svg?react';
 import StatusSuccessIcon from '@chapchap/shared/assets/icons/ic-status-success.svg?react';
 
@@ -5,7 +6,6 @@ import AddIcon from './ic-add.svg?react';
 import AvatarIcon from './ic-avatar.svg?react';
 import BlueLocationPinIcon from './ic-blue-location-pin.svg?react';
 import CheckIcon from './ic-check.svg?react';
-import ChevronLeftIcon from './ic-chevron-left.svg?react';
 import ChevronRightIcon from './ic-chevron-right.svg?react';
 import CrownIcon from './ic-crown.svg?react';
 import GoogleIcon from './ic-google.svg?react';

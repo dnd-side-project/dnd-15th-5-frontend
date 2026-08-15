@@ -1,5 +1,5 @@
 import { isBridgeRequest, parseBridgeMessage } from '@chapchap/shared/bridge';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
@@ -41,6 +41,8 @@ export default function HomeScreen() {
   const webUrl = process.env.EXPO_PUBLIC_WEB_URL;
   const webViewRef = useRef<WebView>(null);
   const [loadErrorMessage, setLoadErrorMessage] = useState<string | null>(null);
+  // NOTE: source에 매번 새 객체를 넘기면 값이 같아도 WebView가 다시 로드할 수 있어 재사용한다.
+  const webViewSource = useMemo(() => (webUrl ? { uri: webUrl } : undefined), [webUrl]);
 
   const handleBridgeMessage = async (event: WebViewMessageEvent) => {
     const message = parseBridgeMessage(event.nativeEvent.data);
@@ -73,9 +75,16 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-neutral-00">
       <WebView
         ref={webViewRef}
-        source={{ uri: webUrl }}
+        // NOTE: 높이가 정확히 100%(flex: 1)면 화면을 덮는 다른 화면에서 돌아올 때
+        // iOS WebView가 다시 그려지지 않고 흰 화면으로 남는 알려진 버그가 있다.
+        // https://github.com/react-native-webview/react-native-webview/issues/2963
+        style={{ height: '99.9%', width: '100%' }}
+        source={webViewSource}
         onMessage={handleBridgeMessage}
         startInLoadingState
+        // NOTE: 위 이슈와 같은 계열의 iOS 문제로, 콘텐츠 프로세스가 죽으면 페이지 이동 없이
+        // 흰 화면만 남는다. 감지되면 다시 불러온다.
+        onContentProcessDidTerminate={() => webViewRef.current?.reload()}
         renderLoading={() => <ActivityIndicator className="flex-1" size="large" />}
         onError={({ nativeEvent }) => setLoadErrorMessage(nativeEvent.description)}
         onHttpError={({ nativeEvent }) =>

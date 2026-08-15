@@ -41,6 +41,14 @@ export const createBridgeResponse = async (request: BridgeRequest): Promise<Brid
           ok: true,
           result: await BRIDGE_HANDLERS.saveImage(request.payload),
         };
+      case 'captureReceipt':
+        return {
+          kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+          id: request.id,
+          type: request.type,
+          ok: true,
+          result: await BRIDGE_HANDLERS.captureReceipt(request.payload),
+        };
     }
   } catch (error) {
     return {

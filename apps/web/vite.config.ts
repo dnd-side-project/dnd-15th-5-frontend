@@ -14,4 +14,8 @@ export default defineConfig({
     },
     dedupe: ['react', 'react-dom'],
   },
+  // 실기기 앱의 WebView에서 개발 서버에 접근할 수 있도록 같은 네트워크에 노출한다
+  server: {
+    host: true,
+  },
 });
