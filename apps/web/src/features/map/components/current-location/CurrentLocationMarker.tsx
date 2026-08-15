@@ -23,8 +23,8 @@ export default function CurrentLocationMarker({ position }: CurrentLocationMarke
         strokeWeight={1}
         clickable={false}
       />
-      <AdvancedMarker position={position}>
-        <div className="h-4 w-4 rounded-full border-2 border-white bg-blue-500 shadow-md" />
+      <AdvancedMarker position={position} anchorLeft="-50%" anchorTop="-50%">
+        <div className="h-5 w-5 rounded-full border-[3px] border-neutral-00 bg-primary-500 shadow-current-location" />
       </AdvancedMarker>
     </>
   );
