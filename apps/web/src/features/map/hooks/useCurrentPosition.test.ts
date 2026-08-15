@@ -92,6 +92,10 @@ describe('useCurrentPosition', () => {
     expect(result.current.isLoading).toBe(false);
     expect(result.current.position).toBeNull();
     expect(result.current.isCurrentPositionSupported).toBe(false);
+    expect(result.current.error).toEqual({
+      reason: 'positionUnavailable',
+      message: '현재 위치를 사용할 수 없는 환경입니다.',
+    });
   });
 
   it('앱 WebView에서는 브라우저 대신 네이티브 현재 위치를 조회한다', async () => {

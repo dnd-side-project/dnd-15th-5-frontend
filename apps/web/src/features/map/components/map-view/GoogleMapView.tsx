@@ -18,8 +18,7 @@ const MAP_DEFAULT_ZOOM = 13;
  * 높이가 정해진 부모가 필요하다(`h-full`을 사용하므로 부모에 명시적 높이가 없으면 지도가 보이지 않는다).
  */
 export default function GoogleMapView() {
-  const { position, isLoading, error, isCurrentPositionSupported, requestPosition } =
-    useCurrentPosition();
+  const { position, isLoading, error, requestPosition } = useCurrentPosition();
   const [showLocationError, setShowLocationError] = useState(false);
 
   const handleMapClick = () => {
@@ -31,9 +30,7 @@ export default function GoogleMapView() {
     void requestPosition();
   };
 
-  const locationErrorMessage = isCurrentPositionSupported
-    ? (error?.message ?? null)
-    : '현재 위치를 사용할 수 없는 환경입니다.';
+  const locationErrorMessage = error?.message ?? null;
 
   return (
     <Map

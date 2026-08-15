@@ -39,7 +39,6 @@ jest.mock('../../hooks/useCurrentPosition', () => ({
     position: null,
     isLoading: false,
     error: { reason: 'permissionDenied', message: '위치 오류' },
-    isCurrentPositionSupported: true,
     requestPosition,
   }),
 }));

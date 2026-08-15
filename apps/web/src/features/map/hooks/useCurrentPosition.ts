@@ -2,9 +2,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { isNativeApp, NativeBridgeRequestError, requestToNative } from '@/shared/lib/bridge';
 
-import type { CurrentPosition, CurrentPositionError } from '../types';
+import type { CurrentPositionError } from '../types';
+import type { CurrentPosition } from '@chapchap/shared/location';
 
 const CURRENT_POSITION_TIMEOUT_MS = 10_000;
+const CURRENT_POSITION_ERROR_MESSAGE = {
+  browserPermissionDenied: '브라우저 설정에서 위치 권한을 허용해주세요.',
+  nativePermissionDenied: '기기 설정에서 위치 권한을 허용해주세요.',
+  positionUnavailable: '위치를 불러오지 못했습니다. 다시 시도해주세요.',
+  servicesDisabled: '기기 설정에서 위치 서비스를 켜주세요.',
+  timeout: '위치 조회 시간이 초과되었습니다. 다시 시도해주세요.',
+  unsupported: '현재 위치를 사용할 수 없는 환경입니다.',
+} as const;
 
 type UseCurrentPositionResult = {
   position: CurrentPosition | null;
@@ -30,14 +39,14 @@ const requestNativePosition = async (): Promise<CurrentPosition> => {
   if (result.status === 'permissionDenied') {
     throw new CurrentPositionRequestError(
       'permissionDenied',
-      '기기 설정에서 위치 권한을 허용해주세요.'
+      CURRENT_POSITION_ERROR_MESSAGE.nativePermissionDenied
     );
   }
 
   if (result.status === 'servicesDisabled') {
     throw new CurrentPositionRequestError(
       'servicesDisabled',
-      '기기 설정에서 위치 서비스를 켜주세요.'
+      CURRENT_POSITION_ERROR_MESSAGE.servicesDisabled
     );
   }
 
@@ -50,7 +59,7 @@ const requestBrowserPosition = (): Promise<CurrentPosition> =>
       reject(
         new CurrentPositionRequestError(
           'positionUnavailable',
-          '현재 위치를 사용할 수 없는 환경입니다.'
+          CURRENT_POSITION_ERROR_MESSAGE.unsupported
         )
       );
       return;
@@ -69,7 +78,7 @@ const requestBrowserPosition = (): Promise<CurrentPosition> =>
           reject(
             new CurrentPositionRequestError(
               'permissionDenied',
-              '브라우저 설정에서 위치 권한을 허용해주세요.'
+              CURRENT_POSITION_ERROR_MESSAGE.browserPermissionDenied
             )
           );
           return;
@@ -77,10 +86,7 @@ const requestBrowserPosition = (): Promise<CurrentPosition> =>
 
         if (error.code === error.TIMEOUT) {
           reject(
-            new CurrentPositionRequestError(
-              'timeout',
-              '위치 조회 시간이 초과되었습니다. 다시 시도해주세요.'
-            )
+            new CurrentPositionRequestError('timeout', CURRENT_POSITION_ERROR_MESSAGE.timeout)
           );
           return;
         }
@@ -88,7 +94,7 @@ const requestBrowserPosition = (): Promise<CurrentPosition> =>
         reject(
           new CurrentPositionRequestError(
             'positionUnavailable',
-            '위치를 불러오지 못했습니다. 다시 시도해주세요.'
+            CURRENT_POSITION_ERROR_MESSAGE.positionUnavailable
           )
         );
       },
@@ -100,7 +106,7 @@ const normalizePositionError = (error: unknown): CurrentPositionError => {
   if (error instanceof NativeBridgeRequestError && error.reason === 'timeout') {
     return {
       reason: 'timeout',
-      message: '위치 조회 시간이 초과되었습니다. 다시 시도해주세요.',
+      message: CURRENT_POSITION_ERROR_MESSAGE.timeout,
     };
   }
 
@@ -110,7 +116,7 @@ const normalizePositionError = (error: unknown): CurrentPositionError => {
 
   return {
     reason: 'positionUnavailable',
-    message: '위치를 불러오지 못했습니다. 다시 시도해주세요.',
+    message: CURRENT_POSITION_ERROR_MESSAGE.positionUnavailable,
   };
 };
 
@@ -127,7 +133,14 @@ export const useCurrentPosition = (): UseCurrentPositionResult => {
   const isNativeEnvironment = isNativeApp();
   const isCurrentPositionSupported = isNativeEnvironment || Boolean(navigator.geolocation);
   const [position, setPosition] = useState<CurrentPosition | null>(null);
-  const [error, setError] = useState<CurrentPositionError | null>(null);
+  const [error, setError] = useState<CurrentPositionError | null>(
+    isCurrentPositionSupported
+      ? null
+      : {
+          reason: 'positionUnavailable',
+          message: CURRENT_POSITION_ERROR_MESSAGE.unsupported,
+        }
+  );
   const [isLoading, setIsLoading] = useState(isCurrentPositionSupported);
   const hasRequestedPosition = useRef(false);
   const pendingRequest = useRef<Promise<void> | null>(null);

@@ -1,3 +1,5 @@
+import type { CurrentPosition } from '../location/types';
+
 /**
  * 웹과 네이티브가 주고받는 메시지의 종류.
  * 요청은 웹 → 네이티브, 응답은 네이티브 → 웹 방향이다.
@@ -19,7 +21,7 @@ export type BridgeMessageMap = {
     result:
       | {
           status: 'success';
-          position: { lat: number; lng: number; accuracy: number };
+          position: CurrentPosition;
         }
       | { status: 'permissionDenied' }
       | { status: 'servicesDisabled' };

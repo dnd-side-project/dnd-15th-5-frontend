@@ -3,10 +3,6 @@ export type MapPosition = {
   lng: number;
 };
 
-export type CurrentPosition = MapPosition & {
-  accuracy: number;
-};
-
 export type CurrentPositionError =
   | { reason: 'permissionDenied'; message: string }
   | { reason: 'positionUnavailable'; message: string }

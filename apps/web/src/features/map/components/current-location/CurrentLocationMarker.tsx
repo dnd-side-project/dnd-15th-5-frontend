@@ -1,6 +1,6 @@
 import { AdvancedMarker, Circle } from '@vis.gl/react-google-maps';
 
-import type { CurrentPosition } from '../../types';
+import type { CurrentPosition } from '@chapchap/shared/location';
 
 type CurrentLocationMarkerProps = {
   position: CurrentPosition | null;
