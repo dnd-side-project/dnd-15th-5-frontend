@@ -101,15 +101,17 @@ export default function ReceiptCameraScreen() {
         <GalleryIcon width={26} height={26} color="#ffffff" />
       </Pressable>
 
-      <Pressable
-        onPress={handleCapture}
-        disabled={!isCameraReady || isProcessing}
-        accessibilityRole="button"
-        accessibilityLabel="영수증 촬영"
-        className={`absolute bottom-16.75 left-39.75 h-18.75 w-18.75 items-center justify-center rounded-full bg-neutral-00 ${!isCameraReady || isProcessing ? 'opacity-40' : ''}`}
-      >
-        <View className="h-15 w-15 rounded-full border-[3px] border-neutral-900" />
-      </Pressable>
+      <View className="absolute inset-x-0 bottom-16.75 items-center">
+        <Pressable
+          onPress={handleCapture}
+          disabled={!isCameraReady || isProcessing}
+          accessibilityRole="button"
+          accessibilityLabel="영수증 촬영"
+          className={`h-18.75 w-18.75 items-center justify-center rounded-full bg-neutral-00 ${!isCameraReady || isProcessing ? 'opacity-40' : ''}`}
+        >
+          <View className="h-15 w-15 rounded-full border-[3px] border-neutral-900" />
+        </Pressable>
+      </View>
     </View>
   );
 }

@@ -1,6 +1,7 @@
 import { File } from 'expo-file-system';
 import { ImageManipulator } from 'expo-image-manipulator';
 
+import { MAX_IMAGE_FILE_SIZE_BYTES } from './imageConstraints';
 import { normalizeReceiptImage } from './normalizeReceiptImage';
 
 jest.mock('expo-file-system', () => ({ File: jest.fn() }));
@@ -11,8 +12,6 @@ jest.mock('expo-image-manipulator', () => ({
 
 const mockManipulate = jest.mocked(ImageManipulator.manipulate);
 const MockFile = jest.mocked(File);
-
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 /** resize·renderAsync·saveAsync를 잇는 체이닝 컨텍스트를 흉내 낸다. */
 const createMockContext = (saveResults: { uri: string }[]) => {
@@ -78,9 +77,9 @@ describe('normalizeReceiptImage', () => {
     mockManipulate.mockReturnValue(context as never);
 
     const sizesByUri: Record<string, number> = {
-      'file://pass-1.jpg': MAX_FILE_SIZE_BYTES + 1000,
-      'file://pass-2.jpg': MAX_FILE_SIZE_BYTES + 500,
-      'file://pass-3.jpg': MAX_FILE_SIZE_BYTES - 1,
+      'file://pass-1.jpg': MAX_IMAGE_FILE_SIZE_BYTES + 1000,
+      'file://pass-2.jpg': MAX_IMAGE_FILE_SIZE_BYTES + 500,
+      'file://pass-3.jpg': MAX_IMAGE_FILE_SIZE_BYTES - 1,
     };
     MockFile.mockImplementation((uri) => ({ size: sizesByUri[uri as string] }) as never);
 
@@ -103,7 +102,7 @@ describe('normalizeReceiptImage', () => {
     }));
     const { context, mockSaveAsync } = createMockContext(saveResults);
     mockManipulate.mockReturnValue(context as never);
-    MockFile.mockImplementation(() => ({ size: MAX_FILE_SIZE_BYTES + 1 }) as never);
+    MockFile.mockImplementation(() => ({ size: MAX_IMAGE_FILE_SIZE_BYTES + 1 }) as never);
 
     await expect(
       normalizeReceiptImage({ uri: 'file://original.jpg', width: 2000, height: 3000 })

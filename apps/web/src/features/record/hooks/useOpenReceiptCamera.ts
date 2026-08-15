@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
-export type OpenReceiptCameraState =
+type OpenReceiptCameraState =
   { status: 'opening' } | { status: 'opened' } | { status: 'error'; message: string };
 
 /**

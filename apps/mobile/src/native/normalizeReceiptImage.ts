@@ -1,10 +1,8 @@
 import { File } from 'expo-file-system';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 
-/** 백엔드 OCR이 받는 최대 변 길이(px). 가로·세로 중 큰 쪽 기준이다. */
-const MAX_DIMENSION = 4096;
-/** 백엔드 OCR이 받는 최대 파일 크기(byte). */
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+import { MAX_IMAGE_DIMENSION, MAX_IMAGE_FILE_SIZE_BYTES } from './imageConstraints';
+
 const INITIAL_QUALITY = 0.8;
 const MIN_QUALITY = 0.1;
 const QUALITY_STEP = 0.1;
@@ -29,11 +27,11 @@ export const normalizeReceiptImage = async ({
 }: ReceiptImageSource): Promise<{ uri: string }> => {
   const context = ImageManipulator.manipulate(uri);
 
-  if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+  if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
     if (width >= height) {
-      context.resize({ width: MAX_DIMENSION });
+      context.resize({ width: MAX_IMAGE_DIMENSION });
     } else {
-      context.resize({ height: MAX_DIMENSION });
+      context.resize({ height: MAX_IMAGE_DIMENSION });
     }
   }
 
@@ -41,13 +39,13 @@ export const normalizeReceiptImage = async ({
   let quality = INITIAL_QUALITY;
   let result = await image.saveAsync({ format: SaveFormat.JPEG, compress: quality });
 
-  while (new File(result.uri).size > MAX_FILE_SIZE_BYTES && quality > MIN_QUALITY) {
+  while (new File(result.uri).size > MAX_IMAGE_FILE_SIZE_BYTES && quality > MIN_QUALITY) {
     // NOTE: 부동소수점 오차가 쌓이면 0.1 근처에서 루프가 한 번 더/덜 돌 수 있어 소수 첫째 자리로 반올림한다.
     quality = Math.max(MIN_QUALITY, Math.round((quality - QUALITY_STEP) * 10) / 10);
     result = await image.saveAsync({ format: SaveFormat.JPEG, compress: quality });
   }
 
-  if (new File(result.uri).size > MAX_FILE_SIZE_BYTES) {
+  if (new File(result.uri).size > MAX_IMAGE_FILE_SIZE_BYTES) {
     throw new Error('이미지 용량을 5MB 이하로 줄이지 못했습니다');
   }
 

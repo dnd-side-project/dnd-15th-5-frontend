@@ -1,6 +1,6 @@
 import { launchImageLibraryAsync } from 'expo-image-picker';
 
-export type PickReceiptImageResult =
+type PickReceiptImageResult =
   { status: 'picked'; uri: string; width: number; height: number } | { status: 'cancelled' };
 
 /**
