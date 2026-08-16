@@ -2,12 +2,33 @@ import type { CurrentPosition } from '../location/types';
 
 /**
  * 웹과 네이티브가 주고받는 메시지의 종류.
- * 요청은 웹 → 네이티브, 응답은 네이티브 → 웹 방향이다.
+ * 요청과 이벤트는 웹 → 네이티브, 응답은 네이티브 → 웹 방향이다.
  */
 export const BRIDGE_MESSAGE_KIND = {
   REQUEST: 'request',
   RESPONSE: 'response',
+  EVENT: 'event',
 } as const;
+
+/** 웹이 응답을 기다리지 않고 네이티브에 알리는 이벤트와 payload 타입. */
+export type BridgeEventMap = {
+  // 모바일이 /home의 WebView만 edge-to-edge로 표시할 수 있도록 현재 웹 경로를 전달한다.
+  routeChanged: {
+    pathname: string;
+  };
+};
+
+export type BridgeEventType = keyof BridgeEventMap;
+
+export type BridgeEventPayload<TType extends BridgeEventType> = BridgeEventMap[TType];
+
+export type BridgeEvent<TType extends BridgeEventType = BridgeEventType> = {
+  [Type in TType]: {
+    kind: typeof BRIDGE_MESSAGE_KIND.EVENT;
+    type: Type;
+    payload: BridgeEventPayload<Type>;
+  };
+}[TType];
 
 /**
  * 웹이 네이티브에 요청할 수 있는 동작과 각각의 요청·응답 타입.

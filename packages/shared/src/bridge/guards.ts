@@ -1,6 +1,6 @@
 import { BRIDGE_MESSAGE_KIND } from './types';
 
-import type { BridgeRequest, BridgeResponse } from './types';
+import type { BridgeEvent, BridgeRequest, BridgeResponse } from './types';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
@@ -28,6 +28,14 @@ export const isBridgeResponse = (value: unknown): value is BridgeResponse =>
   typeof value.id === 'string' &&
   typeof value.type === 'string' &&
   typeof value.ok === 'boolean';
+
+/** 웹에서 온 값이 네이티브에 상태 변화를 알리는 이벤트인지 확인한다. */
+export const isBridgeEvent = (value: unknown): value is BridgeEvent =>
+  isRecord(value) &&
+  value.kind === BRIDGE_MESSAGE_KIND.EVENT &&
+  value.type === 'routeChanged' &&
+  isRecord(value.payload) &&
+  typeof value.payload.pathname === 'string';
 
 /**
  * JSON 문자열을 파싱한다. 파싱에 실패하면 `null`을 반환한다.

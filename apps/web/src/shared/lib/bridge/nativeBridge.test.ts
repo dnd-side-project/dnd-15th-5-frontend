@@ -1,7 +1,12 @@
 import { BRIDGE_MESSAGE_KIND } from '@chapchap/shared/bridge';
 
 import { BRIDGE_REQUEST_TIMEOUT_MS } from './constants';
-import { isNativeApp, NativeBridgeRequestError, requestToNative } from './nativeBridge';
+import {
+  isNativeApp,
+  NativeBridgeRequestError,
+  notifyNative,
+  requestToNative,
+} from './nativeBridge';
 
 import type { BridgeRequest } from '@chapchap/shared/bridge';
 
@@ -42,6 +47,22 @@ describe('nativeBridge', () => {
 
       expect(isNativeApp()).toBe(false);
     });
+  });
+
+  it('웹 경로 변경 이벤트를 네이티브에 전달한다', () => {
+    expect(notifyNative('routeChanged', { pathname: '/home' })).toBe(true);
+    expect(JSON.parse(postMessage.mock.calls[0][0])).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.EVENT,
+      type: 'routeChanged',
+      payload: { pathname: '/home' },
+    });
+  });
+
+  it('일반 브라우저에서는 이벤트를 보내지 않는다', () => {
+    setNativeWebView(false);
+
+    expect(notifyNative('routeChanged', { pathname: '/home' })).toBe(false);
+    expect(postMessage).not.toHaveBeenCalled();
   });
 
   it('요청을 네이티브로 보내고 응답을 반환한다', async () => {

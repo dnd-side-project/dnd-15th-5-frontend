@@ -3,6 +3,9 @@ import { BRIDGE_MESSAGE_KIND, isBridgeResponse, parseBridgeMessage } from '@chap
 import { BRIDGE_REQUEST_TIMEOUT_MS } from './constants';
 
 import type {
+  BridgeEvent,
+  BridgeEventPayload,
+  BridgeEventType,
   BridgeMessageType,
   BridgePayload,
   BridgeRequest,
@@ -50,6 +53,35 @@ let isListening = false;
  * 일반 브라우저(로컬 개발, Vercel 프리뷰)에서는 `false`이므로 네이티브 기능을 호출하면 안 된다.
  */
 export const isNativeApp = () => Boolean(getNativeWebView());
+
+/**
+ * 응답이 필요 없는 웹 상태 변경 이벤트를 네이티브에 전달한다.
+ * 현재는 `MobileLayout`이 라우트 변경을 알릴 때 사용한다.
+ */
+export const notifyNative = <TType extends BridgeEventType>(
+  type: TType,
+  payload: BridgeEventPayload<TType>
+) => {
+  const nativeWebView = getNativeWebView();
+
+  if (!nativeWebView) {
+    return false;
+  }
+
+  const event: BridgeEvent<TType> = {
+    kind: BRIDGE_MESSAGE_KIND.EVENT,
+    type,
+    payload,
+  } as BridgeEvent<TType>;
+
+  try {
+    nativeWebView.postMessage(JSON.stringify(event));
+    return true;
+  } catch {
+    // INFO: 상태 동기화 실패가 웹 화면 렌더링까지 중단시키지 않도록 한다.
+    return false;
+  }
+};
 
 /**
  * 요청 식별자를 만든다.
