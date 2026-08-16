@@ -7,6 +7,8 @@ import type { BridgeMessageType } from '@chapchap/shared/bridge';
  * `BridgeMessageType`이 추가되면 대응하는 제한 시간도 반드시 정의해야 한다.
  */
 export const BRIDGE_REQUEST_TIMEOUT_MS = {
+  // NOTE: 현재 위치 조회는 실내나 GPS 신호가 약한 환경에서 지연될 수 있어 네이티브 응답을 최대 30초간 기다린다.
+  getCurrentPosition: 30_000,
   ping: 10_000,
   // NOTE: 사진 보관함 권한을 처음 선택하는 시간을 포함한다.
   saveImage: 120_000,

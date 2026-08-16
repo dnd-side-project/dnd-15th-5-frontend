@@ -6,7 +6,8 @@
   "exports": {
     "./assets/icons/*.svg": "./assets/icons/*.svg",
     "./bridge": "./src/bridge/index.ts",
-    "./design/*.css": "./design/*.css"
+    "./design/*.css": "./design/*.css",
+    "./location": "./src/location/types.ts"
   },
   "scripts": {
     "lint": "eslint .",

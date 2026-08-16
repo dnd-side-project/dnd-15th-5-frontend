@@ -1,1 +1,1 @@
-export { default as GoogleMapView } from './components/GoogleMapView';
+export { default as GoogleMapView } from './components/map-view/GoogleMapView';
