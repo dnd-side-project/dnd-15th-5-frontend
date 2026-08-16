@@ -46,18 +46,18 @@ type PlaceTagCardProps = {
  */
 export function PlaceTagCard({ thumbnailSrc, title, tags }: PlaceTagCardProps) {
   return (
-    <div className="flex w-full items-center gap-4">
+    <span className="flex w-full items-center gap-4">
       <CardThumbnail src={thumbnailSrc} />
-      <div className="min-w-0">
+      <span className="flex min-w-0 flex-col">
         <CardTitle weight="semibold">{title}</CardTitle>
-        <div className="mt-2 flex flex-wrap gap-1">
+        <span className="mt-2 flex flex-wrap gap-1">
           {tags.map(({ label, icon }) => (
             <Chip key={label} icon={icon}>
               {label}
             </Chip>
           ))}
-        </div>
-      </div>
-    </div>
+        </span>
+      </span>
+    </span>
   );
 }

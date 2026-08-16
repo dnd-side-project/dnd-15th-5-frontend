@@ -31,12 +31,12 @@ type PlaceCardProps = {
  */
 export function PlaceCard({ thumbnailSrc, title, location }: PlaceCardProps) {
   return (
-    <div className="flex w-full items-center gap-4">
+    <span className="flex w-full items-center gap-4">
       <CardThumbnail src={thumbnailSrc} />
-      <div className="min-w-0 gap-2 flex flex-col">
+      <span className="flex min-w-0 flex-col gap-2">
         <CardTitle weight="medium">{title}</CardTitle>
         <CardLocation>{location}</CardLocation>
-      </div>
-    </div>
+      </span>
+    </span>
   );
 }

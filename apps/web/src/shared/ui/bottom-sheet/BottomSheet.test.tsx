@@ -48,6 +48,28 @@ describe('BottomSheet', () => {
     expect(onHandleClick).toHaveBeenCalledTimes(1);
   });
 
+  it('핸들을 그냥 클릭만 하면(드래그 없이) onSnapPointChange는 호출되지 않고 onHandleClick만 호출된다', () => {
+    const onHandleClick = jest.fn();
+    const onSnapPointChange = jest.fn();
+    render(
+      <BottomSheet
+        snapPoint="medium"
+        onHandleClick={onHandleClick}
+        onSnapPointChange={onSnapPointChange}
+      >
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(handle, 'pointerup', 500);
+    fireEvent.click(handle);
+
+    expect(onSnapPointChange).not.toHaveBeenCalled();
+    expect(onHandleClick).toHaveBeenCalledTimes(1);
+  });
+
   it('핸들을 위로 드래그하면 손가락을 따라 높이가 실시간으로 늘어난다', () => {
     const { container } = render(<BottomSheet snapPoint="medium">내용</BottomSheet>);
     const sheet = container.firstChild as HTMLElement;

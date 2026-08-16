@@ -19,5 +19,7 @@ const WEIGHT_CLASS: Record<CardTitleWeight, string> = {
  * `weight`로 지정합니다.
  */
 export function CardTitle({ children, weight }: CardTitleProps) {
-  return <p className={`truncate ${WEIGHT_CLASS[weight]} text-neutral-900`}>{children}</p>;
+  return (
+    <span className={`block truncate ${WEIGHT_CLASS[weight]} text-neutral-900`}>{children}</span>
+  );
 }

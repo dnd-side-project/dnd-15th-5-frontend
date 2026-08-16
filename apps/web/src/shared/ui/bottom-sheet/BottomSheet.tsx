@@ -10,6 +10,11 @@ const SNAP_POINT_HEIGHT_RATIO: Record<'full' | 'medium', number> = {
   medium: 0.45,
 };
 
+// NOTE: 이 값보다 적게 움직이면 드래그가 아니라 클릭으로 본다. 클릭은 pointerdown→pointerup을
+// 그대로 거치므로, 임계값 없이 매번 onSnapPointChange를 부르면 핸들을 그냥 클릭만 해도
+// onHandleClick과 onSnapPointChange가 동시에 호출된다.
+const DRAG_THRESHOLD_PX = 4;
+
 const SNAP_POINT_HEIGHT: Record<BottomSheetSnapPoint, string> = {
   full: `${SNAP_POINT_HEIGHT_RATIO.full * 100}dvh`,
   medium: `${SNAP_POINT_HEIGHT_RATIO.medium * 100}dvh`,
@@ -58,14 +63,20 @@ export function BottomSheet({
   children,
 }: BottomSheetProps) {
   const [dragHeightPx, setDragHeightPx] = useState<number | null>(null);
-  const dragStartRef = useRef<{ pointerY: number; heightPx: number } | null>(null);
+  const dragStartRef = useRef<{ pointerY: number; heightPx: number; hasDragged: boolean } | null>(
+    null
+  );
 
   const heightAtSnapPointPx = (point: BottomSheetSnapPoint) =>
     point === 'hidden' ? 0 : window.innerHeight * SNAP_POINT_HEIGHT_RATIO[point];
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
     event.currentTarget.setPointerCapture?.(event.pointerId);
-    dragStartRef.current = { pointerY: event.clientY, heightPx: heightAtSnapPointPx(snapPoint) };
+    dragStartRef.current = {
+      pointerY: event.clientY,
+      heightPx: heightAtSnapPointPx(snapPoint),
+      hasDragged: false,
+    };
     setDragHeightPx(dragStartRef.current.heightPx);
   };
 
@@ -75,6 +86,10 @@ export function BottomSheet({
     }
 
     const draggedUpBy = dragStartRef.current.pointerY - event.clientY;
+    if (Math.abs(draggedUpBy) >= DRAG_THRESHOLD_PX) {
+      dragStartRef.current.hasDragged = true;
+    }
+
     const fullHeightPx = heightAtSnapPointPx('full');
     const nextHeightPx = Math.min(
       fullHeightPx,
@@ -84,7 +99,17 @@ export function BottomSheet({
   };
 
   const handlePointerUp = () => {
-    if (dragHeightPx === null) {
+    if (dragHeightPx === null || !dragStartRef.current) {
+      return;
+    }
+
+    const hasDragged = dragStartRef.current.hasDragged;
+    dragStartRef.current = null;
+    setDragHeightPx(null);
+
+    // NOTE: 실제로 움직인 적 없는 클릭이면 여기서 끝낸다. 뒤이어 브라우저가 발생시키는
+    // click 이벤트가 onHandleClick을 부른다.
+    if (!hasDragged) {
       return;
     }
 
@@ -99,8 +124,6 @@ export function BottomSheet({
         : closest
     );
 
-    dragStartRef.current = null;
-    setDragHeightPx(null);
     onSnapPointChange?.(nearestSnapPoint);
   };
 
