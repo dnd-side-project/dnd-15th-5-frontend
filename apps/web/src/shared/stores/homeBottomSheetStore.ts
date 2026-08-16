@@ -39,5 +39,6 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
   setSnapPoint: (snapPoint) => set({ stepIndex: SNAP_POINT_TO_STEP_INDEX[snapPoint] }),
 }));
 
+/** `stepIndex`를 `HOME_BOTTOM_SHEET_SNAP_SEQUENCE` 길이로 순환시켜 해당하는 높이 단계를 반환합니다. */
 export const getHomeBottomSheetSnapPoint = (stepIndex: number): BottomSheetSnapPoint =>
   HOME_BOTTOM_SHEET_SNAP_SEQUENCE[stepIndex % HOME_BOTTOM_SHEET_SNAP_SEQUENCE.length]!;
