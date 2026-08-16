@@ -33,8 +33,8 @@ export function PlaceCard({ thumbnailSrc, title, location }: PlaceCardProps) {
   return (
     <div className="flex w-full items-center gap-4">
       <CardThumbnail src={thumbnailSrc} />
-      <div className="min-w-0">
-        <CardTitle>{title}</CardTitle>
+      <div className="min-w-0 gap-2 flex flex-col">
+        <CardTitle weight="medium">{title}</CardTitle>
         <CardLocation>{location}</CardLocation>
       </div>
     </div>

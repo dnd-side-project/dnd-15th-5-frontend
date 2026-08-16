@@ -49,8 +49,8 @@ export function PlaceTagCard({ thumbnailSrc, title, tags }: PlaceTagCardProps) {
     <div className="flex w-full items-center gap-4">
       <CardThumbnail src={thumbnailSrc} />
       <div className="min-w-0">
-        <CardTitle>{title}</CardTitle>
-        <div className="mt-1.5 flex flex-wrap gap-2">
+        <CardTitle weight="semibold">{title}</CardTitle>
+        <div className="mt-2 flex flex-wrap gap-1">
           {tags.map(({ label, icon }) => (
             <Chip key={label} icon={icon}>
               {label}
