@@ -35,7 +35,9 @@ export default function CurrentLocationButton({
 
   return (
     <MapControl position={ControlPosition.RIGHT_BOTTOM}>
-      <div className="m-3 flex flex-col items-end gap-2">
+      {/* TODO: TanStack Query Devtools와 겹치지 않도록 아래쪽 여백을 임시 적용했다.
+          바텀시트 구현 시 버튼 위치를 다시 조정한다. */}
+      <div className="mb-12 mx-4 flex flex-col items-end gap-2">
         {errorMessage && (
           <p
             role="status"
