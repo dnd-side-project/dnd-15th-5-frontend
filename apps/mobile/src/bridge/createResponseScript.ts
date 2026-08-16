@@ -7,8 +7,9 @@ import type { BridgeResponse } from '@chapchap/shared/bridge';
  * 동작이 일정하지 않아, 웹이 기대하는 형태의 이벤트를 직접 발생시킨다.
  * 마지막 `true;`는 iOS에서 반환값 관련 경고가 나지 않도록 하기 위한 것이다.
  */
-export const createResponseScript = (response: BridgeResponse) => {
+export const createResponseScript = (response: BridgeResponse, trustedOrigin: string) => {
   const serializedResponse = JSON.stringify(JSON.stringify(response));
+  const serializedTrustedOrigin = JSON.stringify(trustedOrigin);
 
-  return `window.dispatchEvent(new MessageEvent('message', { data: ${serializedResponse} })); true;`;
+  return `if (window.location.origin === ${serializedTrustedOrigin}) { window.dispatchEvent(new MessageEvent('message', { data: ${serializedResponse} })); } true;`;
 };

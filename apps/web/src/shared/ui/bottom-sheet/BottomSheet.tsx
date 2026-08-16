@@ -1,14 +1,10 @@
 import { useRef, useState } from 'react';
 
+import { BOTTOM_SHEET_HEIGHT_RATIO } from './constants';
+
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 
 export type BottomSheetSnapPoint = 'full' | 'medium' | 'hidden';
-
-// NOTE: 뷰포트 높이 비율. 화면 크기가 달라져도 같은 비율을 유지한다.
-const SNAP_POINT_HEIGHT_RATIO: Record<'full' | 'medium', number> = {
-  full: 0.92,
-  medium: 0.45,
-};
 
 // NOTE: 이 값보다 적게 움직이면 드래그가 아니라 클릭으로 본다. 클릭은 pointerdown→pointerup을
 // 그대로 거치므로, 임계값 없이 매번 onSnapPointChange를 부르면 핸들을 그냥 클릭만 해도
@@ -16,9 +12,9 @@ const SNAP_POINT_HEIGHT_RATIO: Record<'full' | 'medium', number> = {
 const DRAG_THRESHOLD_PX = 4;
 
 const SNAP_POINT_HEIGHT: Record<BottomSheetSnapPoint, string> = {
-  full: `${SNAP_POINT_HEIGHT_RATIO.full * 100}dvh`,
-  medium: `${SNAP_POINT_HEIGHT_RATIO.medium * 100}dvh`,
-  hidden: `${SNAP_POINT_HEIGHT_RATIO.medium * 100}dvh`,
+  full: `${BOTTOM_SHEET_HEIGHT_RATIO.full * 100}dvh`,
+  medium: `${BOTTOM_SHEET_HEIGHT_RATIO.medium * 100}dvh`,
+  hidden: `${BOTTOM_SHEET_HEIGHT_RATIO.medium * 100}dvh`,
 };
 
 type BottomSheetProps = {
@@ -68,7 +64,7 @@ export function BottomSheet({
   );
 
   const heightAtSnapPointPx = (point: BottomSheetSnapPoint) =>
-    point === 'hidden' ? 0 : window.innerHeight * SNAP_POINT_HEIGHT_RATIO[point];
+    point === 'hidden' ? 0 : window.innerHeight * BOTTOM_SHEET_HEIGHT_RATIO[point];
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
     event.currentTarget.setPointerCapture?.(event.pointerId);
