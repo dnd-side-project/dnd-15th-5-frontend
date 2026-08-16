@@ -53,7 +53,7 @@ export default function CurrentLocationButton({
           disabled={isDisabled}
           aria-busy={isLoading}
           onClick={handleCurrentLocationClick}
-          className="flex size-8 items-center justify-center rounded-full bg-neutral-00 text-primary-500 shadow-current-location-button transition-[background-color,box-shadow,transform,opacity] hover:bg-neutral-50 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex size-8 items-center justify-center rounded-full bg-neutral-00 text-primary-500 shadow-current-location-button transition-[background-color,box-shadow,transform,opacity] hover:bg-neutral-50 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-50"
         >
           <CurrentLocationIcon aria-hidden="true" className="size-4" />
         </button>
