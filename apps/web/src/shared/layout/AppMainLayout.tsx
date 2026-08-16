@@ -1,6 +1,15 @@
 import { Outlet } from 'react-router-dom';
 
-// TODO: 네비게이션 바 사용 페이지 레이아웃
+import BottomTabBar from './BottomTabBar';
+
+/** 홈·기록하기·리포트 탭 이동이 필요한 화면에 하단 탭바를 함께 렌더링합니다. */
 export default function AppMainLayout() {
-  return <Outlet />;
+  return (
+    <div className="flex min-h-screen flex-col">
+      <div className="flex-1">
+        <Outlet />
+      </div>
+      <BottomTabBar />
+    </div>
+  );
 }
