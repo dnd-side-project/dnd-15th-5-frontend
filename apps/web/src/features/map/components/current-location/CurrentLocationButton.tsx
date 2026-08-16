@@ -1,5 +1,7 @@
 import { ControlPosition, MapControl, useMap } from '@vis.gl/react-google-maps';
 
+import { CurrentLocationIcon } from '@/shared/assets/icons';
+
 import type { MapPosition } from '../../types';
 
 type CurrentLocationButtonProps = {
@@ -42,7 +44,6 @@ export default function CurrentLocationButton({
             {errorMessage}
           </p>
         )}
-        {/* TODO: 지도 화면 디자인 확정 후 버튼 스타일 교체 */}
         <button
           type="button"
           aria-label="현재 위치로 이동"
@@ -50,23 +51,9 @@ export default function CurrentLocationButton({
           disabled={isDisabled}
           aria-busy={isLoading}
           onClick={handleCurrentLocationClick}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-blue-500 shadow-[0_2px_8px_rgba(15,23,42,0.18)] transition-[background-color,box-shadow,transform] hover:bg-blue-50 hover:shadow-md active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-300 disabled:shadow-sm"
+          className="flex size-8 items-center justify-center rounded-full bg-neutral-00 text-primary-500 shadow-current-location-button transition-[background-color,box-shadow,transform,opacity] hover:bg-neutral-50 active:scale-95 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {/* TODO: 디자인 확정 후 shared/assets의 SVG 아이콘으로 교체 */}
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="4.5" />
-            <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-            <path d="M12 3v2M12 19v2M3 12h2M19 12h2" />
-          </svg>
+          <CurrentLocationIcon aria-hidden="true" className="size-4" />
         </button>
       </div>
     </MapControl>
