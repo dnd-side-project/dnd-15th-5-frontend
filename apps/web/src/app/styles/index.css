@@ -4,6 +4,8 @@
 @import '@chapchap/shared/design/typography.css';
 @import '@chapchap/shared/design/shadows.css';
 @import '@chapchap/shared/design/radius.css';
+@import '@chapchap/shared/design/z-index.css';
+@import '@chapchap/shared/design/toast.css';
 
 @layer base {
   button {

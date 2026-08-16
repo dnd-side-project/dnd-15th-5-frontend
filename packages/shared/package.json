@@ -6,6 +6,7 @@
   "exports": {
     "./assets/icons/*.svg": "./assets/icons/*.svg",
     "./bridge": "./src/bridge/index.ts",
+    "./toast": "./src/toast/index.ts",
     "./design/*.css": "./design/*.css"
   },
   "scripts": {

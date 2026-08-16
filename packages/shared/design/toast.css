@@ -1,0 +1,49 @@
+/*
+ * 웹 Tailwind와 모바일 Uniwind가 함께 컴파일하는 Toast 시각 규칙입니다.
+ * DOM 전용 상태 선택자와 React Native 전용 폰트 설정은 각 앱에서 관리합니다.
+ */
+
+/* Toast 외곽 크기와 여백 */
+@utility toast-surface {
+  min-height: 40px;
+  max-width: 100%;
+  border-radius: var(--radius-08);
+  padding: 12px 24px;
+}
+
+/* 아이콘과 메시지 정렬 */
+@utility toast-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Toast 목록의 공통 너비와 항목 간격 */
+@utility toast-list {
+  width: 100%;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 성공·오류 Toast의 공통 배경 */
+@utility toast-default {
+  width: 100%;
+  background-color: var(--color-neutral-600);
+}
+
+/* 안내 Toast의 강조 배경 */
+@utility toast-info {
+  background-color: var(--color-primary-500);
+  padding-right: 16px;
+  padding-left: 16px;
+}
+
+/* Toast 메시지의 공통 타이포그래피와 색상 */
+@utility toast-text {
+  font-size: var(--text-body-02-regular);
+  line-height: var(--text-body-02-regular--line-height);
+  font-weight: var(--text-body-02-regular--font-weight);
+  color: var(--color-neutral-00);
+}
