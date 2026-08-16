@@ -7,6 +7,7 @@ const mockGetForegroundPermissionsAsync = jest.fn();
 const mockRequestForegroundPermissionsAsync = jest.fn();
 const mockGetCurrentPositionAsync = jest.fn();
 const mockHasServicesEnabledAsync = jest.fn();
+const POSITION_REQUEST_SHARE_TIMEOUT_MS = 30_000;
 
 jest.mock('expo-location', () => ({
   Accuracy: { Balanced: 3 },
@@ -103,5 +104,54 @@ describe('getCurrentPosition', () => {
       status: 'success',
       position: { lat: 37.5665, lng: 126.978, accuracy: 25 },
     });
+  });
+
+  it('공유 시간이 만료되면 새 위치 요청을 시작하고 이전 요청 완료가 새 pending을 해제하지 않는다', async () => {
+    jest.useFakeTimers();
+    let resolveFirstPosition: ((value: unknown) => void) | undefined;
+    let resolveSecondPosition: ((value: unknown) => void) | undefined;
+
+    mockGetCurrentPositionAsync
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirstPosition = resolve;
+          })
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveSecondPosition = resolve;
+          })
+      );
+
+    const firstRequest = getCurrentPosition();
+
+    await waitFor(() => {
+      expect(mockGetCurrentPositionAsync).toHaveBeenCalledTimes(1);
+    });
+
+    jest.advanceTimersByTime(POSITION_REQUEST_SHARE_TIMEOUT_MS);
+
+    const secondRequest = getCurrentPosition();
+
+    expect(secondRequest).not.toBe(firstRequest);
+    await waitFor(() => {
+      expect(mockGetCurrentPositionAsync).toHaveBeenCalledTimes(2);
+    });
+
+    resolveFirstPosition?.({
+      coords: { latitude: 37.5665, longitude: 126.978, accuracy: 25 },
+    });
+    await firstRequest;
+
+    // 첫 요청의 늦은 finally가 두 번째 pending 상태를 지우지 않아야 한다.
+    expect(getCurrentPosition()).toBe(secondRequest);
+
+    resolveSecondPosition?.({
+      coords: { latitude: 37.567, longitude: 126.979, accuracy: 20 },
+    });
+    await secondRequest;
+    jest.useRealTimers();
   });
 });

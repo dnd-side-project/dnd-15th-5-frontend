@@ -2,7 +2,16 @@ import * as Location from 'expo-location';
 
 import type { BridgeResult } from '@chapchap/shared/bridge';
 
-let pendingPositionRequest: Promise<BridgeResult<'getCurrentPosition'>> | null = null;
+const POSITION_REQUEST_SHARE_TIMEOUT_MS = 30_000;
+
+type PendingPositionRequest = {
+  id: number;
+  promise: Promise<BridgeResult<'getCurrentPosition'>>;
+  timeoutId: ReturnType<typeof setTimeout>;
+};
+
+let pendingPositionRequest: PendingPositionRequest | null = null;
+let positionRequestId = 0;
 
 /**
  * 네이티브 위치 권한을 확인한 뒤 기기의 현재 좌표를 한 번 조회한다.
@@ -44,17 +53,30 @@ const requestCurrentPosition = async (): Promise<BridgeResult<'getCurrentPositio
 };
 
 /**
- * 진행 중인 위치 요청이 있으면 같은 Promise를 반환해 네이티브 위치 조회가 겹치지 않게 한다.
- * 요청이 완료된 뒤 호출하면 최신 좌표를 다시 조회한다.
+ * 진행 중인 위치 요청은 최대 30초간 같은 Promise를 반환해 네이티브 조회가 겹치지 않게 한다.
+ * 요청이 완료되거나 공유 시간이 만료된 뒤 호출하면 최신 좌표를 새로 조회한다.
  */
 export const getCurrentPosition = (): Promise<BridgeResult<'getCurrentPosition'>> => {
   if (pendingPositionRequest) {
-    return pendingPositionRequest;
+    return pendingPositionRequest.promise;
   }
 
-  pendingPositionRequest = requestCurrentPosition().finally(() => {
-    pendingPositionRequest = null;
+  const requestId = ++positionRequestId;
+  const promise = requestCurrentPosition().finally(() => {
+    // NOTE: 만료된 이전 요청이 늦게 끝나도 새 요청의 pending 상태를 해제하지 않는다.
+    if (pendingPositionRequest?.id === requestId) {
+      clearTimeout(pendingPositionRequest.timeoutId);
+      pendingPositionRequest = null;
+    }
   });
+  const timeoutId = setTimeout(() => {
+    // 웹 브리지의 위치 요청 만료 시간과 맞춰, 재시도에서는 새 네이티브 조회를 시작한다.
+    if (pendingPositionRequest?.id === requestId) {
+      pendingPositionRequest = null;
+    }
+  }, POSITION_REQUEST_SHARE_TIMEOUT_MS);
 
-  return pendingPositionRequest;
+  pendingPositionRequest = { id: requestId, promise, timeoutId };
+
+  return promise;
 };
