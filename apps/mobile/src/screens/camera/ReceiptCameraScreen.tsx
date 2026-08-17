@@ -5,7 +5,8 @@ import { Alert, Pressable, View } from 'react-native';
 
 import { normalizeReceiptImage } from '@/native/normalizeReceiptImage';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
-import { ChevronLeftIcon, GalleryIcon } from '@/shared/assets/icons';
+import { GalleryIcon } from '@/shared/assets/icons';
+import { BackButton } from '@/shared/ui/back-button';
 
 /**
  * 영수증을 촬영하는 화면.
@@ -78,16 +79,11 @@ export default function ReceiptCameraScreen() {
       <View pointerEvents="none" className="absolute inset-x-0 top-0 h-33.5 bg-neutral-900/80" />
       <View pointerEvents="none" className="absolute inset-x-0 bottom-0 h-44.5 bg-neutral-900/80" />
 
-      <Pressable
+      <BackButton
         onPress={() => router.back()}
-        hitSlop={12}
-        accessibilityRole="button"
-        accessibilityLabel="이전 화면으로 돌아가기"
+        variant="light"
         className="absolute left-5 top-19.25"
-      >
-        {/* NOTE: react-native-svg 컴포넌트라 색은 className이 아닌 color prop으로 지정한다. #ffffff = neutral-00 */}
-        <ChevronLeftIcon width={10} height={18} color="#ffffff" />
-      </Pressable>
+      />
 
       <Pressable
         onPress={handlePickFromLibrary}

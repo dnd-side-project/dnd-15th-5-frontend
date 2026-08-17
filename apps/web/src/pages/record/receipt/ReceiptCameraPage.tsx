@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { useOpenReceiptCamera } from '@/features/record';
-import { ChevronLeftIcon } from '@/shared/assets/icons';
+import { BackButton } from '@/shared/ui/back-button';
 
 /**
  * 영수증 촬영 진입점.
@@ -16,9 +16,7 @@ export default function ReceiptCameraPage() {
   return (
     <main>
       {/* TODO: 공통 헤더 컴포넌트 나오면 교체 */}
-      <button type="button" onClick={() => navigate(-1)} aria-label="뒤로 가기" className="py-3">
-        <ChevronLeftIcon className="size-6 text-neutral-700" aria-hidden="true" />
-      </button>
+      <BackButton onClick={() => navigate(-1)} className="my-3" />
 
       {state.status === 'error' && (
         <>
