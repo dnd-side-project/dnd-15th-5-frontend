@@ -25,6 +25,14 @@ export const createBridgeResponse = async (request: BridgeRequest): Promise<Brid
 
   try {
     switch (request.type) {
+      case 'getCurrentPosition':
+        return {
+          kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+          id: request.id,
+          type: request.type,
+          ok: true,
+          result: await BRIDGE_HANDLERS.getCurrentPosition(request.payload),
+        };
       case 'ping':
         return {
           kind: BRIDGE_MESSAGE_KIND.RESPONSE,

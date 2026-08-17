@@ -11,6 +11,7 @@ const response: BridgeResponse = {
   ok: true,
   result: { platform: 'android', receivedAt: 1 },
 };
+const TRUSTED_ORIGIN = 'https://chapchap.example.com';
 
 /** 스크립트에 삽입된 문자열 리터럴을 꺼내 원래 응답으로 되돌린다 */
 const extractResponse = (script: string) => {
@@ -21,14 +22,15 @@ const extractResponse = (script: string) => {
 
 describe('createResponseScript', () => {
   it('웹이 듣고 있는 message 이벤트를 발생시키는 스크립트를 만든다', () => {
-    const script = createResponseScript(response);
+    const script = createResponseScript(response, TRUSTED_ORIGIN);
 
+    expect(script).toContain(`window.location.origin === "${TRUSTED_ORIGIN}"`);
     expect(script).toContain("window.dispatchEvent(new MessageEvent('message'");
     expect(script.trimEnd().endsWith('true;')).toBe(true);
   });
 
   it('응답 내용이 그대로 전달된다', () => {
-    const script = createResponseScript(response);
+    const script = createResponseScript(response, TRUSTED_ORIGIN);
 
     expect(extractResponse(script)).toEqual(response);
   });
@@ -42,7 +44,7 @@ describe('createResponseScript', () => {
       error: { message: `'따옴표'와 "쌍따옴표"가 포함된 오류` },
     };
 
-    const script = createResponseScript(errorResponse);
+    const script = createResponseScript(errorResponse, TRUSTED_ORIGIN);
 
     expect(extractResponse(script)).toEqual(errorResponse);
   });
