@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 
+import AppMainLayout from '@/app/layouts/AppMainLayout';
 import AgreementPage from '@/pages/agreement/AgreementPage';
 import HomePage from '@/pages/home/HomePage';
 import MapSearchPage from '@/pages/home/search/MapSearchPage';
@@ -20,7 +21,6 @@ import MonthlyRecordListPage from '@/pages/report/monthly-records/MonthlyRecordL
 import ReportDetailPage from '@/pages/report/ReportDetailPage';
 import ReportPage from '@/pages/report/ReportPage';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
-import AppMainLayout from '@/shared/layout/AppMainLayout';
 import MobileLayout from '@/shared/layout/MobileLayout';
 import PaddedLayout from '@/shared/layout/PaddedLayout';
 

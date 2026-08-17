@@ -27,9 +27,9 @@ type HomeBottomSheetStore = {
 /**
  * 홈 화면 바텀시트의 높이 단계를 관리하는 전역 상태입니다.
  *
- * 하단 탭바의 "홈" 버튼(`shared/layout`)과 홈 화면의 바텀시트(`features/map`)가 서로를
- * import할 수 없는 위치라서(둘 다 shared를 가져다 쓰는 쪽), 이 상태를 `shared/stores`에 둬서
- * 양쪽에서 같이 참조한다.
+ * `features/map` 안에서만 사용합니다(바텀시트 자체와, 하단 탭바 "홈" 클릭을 이 상태에 연결하는
+ * `app/layouts/AppMainLayout`). 하단 탭바(`shared/layout/BottomTabBar`)는 `shared`라서 이
+ * feature 전용 상태를 직접 import할 수 없으므로 `onHomeClick` 콜백으로만 연결됩니다.
  */
 export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
   stepIndex: 0,

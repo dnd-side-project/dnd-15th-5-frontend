@@ -3,7 +3,7 @@ import { useState } from 'react';
 import {
   getHomeBottomSheetSnapPoint,
   useHomeBottomSheetStore,
-} from '@/shared/stores/homeBottomSheetStore';
+} from '@/features/map/stores/homeBottomSheetStore';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { SegmentedToggle } from '@/shared/ui/segmented-toggle';
 

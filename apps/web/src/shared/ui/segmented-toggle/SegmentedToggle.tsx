@@ -61,9 +61,10 @@ export function SegmentedToggle<TValue extends string>({
           옆으로 미끄러지듯 이동하는 효과를 낸다. */}
       <span
         aria-hidden="true"
-        className={`absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-30 bg-neutral-00 transition-transform duration-200 ${
+        className={cn(
+          'absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-30 bg-neutral-00 transition-transform duration-200',
           isSecondActive ? 'translate-x-full' : 'translate-x-0'
-        }`}
+        )}
       />
       {options.map((option) => (
         <Toggle

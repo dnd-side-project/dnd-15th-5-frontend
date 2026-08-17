@@ -1,9 +1,22 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import BottomTabBar from './BottomTabBar';
 
 describe('BottomTabBar', () => {
+  it('"홈" 탭을 클릭하면 onHomeClick을 호출한다', () => {
+    const onHomeClick = jest.fn();
+    render(
+      <MemoryRouter initialEntries={['/home']}>
+        <BottomTabBar onHomeClick={onHomeClick} />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('link', { name: '홈' }));
+
+    expect(onHomeClick).toHaveBeenCalledTimes(1);
+  });
+
   it('주요 화면으로 이동하는 세 개의 링크를 제공한다', () => {
     render(
       <MemoryRouter initialEntries={['/home']}>

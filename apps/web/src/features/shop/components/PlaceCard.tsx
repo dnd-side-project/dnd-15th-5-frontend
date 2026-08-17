@@ -1,6 +1,4 @@
-import { CardLocation } from './CardLocation';
-import { CardThumbnail } from './CardThumbnail';
-import { CardTitle } from './CardTitle';
+import { CardLocation, CardThumbnail, CardTitle } from '@/shared/ui/card';
 
 type PlaceCardProps = {
   thumbnailSrc: string | null;
@@ -9,15 +7,18 @@ type PlaceCardProps = {
 };
 
 /**
- * 썸네일·이름·주소로 장소를 표현하는 공통 카드입니다.
+ * 썸네일·이름·주소로 장소를 표현하는 카드입니다.
  *
- * 주소를 그대로 보여줄 때 사용합니다. 태그로 요약해서 보여주려면 `PlaceTagCard`를 사용합니다.
+ * 지금은 `features/shop`에서만 사용합니다. 다른 feature에서도 필요해지면
+ * `shared/ui/card`로 옮기는 것을 검토합니다.
+ * 주소를 그대로 보여줄 때 사용합니다. 태그로 요약해서 보여주려면 `shared/ui/card`의
+ * `PlaceTagCard`를 사용합니다.
  * 이름과 주소는 한 줄을 넘으면 말줄임됩니다.
  * 클릭 동작이 필요하면 버튼이나 링크로 감싸서 사용합니다.
  *
  * @example
  * ```tsx
- * import { PlaceCard } from '@/shared/ui/card';
+ * import { PlaceCard } from '@/features/shop/components/PlaceCard';
  *
  * <button type="button" onClick={() => handleSelect(shop)}>
  *   <PlaceCard thumbnailSrc={shop.photoUrl} title={shop.name} location={shop.address} />

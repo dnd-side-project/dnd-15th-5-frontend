@@ -6,7 +6,7 @@ import {
   NavigationReportIcon,
 } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import { useHomeBottomSheetStore } from '@/shared/stores/homeBottomSheetStore';
+import { cn } from '@/shared/lib/cn';
 
 import type { ComponentType, SVGProps } from 'react';
 
@@ -24,13 +24,17 @@ function TabNavLink({ to, end, label, Icon, onClick }: TabNavLinkProps) {
     <NavLink to={to} end={end} onClick={onClick} className="flex min-w-0 justify-center">
       {({ isActive }) => (
         <span
-          className={`flex h-15.5 w-22 flex-col items-center justify-center gap-1 rounded-30 transition-colors duration-200 ${
+          className={cn(
+            'flex h-15.5 w-22 flex-col items-center justify-center gap-1 rounded-30 transition-colors duration-200',
             isActive ? 'bg-neutral-100 text-neutral-700' : 'bg-neutral-00 text-neutral-500'
-          }`}
+          )}
         >
           <Icon className="transition-colors duration-200" aria-hidden="true" />
           <span
-            className={`text-label-01-medium transition-colors duration-200 ${isActive ? 'font-bold' : ''}`}
+            className={cn(
+              'text-label-01-medium transition-colors duration-200',
+              isActive && 'font-bold'
+            )}
           >
             {label}
           </span>
@@ -40,34 +44,39 @@ function TabNavLink({ to, end, label, Icon, onClick }: TabNavLinkProps) {
   );
 }
 
+type BottomTabBarProps = {
+  onHomeClick?: () => void;
+};
+
 /**
  * 홈·기록하기·리포트로 이동하는 하단 탭바입니다.
  *
  * 화면 하단에 붙어 상단 모서리만 둥글고, 기록하기는 가운데 위로 떠 있는 원형 버튼으로 표시합니다.
- * "홈" 탭을 누르면 홈 화면 바텀시트의 높이 단계가 순환합니다(`useHomeBottomSheetStore`).
- * 설정할 속성이 없어 그대로 배치해서 사용합니다.
+ * "홈" 탭 클릭에 어떤 동작이 필요한지는 이 컴포넌트가 알지 못하므로(`shared`는 `features`를
+ * import할 수 없음), `onHomeClick`으로 바깥에서 주입합니다.
  *
  * @example
  * ```tsx
  * import BottomTabBar from '@/shared/layout/BottomTabBar';
  *
- * <BottomTabBar />
+ * <BottomTabBar onHomeClick={() => advanceHomeBottomSheet()} />
  * ```
+ *
+ * @param props - 탭바 속성입니다.
+ * @param props.onHomeClick - "홈" 탭을 눌렀을 때 호출됩니다. 선택 사항입니다.
  */
-export default function BottomTabBar() {
-  const advanceHomeBottomSheet = useHomeBottomSheetStore((state) => state.advance);
-
+export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="sticky bottom-0 z-30 grid shrink-0 grid-cols-3 items-start rounded-t-30 border-x border-t border-neutral-200 bg-neutral-00 px-5 pt-3 pb-3"
+      className="sticky bottom-0 z-30 grid shrink-0 grid-cols-3 items-start rounded-t-30 border-x border-t border-neutral-200 bg-neutral-00 px-5 py-3"
     >
       <TabNavLink
         to={ROUTE_PATHS.home}
         end
         label="홈"
         Icon={NavigationHomeIcon}
-        onClick={advanceHomeBottomSheet}
+        onClick={onHomeClick}
       />
 
       {/* NOTE: 원 버튼은 다른 탭과 높이가 달라 flex 정렬에 얹으면 튀어나오는 정도가 흔들려서,

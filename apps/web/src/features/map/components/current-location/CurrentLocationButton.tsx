@@ -1,11 +1,12 @@
 import { useMap } from '@vis.gl/react-google-maps';
 
 import { CurrentLocationIcon } from '@/shared/assets/icons';
+import { BOTTOM_SHEET_HEIGHT_RATIO } from '@/shared/ui/bottom-sheet';
+
 import {
   getHomeBottomSheetSnapPoint,
   useHomeBottomSheetStore,
-} from '@/shared/stores/homeBottomSheetStore';
-import { BOTTOM_SHEET_HEIGHT_RATIO } from '@/shared/ui/bottom-sheet';
+} from '../../stores/homeBottomSheetStore';
 
 import type { MapPosition } from '../../types';
 

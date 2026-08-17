@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 
+import { cn } from '@/shared/lib/cn';
+
 import { BOTTOM_SHEET_HEIGHT_RATIO } from './constants';
 
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
@@ -129,9 +131,11 @@ export function BottomSheet({
   return (
     <div
       style={{ height: isDragging ? `${dragHeightPx}px` : SNAP_POINT_HEIGHT[snapPoint] }}
-      className={`fixed right-0 bottom-0 left-0 z-20 mx-auto flex max-w-120 flex-col rounded-t-30 bg-neutral-00 shadow-sheet ${
-        isDragging ? '' : 'transition-all duration-300 ease-out'
-      } ${isHidden ? 'translate-y-full' : 'translate-y-0'}`}
+      className={cn(
+        'fixed right-0 bottom-0 left-0 z-20 mx-auto flex max-w-120 flex-col rounded-t-30 bg-neutral-00 shadow-sheet',
+        !isDragging && 'transition-all duration-300 ease-out',
+        isHidden ? 'translate-y-full' : 'translate-y-0'
+      )}
     >
       <button
         type="button"

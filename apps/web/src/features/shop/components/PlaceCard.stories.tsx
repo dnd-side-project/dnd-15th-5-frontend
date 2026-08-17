@@ -1,4 +1,4 @@
-import { PlaceCard } from '.';
+import { PlaceCard } from './PlaceCard';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -7,7 +7,7 @@ const PLACEHOLDER_THUMBNAIL_SRC =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Crect width='128' height='128' fill='%23cbd5ff'/%3E%3C/svg%3E";
 
 const meta = {
-  title: 'Shared/PlaceCard',
+  title: 'Shop/PlaceCard',
   component: PlaceCard,
   // INFO: 실제 사용 화면(모바일 프레임, 393px 기준)과 같은 폭에서 말줄임 동작을 확인할 수 있게 한다.
   decorators: [

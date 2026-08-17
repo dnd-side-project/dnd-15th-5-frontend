@@ -1,4 +1,4 @@
-import { PlaceCard } from '@/shared/ui/card';
+import { PlaceCard } from './PlaceCard';
 
 import type { ShopSearchResult } from '../types';
 
