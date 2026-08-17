@@ -1,3 +1,4 @@
+import { DEFAULT_TOAST_DURATION } from '@chapchap/shared/toast';
 import { useEffect, useRef } from 'react';
 
 import { Button } from '@/shared/ui/button';
@@ -60,6 +61,29 @@ const meta = {
   component: ToastProvider,
   parameters: {
     layout: 'fullscreen',
+    docs: {
+      description: {
+        component:
+          '웹과 WebView에서 공통으로 사용하는 Toast Provider입니다. 앱 루트에 한 번 배치하고 하위 컴포넌트에서 `useToast`로 Toast를 노출하거나 닫습니다.',
+      },
+      story: {
+        height: '280px',
+        inline: false,
+      },
+    },
+  },
+  argTypes: {
+    children: {
+      table: { disable: true },
+    },
+    duration: {
+      control: { min: 0, step: 100, type: 'number' },
+      description: 'Toast가 자동으로 닫히기까지의 시간(ms)입니다. 0이면 자동으로 닫히지 않습니다.',
+      table: {
+        defaultValue: { summary: String(DEFAULT_TOAST_DURATION) },
+        type: { summary: 'number' },
+      },
+    },
   },
 } satisfies Meta<typeof ToastProvider>;
 

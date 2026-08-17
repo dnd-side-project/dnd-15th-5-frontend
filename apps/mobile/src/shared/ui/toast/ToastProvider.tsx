@@ -119,7 +119,7 @@ export function ToastProvider({ children, duration = DEFAULT_TOAST_DURATION }: T
   return (
     <ToastContext.Provider value={{ showToast, closeToast }}>
       {children}
-      <View pointerEvents="box-none" className="z-(--z-toast) absolute right-5 bottom-5 left-5">
+      <View pointerEvents="box-none" className="z-toast absolute right-5 bottom-5 left-5">
         <View className="toast-list self-center">
           {toasts.map((toast) => (
             <Pressable

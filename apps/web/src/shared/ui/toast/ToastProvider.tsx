@@ -70,7 +70,7 @@ export function ToastProvider({ children, duration = DEFAULT_TOAST_DURATION }: T
       {children}
       <BaseToast.Portal>
         <BaseToast.Viewport
-          className="toast-list z-(--z-toast) pointer-events-none fixed right-0 bottom-5 left-0 box-border flex w-full flex-col-reverse px-4 outline-none"
+          className="toast-list z-toast pointer-events-none fixed right-0 bottom-5 left-0 box-border flex w-full flex-col-reverse px-4 outline-none"
           data-testid="toast-viewport"
         >
           <ToastList />
