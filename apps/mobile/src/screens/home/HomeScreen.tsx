@@ -49,7 +49,8 @@ export default function HomeScreen() {
   const trustedWebOrigin = webUrl ? getUrlOrigin(webUrl) : null;
   const webViewRef = useRef<WebView>(null);
   const [loadErrorMessage, setLoadErrorMessage] = useState<string | null>(null);
-  const { edges, handleNavigationStateChange, handleRouteChange } = useWebViewSafeArea(webUrl);
+  const { edges, handleNavigationStateChange, handleRouteChange, isMapHome } =
+    useWebViewSafeArea(webUrl);
   // NOTE: source에 매번 새 객체를 넘기면 값이 같아도 WebView가 다시 로드할 수 있어 재사용한다.
   const webViewSource = useMemo(() => (webUrl ? { uri: webUrl } : undefined), [webUrl]);
 
@@ -109,6 +110,8 @@ export default function HomeScreen() {
         // Safe Area는 위 wrapper가 경로별로 관리하므로 WebView 자체의 iOS 자동 보정은 끈다.
         automaticallyAdjustContentInsets={false}
         contentInsetAdjustmentBehavior="never"
+        // NOTE: iOS 웹 히스토리 제스처를 지원하되, 지도 홈에서는 이전 화면으로 이동하지 않는다.
+        allowsBackForwardNavigationGestures={!isMapHome}
         onNavigationStateChange={({ url }) => handleNavigationStateChange(url)}
         onMessage={handleBridgeMessage}
         startInLoadingState
