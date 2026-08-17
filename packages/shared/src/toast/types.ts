@@ -5,7 +5,7 @@ export type ToastType = 'success' | 'error' | 'info';
 export type ShowToastOptions = {
   /** 사용자에게 표시할 메시지입니다. */
   message: string;
-  /** Toast 상태입니다. 기본값은 `info`입니다. */
+  /** Toast 상태입니다. 기본값은 `success`입니다. */
   type?: ToastType;
   /** 자동으로 닫히기까지의 시간(ms)입니다. `0`이면 자동으로 닫히지 않습니다. */
   duration?: number;
