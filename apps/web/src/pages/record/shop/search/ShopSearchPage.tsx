@@ -15,7 +15,7 @@ export default function ShopSearchPage() {
   return (
     <main>
       {/* TODO: 공통 헤더 컴포넌트 나오면 교체 */}
-      <BackButton onClick={() => navigate(-1)} className="my-3" />
+      <BackButton onClick={() => navigate(-1)} />
       <ShopSearch onSelectShop={handleSelectShop} />
     </main>
   );

@@ -32,10 +32,13 @@ export function BackButton({
   return (
     <Button
       variant="icon"
-      size="icon"
       onClick={onClick}
       aria-label={ariaLabel}
-      className={cn(variant === 'light' ? 'text-neutral-00' : 'text-neutral-700', className)}
+      className={cn(
+        'mt-4 size-6',
+        variant === 'light' ? 'text-neutral-00' : 'text-neutral-700',
+        className
+      )}
     >
       <span className="inline-flex size-6">
         <ChevronLeftIcon aria-hidden="true" />

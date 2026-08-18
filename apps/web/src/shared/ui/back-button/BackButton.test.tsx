@@ -10,7 +10,10 @@ describe('<BackButton />', () => {
 
     render(<BackButton onClick={handleClick} />);
 
-    await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
+    const backButton = screen.getByRole('button', { name: '뒤로 가기' });
+
+    expect(backButton).toHaveClass('mt-4', 'size-6');
+    await user.click(backButton);
 
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
