@@ -5,6 +5,14 @@
 @import '@chapchap/shared/design/shadows.css';
 @import '@chapchap/shared/design/radius.css';
 
+@utility scrollbar-hidden {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer base {
   button {
     cursor: pointer;

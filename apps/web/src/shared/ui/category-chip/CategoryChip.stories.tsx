@@ -108,7 +108,7 @@ export const RecommendedCategoryFilter: Story = {
       useState<RecommendedCategoryValue>('recommendation');
 
     return (
-      <div className="w-full max-w-88 overflow-x-auto">
+      <div className="scrollbar-hidden w-full max-w-88 overflow-x-auto">
         <div
           role="group"
           aria-label="가게 추천 포함 카테고리 필터"
