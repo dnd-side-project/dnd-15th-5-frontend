@@ -24,7 +24,7 @@
 @utility toast-list {
   width: 100%;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
 }
 
 /* 성공·오류 Toast의 공통 배경 */
