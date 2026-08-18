@@ -104,6 +104,7 @@
 ```text
 apps/web/src/
 ├── app/                # 앱 진입점, 전역 설정
+│   ├── layouts/        # 라우트 최상위 레이아웃 셸 (4번 참고)
 │   ├── providers/
 │   ├── routes/
 │   ├── styles/
