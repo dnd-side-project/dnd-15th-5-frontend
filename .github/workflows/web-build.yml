@@ -1,0 +1,241 @@
+name: Web Deploy
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+concurrency:
+  group: web-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-web:
+    name: Build and deploy web
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_GITHUB_ACTIONS_ROLE_ARN: ${{ vars.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+      FRONTEND_ARTIFACT_BUCKET: ${{ vars.FRONTEND_ARTIFACT_BUCKET }}
+      EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+      EC2_WEB_ROOT: ${{ vars.EC2_WEB_ROOT }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate deployment configuration
+        env:
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+          VITE_GOOGLE_MAPS_MAP_ID: ${{ vars.VITE_GOOGLE_MAPS_MAP_ID }}
+        run: |
+          : "${AWS_REGION:?AWS_REGION is required}"
+          : "${AWS_GITHUB_ACTIONS_ROLE_ARN:?AWS_GITHUB_ACTIONS_ROLE_ARN is required}"
+          : "${FRONTEND_ARTIFACT_BUCKET:?FRONTEND_ARTIFACT_BUCKET is required}"
+          : "${EC2_INSTANCE_ID:?EC2_INSTANCE_ID is required}"
+          : "${EC2_WEB_ROOT:?EC2_WEB_ROOT is required}"
+          : "${VITE_GOOGLE_MAPS_API_KEY:?VITE_GOOGLE_MAPS_API_KEY is required}"
+          : "${VITE_GOOGLE_MAPS_MAP_ID:?VITE_GOOGLE_MAPS_MAP_ID is required}"
+
+          if ! printf '%s' "${GITHUB_SHA}" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "GITHUB_SHA must be a 40-character lowercase hexadecimal value."
+            exit 1
+          fi
+
+          if ! printf '%s' "${EC2_WEB_ROOT}" | grep -Eq '^/[A-Za-z0-9._/-]+$'; then
+            echo "EC2_WEB_ROOT must be a safe absolute path."
+            exit 1
+          fi
+
+          if ! printf '%s' "${FRONTEND_ARTIFACT_BUCKET}" | grep -Eq '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'; then
+            echo "FRONTEND_ARTIFACT_BUCKET is invalid."
+            exit 1
+          fi
+
+          if ! printf '%s' "${EC2_INSTANCE_ID}" | grep -Eq '^i-[0-9a-f]+$'; then
+            echo "EC2_INSTANCE_ID is invalid."
+            exit 1
+          fi
+
+      - name: Build web
+        run: pnpm --filter @chapchap/web build
+        env:
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+          VITE_GOOGLE_MAPS_MAP_ID: ${{ vars.VITE_GOOGLE_MAPS_MAP_ID }}
+
+      - name: Package web artifact
+        id: package
+        run: |
+          ARTIFACT_NAME="chapchap-web-${GITHUB_SHA}.tar.gz"
+          ARTIFACT_DIRECTORY="${GITHUB_WORKSPACE}/artifacts"
+          ARTIFACT_PATH="${ARTIFACT_DIRECTORY}/${ARTIFACT_NAME}"
+
+          mkdir -p "${ARTIFACT_DIRECTORY}"
+          tar -C apps/web/dist -czf "${ARTIFACT_PATH}" .
+
+          echo "artifact_name=${ARTIFACT_NAME}" >> "${GITHUB_OUTPUT}"
+          echo "artifact_path=${ARTIFACT_PATH}" >> "${GITHUB_OUTPUT}"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: chapchap-web-${{ github.run_id }}
+
+      - name: Upload web artifact to S3
+        id: upload
+        env:
+          ARTIFACT_NAME: ${{ steps.package.outputs.artifact_name }}
+          ARTIFACT_PATH: ${{ steps.package.outputs.artifact_path }}
+        run: |
+          S3_KEY="releases/${GITHUB_SHA}/${ARTIFACT_NAME}"
+          S3_URI="s3://${FRONTEND_ARTIFACT_BUCKET}/${S3_KEY}"
+
+          aws s3 cp "${ARTIFACT_PATH}" "${S3_URI}" --only-show-errors
+
+          echo "s3_key=${S3_KEY}" >> "${GITHUB_OUTPUT}"
+          echo "s3_uri=${S3_URI}" >> "${GITHUB_OUTPUT}"
+
+      - name: Deploy web artifact via SSM
+        env:
+          ARTIFACT_NAME: ${{ steps.package.outputs.artifact_name }}
+          S3_URI: ${{ steps.upload.outputs.s3_uri }}
+        run: |
+          DEPLOY_SCRIPT=$(cat <<SCRIPT
+          set -eu
+
+          AWS_REGION="${AWS_REGION}"
+          RELEASE_SHA="${GITHUB_SHA}"
+          RELEASES_DIR="${EC2_WEB_ROOT}/releases"
+          RELEASE_DIR="${EC2_WEB_ROOT}/releases/${GITHUB_SHA}"
+          STAGING_DIR="${EC2_WEB_ROOT}/releases/.${GITHUB_SHA}.staging"
+          CURRENT_LINK="${EC2_WEB_ROOT}/current"
+          TEMP_LINK="${EC2_WEB_ROOT}/.current-${GITHUB_SHA}"
+          ARCHIVE_PATH="/tmp/${ARTIFACT_NAME}"
+          S3_URI="${S3_URI}"
+
+          cleanup() {
+            rm -f -- "\${ARCHIVE_PATH}" "\${TEMP_LINK}"
+            if [ -d "\${STAGING_DIR}" ]; then
+              rm -rf -- "\${STAGING_DIR}"
+            fi
+          }
+          trap cleanup EXIT
+
+          if ! printf '%s' "\${RELEASE_SHA}" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "Invalid release SHA."
+            exit 1
+          fi
+
+          mkdir -p "\${RELEASES_DIR}"
+
+          if [ -d "\${RELEASE_DIR}" ]; then
+            test -f "\${RELEASE_DIR}/index.html"
+          else
+            rm -rf -- "\${STAGING_DIR}"
+            mkdir -p "\${STAGING_DIR}"
+
+            aws s3 cp "\${S3_URI}" "\${ARCHIVE_PATH}" --region "\${AWS_REGION}" --only-show-errors
+            tar -xzf "\${ARCHIVE_PATH}" -C "\${STAGING_DIR}"
+            test -f "\${STAGING_DIR}/index.html"
+
+            mv "\${STAGING_DIR}" "\${RELEASE_DIR}"
+          fi
+
+          rm -f -- "\${TEMP_LINK}"
+          ln -s "releases/\${RELEASE_SHA}" "\${TEMP_LINK}"
+          mv -Tf "\${TEMP_LINK}" "\${CURRENT_LINK}"
+
+          find "\${RELEASES_DIR}" -mindepth 1 -maxdepth 1 -type d ! -name '.*' \
+            -printf '%T@ %f\n' | sort -nr | awk 'NR > 5 { print \$2 }' | \
+            while IFS= read -r OLD_RELEASE; do
+              if [ "\${OLD_RELEASE}" != "\${RELEASE_SHA}" ] && \
+                printf '%s' "\${OLD_RELEASE}" | grep -Eq '^[0-9a-f]{40}$'; then
+                rm -rf -- "\${RELEASES_DIR}/\${OLD_RELEASE}" || \
+                  echo "Warning: failed to remove old release \${OLD_RELEASE}"
+              fi
+            done
+
+          echo "Deployed web release: \${RELEASE_SHA}"
+          SCRIPT
+          )
+
+          PARAMETERS=$(jq -n --arg script "${DEPLOY_SCRIPT}" '{commands: [$script]}')
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --document-name AWS-RunShellScript \
+            --comment "Deploy ChapChap web ${GITHUB_SHA}" \
+            --timeout-seconds 600 \
+            --parameters "${PARAMETERS}" \
+            --query 'Command.CommandId' \
+            --output text)
+
+          STATUS="Pending"
+          for ATTEMPT in $(seq 1 60); do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${EC2_INSTANCE_ID}" \
+              --query 'Status' \
+              --output text 2>/dev/null || echo "Pending")
+
+            case "${STATUS}" in
+              Success|Failed|Cancelled|TimedOut) break ;;
+            esac
+
+            sleep 10
+          done
+
+          echo "=== SSM stdout ==="
+          aws ssm get-command-invocation \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${EC2_INSTANCE_ID}" \
+            --query 'StandardOutputContent' \
+            --output text || true
+
+          echo "=== SSM stderr ==="
+          aws ssm get-command-invocation \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${EC2_INSTANCE_ID}" \
+            --query 'StandardErrorContent' \
+            --output text || true
+
+          if [ "${STATUS}" != "Success" ]; then
+            echo "Web deployment failed with SSM status: ${STATUS}"
+            exit 1
+          fi
+
+      - name: Clean up old S3 artifacts
+        continue-on-error: true
+        run: |
+          OLD_KEYS=$(aws s3api list-objects-v2 \
+            --bucket "${FRONTEND_ARTIFACT_BUCKET}" \
+            --prefix releases/ \
+            --output json | \
+            jq -r '(.Contents // []) | sort_by(.LastModified) | reverse | .[5:][]?.Key')
+
+          while IFS= read -r OLD_KEY; do
+            if [ -n "${OLD_KEY}" ]; then
+              aws s3api delete-object \
+                --bucket "${FRONTEND_ARTIFACT_BUCKET}" \
+                --key "${OLD_KEY}"
+            fi
+          done <<< "${OLD_KEYS}"
