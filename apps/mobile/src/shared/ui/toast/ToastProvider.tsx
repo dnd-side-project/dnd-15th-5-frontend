@@ -27,16 +27,22 @@ const TOAST_BOTTOM_OFFSET = 20;
 
 let toastSequence = 0;
 
+const toastIcons: Record<ToastType, typeof StatusSuccessIcon | null> = {
+  success: StatusSuccessIcon,
+  error: StatusErrorIcon,
+  info: null,
+};
+
+const toastSurfaceClasses: Record<ToastType, string> = {
+  success: 'toast-default',
+  error: 'toast-default',
+  info: 'toast-info',
+};
+
 function ToastIcon({ type }: { type: ToastType }) {
-  if (type === 'success') {
-    return <StatusSuccessIcon width={20} height={20} />;
-  }
+  const Icon = toastIcons[type];
 
-  if (type === 'error') {
-    return <StatusErrorIcon width={20} height={20} />;
-  }
-
-  return null;
+  return Icon ? <Icon width={20} height={20} /> : null;
 }
 
 /**
@@ -137,9 +143,7 @@ export function ToastProvider({ children, duration = DEFAULT_TOAST_DURATION }: T
               accessibilityLabel={`${toast.message}. 알림 닫기`}
               accessibilityLiveRegion={toast.type === 'error' ? 'assertive' : 'polite'}
               onPress={() => closeToast(toast.id)}
-              className={`toast-surface toast-content ${
-                toast.type === 'info' ? 'toast-info' : 'toast-default'
-              }`}
+              className={`toast-surface toast-content ${toastSurfaceClasses[toast.type]}`}
             >
               <ToastIcon type={toast.type} />
               <Text className="toast-text shrink text-center font-pretendard-regular">

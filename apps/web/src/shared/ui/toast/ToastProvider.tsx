@@ -17,16 +17,16 @@ type ToastProviderProps = PropsWithChildren<{
   duration?: number;
 }>;
 
+const toastIcons: Record<ToastType, typeof StatusSuccessIcon | null> = {
+  success: StatusSuccessIcon,
+  error: StatusErrorIcon,
+  info: null,
+};
+
 function ToastIcon({ type }: { type: ToastType }) {
-  if (type === 'success') {
-    return <StatusSuccessIcon className="size-5 shrink-0" aria-hidden="true" />;
-  }
+  const Icon = toastIcons[type];
 
-  if (type === 'error') {
-    return <StatusErrorIcon className="size-5 shrink-0" aria-hidden="true" />;
-  }
-
-  return null;
+  return Icon ? <Icon className="size-5 shrink-0" aria-hidden="true" /> : null;
 }
 
 function ToastList() {

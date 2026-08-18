@@ -3,6 +3,8 @@ import { Pressable, Text } from 'react-native';
 
 import { ToastProvider, useToast } from '.';
 
+import type { ToastType } from '@chapchap/shared/toast';
+
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }),
 }));
@@ -16,6 +18,36 @@ function ToastFixture() {
     </Pressable>
   );
 }
+
+function ToastTypeFixture({ type }: { type: ToastType }) {
+  const { showToast } = useToast();
+
+  return (
+    <Pressable onPress={() => showToast({ message: `${type} Toast`, type, duration: 0 })}>
+      <Text>{type} 열기</Text>
+    </Pressable>
+  );
+}
+
+const TOAST_PRESENTATIONS = [
+  { type: 'success', surfaceClassName: 'toast-default', hasIcon: true },
+  { type: 'error', surfaceClassName: 'toast-default', hasIcon: true },
+  { type: 'info', surfaceClassName: 'toast-info', hasIcon: false },
+] as const;
+
+const countNodesByType = (node: unknown, type: string): number => {
+  if (!node || typeof node !== 'object') {
+    return 0;
+  }
+
+  const element = node as { type?: unknown; children?: unknown[] };
+  const childCount = element.children?.reduce<number>(
+    (count, child) => count + countNodesByType(child, type),
+    0
+  );
+
+  return (element.type === type ? 1 : 0) + (childCount ?? 0);
+};
 
 describe('ToastProvider', () => {
   beforeEach(() => {
@@ -94,4 +126,22 @@ describe('ToastProvider', () => {
     expect(toastTimerIndexes).toHaveLength(4);
     expect(clearTimeoutSpy).toHaveBeenCalledWith(firstToastTimer);
   });
+
+  it.each(TOAST_PRESENTATIONS)(
+    '$type 타입에 지정된 아이콘과 표면 스타일을 적용한다',
+    async ({ type, surfaceClassName, hasIcon }) => {
+      const { getByRole, getByText, toJSON } = await render(
+        <ToastProvider duration={0}>
+          <ToastTypeFixture type={type} />
+        </ToastProvider>
+      );
+
+      await act(async () => fireEvent.press(getByText(`${type} 열기`)));
+
+      const toast = getByRole('button', { name: `${type} Toast. 알림 닫기` });
+
+      expect(toast).toHaveProp('className', expect.stringContaining(surfaceClassName));
+      expect(countNodesByType(toJSON(), 'SvgMock')).toBe(hasIcon ? 1 : 0);
+    }
+  );
 });

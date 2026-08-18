@@ -2,6 +2,8 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 
 import { ToastProvider, useToast } from '.';
 
+import type { ToastType } from '@chapchap/shared/toast';
+
 function ToastFixture() {
   const { closeToast, showToast } = useToast();
 
@@ -25,6 +27,22 @@ function ToastFixture() {
     </>
   );
 }
+
+function ToastTypeFixture({ type }: { type: ToastType }) {
+  const { showToast } = useToast();
+
+  return (
+    <button onClick={() => showToast({ message: `${type} Toast`, type, duration: 0 })}>
+      {type} 열기
+    </button>
+  );
+}
+
+const TOAST_PRESENTATIONS = [
+  { type: 'success', surfaceClassName: 'toast-default', hasIcon: true },
+  { type: 'error', surfaceClassName: 'toast-default', hasIcon: true },
+  { type: 'info', surfaceClassName: 'toast-info', hasIcon: false },
+] as const;
 
 describe('Toast', () => {
   beforeEach(() => {
@@ -90,4 +108,25 @@ describe('Toast', () => {
     expect(screen.queryByText('Toast 1')).not.toBeInTheDocument();
     expect(screen.getByText('Toast 4')).toBeInTheDocument();
   });
+
+  it.each(TOAST_PRESENTATIONS)(
+    '$type 타입에 지정된 아이콘과 표면 스타일을 적용한다',
+    ({ type, surfaceClassName, hasIcon }) => {
+      render(
+        <ToastProvider duration={0}>
+          <ToastTypeFixture type={type} />
+        </ToastProvider>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: `${type} 열기` }));
+
+      const toast =
+        type === 'error'
+          ? screen.getByRole('alertdialog', { hidden: true })
+          : screen.getByRole('dialog');
+
+      expect(toast).toHaveClass(surfaceClassName);
+      expect(Boolean(toast?.querySelector('svg'))).toBe(hasIcon);
+    }
+  );
 });
