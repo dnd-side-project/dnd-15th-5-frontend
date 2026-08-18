@@ -11,12 +11,14 @@ describe('useWebViewSafeArea', () => {
     );
 
     expect(result.current.edges).toEqual([]);
+    expect(result.current.isMapHome).toBe(true);
 
     await act(async () => {
       result.current.handleNavigationStateChange('https://chapchap.example.com/report');
     });
 
     expect(result.current.edges).toEqual(SAFE_AREA_EDGES);
+    expect(result.current.isMapHome).toBe(false);
   });
 
   it('웹에서 전달한 SPA 경로에 맞춰 Safe Area를 변경한다', async () => {

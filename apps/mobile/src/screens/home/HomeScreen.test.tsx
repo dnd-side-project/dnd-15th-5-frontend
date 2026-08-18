@@ -38,6 +38,7 @@ describe('<HomeScreen />', () => {
 
     expect(getByTestId('home-webview')).toHaveProp('automaticallyAdjustContentInsets', false);
     expect(getByTestId('home-webview')).toHaveProp('contentInsetAdjustmentBehavior', 'never');
+    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
   });
 
   it('지도 홈에서만 안전 영역을 제거한다', async () => {
@@ -63,6 +64,7 @@ describe('<HomeScreen />', () => {
       bottom: 'off',
       left: 'off',
     });
+    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
 
     await act(async () => {
       await getByTestId('home-webview').props.onMessage({
@@ -83,6 +85,7 @@ describe('<HomeScreen />', () => {
       bottom: 'additive',
       left: 'additive',
     });
+    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
   });
 
   it('설정된 웹 주소와 다른 origin의 브릿지 요청은 처리하지 않는다', async () => {

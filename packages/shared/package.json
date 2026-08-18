@@ -7,7 +7,8 @@
     "./assets/icons/*.svg": "./assets/icons/*.svg",
     "./bridge": "./src/bridge/index.ts",
     "./design/*.css": "./design/*.css",
-    "./location": "./src/location/types.ts"
+    "./location": "./src/location/types.ts",
+    "./toast": "./src/toast/index.ts"
   },
   "scripts": {
     "lint": "eslint .",

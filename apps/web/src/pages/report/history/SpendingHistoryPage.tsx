@@ -1,3 +1,10 @@
+import { ReportTabs } from '@/features/report';
+
 export default function SpendingHistoryPage() {
-  return <main>소비 기록 페이지</main>;
+  return (
+    <main>
+      <ReportTabs active="history" />
+      <p>소비 기록 페이지</p>
+    </main>
+  );
 }
