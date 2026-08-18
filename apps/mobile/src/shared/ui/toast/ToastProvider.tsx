@@ -5,6 +5,7 @@ import {
 } from '@chapchap/shared/toast';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatusErrorIcon, StatusSuccessIcon } from '@/shared/assets/icons';
 
@@ -21,6 +22,8 @@ type ToastProviderProps = PropsWithChildren<{
 }>;
 
 const ToastContext = createContext<ToastControls | null>(null);
+
+const TOAST_BOTTOM_OFFSET = 20;
 
 let toastSequence = 0;
 
@@ -55,6 +58,7 @@ function ToastIcon({ type }: { type: ToastType }) {
  * @param props.duration - Toast의 기본 노출 시간(ms)입니다.
  */
 export function ToastProvider({ children, duration = DEFAULT_TOAST_DURATION }: ToastProviderProps) {
+  const insets = useSafeAreaInsets();
   const [toasts, setToasts] = useState<NativeToast[]>([]);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
 
@@ -119,7 +123,12 @@ export function ToastProvider({ children, duration = DEFAULT_TOAST_DURATION }: T
   return (
     <ToastContext.Provider value={{ showToast, closeToast }}>
       {children}
-      <View pointerEvents="box-none" className="z-toast absolute right-5 bottom-5 left-5">
+      <View
+        testID="toast-viewport"
+        pointerEvents="box-none"
+        className="z-toast absolute right-4 left-4"
+        style={{ bottom: insets.bottom + TOAST_BOTTOM_OFFSET }}
+      >
         <View className="toast-list self-center">
           {toasts.map((toast) => (
             <Pressable

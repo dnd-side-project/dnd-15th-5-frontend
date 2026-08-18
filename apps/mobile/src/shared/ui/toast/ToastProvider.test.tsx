@@ -3,6 +3,10 @@ import { Pressable, Text } from 'react-native';
 
 import { ToastProvider, useToast } from '.';
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }),
+}));
+
 function ToastFixture() {
   const { showToast } = useToast();
 
@@ -22,6 +26,19 @@ describe('ToastProvider', () => {
     await act(async () => jest.runOnlyPendingTimers());
     jest.restoreAllMocks();
     jest.useRealTimers();
+  });
+
+  it('하단 Safe Area에 기본 여백을 더해 배치한다', async () => {
+    const { getByTestId } = await render(
+      <ToastProvider>
+        <ToastFixture />
+      </ToastProvider>
+    );
+
+    const viewport = getByTestId('toast-viewport');
+
+    expect(viewport).toHaveStyle({ bottom: 54 });
+    expect(viewport).toHaveProp('className', expect.stringContaining('right-4 left-4'));
   });
 
   it('Toast를 노출하고 지정한 시간이 지나면 닫는다', async () => {

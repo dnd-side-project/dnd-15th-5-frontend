@@ -36,6 +36,19 @@ describe('Toast', () => {
     jest.useRealTimers();
   });
 
+  it('Viewport를 앱 프레임과 같은 최대 너비로 제한한다', () => {
+    render(
+      <ToastProvider>
+        <ToastFixture />
+      </ToastProvider>
+    );
+
+    const viewport = screen.getByTestId('toast-viewport');
+
+    expect(viewport).toHaveClass('mx-auto', 'max-w-120');
+    expect(viewport.style.bottom).toBe('calc(1.25rem + env(safe-area-inset-bottom))');
+  });
+
   it('Toast를 노출하고 지정한 시간이 지나면 닫는다', () => {
     render(
       <ToastProvider>
