@@ -1,0 +1,28 @@
+# Dependencies
+node_modules
+.turbo
+
+# Build outputs
+dist
+dist-ssr
+build
+coverage
+storybook-static
+
+# Native generated files
+**/.expo/
+**/expo-env.d.ts
+**/uniwind-types.d.ts
+**/ios/
+**/android/
+
+# Generated and environment-specific files
+pnpm-lock.yaml
+.env*
+
+# Other commonly ignored files
+*.log
+.vscode
+
+# Documentation files
+*.md

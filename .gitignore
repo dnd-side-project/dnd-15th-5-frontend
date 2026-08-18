@@ -8,14 +8,22 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.turbo
 dist
 dist-ssr
 *.local
 
+# Native generated files
+**/.expo/
+**/ios/**/.build/
+**/android/.gradle/
+**/android/**/build/
+
 # Editor directories and files
-!.vscode/settings.json
-!.vscode/extensions.json
 .vscode/*
+!.vscode/extensions.json
+!.vscode/project.code-snippets
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo
@@ -29,3 +37,8 @@ dist-ssr
 
 # env
 .env*
+!.env.example
+
+# storybook
+*storybook.log
+storybook-static

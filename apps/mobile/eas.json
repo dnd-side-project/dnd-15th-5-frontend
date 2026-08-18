@@ -1,0 +1,27 @@
+{
+  "cli": {
+    "version": ">= 5.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_WEB_URL": "https://chap-chap-dev.vercel.app"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_WEB_URL": "https://chap-chap05.vercel.app"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

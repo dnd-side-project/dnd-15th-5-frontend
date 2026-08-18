@@ -1,0 +1,11 @@
+/*
+ * 디자인 시안의 그림자 토큰.
+ * 이름이 사용처 기준(sticker/rank/like)이므로, 새 그림자가 필요한 컴포넌트가 생기면 그때 추가한다.
+ */
+@theme {
+  --shadow-sticker: 0 8px 10px 0 rgba(0, 0, 0, 0.2);
+  --shadow-rank: 0 2px 4px 0 rgba(99, 99, 99, 0.2);
+  --shadow-like: 0 4px 10px 0 rgba(108, 125, 202, 0.3);
+  --shadow-current-location: 0 0 30px 0 var(--color-primary-500);
+  --shadow-current-location-button: 0 5.33px 13.33px 0 rgba(0, 0, 0, 0.1);
+}

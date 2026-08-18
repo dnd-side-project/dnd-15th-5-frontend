@@ -1,0 +1,22 @@
+{
+  "name": "@chapchap/shared",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./assets/icons/*.svg": "./assets/icons/*.svg",
+    "./bridge": "./src/bridge/index.ts",
+    "./design/*.css": "./design/*.css",
+    "./location": "./src/location/types.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@chapchap/eslint-config": "workspace:*",
+    "@chapchap/typescript-config": "workspace:*",
+    "eslint": "^9.39.5",
+    "typescript": "~6.0.2"
+  }
+}
