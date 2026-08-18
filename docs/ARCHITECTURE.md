@@ -104,6 +104,7 @@
 ```text
 apps/web/src/
 ├── app/                # 앱 진입점, 전역 설정
+│   ├── layouts/        # 라우트 최상위 레이아웃 셸 (4번 참고)
 │   ├── providers/
 │   ├── routes/
 │   ├── styles/
@@ -299,12 +300,15 @@ apps/mobile/src/
 
 ## 4. Component 위치 기준
 
-| 범위                            | 위치                            |
-| ------------------------------- | ------------------------------- |
-| 전역 공통 UI (Button, Modal 등) | `shared/ui`                     |
-| 레이아웃 (Header, TabBar 등)    | `shared/layout`                 |
-| 특정 기능 전용                  | `features/{feature}/components` |
-| 화면 조합                       | `pages/{page}`                  |
+| 범위                                                                       | 위치                             |
+| -------------------------------------------------------------------------- | -------------------------------- |
+| 전역 공통 UI (Button, Modal 등)                                           | `shared/ui`                     |
+| 여러 페이지에 조합해서 쓰는 레이아웃 조각 (Header, TabBar, PaddedLayout 등) | `shared/layout`                 |
+| 라우트 최상위 레이아웃 셸 (앱 전체에 하나만 존재, `router`가 직접 참조)      | `app/layouts`                   |
+| 특정 기능 전용                                                             | `features/{feature}/components` |
+| 화면 조합                                                                  | `pages/{page}`                  |
+
+`shared/layout`은 여러 곳에 재사용해서 조합하는 조각을 둔다. 반대로 라우트 최상위에서 한 번만 마운트되는 셸(`AppMainLayout`, `MobileLayout` 등)은 `app/layouts`에 둔다 — feature를 조합해야 하면 `shared`가 feature를 import할 수 없기 때문이기도 하고(5번 참고), feature 의존이 없더라도 다른 최상위 셸과 위치를 맞추는 게 일관적이다.
 
 ---
 
