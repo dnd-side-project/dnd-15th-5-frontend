@@ -32,18 +32,20 @@ function ToastIcon({ type }: { type: ToastType }) {
 function ToastList() {
   const { toasts } = BaseToast.useToastManager();
 
-  return toasts.map((toast) => {
-    const type = (toast.type ?? DEFAULT_TOAST_TYPE) as ToastType;
+  return toasts
+    .filter((toast) => !toast.limited)
+    .map((toast) => {
+      const type = (toast.type ?? DEFAULT_TOAST_TYPE) as ToastType;
 
-    return (
-      <BaseToast.Root key={toast.id} toast={toast} className={toastVariants({ type })}>
-        <BaseToast.Content className="toast-content min-w-0 flex-1">
-          <ToastIcon type={type} />
-          <BaseToast.Description className="toast-text min-w-0 text-center wrap-break-word" />
-        </BaseToast.Content>
-      </BaseToast.Root>
-    );
-  });
+      return (
+        <BaseToast.Root key={toast.id} toast={toast} className={toastVariants({ type })}>
+          <BaseToast.Content className="toast-content min-w-0 flex-1">
+            <ToastIcon type={type} />
+            <BaseToast.Description className="toast-text min-w-0 text-center wrap-break-word" />
+          </BaseToast.Content>
+        </BaseToast.Root>
+      );
+    });
 }
 
 /**

@@ -13,6 +13,15 @@ function ToastFixture() {
         열기
       </button>
       <button onClick={() => closeToast()}>닫기</button>
+      <button
+        onClick={() => {
+          for (let index = 1; index <= 4; index += 1) {
+            showToast({ message: `Toast ${index}`, duration: 0 });
+          }
+        }}
+      >
+        4개 열기
+      </button>
     </>
   );
 }
@@ -53,5 +62,19 @@ describe('Toast', () => {
     act(() => jest.runAllTimers());
 
     expect(screen.queryByText('저장되었어요')).not.toBeInTheDocument();
+  });
+
+  it('최대 개수를 초과한 Toast는 화면에 표시하지 않는다', () => {
+    render(
+      <ToastProvider duration={0}>
+        <ToastFixture />
+      </ToastProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '4개 열기' }));
+
+    expect(screen.getAllByRole('dialog')).toHaveLength(3);
+    expect(screen.queryByText('Toast 1')).not.toBeInTheDocument();
+    expect(screen.getByText('Toast 4')).toBeInTheDocument();
   });
 });
