@@ -6,6 +6,8 @@
 @import '@chapchap/shared/design/typography.css';
 @import '@chapchap/shared/design/shadows.css';
 @import '@chapchap/shared/design/radius.css';
+@import '@chapchap/shared/design/z-index.css';
+@import '@chapchap/shared/design/toast.css';
 
 /*
  * 글꼴은 웹과 방식이 달라 여기에서만 정의한다.
