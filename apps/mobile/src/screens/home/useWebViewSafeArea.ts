@@ -47,5 +47,6 @@ export function useWebViewSafeArea(initialUrl: string | undefined) {
     edges: isMapHome ? EDGE_TO_EDGE_EDGES : SAFE_AREA_EDGES,
     handleNavigationStateChange,
     handleRouteChange,
+    isMapHome,
   };
 }

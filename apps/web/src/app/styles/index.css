@@ -7,6 +7,14 @@
 @import '@chapchap/shared/design/z-index.css';
 @import '@chapchap/shared/design/toast.css';
 
+@utility scrollbar-hidden {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer base {
   button {
     cursor: pointer;
