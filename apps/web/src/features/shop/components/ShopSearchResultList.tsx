@@ -44,7 +44,7 @@ export default function ShopSearchResultList({
   }
 
   return (
-    <ul>
+    <ul className="mt-4 flex flex-col gap-4">
       {shops.map((shop) => (
         <ShopSearchResultItem key={shop.id} shop={shop} onSelect={onSelect} />
       ))}

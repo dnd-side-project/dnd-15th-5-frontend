@@ -22,18 +22,22 @@ export default function ShopSearchInput({ onSearch }: ShopSearchInputProps) {
   };
 
   return (
-    // TODO: 디자인 확정되면 스타일 수정
     <form
+      role="search"
       onSubmit={handleSearchSubmit}
-      className="flex items-center gap-2 bg-neutral-100 px-4 py-3"
+      className="flex min-h-14 items-center gap-2 rounded-08 bg-neutral-50 px-4 focus-within:ring-2 focus-within:ring-primary-300"
     >
       <input
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
         placeholder="장소를 검색해주세요"
-        className="min-w-0 flex-1 bg-transparent"
+        className="min-w-0 flex-1 bg-transparent text-body-01-regular text-neutral-700 outline-none placeholder:text-neutral-500"
       />
-      <button type="submit" aria-label="검색">
+      <button
+        type="submit"
+        aria-label="검색"
+        className="flex size-6 shrink-0 items-center justify-center"
+      >
         <SearchIcon className="size-6 text-neutral-500" aria-hidden="true" />
       </button>
     </form>
