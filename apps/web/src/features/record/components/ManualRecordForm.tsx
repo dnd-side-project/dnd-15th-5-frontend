@@ -57,6 +57,7 @@ export default function ManualRecordForm({
   const [category, setCategory] = useState<(typeof RECORD_CATEGORIES)[number]>(
     RECORD_CATEGORIES[0]
   );
+  const canSubmit = hasSelectedShop && Number(amount) > 0;
 
   const handleAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
     setAmount(sanitizeAmount(event.target.value));
@@ -147,7 +148,7 @@ export default function ManualRecordForm({
         </div>
 
         <div className="mt-auto mb-8 px-1">
-          <Button type="submit" disabled={!hasSelectedShop || amount.length === 0}>
+          <Button type="submit" disabled={!canSubmit}>
             기록하기
           </Button>
         </div>

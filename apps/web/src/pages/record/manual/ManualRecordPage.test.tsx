@@ -41,6 +41,11 @@ describe('<ManualRecordPage />', () => {
     expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: '기록하기' })).toBeDisabled();
 
+    await user.type(screen.getByRole('textbox', { name: '금액' }), '0');
+
+    expect(screen.getByRole('button', { name: '기록하기' })).toBeDisabled();
+
+    await user.clear(screen.getByRole('textbox', { name: '금액' }));
     await user.type(screen.getByRole('textbox', { name: '금액' }), '12abc-000');
 
     expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('12,000');
@@ -68,7 +73,8 @@ describe('<ManualRecordPage />', () => {
     const nextPeriod = initialPeriod === 'morning' ? 'night' : 'morning';
     const nextPeriodLabel = getVisitPeriodLabel(nextPeriod);
     const nextPeriodRange = nextPeriod === 'morning' ? '05–11시' : '21–05시';
-    const nextDay = now.getDate() === 1 ? 2 : 1;
+    const previousDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     renderPage();
 
     await user.click(screen.getByRole('button', { name: /방문 일시 변경/ }));
@@ -86,21 +92,40 @@ describe('<ManualRecordPage />', () => {
         name: `${now.getMonth() + 1}월 ${now.getDate()}일 ${getVisitPeriodLabel(initialPeriod)}`,
       })
     ).toBeInTheDocument();
+    if (tomorrow.getMonth() === now.getMonth()) {
+      expect(
+        screen.getByRole('button', {
+          name: `${tomorrow.getFullYear()}년 ${tomorrow.getMonth() + 1}월 ${tomorrow.getDate()}일`,
+        })
+      ).toBeDisabled();
+    }
 
     await user.click(screen.getByRole('button', { name: '이전 달' }));
     expect(screen.getByRole('button', { name: '이전 달' })).toBeEnabled();
     expect(screen.getByRole('button', { name: '다음 달' })).toBeEnabled();
+
+    if (previousDate.getMonth() !== now.getMonth()) {
+      await user.click(
+        screen.getByRole('button', {
+          name: `${previousDate.getFullYear()}년 ${previousDate.getMonth() + 1}월 ${previousDate.getDate()}일`,
+        })
+      );
+    }
+
     await user.click(screen.getByRole('button', { name: '다음 달' }));
 
-    await user.click(
-      screen.getByRole('button', {
-        name: `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${nextDay}일`,
-      })
-    );
+    if (previousDate.getMonth() === now.getMonth()) {
+      await user.click(
+        screen.getByRole('button', {
+          name: `${previousDate.getFullYear()}년 ${previousDate.getMonth() + 1}월 ${previousDate.getDate()}일`,
+        })
+      );
+    }
+
     await user.click(screen.getByRole('button', { name: `${nextPeriodLabel} ${nextPeriodRange}` }));
 
     const confirmButton = screen.getByRole('button', {
-      name: `${now.getMonth() + 1}월 ${nextDay}일 ${nextPeriodLabel}`,
+      name: `${previousDate.getMonth() + 1}월 ${previousDate.getDate()}일 ${nextPeriodLabel}`,
     });
     expect(confirmButton).toBeInTheDocument();
 
@@ -114,7 +139,7 @@ describe('<ManualRecordPage />', () => {
       expect(
         screen.getByRole('button', {
           name: new RegExp(
-            `방문 일시 변경, ${now.getMonth() + 1}월 ${nextDay}일.*${nextPeriodLabel}`
+            `방문 일시 변경, ${previousDate.getMonth() + 1}월 ${previousDate.getDate()}일.*${nextPeriodLabel}`
           ),
         })
       ).toBeInTheDocument();

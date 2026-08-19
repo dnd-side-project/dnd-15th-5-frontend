@@ -31,7 +31,10 @@ const getWeekdayLabelClassName = (index: number) => {
   return 'text-neutral-500';
 };
 
-const getCalendarDayClassName = (weekday: number, selected: boolean) => {
+const getCalendarDayClassName = (weekday: number, selected: boolean, disabled: boolean) => {
+  if (disabled) {
+    return 'text-neutral-300';
+  }
   if (selected) {
     return 'bg-primary-500 text-neutral-00';
   }
@@ -66,7 +69,9 @@ export default function VisitDateTimePicker({
 
   const year = visibleMonth.getFullYear();
   const month = visibleMonth.getMonth();
-  const isCurrentMonth = isSameMonth(visibleMonth, new Date());
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const isCurrentMonth = isSameMonth(visibleMonth, today);
   const calendarDays = getCalendarDays(visibleMonth);
   const confirmLabel = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 ${getVisitPeriodLabel(
     selectedPeriod
@@ -128,6 +133,7 @@ export default function VisitDateTimePicker({
 
               const date = new Date(year, month, day);
               const selected = isSameDate(date, selectedDate);
+              const isFutureDate = date.getTime() > today.getTime();
               const weekday = index % WEEKDAY_LABELS.length;
 
               return (
@@ -136,10 +142,11 @@ export default function VisitDateTimePicker({
                   type="button"
                   aria-label={`${year}년 ${month + 1}월 ${day}일`}
                   aria-pressed={selected}
+                  disabled={isFutureDate}
                   onClick={() => setSelectedDate(date)}
                   className={cn(
                     'flex size-9 items-center justify-center rounded-32 text-body-02-medium outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1',
-                    getCalendarDayClassName(weekday, selected)
+                    getCalendarDayClassName(weekday, selected, isFutureDate)
                   )}
                 >
                   {day}
