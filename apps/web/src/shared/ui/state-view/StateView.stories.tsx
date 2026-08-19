@@ -13,6 +13,7 @@ const meta = {
   args: {
     actionLabel: '소비 기록 작성하기',
     description: '소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.',
+    headingAs: 'h2',
     onAction: fn(),
     title: '아직 기록이 없어요',
   },
@@ -32,6 +33,7 @@ type StateViewStoryArgs = {
   title: string;
   description: string;
   actionLabel: string;
+  headingAs: 'h1' | 'h2' | 'h3';
   onAction?: MouseEventHandler<HTMLButtonElement>;
   to?: To;
 };

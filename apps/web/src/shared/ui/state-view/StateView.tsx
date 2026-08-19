@@ -11,6 +11,7 @@ type StateViewBaseProps = {
   title: string;
   description: string;
   actionLabel: string;
+  headingAs: 'h1' | 'h2' | 'h3';
   className?: string;
 };
 
@@ -48,6 +49,7 @@ type StateViewActionProps = {
  *   title="에러가 발생했어요"
  *   description={'잠시 후에\n다시 시도해주세요'}
  *   actionLabel="다시 시도하기"
+ *   headingAs="h1"
  *   onAction={handleRetry}
  * />
  * ```
@@ -57,12 +59,13 @@ type StateViewActionProps = {
  * @param props.title - 상태 화면에 표시할 제목입니다. 줄바꿈 문자(`\n`)를 사용할 수 있습니다.
  * @param props.description - 상태 화면에 표시할 안내 문구입니다. 줄바꿈 문자(`\n`)를 사용할 수 있습니다.
  * @param props.actionLabel - 액션 버튼 또는 링크에 표시할 문구입니다.
+ * @param props.headingAs - 페이지의 제목 구조에 맞춰 사용할 `h1`, `h2`, `h3` 태그입니다.
  * @param props.onAction - 버튼을 눌렀을 때 실행할 동작입니다. `to`와 함께 사용할 수 없습니다.
  * @param props.to - 링크를 눌렀을 때 이동할 경로입니다. `onAction`과 함께 사용할 수 없습니다.
  * @param props.className - 최상위 `section` 요소에 추가할 클래스입니다.
  */
 export function StateView(props: StateViewProps) {
-  const { variant, title, description, actionLabel, className } = props;
+  const { variant, title, description, actionLabel, headingAs: Heading, className } = props;
   const titleId = useId();
   const image = variant === 'empty' ? EmptyStateImage : ErrorStateImage;
 
@@ -77,12 +80,12 @@ export function StateView(props: StateViewProps) {
         className={cn('size-30 object-contain', variant === 'empty' && 'mix-blend-luminosity')}
       />
 
-      <h2
+      <Heading
         id={titleId}
         className="mt-2.5 break-keep whitespace-pre-line text-balance text-heading-02-semibold text-neutral-900"
       >
         {title}
-      </h2>
+      </Heading>
       <p className="mt-2 break-keep whitespace-pre-line text-pretty text-body-02-semibold text-neutral-400">
         {description}
       </p>

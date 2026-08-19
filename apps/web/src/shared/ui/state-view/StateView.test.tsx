@@ -20,11 +20,14 @@ describe('StateView', () => {
         title="아직 기록이 없어요"
         description={'소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'}
         actionLabel="소비 기록 작성하기"
+        headingAs="h1"
         onAction={handleAction}
       />
     );
 
-    expect(screen.getByRole('heading', { name: '아직 기록이 없어요' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: '아직 기록이 없어요' })
+    ).toBeInTheDocument();
     expect(container.querySelector('img')).toHaveClass('mix-blend-luminosity');
 
     await user.click(screen.getByRole('button', { name: '소비 기록 작성하기' }));
@@ -38,11 +41,14 @@ describe('StateView', () => {
         title="에러가 발생했어요"
         description={'잠시 후에\n다시 시도해주세요'}
         actionLabel="다시 시도하기"
+        headingAs="h2"
         onAction={jest.fn()}
       />
     );
 
-    expect(screen.getByRole('heading', { name: '에러가 발생했어요' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: '에러가 발생했어요' })
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '다시 시도하기' })).toBeInTheDocument();
     expect(container.querySelector('img')).not.toHaveClass('mix-blend-luminosity');
   });
@@ -55,6 +61,7 @@ describe('StateView', () => {
           title="에러가 발생했어요"
           description="요청하신 화면을 불러오지 못했어요."
           actionLabel="홈으로 가기"
+          headingAs="h3"
           to="/home"
         />
       </MemoryRouter>
