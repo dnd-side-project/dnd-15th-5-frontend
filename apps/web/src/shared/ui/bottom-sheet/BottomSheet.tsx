@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/cn';
 
-import { BOTTOM_SHEET_HEIGHT_RATIO } from './constants';
+import { BOTTOM_SHEET_HEIGHT_RATIO, BOTTOM_SHEET_TRANSITION_MS } from './constants';
 
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 
@@ -23,6 +23,8 @@ type BottomSheetProps = {
   snapPoint: BottomSheetSnapPoint;
   onSnapPointChange?: (snapPoint: BottomSheetSnapPoint) => void;
   onHandleClick?: () => void;
+  /** 콘텐츠 높이에 맞추고 높이 조절 드래그와 내부 스크롤을 사용하지 않습니다. */
+  fitContent?: boolean;
   children: ReactNode;
 };
 
@@ -52,12 +54,16 @@ type BottomSheetProps = {
  * @param props.onSnapPointChange - 드래그를 놓아 스냅될 때 호출됩니다. 드래그가 끝난 위치와
  * 가장 가까운 단계로 알려줍니다.
  * @param props.onHandleClick - 핸들을 클릭했을 때 호출됩니다. 클릭으로 단계를 순환시키는 등에 사용합니다.
+ * @param props.fitContent - `true`이면 콘텐츠 높이에 맞추고 높이 조절 드래그와 내부 스크롤을
+ * 사용하지 않습니다. 이때 실제 높이는 항상 콘텐츠 크기로 고정되므로 `snapPoint`는 `medium`과
+ * `full` 중 무엇을 넘겨도 결과가 같고, `hidden` 여부만 의미가 있습니다.
  * @param props.children - 바텀시트 안에 표시할 내용입니다.
  */
 export function BottomSheet({
   snapPoint,
   onSnapPointChange,
   onHandleClick,
+  fitContent = false,
   children,
 }: BottomSheetProps) {
   const [dragHeightPx, setDragHeightPx] = useState<number | null>(null);
@@ -69,6 +75,10 @@ export function BottomSheet({
     point === 'hidden' ? 0 : window.innerHeight * BOTTOM_SHEET_HEIGHT_RATIO[point];
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (fitContent) {
+      return;
+    }
+
     event.currentTarget.setPointerCapture?.(event.pointerId);
     dragStartRef.current = {
       pointerY: event.clientY,
@@ -127,28 +137,51 @@ export function BottomSheet({
 
   const isDragging = dragHeightPx !== null;
   const isHidden = !isDragging && snapPoint === 'hidden';
+  const isHandleInteractive = !fitContent || Boolean(onHandleClick);
+  const handleClassName = 'flex w-full shrink-0 touch-none items-center justify-center py-3';
+  const handleBar = <span className="h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true" />;
 
   return (
     <div
-      style={{ height: isDragging ? `${dragHeightPx}px` : SNAP_POINT_HEIGHT[snapPoint] }}
+      style={{
+        height: isDragging
+          ? `${dragHeightPx}px`
+          : fitContent
+            ? 'auto'
+            : SNAP_POINT_HEIGHT[snapPoint],
+        // NOTE: Tailwind duration 클래스 대신 상수를 그대로 써서, 이 값을 재사용하는
+        // 다른 컴포넌트(예: useBottomSheetTransition)와 항상 같은 값을 유지한다.
+        transitionDuration: `${BOTTOM_SHEET_TRANSITION_MS}ms`,
+      }}
       className={cn(
         'fixed right-0 bottom-0 left-0 z-20 mx-auto flex max-w-120 flex-col rounded-t-30 bg-neutral-00 shadow-sheet',
-        !isDragging && 'transition-all duration-300 ease-out',
+        !isDragging && 'transition-all ease-out',
         isHidden ? 'translate-y-full' : 'translate-y-0'
       )}
     >
-      <button
-        type="button"
-        onClick={onHandleClick}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        aria-label="바텀시트 높이 조절"
-        className="flex w-full shrink-0 touch-none items-center justify-center py-3"
+      {isHandleInteractive ? (
+        <button
+          type="button"
+          onClick={onHandleClick}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          aria-label="바텀시트 높이 조절"
+          className={handleClassName}
+        >
+          {handleBar}
+        </button>
+      ) : (
+        <div className={handleClassName}>{handleBar}</div>
+      )}
+      <div
+        className={cn(
+          'px-4 pb-4',
+          fitContent ? 'shrink-0 overflow-visible' : 'min-h-0 flex-1 overflow-y-auto'
+        )}
       >
-        <span className="h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true" />
-      </button>
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">{children}</div>
+        {children}
+      </div>
     </div>
   );
 }

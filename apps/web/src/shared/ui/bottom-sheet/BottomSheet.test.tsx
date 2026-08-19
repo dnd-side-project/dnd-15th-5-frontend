@@ -35,6 +35,21 @@ describe('BottomSheet', () => {
     expect(sheet.className).toContain('translate-y-full');
   });
 
+  it('콘텐츠 맞춤 높이에서는 드래그와 내부 스크롤을 사용하지 않는다', () => {
+    const { container } = render(
+      <BottomSheet snapPoint="medium" fitContent>
+        내용
+      </BottomSheet>
+    );
+    const sheet = container.firstChild as HTMLElement;
+    const content = sheet.lastChild as HTMLElement;
+
+    expect(sheet).toHaveStyle({ height: 'auto' });
+    expect(screen.queryByRole('button', { name: '바텀시트 높이 조절' })).not.toBeInTheDocument();
+    expect(content.className).toContain('overflow-visible');
+    expect(content.className).not.toContain('overflow-y-auto');
+  });
+
   it('핸들을 누르면 onHandleClick을 호출한다', () => {
     const onHandleClick = jest.fn();
     render(
