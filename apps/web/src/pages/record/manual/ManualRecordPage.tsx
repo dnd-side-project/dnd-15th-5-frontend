@@ -14,6 +14,9 @@ export default function ManualRecordPage() {
   const location = useLocation();
   const { shop } = (location.state as ManualRecordLocationState | null) ?? {};
 
+  // TODO: 공통 모달·확인창 디자인 확정 후 기록 이탈 안내와 하단 선택 버튼 추가
+  const handleBack = () => navigate(-1);
+
   return (
     <main>
       <ManualRecordForm
@@ -22,7 +25,7 @@ export default function ManualRecordPage() {
             <PlaceCard thumbnailSrc={shop.photoUrl} title={shop.name} location={shop.address} />
           ) : null
         }
-        onBack={() => navigate(-1)}
+        onBack={handleBack}
         onChangeShop={() => navigate(ROUTE_PATHS.recordShopSearch)}
         onSelectShop={() =>
           navigate(ROUTE_PATHS.recordShopSearch, {
