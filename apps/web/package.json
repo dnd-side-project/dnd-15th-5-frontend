@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "api:generate": "orval --config ./orval.config.ts",
+    "api:watch": "orval --config ./orval.config.ts --watch",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
@@ -57,6 +59,7 @@
     "globals": "^17.7.0",
     "jest": "^30.4.2",
     "jest-environment-jsdom": "^30.4.1",
+    "orval": "^8.24.0",
     "storybook": "^10.5.5",
     "ts-jest": "^29.4.12",
     "typescript": "~6.0.2",

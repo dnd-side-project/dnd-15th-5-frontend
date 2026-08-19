@@ -14,6 +14,14 @@ import globals from 'globals';
 const tsconfigPath = fileURLToPath(new URL('./tsconfig.app.json', import.meta.url));
 
 export default defineConfig([
+  {
+    ignores: [
+      'src/features/*/api/clients.ts',
+      'src/features/*/api/queries.ts',
+      'src/features/*/api/mutations.ts',
+      'src/features/*/api/dto.ts',
+    ],
+  },
   ...baseConfig,
   {
     files: ['**/*.{ts,tsx}'],

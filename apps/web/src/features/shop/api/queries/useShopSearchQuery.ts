@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { APILoadingStatus, useApiLoadingStatus, useMapsLibrary } from '@vis.gl/react-google-maps';
 
 import { SHOP_QUERY_KEYS } from '../queryKeys';
-import { searchShops } from '../services';
+import { searchShops } from '../services/searchShops';
 
 /**
  * 키워드로 장소를 검색하는 쿼리 훅.
