@@ -16,7 +16,7 @@ const getPathname = (url: string | undefined) => {
   }
 };
 
-/** 현재 웹 경로가 지도 홈인지 추적해 iOS WebView의 뒤로 가기 제스처를 제어한다. */
+/** 지도 홈의 edge-to-edge 표시와 iOS WebView 뒤로 가기 제스처를 위해 현재 경로를 추적한다. */
 export function useWebViewNavigationState(initialUrl: string | undefined) {
   const [isMapHome, setIsMapHome] = useState(() => {
     const pathname = getPathname(initialUrl);

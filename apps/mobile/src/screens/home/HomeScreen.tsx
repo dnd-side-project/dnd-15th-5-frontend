@@ -68,6 +68,7 @@ export default function HomeScreen() {
       }}
       loadErrorTitle="웹 화면을 불러오지 못했습니다"
       loadErrorDescriptions={webUrl ? [webUrl] : []}
+      edgeToEdge={isMapHome}
       allowsBackForwardNavigationGestures={!isMapHome}
       onNavigationStateChange={({ url }) => handleNavigationStateChange(url)}
       onMessage={handleBridgeMessage}

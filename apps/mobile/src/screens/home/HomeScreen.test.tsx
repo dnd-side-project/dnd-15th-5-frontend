@@ -10,6 +10,13 @@ const safeAreaEdges = {
   left: 'additive',
 };
 
+const edgeToEdgeEdges = {
+  top: 'off',
+  right: 'off',
+  bottom: 'off',
+  left: 'off',
+};
+
 jest.mock('@/bridge', () => ({
   createBridgeResponse: (message: unknown) => mockCreateBridgeResponse(message),
   createResponseScript: jest.fn(() => 'true;'),
@@ -50,7 +57,7 @@ describe('<HomeScreen />', () => {
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
   });
 
-  it('모든 웹 경로에서 Safe Area를 유지하고 지도 홈의 히스토리 제스처만 끈다', async () => {
+  it('지도 홈만 edge-to-edge로 표시하고 다른 웹 경로에서는 Safe Area를 유지한다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173';
     const { getByTestId } = await render(<HomeScreen />);
 
@@ -67,7 +74,7 @@ describe('<HomeScreen />', () => {
       });
     });
 
-    expect(getByTestId('home-safe-area').props.edges).toEqual(safeAreaEdges);
+    expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
 
     await act(async () => {

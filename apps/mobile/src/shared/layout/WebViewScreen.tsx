@@ -22,6 +22,7 @@ type WebViewScreenProps = {
   missingConfiguration: GuideContent;
   loadErrorTitle: string;
   loadErrorDescriptions?: string[];
+  edgeToEdge?: boolean;
   allowsBackForwardNavigationGestures: boolean;
   onMessage?: WebViewProps['onMessage'];
   onNavigationStateChange?: WebViewProps['onNavigationStateChange'];
@@ -52,6 +53,7 @@ export function WebViewScreen({
   missingConfiguration,
   loadErrorTitle,
   loadErrorDescriptions = [],
+  edgeToEdge = false,
   allowsBackForwardNavigationGestures,
   onMessage,
   onNavigationStateChange,
@@ -75,7 +77,11 @@ export function WebViewScreen({
 
   return (
     <View className="flex-1 bg-neutral-00">
-      <SafeAreaView testID={safeAreaTestID} edges={WEB_VIEW_SAFE_AREA_EDGES} style={{ flex: 1 }}>
+      <SafeAreaView
+        testID={safeAreaTestID}
+        edges={edgeToEdge ? [] : WEB_VIEW_SAFE_AREA_EDGES}
+        style={{ flex: 1 }}
+      >
         <WebView
           ref={webViewRef}
           testID={webViewTestID}
