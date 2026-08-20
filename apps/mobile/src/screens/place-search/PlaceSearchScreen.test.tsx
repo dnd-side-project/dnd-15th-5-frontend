@@ -27,6 +27,11 @@ describe('<PlaceSearchScreen />', () => {
   });
 
   afterAll(() => {
+    if (originalWebUrl === undefined) {
+      delete process.env.EXPO_PUBLIC_WEB_URL;
+      return;
+    }
+
     process.env.EXPO_PUBLIC_WEB_URL = originalWebUrl;
   });
 

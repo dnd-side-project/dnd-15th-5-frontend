@@ -95,6 +95,7 @@ export default function ReceiptReviewForm({
   const hasShopError = hasAttemptedSubmit && !isShopValid;
   const hasAmountError = hasAttemptedSubmit && !isAmountValid;
   const hasRequiredFieldError = hasAttemptedSubmit && !canSubmit;
+  const isSubmitUnavailable = canSubmit && !onSubmit;
 
   const handleSubmit = () => {
     setHasAttemptedSubmit(true);
@@ -291,14 +292,15 @@ export default function ReceiptReviewForm({
               )}
               <Pressable
                 onPress={handleSubmit}
+                disabled={isSubmitUnavailable}
                 accessibilityRole="button"
-                accessibilityLabel="기록하기"
+                accessibilityLabel={isSubmitUnavailable ? '기록 기능 준비 중' : '기록하기'}
                 className={`h-13.5 items-center justify-center rounded-full ${
-                  canSubmit ? 'bg-primary-500' : 'bg-neutral-400'
+                  canSubmit && !isSubmitUnavailable ? 'bg-primary-500' : 'bg-neutral-400'
                 }`}
               >
                 <Text className="font-pretendard-semibold text-body-01-semibold text-neutral-00">
-                  기록하기
+                  {isSubmitUnavailable ? '기록 기능 준비 중' : '기록하기'}
                 </Text>
               </Pressable>
             </View>

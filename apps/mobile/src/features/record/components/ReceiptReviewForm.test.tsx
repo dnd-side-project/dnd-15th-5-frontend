@@ -194,4 +194,17 @@ describe('<ReceiptReviewForm />', () => {
     );
     getByText('필수항목을 작성해주세요');
   });
+
+  it('저장 동작이 연결되지 않은 유효한 폼은 완료 버튼을 활성화하지 않는다', async () => {
+    const { getByRole } = await render(
+      <ReceiptReviewForm
+        receiptUri="file://receipt.jpg"
+        initialShopName="카페 차차"
+        initialAmount="12000"
+        onBack={jest.fn()}
+      />
+    );
+
+    expect(getByRole('button', { name: '기록 기능 준비 중' })).toBeDisabled();
+  });
 });

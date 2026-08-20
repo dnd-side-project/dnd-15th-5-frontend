@@ -14,12 +14,16 @@
   },
   "scripts": {
     "lint": "eslint .",
+    "test": "jest --runInBand",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@chapchap/eslint-config": "workspace:*",
     "@chapchap/typescript-config": "workspace:*",
+    "@types/jest": "29.5.14",
     "eslint": "^9.39.5",
+    "jest": "~29.7.0",
+    "ts-jest": "^29.4.12",
     "typescript": "~6.0.2"
   }
 }

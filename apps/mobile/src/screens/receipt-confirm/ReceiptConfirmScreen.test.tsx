@@ -24,13 +24,14 @@ jest.mock('react-native-safe-area-context', () => ({
 
 describe('<ReceiptConfirmScreen />', () => {
   it('촬영 결과를 리뷰 폼에 표시한다', async () => {
-    const { getByLabelText, getByText } = await render(<ReceiptConfirmScreen />);
+    const { getByLabelText, getByRole, getByText } = await render(<ReceiptConfirmScreen />);
 
     getByText('정보가 정확하게\n인식되었나요?');
     expect(getByLabelText('가게 사진')).toHaveProp('source', {
       uri: 'https://places.example.com/place-01.jpg',
     });
     expect(getByLabelText('금액')).toHaveProp('value', '12,000');
+    expect(getByRole('button', { name: '기록 기능 준비 중' })).toBeDisabled();
   });
 
   it('뒤로 가기를 누르면 재촬영할 수 있도록 카메라로 이동한다', async () => {

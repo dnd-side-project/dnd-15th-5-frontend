@@ -7,7 +7,7 @@ import {
   sanitizeAmount,
   validateRecordRequiredFields,
   WEEKDAY_LABELS,
-} from '@chapchap/shared/record';
+} from './index';
 
 describe('shared record rules', () => {
   it('금액을 정제하고 세 자리마다 쉼표를 표시한다', () => {
