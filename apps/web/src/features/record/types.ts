@@ -1,10 +1,3 @@
-export type VisitPeriod = 'morning' | 'afternoon' | 'evening' | 'night';
-
-export type VisitDateTimeValue = {
-  date: Date;
-  period: VisitPeriod;
-};
-
 export type ShopSearchLocationState = {
   /**
    * 가게 미선택 상태의 수기 입력 화면에서 검색으로 교체 이동(`replace`)했을 때만 `true`로

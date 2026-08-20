@@ -6,6 +6,8 @@ import type { ShopSearchResult } from '@/features/shop';
 
 import ShopSearchPage from './ShopSearchPage';
 
+const mockNotifyNative = jest.fn((_type: string, _payload: unknown) => false);
+
 const selectedShop: ShopSearchResult = {
   id: 'place-01',
   name: '투썸플레이스 신논현점',
@@ -21,6 +23,10 @@ jest.mock('@/features/shop', () => ({
   ),
 }));
 
+jest.mock('@/shared/lib/bridge', () => ({
+  notifyNative: (type: string, payload: unknown) => mockNotifyNative(type, payload),
+}));
+
 function ManualRecordTarget() {
   const location = useLocation();
   const state = location.state as { shop: ShopSearchResult };
@@ -29,6 +35,11 @@ function ManualRecordTarget() {
 }
 
 describe('<ShopSearchPage />', () => {
+  beforeEach(() => {
+    mockNotifyNative.mockReset();
+    mockNotifyNative.mockReturnValue(false);
+  });
+
   it('장소를 선택하면 선택 정보를 가지고 수기 입력 화면으로 이동한다', async () => {
     const user = userEvent.setup();
 
@@ -107,5 +118,43 @@ describe('<ShopSearchPage />', () => {
 
     expect(screen.getByText(`수기 입력 대상: ${selectedShop.name}`)).toBeInTheDocument();
     expect(screen.queryByText('기록 방법 선택 화면')).not.toBeInTheDocument();
+  });
+
+  it('앱 영수증 플로우에서 장소를 선택하면 네이티브에 검색 결과를 전달한다', async () => {
+    mockNotifyNative.mockReturnValue(true);
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/record/shop/search?source=receipt-native']}>
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+          <Route path="/record/manual" element={<ManualRecordTarget />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '목업 장소 선택' }));
+
+    expect(mockNotifyNative).toHaveBeenCalledWith('receiptShopSelected', {
+      shop: selectedShop,
+    });
+    expect(screen.queryByText(`수기 입력 대상: ${selectedShop.name}`)).not.toBeInTheDocument();
+  });
+
+  it('앱 영수증 플로우에서 뒤로 가기를 누르면 네이티브에 취소를 전달한다', async () => {
+    mockNotifyNative.mockReturnValue(true);
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/record/shop/search?source=receipt-native']}>
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
+
+    expect(mockNotifyNative).toHaveBeenCalledWith('receiptShopSearchCancelled', {});
   });
 });

@@ -2,24 +2,30 @@ import { Link } from 'react-router-dom';
 
 import { cn } from '@/shared/lib/cn';
 
+import type { MouseEventHandler } from 'react';
+
 type RecordMethodLinkProps = {
   description: string;
   title: string;
   to: string;
   variant: 'primary' | 'secondary';
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
 };
 
+/** 기록 방법의 제목과 설명을 함께 보여주는 이동 링크. */
 export default function RecordMethodLink({
   description,
   title,
   to,
   variant,
+  onClick,
 }: RecordMethodLinkProps) {
   const isPrimary = variant === 'primary';
 
   return (
     <Link
       to={to}
+      onClick={onClick}
       className={cn(
         'block w-full rounded-16 p-4 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1',
         isPrimary

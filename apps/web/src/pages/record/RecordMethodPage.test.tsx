@@ -2,9 +2,25 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
+import { isNativeApp } from '@/shared/lib/bridge';
+
 import RecordMethodPage from './RecordMethodPage';
 
+const mockShowToast = jest.fn();
+
+jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn() }));
+jest.mock('@/shared/ui/toast', () => ({
+  useToast: () => ({ showToast: mockShowToast, closeToast: jest.fn() }),
+}));
+
+const mockIsNativeApp = jest.mocked(isNativeApp);
+
 describe('<RecordMethodPage />', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockIsNativeApp.mockReturnValue(false);
+  });
+
   it('소비 기록 방법과 각 입력 화면으로 이동하는 링크를 보여준다', () => {
     render(
       <MemoryRouter initialEntries={['/record']}>
@@ -40,5 +56,45 @@ describe('<RecordMethodPage />', () => {
     await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
 
     expect(screen.getByText('홈 화면')).toBeInTheDocument();
+  });
+
+  it('일반 웹에서 영수증 인식을 누르면 이동하지 않고 앱 전용 Toast를 띄운다', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/record']}>
+        <Routes>
+          <Route path="/record" element={<RecordMethodPage />} />
+          <Route path="/record/receipt/camera" element={<p>영수증 촬영</p>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('link', { name: /영수증 인식/ }));
+
+    expect(mockShowToast).toHaveBeenCalledWith({
+      message: '영수증 인식은 앱에서만 사용할 수 있어요',
+      type: 'info',
+    });
+    expect(screen.queryByText('영수증 촬영')).not.toBeInTheDocument();
+  });
+
+  it('앱 WebView에서 영수증 인식을 누르면 촬영 진입 경로로 이동한다', async () => {
+    const user = userEvent.setup();
+    mockIsNativeApp.mockReturnValue(true);
+
+    render(
+      <MemoryRouter initialEntries={['/record']}>
+        <Routes>
+          <Route path="/record" element={<RecordMethodPage />} />
+          <Route path="/record/receipt/camera" element={<p>영수증 촬영</p>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('link', { name: /영수증 인식/ }));
+
+    expect(screen.getByText('영수증 촬영')).toBeInTheDocument();
+    expect(mockShowToast).not.toHaveBeenCalled();
   });
 });

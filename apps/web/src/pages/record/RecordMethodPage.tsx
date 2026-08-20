@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { RecordMethodLink } from '@/features/record';
+import { ReceiptMethodLink, RecordMethodLink } from '@/features/record';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { BackButton } from '@/shared/ui/back-button';
 
@@ -17,12 +17,7 @@ export default function RecordMethodPage() {
       </h1>
 
       <div className="mt-10 flex flex-col gap-4">
-        <RecordMethodLink
-          title="영수증 인식"
-          description="영수증을 찍어 간편 기록해요"
-          to={ROUTE_PATHS.receiptCamera}
-          variant="primary"
-        />
+        <ReceiptMethodLink to={ROUTE_PATHS.receiptCamera} />
         <RecordMethodLink
           title="직접 작성"
           description="영수증이 없다면 직접 기록해요"
