@@ -8,6 +8,8 @@
     "./bridge": "./src/bridge/index.ts",
     "./design/*.css": "./design/*.css",
     "./location": "./src/location/types.ts",
+    "./record": "./src/record/index.ts",
+    "./shop": "./src/shop/index.ts",
     "./toast": "./src/toast/index.ts"
   },
   "scripts": {

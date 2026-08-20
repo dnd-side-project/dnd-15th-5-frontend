@@ -1,6 +1,1 @@
-export type ShopSearchResult = {
-  id: string;
-  name: string;
-  address: string;
-  photoUrl: string | null;
-};
+export type { ShopSearchResult } from '@chapchap/shared/shop';

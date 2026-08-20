@@ -1,3 +1,11 @@
+import {
+  createInitialVisitDateTime,
+  formatAmount,
+  formatVisitDateTime,
+  RECORD_CATEGORIES,
+  sanitizeAmount,
+  validateRecordRequiredFields,
+} from '@chapchap/shared/record';
 import { useState } from 'react';
 
 import { CalendarIcon } from '@/shared/assets/icons';
@@ -5,13 +13,9 @@ import { BackButton } from '@/shared/ui/back-button';
 import { Button } from '@/shared/ui/button';
 import { CategoryChip } from '@/shared/ui/category-chip';
 
-import { RECORD_CATEGORIES } from '../constants';
-import { formatAmount, sanitizeAmount } from '../utils/amount';
-import { formatVisitDateTime, getVisitPeriodForHour } from '../utils/visitDateTime';
-
 import VisitDateTimePicker from './VisitDateTimePicker';
 
-import type { VisitDateTimeValue } from '../types';
+import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
 import type { ChangeEvent, FormEvent, ReactElement, ReactNode } from 'react';
 
 type ManualRecordFormProps = {
@@ -40,6 +44,7 @@ function RequiredField({ children, label }: RequiredFieldProps) {
   );
 }
 
+/** 선택한 가게에 방문 일시·금액·카테고리를 입력하는 웹 수기 기록 폼. */
 export default function ManualRecordForm({
   selectedShop,
   onBack,
@@ -47,17 +52,13 @@ export default function ManualRecordForm({
   onSelectShop,
 }: ManualRecordFormProps) {
   const hasSelectedShop = selectedShop !== null;
-  const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(() => {
-    const now = new Date();
-
-    return { date: now, period: getVisitPeriodForHour(now.getHours()) };
-  });
+  const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(
+    createInitialVisitDateTime
+  );
   const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<(typeof RECORD_CATEGORIES)[number]>(
-    RECORD_CATEGORIES[0]
-  );
-  const canSubmit = hasSelectedShop && Number(amount) > 0;
+  const [category, setCategory] = useState<RecordCategory>(RECORD_CATEGORIES[0]);
+  const { canSubmit } = validateRecordRequiredFields({ hasShop: hasSelectedShop, amount });
 
   const handleAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
     setAmount(sanitizeAmount(event.target.value));
@@ -119,7 +120,6 @@ export default function ManualRecordForm({
               <input
                 type="text"
                 inputMode="numeric"
-                pattern="[0-9]*"
                 aria-label="금액"
                 placeholder="금액을 입력해주세요"
                 value={formatAmount(amount)}

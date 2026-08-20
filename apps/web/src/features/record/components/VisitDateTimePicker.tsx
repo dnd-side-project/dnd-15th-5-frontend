@@ -1,3 +1,12 @@
+import {
+  createMonthDate,
+  getCalendarDays,
+  getVisitPeriodLabel,
+  isSameDate,
+  isSameOrAfterMonth,
+  VISIT_PERIODS,
+  WEEKDAY_LABELS,
+} from '@chapchap/shared/record';
 import { useState } from 'react';
 
 import { ChevronLeftIcon } from '@/shared/assets/icons';
@@ -5,19 +14,10 @@ import { cn } from '@/shared/lib/cn';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { Button } from '@/shared/ui/button';
 
-import { VISIT_PERIODS } from '../constants';
 import { useBottomSheetTransition } from '../hooks/useBottomSheetTransition';
-import {
-  createMonthDate,
-  getCalendarDays,
-  getVisitPeriodLabel,
-  isSameDate,
-  isSameMonth,
-} from '../utils/visitDateTime';
 
-import type { VisitDateTimeValue } from '../types';
+import type { VisitDateTimeValue } from '@chapchap/shared/record';
 
-const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 const SUNDAY_INDEX = 0;
 const SATURDAY_INDEX = 6;
 
@@ -53,6 +53,7 @@ type VisitDateTimePickerProps = {
   onConfirm: (value: VisitDateTimeValue) => void;
 };
 
+/** 과거 방문 날짜와 시간대를 선택하는 웹 기록 바텀시트. */
 export default function VisitDateTimePicker({
   value,
   onClose,
@@ -71,7 +72,7 @@ export default function VisitDateTimePicker({
   const month = visibleMonth.getMonth();
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const isCurrentMonth = isSameMonth(visibleMonth, today);
+  const isNextMonthDisabled = isSameOrAfterMonth(visibleMonth, today);
   const calendarDays = getCalendarDays(visibleMonth);
   const confirmLabel = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 ${getVisitPeriodLabel(
     selectedPeriod
@@ -109,7 +110,7 @@ export default function VisitDateTimePicker({
             <button
               type="button"
               aria-label="다음 달"
-              disabled={isCurrentMonth}
+              disabled={isNextMonthDisabled}
               onClick={() => setVisibleMonth((current) => createMonthDate(current, 1))}
               className="flex size-7 items-center justify-center rounded-full text-neutral-600 outline-none hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-primary-300 disabled:text-neutral-300 disabled:hover:bg-transparent [&_svg]:h-3 [&_svg]:w-1.5 [&_svg]:rotate-180"
             >

@@ -1,8 +1,8 @@
+import { getVisitPeriodForHour, getVisitPeriodLabel } from '@chapchap/shared/record';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
-import { getVisitPeriodForHour, getVisitPeriodLabel } from '@/features/record/utils/visitDateTime';
 import type { ShopSearchResult } from '@/features/shop';
 
 import ManualRecordPage from './ManualRecordPage';
@@ -49,6 +49,7 @@ describe('<ManualRecordPage />', () => {
     await user.type(screen.getByRole('textbox', { name: '금액' }), '12abc-000');
 
     expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('12,000');
+    expect(screen.getByRole('textbox', { name: '금액' })).toBeValid();
     expect(screen.getByRole('button', { name: '기록하기' })).toBeEnabled();
   });
 
