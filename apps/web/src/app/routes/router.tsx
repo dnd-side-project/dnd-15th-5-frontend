@@ -13,7 +13,6 @@ import NotificationPage from '@/pages/notifications/NotificationPage';
 import OnboardingPage from '@/pages/onboarding/OnboardingPage';
 import ManualRecordPage from '@/pages/record/manual/ManualRecordPage';
 import ReceiptCameraPage from '@/pages/record/receipt/ReceiptCameraPage';
-import ReceiptRecordPage from '@/pages/record/receipt/ReceiptRecordPage';
 import RecordMethodPage from '@/pages/record/RecordMethodPage';
 import ShopSearchPage from '@/pages/record/shop/search/ShopSearchPage';
 import FrequentShopListPage from '@/pages/report/frequent-shops/FrequentShopListPage';
@@ -106,10 +105,6 @@ export const router = createBrowserRouter([
           {
             path: ROUTE_PATHS.recordShopSearch,
             element: <ShopSearchPage />,
-          },
-          {
-            path: ROUTE_PATHS.receiptRecord,
-            element: <ReceiptRecordPage />,
           },
           {
             path: ROUTE_PATHS.spendingHistory,
