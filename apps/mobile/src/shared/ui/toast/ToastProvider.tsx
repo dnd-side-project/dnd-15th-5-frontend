@@ -19,6 +19,10 @@ type NativeToast = Required<Pick<ShowToastOptions, 'message' | 'type'>> & {
 type ToastProviderProps = PropsWithChildren<{
   /** 하위 Toast의 기본 노출 시간(ms)입니다. `0`이면 자동으로 닫히지 않습니다. */
   duration?: number;
+  /** 화면 아래에서 Toast 목록까지의 여백입니다. */
+  bottomOffset?: number;
+  /** 아래쪽 Safe Area를 `bottomOffset`에 더할지 결정합니다. */
+  includeBottomSafeArea?: boolean;
 }>;
 
 const ToastContext = createContext<ToastControls | null>(null);
@@ -63,7 +67,12 @@ function ToastIcon({ type }: { type: ToastType }) {
  * @param props.children - Toast API를 사용할 React Native 화면 트리입니다.
  * @param props.duration - Toast의 기본 노출 시간(ms)입니다.
  */
-export function ToastProvider({ children, duration = DEFAULT_TOAST_DURATION }: ToastProviderProps) {
+export function ToastProvider({
+  children,
+  duration = DEFAULT_TOAST_DURATION,
+  bottomOffset = TOAST_BOTTOM_OFFSET,
+  includeBottomSafeArea = true,
+}: ToastProviderProps) {
   const insets = useSafeAreaInsets();
   const [toasts, setToasts] = useState<NativeToast[]>([]);
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -133,7 +142,7 @@ export function ToastProvider({ children, duration = DEFAULT_TOAST_DURATION }: T
         testID="toast-viewport"
         pointerEvents="box-none"
         className="z-toast absolute right-4 left-4"
-        style={{ bottom: insets.bottom + TOAST_BOTTOM_OFFSET }}
+        style={{ bottom: bottomOffset + (includeBottomSafeArea ? insets.bottom : 0) }}
       >
         <View className="toast-list self-center">
           {toasts.map((toast) => (

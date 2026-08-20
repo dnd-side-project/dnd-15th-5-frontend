@@ -3,6 +3,12 @@ import { act, render } from '@testing-library/react-native';
 import HomeScreen from './HomeScreen';
 
 const mockCreateBridgeResponse = jest.fn();
+const safeAreaEdges = {
+  top: 'additive',
+  right: 'additive',
+  bottom: 'additive',
+  left: 'additive',
+};
 
 jest.mock('@/bridge', () => ({
   createBridgeResponse: (message: unknown) => mockCreateBridgeResponse(message),
@@ -31,17 +37,20 @@ describe('<HomeScreen />', () => {
     getByText('웹 주소가 설정되지 않았습니다');
   });
 
-  it('웹 주소가 설정되면 웹 화면을 바로 띄운다', async () => {
-    process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173';
+  it('웹 주소가 설정되면 기록 방법 선택 화면을 최초 경로로 띄운다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173/record/receipt/camera';
 
     const { getByTestId } = await render(<HomeScreen />);
 
+    expect(getByTestId('home-webview')).toHaveProp('source', {
+      uri: 'http://192.168.0.2:5173/record',
+    });
     expect(getByTestId('home-webview')).toHaveProp('automaticallyAdjustContentInsets', false);
     expect(getByTestId('home-webview')).toHaveProp('contentInsetAdjustmentBehavior', 'never');
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
   });
 
-  it('지도 홈에서만 안전 영역을 제거한다', async () => {
+  it('모든 웹 경로에서 Safe Area를 유지하고 지도 홈의 히스토리 제스처만 끈다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173';
     const { getByTestId } = await render(<HomeScreen />);
 
@@ -58,12 +67,7 @@ describe('<HomeScreen />', () => {
       });
     });
 
-    expect(getByTestId('home-safe-area').props.edges).toEqual({
-      top: 'off',
-      right: 'off',
-      bottom: 'off',
-      left: 'off',
-    });
+    expect(getByTestId('home-safe-area').props.edges).toEqual(safeAreaEdges);
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
 
     await act(async () => {
@@ -79,12 +83,7 @@ describe('<HomeScreen />', () => {
       });
     });
 
-    expect(getByTestId('home-safe-area').props.edges).toEqual({
-      top: 'additive',
-      right: 'additive',
-      bottom: 'additive',
-      left: 'additive',
-    });
+    expect(getByTestId('home-safe-area').props.edges).toEqual(safeAreaEdges);
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
   });
 

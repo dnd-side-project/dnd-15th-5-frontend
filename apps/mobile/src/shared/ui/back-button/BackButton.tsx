@@ -12,6 +12,7 @@ type BackButtonProps = {
   className?: string;
   style?: PressableProps['style'];
   accessibilityLabel?: string;
+  disabled?: boolean;
 };
 
 /**
@@ -25,20 +26,23 @@ export function BackButton({
   className,
   style,
   accessibilityLabel = '이전 화면으로 돌아가기',
+  disabled = false,
 }: BackButtonProps) {
   const color = variant === 'light' ? '#ffffff' : '#1f1f1f';
 
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       hitSlop={12}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      className={className}
+      accessibilityState={{ disabled }}
+      className={`h-6 w-6 items-center justify-center ${className ?? ''}`}
       style={style}
     >
       {/* NOTE: react-native-svg는 부모의 텍스트 색상을 상속하지 않아 디자인 토큰과 같은 색상을 직접 전달한다. */}
-      <ChevronLeftIcon width={24} height={24} color={color} />
+      <ChevronLeftIcon width={10} height={18} color={color} />
     </Pressable>
   );
 }

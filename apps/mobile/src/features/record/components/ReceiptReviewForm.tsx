@@ -1,0 +1,321 @@
+import {
+  createInitialVisitDateTime,
+  formatAmount,
+  formatVisitDateTime,
+  RECORD_CATEGORIES,
+  sanitizeAmount,
+  validateRecordRequiredFields,
+} from '@chapchap/shared/record';
+import { useState } from 'react';
+import {
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { CalendarIcon } from '@/shared/assets/icons';
+import { BackButton } from '@/shared/ui/back-button';
+
+import { RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET } from '../constants';
+
+import VisitDateTimePicker from './VisitDateTimePicker';
+
+import type { ReceiptDraft, ReceiptReviewState } from '../types';
+import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
+import type { ReactNode } from 'react';
+
+type ReceiptReviewFormProps = {
+  receiptUri: string;
+  initialShopId?: string | null;
+  initialShopName?: string;
+  initialShopAddress?: string;
+  initialShopPhotoUrl?: string | null;
+  initialVisitDateTime?: VisitDateTimeValue;
+  initialAmount?: string;
+  initialCategory?: RecordCategory;
+  onBack: () => void;
+  onChangeShop?: (state: ReceiptReviewState) => void;
+  onSubmit?: (draft: ReceiptDraft) => void;
+};
+
+type RequiredFieldProps = {
+  label: string;
+  children: ReactNode;
+};
+
+function RequiredField({ label, children }: RequiredFieldProps) {
+  return (
+    <View>
+      <View className="flex-row items-center">
+        <Text className="font-pretendard-semibold text-body-02-semibold text-notification">*</Text>
+        <Text className="ml-1 font-pretendard-semibold text-body-02-semibold text-neutral-700">
+          {label}
+        </Text>
+      </View>
+      <View className="mt-2">{children}</View>
+    </View>
+  );
+}
+
+/** 촬영한 영수증과 인식 결과를 확인하고 수정하는 폼. */
+export default function ReceiptReviewForm({
+  receiptUri,
+  initialShopId = null,
+  initialShopName = '',
+  initialShopAddress = '',
+  initialShopPhotoUrl = null,
+  initialVisitDateTime,
+  initialAmount = '',
+  initialCategory,
+  onBack,
+  onChangeShop,
+  onSubmit,
+}: ReceiptReviewFormProps) {
+  const insets = useSafeAreaInsets();
+  const shopName = initialShopName;
+  const shopAddress = initialShopAddress;
+  const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(
+    () => initialVisitDateTime ?? createInitialVisitDateTime()
+  );
+  const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
+  const [amount, setAmount] = useState(() => sanitizeAmount(initialAmount));
+  const [category, setCategory] = useState<RecordCategory>(initialCategory ?? RECORD_CATEGORIES[0]);
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const { isShopValid, isAmountValid, canSubmit } = validateRecordRequiredFields({
+    hasShop: shopName.trim().length > 0,
+    amount,
+  });
+  const hasShopError = hasAttemptedSubmit && !isShopValid;
+  const hasAmountError = hasAttemptedSubmit && !isAmountValid;
+  const hasRequiredFieldError = hasAttemptedSubmit && !canSubmit;
+
+  const handleSubmit = () => {
+    setHasAttemptedSubmit(true);
+
+    if (!canSubmit || !onSubmit) {
+      return;
+    }
+
+    onSubmit({
+      shopId: initialShopId,
+      shopName: shopName.trim(),
+      shopAddress: shopAddress.trim(),
+      shopPhotoUrl: initialShopPhotoUrl,
+      visitDateTime,
+      amount,
+      category,
+      receiptUri,
+    });
+  };
+
+  const handleChangeShop = () => {
+    onChangeShop?.({
+      shopId: initialShopId,
+      shopName: shopName.trim(),
+      shopAddress: shopAddress.trim(),
+      shopPhotoUrl: initialShopPhotoUrl,
+      visitDateTime,
+      amount,
+      category,
+      receiptUri,
+    });
+  };
+
+  return (
+    <>
+      <KeyboardAvoidingView
+        className="flex-1 bg-neutral-00"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 32 }}
+        >
+          <View
+            testID="receipt-review-content"
+            className="flex-1 px-4"
+            style={{ paddingTop: insets.top + RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET }}
+          >
+            <BackButton onPress={onBack} />
+
+            <Text className="mt-6 font-pretendard-semibold text-heading-02-semibold text-neutral-700">
+              정보가 정확하게 인식되었나요?
+            </Text>
+
+            <View
+              testID="shop-field"
+              className={`relative mt-8 flex-row items-center rounded-16 border p-2 pr-16 ${
+                hasShopError ? 'border-notification' : 'border-neutral-300'
+              }`}
+            >
+              {initialShopPhotoUrl ? (
+                <Image
+                  source={{ uri: initialShopPhotoUrl }}
+                  accessibilityLabel="가게 사진"
+                  className="h-15 w-15 rounded-08 bg-neutral-100"
+                  resizeMode="cover"
+                />
+              ) : (
+                <View
+                  accessibilityLabel="가게 사진 없음"
+                  className="h-15 w-15 rounded-08 bg-neutral-100"
+                />
+              )}
+              <View className="ml-4 min-w-0 flex-1">
+                <Text
+                  accessibilityLabel="가게 이름"
+                  numberOfLines={1}
+                  className={`font-pretendard-medium text-body-01-medium ${
+                    shopName ? 'text-neutral-700' : 'text-neutral-500'
+                  }`}
+                >
+                  {shopName || '가게를 확인해주세요'}
+                </Text>
+                <Text
+                  accessibilityLabel="가게 주소"
+                  numberOfLines={1}
+                  className="mt-2 font-pretendard-regular text-body-02-regular text-neutral-500"
+                >
+                  {shopAddress || '주소를 확인해주세요'}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  Keyboard.dismiss();
+                  handleChangeShop();
+                }}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="가게 정보 변경"
+                className="absolute bottom-2 right-2 top-2 z-10 w-12 items-center justify-center"
+              >
+                <Text className="font-pretendard-regular text-body-02-regular text-primary-500">
+                  변경
+                </Text>
+              </Pressable>
+            </View>
+
+            <View className="mt-8">
+              <RequiredField label="방문 일시">
+                <Pressable
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setIsDateTimePickerOpen(true);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`방문 일시 변경, ${formatVisitDateTime(visitDateTime)}`}
+                  className="flex-row items-center justify-between rounded-08 border border-neutral-300 p-4"
+                >
+                  <Text className="font-pretendard-regular text-body-01-regular text-neutral-700">
+                    {formatVisitDateTime(visitDateTime)}
+                  </Text>
+                  <CalendarIcon width={20} height={20} />
+                </Pressable>
+              </RequiredField>
+            </View>
+
+            <View className="mt-8">
+              <RequiredField label="금액">
+                <View
+                  testID="amount-field"
+                  className={`flex-row items-center rounded-08 border p-4 ${
+                    hasAmountError ? 'border-notification' : 'border-neutral-300'
+                  }`}
+                >
+                  <TextInput
+                    accessibilityLabel="금액"
+                    aria-invalid={hasAmountError}
+                    inputMode="numeric"
+                    keyboardType="number-pad"
+                    placeholder="금액을 입력해주세요"
+                    placeholderTextColor="#8e8e8e"
+                    value={formatAmount(amount)}
+                    onChangeText={(value) => setAmount(sanitizeAmount(value))}
+                    className="min-w-0 flex-1 p-0 font-pretendard-regular text-body-01-regular text-neutral-700"
+                  />
+                  <Text className="ml-2 font-pretendard-semibold text-body-01-semibold text-neutral-700">
+                    원
+                  </Text>
+                </View>
+              </RequiredField>
+            </View>
+
+            <View className="mt-8">
+              <RequiredField label="카테고리">
+                <View className="flex-row flex-wrap gap-2">
+                  {RECORD_CATEGORIES.map((recordCategory) => {
+                    const selected = category === recordCategory;
+
+                    return (
+                      <Pressable
+                        key={recordCategory}
+                        onPress={() => setCategory(recordCategory)}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                        className={`items-center justify-center rounded-16 border px-4 py-2 ${
+                          selected
+                            ? 'border-primary-500 bg-primary-500'
+                            : 'border-neutral-300 bg-neutral-00'
+                        }`}
+                      >
+                        <Text
+                          className={`font-pretendard-regular text-body-02-regular ${
+                            selected ? 'text-neutral-00' : 'text-neutral-700'
+                          }`}
+                        >
+                          {recordCategory}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </RequiredField>
+            </View>
+
+            <View className="mt-auto pt-12">
+              {hasRequiredFieldError && (
+                <Text
+                  accessibilityRole="alert"
+                  className="mb-4 text-center font-pretendard-regular text-body-02-regular text-notification"
+                >
+                  필수항목을 작성해주세요
+                </Text>
+              )}
+              <Pressable
+                onPress={handleSubmit}
+                accessibilityRole="button"
+                accessibilityLabel="기록하기"
+                className={`h-13.5 items-center justify-center rounded-full ${
+                  canSubmit ? 'bg-primary-500' : 'bg-neutral-400'
+                }`}
+              >
+                <Text className="font-pretendard-semibold text-body-01-semibold text-neutral-00">
+                  기록하기
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      {isDateTimePickerOpen && (
+        <VisitDateTimePicker
+          value={visitDateTime}
+          onClose={() => setIsDateTimePickerOpen(false)}
+          onConfirm={(nextValue) => {
+            setVisitDateTime(nextValue);
+            setIsDateTimePickerOpen(false);
+          }}
+        />
+      )}
+    </>
+  );
+}
