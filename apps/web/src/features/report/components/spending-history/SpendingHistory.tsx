@@ -1,0 +1,112 @@
+import { useState } from 'react';
+
+import { MOCK_SPENDING_MONTHS, MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
+import type { SpendingMonth } from '@/features/report/types';
+import { CaretLeftIcon, CaretRightIcon } from '@/shared/assets/icons';
+import { BackButton } from '@/shared/ui/back-button';
+
+import MonthPickerSheet from './MonthPickerSheet';
+import SpendingRecordItem from './SpendingRecordItem';
+
+type SpendingHistoryProps = {
+  onBack: () => void;
+};
+
+const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
+  month.year === target.year && month.month === target.month;
+
+/**
+ * 선택한 월의 소비내역을 날짜별로 보여주고 월 이동과 월 선택 시트를 제공합니다.
+ *
+ * @param props - 소비내역 화면 속성입니다.
+ * @param props.onBack - 뒤로 가기 버튼을 눌렀을 때 실행할 콜백입니다.
+ */
+export default function SpendingHistory({ onBack }: SpendingHistoryProps) {
+  const [selectedMonth, setSelectedMonth] = useState<SpendingMonth>(MOCK_SPENDING_MONTHS[0]);
+  const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
+  const selectedMonthIndex = MOCK_SPENDING_MONTHS.findIndex((month) =>
+    isSameMonth(month, selectedMonth)
+  );
+  const hasNewerMonth = selectedMonthIndex > 0;
+  const hasOlderMonth = selectedMonthIndex < MOCK_SPENDING_MONTHS.length - 1;
+  const recordGroups = selectedMonthIndex === 0 ? MOCK_SPENDING_RECORD_GROUPS : [];
+
+  const handleMonthSelect = (month: SpendingMonth) => {
+    setSelectedMonth(month);
+    setIsMonthPickerOpen(false);
+  };
+
+  return (
+    <main className="min-h-dvh bg-neutral-00 pb-8">
+      <header className="sticky top-0 z-sticky-header bg-neutral-00 pt-4 pb-5">
+        <BackButton onClick={onBack} className="mt-0" />
+        <div className="mt-5 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            aria-label="이전 달 보기"
+            disabled={!hasOlderMonth}
+            onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex + 1])}
+            className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
+          >
+            <CaretLeftIcon aria-hidden="true" className="size-6" />
+          </button>
+          <h1 aria-label={`${selectedMonth.month}월 소비 내역`}>
+            <button
+              type="button"
+              aria-label="월 선택"
+              aria-expanded={isMonthPickerOpen}
+              onClick={() => setIsMonthPickerOpen(true)}
+              className="min-w-10 text-title-02-bold text-neutral-900"
+            >
+              {selectedMonth.month}월
+            </button>
+          </h1>
+          <button
+            type="button"
+            aria-label="다음 달 보기"
+            disabled={!hasNewerMonth}
+            onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex - 1])}
+            className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
+          >
+            <CaretRightIcon aria-hidden="true" className="size-6" />
+          </button>
+        </div>
+      </header>
+
+      <div>
+        {recordGroups.length > 0 ? (
+          <div className="space-y-5">
+            {recordGroups.map((group) => (
+              <section key={group.dateLabel} aria-labelledby={`date-${group.dateLabel}`}>
+                <h2
+                  id={`date-${group.dateLabel}`}
+                  className="mb-3 text-body-01-semibold text-neutral-900"
+                >
+                  {group.dateLabel}
+                </h2>
+                <ul className="space-y-3">
+                  {group.records.map((record) => (
+                    <SpendingRecordItem key={record.id} record={record} />
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        ) : (
+          <p className="pt-24 text-center text-body-02-regular text-neutral-500">
+            소비 기록이 없어요
+          </p>
+        )}
+      </div>
+
+      {isMonthPickerOpen && (
+        <MonthPickerSheet
+          months={MOCK_SPENDING_MONTHS}
+          selectedMonth={selectedMonth}
+          onClose={() => setIsMonthPickerOpen(false)}
+          onSelect={handleMonthSelect}
+        />
+      )}
+    </main>
+  );
+}
