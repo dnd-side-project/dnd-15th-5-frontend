@@ -1,3 +1,4 @@
+import CalendarIcon from '@chapchap/shared/assets/icons/ic-calendar.svg?react';
 import ChevronLeftIcon from '@chapchap/shared/assets/icons/ic-chevron-left.svg?react';
 import StatusErrorIcon from '@chapchap/shared/assets/icons/ic-status-error.svg?react';
 import StatusSuccessIcon from '@chapchap/shared/assets/icons/ic-status-success.svg?react';
@@ -28,6 +29,7 @@ export {
   AddIcon,
   AvatarIcon,
   BlueLocationPinIcon,
+  CalendarIcon,
   CaretLeftIcon,
   CaretRightIcon,
   CheckIcon,

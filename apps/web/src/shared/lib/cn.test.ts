@@ -18,4 +18,8 @@ describe('cn', () => {
       'text-sm text-neutral-700'
     );
   });
+
+  it('커스텀 radius 토큰으로 기본 radius를 재정의할 수 있다', () => {
+    expect(cn('rounded-full', 'rounded-08')).toBe('rounded-08');
+  });
 });

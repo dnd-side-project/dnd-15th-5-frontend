@@ -67,13 +67,14 @@ describe('ShopSearch', () => {
     expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
   });
 
-  it('입력만 하고 제출하지 않으면 검색하지 않는다', async () => {
+  it('입력만 하고 제출하지 않아도 입력이 멈추면 잠시 후 자동으로 검색한다', async () => {
     const user = userEvent.setup();
     renderShopSearch();
 
     await user.type(screen.getByPlaceholderText('장소를 검색해주세요'), '투썸플레이스');
 
     expect(searchByText).not.toHaveBeenCalled();
+    expect(await screen.findByText('투썸플레이스 신논현점')).toBeInTheDocument();
   });
 
   it('검색 결과가 없으면 안내 문구를 보여준다', async () => {

@@ -35,12 +35,12 @@ export function BackButton({
       onClick={onClick}
       aria-label={ariaLabel}
       className={cn(
-        'mt-4 size-6',
+        'mt-4 size-6 [&_svg]:h-4.5 [&_svg]:w-2.5',
         variant === 'light' ? 'text-neutral-00' : 'text-neutral-700',
         className
       )}
     >
-      <span className="inline-flex size-6">
+      <span className="inline-flex size-6 items-center justify-center">
         <ChevronLeftIcon aria-hidden="true" />
       </span>
     </Button>

@@ -73,6 +73,16 @@ describe('ToastProvider', () => {
     expect(viewport).toHaveProp('className', expect.stringContaining('right-4 left-4'));
   });
 
+  it('화면 전용 위치에서는 Safe Area를 더하지 않는다', async () => {
+    const { getByTestId } = await render(
+      <ToastProvider bottomOffset={195} includeBottomSafeArea={false}>
+        <ToastFixture />
+      </ToastProvider>
+    );
+
+    expect(getByTestId('toast-viewport')).toHaveStyle({ bottom: 195 });
+  });
+
   it('Toast를 노출하고 지정한 시간이 지나면 닫는다', async () => {
     const { getByText, queryByText } = await render(
       <ToastProvider duration={1000}>
