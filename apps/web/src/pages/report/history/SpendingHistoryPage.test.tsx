@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 
 import SpendingHistoryPage from './SpendingHistoryPage';
 
+import type { ReactNode } from 'react';
+
 const mockNavigate = jest.fn();
 
 jest.mock('react-router-dom', () => ({
@@ -11,7 +13,12 @@ jest.mock('react-router-dom', () => ({
 }));
 
 jest.mock('@/features/report', () => ({
-  SpendingHistory: () => <div>소비내역</div>,
+  SpendingHistory: ({ headerContent }: { headerContent?: ReactNode }) => (
+    <div>
+      {headerContent}
+      소비내역
+    </div>
+  ),
 }));
 
 describe('SpendingHistoryPage', () => {

@@ -9,8 +9,9 @@ export default function SpendingHistoryPage() {
 
   return (
     <main className="flex min-h-dvh flex-col pb-8">
-      <BackButton onClick={() => navigate(-1)} />
-      <SpendingHistory />
+      <SpendingHistory
+        headerContent={<BackButton onClick={() => navigate(-1)} className="mt-0" />}
+      />
     </main>
   );
 }
