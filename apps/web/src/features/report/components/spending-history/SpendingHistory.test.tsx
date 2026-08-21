@@ -19,6 +19,7 @@ describe('SpendingHistory', () => {
     expect(screen.getByRole('heading', { name: '22일 목요일' })).toBeInTheDocument();
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(7);
     expect(screen.getAllByText('5,500 원')).toHaveLength(7);
+    expect(screen.getAllByText('2026.07.22 · 오전 · 카페')).toHaveLength(3);
   });
 
   it('월 선택 바텀시트에서 월을 바꾸고 시트를 닫는다', async () => {
