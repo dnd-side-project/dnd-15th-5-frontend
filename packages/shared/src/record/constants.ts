@@ -1,3 +1,5 @@
+import type { SpendingCategory } from '../common/types';
+
 /** 웹 수기 입력과 앱 영수증 입력에서 공통으로 사용하는 소비 카테고리. */
 export const RECORD_CATEGORIES = [
   '카페',
@@ -7,6 +9,6 @@ export const RECORD_CATEGORIES = [
   '음식점',
   '미용/뷰티',
   '기타',
-] as const;
+] as const satisfies readonly SpendingCategory[];
 
-export type RecordCategory = (typeof RECORD_CATEGORIES)[number];
+export type RecordCategory = SpendingCategory;
