@@ -20,6 +20,9 @@ import NavigationRecordIcon from './ic-navigation-record.svg?react';
 import NavigationReportIcon from './ic-navigation-report.svg?react';
 import NotificationDefaultIcon from './ic-notification-default.svg?react';
 import NotificationUnreadIcon from './ic-notification-unread.svg?react';
+import RankFirstIcon from './ic-rank-first.svg?react';
+import RankSecondIcon from './ic-rank-second.svg?react';
+import RankThirdIcon from './ic-rank-third.svg?react';
 import SearchIcon from './ic-search.svg?react';
 import ShareIcon from './ic-share.svg?react';
 import ShopRecommendIcon from './ic-shop-recommend.svg?react';
@@ -43,6 +46,9 @@ export {
   NavigationReportIcon,
   NotificationDefaultIcon,
   NotificationUnreadIcon,
+  RankFirstIcon,
+  RankSecondIcon,
+  RankThirdIcon,
   SearchIcon,
   ShareIcon,
   ShopRecommendIcon,
