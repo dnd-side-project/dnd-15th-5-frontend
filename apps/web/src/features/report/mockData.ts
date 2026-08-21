@@ -151,7 +151,7 @@ export const MOCK_FREQUENT_SHOPS = [
   },
   {
     id: 'frequent-shop-07',
-    name: '투썸플레이스투썸플레이스 장기 임시 휴업 안내',
+    name: '투썸플레이스 장기 임시 휴업 안내',
     district: '용산구',
     category: '카페',
     thumbnailSrc: null,
@@ -160,7 +160,7 @@ export const MOCK_FREQUENT_SHOPS = [
   },
   {
     id: 'frequent-shop-08',
-    name: '투썸플레이스투썸플레이스 장기 임시 휴업 안내',
+    name: '투썸플레이스 장기 임시 휴업 안내',
     district: '용산구',
     category: '카페',
     thumbnailSrc: null,
