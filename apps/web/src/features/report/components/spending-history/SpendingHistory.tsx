@@ -8,7 +8,7 @@ import { cn } from '@/shared/lib/cn';
 import { StateView } from '@/shared/ui/state-view';
 
 import MonthPickerSheet from './MonthPickerSheet';
-import SpendingRecordItem from './SpendingRecordItem';
+import SpendingRecordList from './SpendingRecordList';
 
 import type { ReactNode } from 'react';
 
@@ -94,23 +94,7 @@ export default function SpendingHistory({
 
       <div className="flex flex-1 flex-col">
         {recordGroups.length > 0 ? (
-          <div className="space-y-5">
-            {recordGroups.map((group) => (
-              <section key={group.dateLabel} aria-labelledby={`date-${group.dateLabel}`}>
-                <h2
-                  id={`date-${group.dateLabel}`}
-                  className="mb-3 text-body-01-semibold text-neutral-900"
-                >
-                  {group.dateLabel}
-                </h2>
-                <ul className="space-y-3">
-                  {group.records.map((record) => (
-                    <SpendingRecordItem key={record.id} record={record} />
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
+          <SpendingRecordList groups={recordGroups} />
         ) : (
           <StateView
             variant="empty"
