@@ -10,6 +10,7 @@ import CheckIcon from './ic-check.svg?react';
 import ChevronRightIcon from './ic-chevron-right.svg?react';
 import CrownIcon from './ic-crown.svg?react';
 import CurrentLocationIcon from './ic-current-location.svg?react';
+import FilterIcon from './ic-filter.svg?react';
 import GoogleIcon from './ic-google.svg?react';
 import KakaoIcon from './ic-kakao.svg?react';
 import LikeIcon from './ic-like.svg?react';
@@ -36,6 +37,7 @@ export {
   ChevronRightIcon,
   CrownIcon,
   CurrentLocationIcon,
+  FilterIcon,
   GoogleIcon,
   KakaoIcon,
   LikeIcon,
