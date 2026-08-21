@@ -14,6 +14,8 @@ export const HOME_BOTTOM_SHEET_SNAP_SEQUENCE: readonly BottomSheetSnapPoint[] = 
 // 드래그로 도착한 medium은 "새로 시작하는 medium"으로 보고, 다음 클릭에 full로 가게 한다.
 const SNAP_POINT_TO_STEP_INDEX: Record<BottomSheetSnapPoint, number> = {
   medium: 0,
+  large: 0,
+  small: 0,
   full: 1,
   hidden: 3,
 };

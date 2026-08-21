@@ -31,6 +31,12 @@ describe('BottomSheet', () => {
     rerender(<BottomSheet snapPoint="full">내용</BottomSheet>);
     expect(sheet).toHaveStyle({ height: '92dvh' });
 
+    rerender(<BottomSheet snapPoint="large">내용</BottomSheet>);
+    expect(sheet).toHaveStyle({ height: '70dvh' });
+
+    rerender(<BottomSheet snapPoint="small">내용</BottomSheet>);
+    expect(sheet).toHaveStyle({ height: '40dvh' });
+
     rerender(<BottomSheet snapPoint="hidden">내용</BottomSheet>);
     expect(sheet.className).toContain('translate-y-full');
   });
@@ -113,5 +119,47 @@ describe('BottomSheet', () => {
     firePointerEvent(handle, 'pointerup', 700);
 
     expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
+  });
+
+  it('지정한 snapPoints 중 가장 가까운 단계로 스냅된다', () => {
+    const onSnapPointChange = jest.fn();
+    render(
+      <BottomSheet
+        snapPoint="large"
+        snapPoints={['small', 'large', 'full']}
+        onSnapPointChange={onSnapPointChange}
+      >
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    // large(560px)에서 120px 위로 드래그하면 680px로 full(736px)에 가장 가깝다.
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(handle, 'pointermove', 380);
+    firePointerEvent(handle, 'pointerup', 380);
+
+    expect(onSnapPointChange).toHaveBeenCalledWith('full');
+  });
+
+  it('월 선택용 단계에서 아래로 드래그하면 small에 스냅된다', () => {
+    const onSnapPointChange = jest.fn();
+    render(
+      <BottomSheet
+        snapPoint="large"
+        snapPoints={['small', 'large', 'full']}
+        onSnapPointChange={onSnapPointChange}
+      >
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    // large(560px)에서 220px 아래로 드래그하면 340px로 small(320px)에 가장 가깝다.
+    firePointerEvent(handle, 'pointerdown', 300);
+    firePointerEvent(handle, 'pointermove', 520);
+    firePointerEvent(handle, 'pointerup', 520);
+
+    expect(onSnapPointChange).toHaveBeenCalledWith('small');
   });
 });
