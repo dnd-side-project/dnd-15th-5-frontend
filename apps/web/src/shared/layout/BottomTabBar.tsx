@@ -69,7 +69,7 @@ export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="sticky bottom-0 z-30 grid shrink-0 grid-cols-3 items-start rounded-t-30 border-x border-t border-neutral-200 bg-neutral-00 px-5 py-3"
+      className="sticky bottom-0 z-bottom-navigation grid shrink-0 grid-cols-3 items-start rounded-t-30 border-x border-t border-neutral-200 bg-neutral-00 px-5 py-3"
     >
       <TabNavLink
         to={ROUTE_PATHS.home}
