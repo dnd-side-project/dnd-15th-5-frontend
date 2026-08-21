@@ -6,7 +6,7 @@ import { BOTTOM_SHEET_HEIGHT_RATIO } from './constants';
 
 import type { PointerEvent as ReactPointerEvent, ReactNode, Ref } from 'react';
 
-export type BottomSheetSnapPoint = 'full' | 'large' | 'medium' | 'small' | 'hidden';
+export type BottomSheetSnapPoint = 'full' | 'large' | 'medium' | 'hidden';
 
 // NOTE: 이 값보다 적게 움직이면 드래그가 아니라 클릭으로 본다. 클릭은 pointerdown→pointerup을
 // 그대로 거치므로, 임계값 없이 매번 onSnapPointChange를 부르면 핸들을 그냥 클릭만 해도
@@ -17,15 +17,16 @@ const SNAP_POINT_HEIGHT: Record<BottomSheetSnapPoint, string> = {
   full: `${BOTTOM_SHEET_HEIGHT_RATIO.full * 100}dvh`,
   large: `${BOTTOM_SHEET_HEIGHT_RATIO.large * 100}dvh`,
   medium: `${BOTTOM_SHEET_HEIGHT_RATIO.medium * 100}dvh`,
-  small: `${BOTTOM_SHEET_HEIGHT_RATIO.small * 100}dvh`,
   hidden: `${BOTTOM_SHEET_HEIGHT_RATIO.medium * 100}dvh`,
 };
 
-const DEFAULT_SNAP_POINTS: readonly BottomSheetSnapPoint[] = ['hidden', 'medium', 'full'];
+type BottomSheetSnapPoints = readonly [BottomSheetSnapPoint, ...BottomSheetSnapPoint[]];
+
+const DEFAULT_SNAP_POINTS: BottomSheetSnapPoints = ['hidden', 'medium', 'full'];
 
 type BottomSheetProps = {
   snapPoint: BottomSheetSnapPoint;
-  snapPoints?: readonly BottomSheetSnapPoint[];
+  snapPoints?: BottomSheetSnapPoints;
   onSnapPointChange?: (snapPoint: BottomSheetSnapPoint) => void;
   onHandleClick?: () => void;
   children: ReactNode;
@@ -55,7 +56,7 @@ type BottomSheetProps = {
  * ```
  *
  * @param props - 바텀시트 속성입니다.
- * @param props.snapPoint - 현재 높이 단계입니다(`full` | `large` | `medium` | `small` | `hidden`).
+ * @param props.snapPoint - 현재 높이 단계입니다(`full` | `large` | `medium` | `hidden`).
  * @param props.snapPoints - 드래그를 놓았을 때 이동할 수 있는 단계입니다.
  * @param props.onSnapPointChange - 드래그를 놓아 스냅될 때 호출됩니다. 드래그가 끝난 위치와
  * 가장 가까운 단계로 알려줍니다.
@@ -137,6 +138,11 @@ export function BottomSheet({
     onSnapPointChange?.(nearestSnapPoint);
   };
 
+  const handlePointerCancel = () => {
+    dragStartRef.current = null;
+    setDragHeightPx(null);
+  };
+
   const isDragging = dragHeightPx !== null;
   const isHidden = !isDragging && snapPoint === 'hidden';
 
@@ -156,8 +162,9 @@ export function BottomSheet({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
         aria-label="바텀시트 높이 조절"
-        className="flex w-full shrink-0 touch-none items-center justify-center py-3"
+        className="flex w-full shrink-0 touch-none items-center justify-center rounded-t-30 py-3 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset"
       >
         <span className="h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true" />
       </button>

@@ -34,9 +34,6 @@ describe('BottomSheet', () => {
     rerender(<BottomSheet snapPoint="large">내용</BottomSheet>);
     expect(sheet).toHaveStyle({ height: '70dvh' });
 
-    rerender(<BottomSheet snapPoint="small">내용</BottomSheet>);
-    expect(sheet).toHaveStyle({ height: '40dvh' });
-
     rerender(<BottomSheet snapPoint="hidden">내용</BottomSheet>);
     expect(sheet.className).toContain('translate-y-full');
   });
@@ -121,12 +118,26 @@ describe('BottomSheet', () => {
     expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
   });
 
+  it('포인터 입력이 취소되면 드래그 높이를 초기화한다', () => {
+    const { container } = render(<BottomSheet snapPoint="medium">내용</BottomSheet>);
+    const sheet = container.firstChild as HTMLElement;
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(handle, 'pointermove', 400);
+    expect(sheet).toHaveStyle({ height: '460px' });
+
+    firePointerEvent(handle, 'pointercancel', 400);
+
+    expect(sheet).toHaveStyle({ height: '45dvh' });
+  });
+
   it('지정한 snapPoints 중 가장 가까운 단계로 스냅된다', () => {
     const onSnapPointChange = jest.fn();
     render(
       <BottomSheet
         snapPoint="large"
-        snapPoints={['small', 'large', 'full']}
+        snapPoints={['hidden', 'large', 'full']}
         onSnapPointChange={onSnapPointChange}
       >
         내용
@@ -140,26 +151,5 @@ describe('BottomSheet', () => {
     firePointerEvent(handle, 'pointerup', 380);
 
     expect(onSnapPointChange).toHaveBeenCalledWith('full');
-  });
-
-  it('월 선택용 단계에서 아래로 드래그하면 small에 스냅된다', () => {
-    const onSnapPointChange = jest.fn();
-    render(
-      <BottomSheet
-        snapPoint="large"
-        snapPoints={['small', 'large', 'full']}
-        onSnapPointChange={onSnapPointChange}
-      >
-        내용
-      </BottomSheet>
-    );
-    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
-
-    // large(560px)에서 220px 아래로 드래그하면 340px로 small(320px)에 가장 가깝다.
-    firePointerEvent(handle, 'pointerdown', 300);
-    firePointerEvent(handle, 'pointermove', 520);
-    firePointerEvent(handle, 'pointerup', 520);
-
-    expect(onSnapPointChange).toHaveBeenCalledWith('small');
   });
 });

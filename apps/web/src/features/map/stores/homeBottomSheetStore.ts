@@ -15,7 +15,6 @@ export const HOME_BOTTOM_SHEET_SNAP_SEQUENCE: readonly BottomSheetSnapPoint[] = 
 const SNAP_POINT_TO_STEP_INDEX: Record<BottomSheetSnapPoint, number> = {
   medium: 0,
   large: 0,
-  small: 0,
   full: 1,
   hidden: 3,
 };
