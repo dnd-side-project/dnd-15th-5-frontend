@@ -53,6 +53,32 @@ describe('BottomSheet', () => {
     expect(content.className).not.toContain('overflow-y-auto');
   });
 
+  it('콘텐츠 맞춤 높이에서 hidden을 지정하면 아래로 드래그해 숨길 수 있다', () => {
+    const onSnapPointChange = jest.fn();
+    const { container } = render(
+      <BottomSheet
+        snapPoint="medium"
+        snapPoints={['hidden', 'medium']}
+        onSnapPointChange={onSnapPointChange}
+        fitContent
+      >
+        내용
+      </BottomSheet>
+    );
+    const sheet = container.firstChild as HTMLElement;
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+    jest.spyOn(sheet, 'getBoundingClientRect').mockReturnValue({
+      ...sheet.getBoundingClientRect(),
+      height: 200,
+    });
+
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(handle, 'pointermove', 680);
+    firePointerEvent(handle, 'pointerup', 680);
+
+    expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
+  });
+
   it('핸들을 누르면 onHandleClick을 호출한다', () => {
     const onHandleClick = jest.fn();
     render(
