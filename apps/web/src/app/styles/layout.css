@@ -1,0 +1,6 @@
+/** 웹 화면과 fixed UI를 480px 모바일 프레임 안에 정렬합니다. */
+@utility mobile-frame {
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+}

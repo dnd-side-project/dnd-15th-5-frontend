@@ -21,7 +21,7 @@ const meta = {
     ),
   ],
   parameters: {
-    // INFO: fixed 포지션이 전역 모바일 프레임 데코레이터(max-w-120)에 또 갇히면 폭 계산이
+    // INFO: fixed 포지션이 전역 모바일 프레임 데코레이터(mobile-frame)에 또 갇히면 폭 계산이
     // 어긋나 보인다. fullscreen으로 그 데코레이터를 건너뛴다(.storybook/preview.tsx 참고).
     layout: 'fullscreen',
     // INFO: Docs 페이지 안에 그대로 끼워 넣으면(inline) fixed·dvh 계산이 문서 페이지 기준으로

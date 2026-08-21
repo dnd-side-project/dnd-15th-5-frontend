@@ -6,6 +6,8 @@ import StatusSuccessIcon from '@chapchap/shared/assets/icons/ic-status-success.s
 import AddIcon from './ic-add.svg?react';
 import AvatarIcon from './ic-avatar.svg?react';
 import BlueLocationPinIcon from './ic-blue-location-pin.svg?react';
+import CaretLeftIcon from './ic-caret-left.svg?react';
+import CaretRightIcon from './ic-caret-right.svg?react';
 import CheckIcon from './ic-check.svg?react';
 import ChevronRightIcon from './ic-chevron-right.svg?react';
 import CrownIcon from './ic-crown.svg?react';
@@ -32,6 +34,8 @@ export {
   AvatarIcon,
   BlueLocationPinIcon,
   CalendarIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,

@@ -70,7 +70,7 @@ export function SegmentedToggle<TValue extends string>({
         <Toggle
           key={option.value}
           value={option.value}
-          className="relative z-10 flex-1 rounded-30 py-2.5 text-center text-body-02-semibold text-neutral-400 transition-colors duration-200 data-pressed:text-neutral-900"
+          className="relative z-segmented-toggle-label flex-1 rounded-30 py-2.5 text-center text-body-02-semibold text-neutral-400 transition-colors duration-200 data-pressed:text-neutral-900"
         >
           {option.label}
         </Toggle>

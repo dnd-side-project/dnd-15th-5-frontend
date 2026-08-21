@@ -1,4 +1,5 @@
 @import './fonts.css';
+@import './layout.css';
 @import 'tailwindcss';
 @import '@chapchap/shared/design/colors.css';
 @import '@chapchap/shared/design/typography.css';
