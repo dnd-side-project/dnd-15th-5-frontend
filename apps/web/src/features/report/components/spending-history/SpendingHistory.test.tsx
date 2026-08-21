@@ -1,7 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
 import SpendingHistory from './SpendingHistory';
+
+jest.mock('@/shared/assets/images/state', () => ({
+  EmptyStateImage: 'img-empty.png',
+  ErrorStateImage: 'img-error.png',
+}));
 
 const firePointerEvent = (element: Element, type: string, clientY: number) => {
   const event = new Event(type, { bubbles: true, cancelable: true });
@@ -10,9 +16,16 @@ const firePointerEvent = (element: Element, type: string, clientY: number) => {
   fireEvent(element, event);
 };
 
+const renderSpendingHistory = () =>
+  render(
+    <MemoryRouter>
+      <SpendingHistory />
+    </MemoryRouter>
+  );
+
 describe('SpendingHistory', () => {
   it('날짜별 소비 기록과 금액을 보여준다', () => {
-    render(<SpendingHistory onBack={jest.fn()} />);
+    renderSpendingHistory();
 
     expect(screen.getByRole('heading', { level: 1, name: '7월 소비 내역' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('7월');
@@ -24,7 +37,7 @@ describe('SpendingHistory', () => {
 
   it('월 선택 바텀시트에서 월을 바꾸고 시트를 닫는다', async () => {
     const user = userEvent.setup();
-    render(<SpendingHistory onBack={jest.fn()} />);
+    renderSpendingHistory();
 
     await user.click(screen.getByRole('button', { name: '월 선택' }));
 
@@ -41,12 +54,19 @@ describe('SpendingHistory', () => {
 
     expect(screen.queryByRole('dialog', { name: '월 선택하기' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('6월');
-    expect(screen.getByText('소비 기록이 없어요')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: '아직 기록이 없어요' })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/소비 기록을 작성해보세요/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '소비 기록 작성하기' })).toHaveAttribute(
+      'href',
+      '/record'
+    );
   });
 
   it('월 선택 바텀시트 바깥을 누르면 시트를 닫고 스크롤 잠금을 해제한다', async () => {
     const user = userEvent.setup();
-    const { container } = render(<SpendingHistory onBack={jest.fn()} />);
+    const { container } = renderSpendingHistory();
 
     await user.click(screen.getByRole('button', { name: '월 선택' }));
     expect(document.body.style.overflow).toBe('hidden');
@@ -62,7 +82,7 @@ describe('SpendingHistory', () => {
 
   it('월 선택 바텀시트를 위로 드래그하면 확장하고 아래로 드래그하면 닫는다', async () => {
     const user = userEvent.setup();
-    render(<SpendingHistory onBack={jest.fn()} />);
+    renderSpendingHistory();
 
     await user.click(screen.getByRole('button', { name: '월 선택' }));
     const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
@@ -86,7 +106,7 @@ describe('SpendingHistory', () => {
 
   it('월 목록 내부를 스크롤하면 바텀시트를 전체 높이로 확장한다', async () => {
     const user = userEvent.setup();
-    render(<SpendingHistory onBack={jest.fn()} />);
+    renderSpendingHistory();
 
     await user.click(screen.getByRole('button', { name: '월 선택' }));
     const dialog = screen.getByRole('dialog', { name: '월 선택하기' });
@@ -99,15 +119,5 @@ describe('SpendingHistory', () => {
     fireEvent.scroll(monthList);
 
     expect(sheet).toHaveStyle({ height: '92dvh' });
-  });
-
-  it('뒤로 가기 버튼을 누르면 전달받은 동작을 실행한다', async () => {
-    const user = userEvent.setup();
-    const onBack = jest.fn();
-    render(<SpendingHistory onBack={onBack} />);
-
-    await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
-
-    expect(onBack).toHaveBeenCalledTimes(1);
   });
 });

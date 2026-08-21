@@ -3,25 +3,19 @@ import { useState } from 'react';
 import { MOCK_SPENDING_MONTHS, MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
 import type { SpendingMonth } from '@/features/report/types';
 import { CaretLeftIcon, CaretRightIcon } from '@/shared/assets/icons';
-import { BackButton } from '@/shared/ui/back-button';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { StateView } from '@/shared/ui/state-view';
 
 import MonthPickerSheet from './MonthPickerSheet';
 import SpendingRecordItem from './SpendingRecordItem';
-
-type SpendingHistoryProps = {
-  onBack: () => void;
-};
 
 const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
   month.year === target.year && month.month === target.month;
 
 /**
  * 선택한 월의 소비내역을 날짜별로 보여주고 월 이동과 월 선택 시트를 제공합니다.
- *
- * @param props - 소비내역 화면 속성입니다.
- * @param props.onBack - 뒤로 가기 버튼을 눌렀을 때 실행할 콜백입니다.
  */
-export default function SpendingHistory({ onBack }: SpendingHistoryProps) {
+export default function SpendingHistory() {
   const [selectedMonth, setSelectedMonth] = useState<SpendingMonth>(MOCK_SPENDING_MONTHS[0]);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const selectedMonthIndex = MOCK_SPENDING_MONTHS.findIndex((month) =>
@@ -37,9 +31,8 @@ export default function SpendingHistory({ onBack }: SpendingHistoryProps) {
   };
 
   return (
-    <main className="min-h-dvh bg-neutral-00 pb-8">
-      <header className="sticky top-0 z-sticky-header bg-neutral-00 pt-4 pb-5">
-        <BackButton onClick={onBack} className="mt-0" />
+    <div className="flex flex-1 flex-col">
+      <header className="sticky top-0 z-sticky-header bg-neutral-00 pb-5">
         <div className="mt-5 flex items-center justify-center gap-3">
           <button
             type="button"
@@ -73,7 +66,7 @@ export default function SpendingHistory({ onBack }: SpendingHistoryProps) {
         </div>
       </header>
 
-      <div>
+      <div className="flex flex-1 flex-col">
         {recordGroups.length > 0 ? (
           <div className="space-y-5">
             {recordGroups.map((group) => (
@@ -93,9 +86,15 @@ export default function SpendingHistory({ onBack }: SpendingHistoryProps) {
             ))}
           </div>
         ) : (
-          <p className="pt-24 text-center text-body-02-regular text-neutral-500">
-            소비 기록이 없어요
-          </p>
+          <StateView
+            variant="empty"
+            title="아직 기록이 없어요"
+            description={'소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'}
+            actionLabel="소비 기록 작성하기"
+            headingAs="h2"
+            to={ROUTE_PATHS.record}
+            className="my-auto"
+          />
         )}
       </div>
 
@@ -107,6 +106,6 @@ export default function SpendingHistory({ onBack }: SpendingHistoryProps) {
           onSelect={handleMonthSelect}
         />
       )}
-    </main>
+    </div>
   );
 }
