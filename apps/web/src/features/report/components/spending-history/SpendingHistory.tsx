@@ -7,6 +7,8 @@ import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
 import { StateView } from '@/shared/ui/state-view';
 
+import { parseSpendingMonthFromDate } from '../../utils/parseSpendingMonthFromDate';
+
 import MonthPickerSheet from './MonthPickerSheet';
 import SpendingRecordList from './SpendingRecordList';
 
@@ -15,6 +17,7 @@ import type { ReactNode } from 'react';
 type SpendingHistoryProps = {
   headerContent?: ReactNode;
   headerContentGapClassName?: string;
+  initialDate?: string;
 };
 
 const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
@@ -26,12 +29,19 @@ const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
  * @param props - 소비내역 화면 속성입니다.
  * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
  * @param props.headerContentGapClassName - 상단 콘텐츠와 월 선택 영역 사이의 간격 클래스입니다.
+ * @param props.initialDate - 처음 표시할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
  */
 export default function SpendingHistory({
   headerContent,
   headerContentGapClassName = 'mt-5',
+  initialDate,
 }: SpendingHistoryProps) {
-  const [selectedMonth, setSelectedMonth] = useState<SpendingMonth>(MOCK_SPENDING_MONTHS[0]);
+  const initialMonth = parseSpendingMonthFromDate(initialDate);
+  const [selectedMonth, setSelectedMonth] = useState<SpendingMonth>(() =>
+    initialMonth && MOCK_SPENDING_MONTHS.some((month) => isSameMonth(month, initialMonth))
+      ? initialMonth
+      : MOCK_SPENDING_MONTHS[0]
+  );
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const selectedMonthIndex = MOCK_SPENDING_MONTHS.findIndex((month) =>
     isSameMonth(month, selectedMonth)
@@ -39,6 +49,10 @@ export default function SpendingHistory({
   const hasNewerMonth = selectedMonthIndex > 0;
   const hasOlderMonth = selectedMonthIndex < MOCK_SPENDING_MONTHS.length - 1;
   const recordGroups = selectedMonthIndex === 0 ? MOCK_SPENDING_RECORD_GROUPS : [];
+  const visibleRecordGroups =
+    initialDate && initialMonth && isSameMonth(selectedMonth, initialMonth)
+      ? recordGroups.filter(({ dateValue }) => dateValue === initialDate)
+      : recordGroups;
 
   const handleMonthSelect = (month: SpendingMonth) => {
     setSelectedMonth(month);
@@ -93,8 +107,8 @@ export default function SpendingHistory({
       </header>
 
       <div className="flex flex-1 flex-col">
-        {recordGroups.length > 0 ? (
-          <SpendingRecordList groups={recordGroups} />
+        {visibleRecordGroups.length > 0 ? (
+          <SpendingRecordList groups={visibleRecordGroups} />
         ) : (
           <StateView
             variant="empty"

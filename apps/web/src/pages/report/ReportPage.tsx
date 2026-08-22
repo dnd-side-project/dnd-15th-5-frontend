@@ -34,7 +34,11 @@ export default function ReportPage() {
       <div className="relative rounded-t-30 bg-neutral-00 pt-10 pr-4 pb-page-bottom pl-4.25">
         <div className="flex flex-col gap-6">
           <ReportSection title="이 주의 소비 기록">
-            <WeeklyRecordCalendar periodLabel={weeklyPeriodLabel} records={weeklyRecords} />
+            <WeeklyRecordCalendar
+              historyPath={ROUTE_PATHS.spendingHistory}
+              periodLabel={weeklyPeriodLabel}
+              records={weeklyRecords}
+            />
           </ReportSection>
 
           <ReportSection

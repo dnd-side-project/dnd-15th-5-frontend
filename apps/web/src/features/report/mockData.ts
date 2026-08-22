@@ -26,13 +26,13 @@ export const MOCK_REPORT_PAGE = {
   recentDiscovery: ['“요즘 올빼미 모드 켜졌나요?', '밤 활동 비중이 훌쩍 늘었어요🌙“'],
   weeklyPeriodLabel: '8월 18일부터 24일까지',
   weeklyRecords: [
-    { day: '일', date: 18, count: 3 },
-    { day: '월', date: 19, count: 2 },
-    { day: '화', date: 20 },
-    { day: '수', date: 21 },
-    { day: '목', date: 22, count: 2, isToday: true },
-    { day: '금', date: 23, isFuture: true },
-    { day: '토', date: 24, count: 5, isFuture: true },
+    { day: '일', date: 18, dateValue: '2026-08-18', count: 3 },
+    { day: '월', date: 19, dateValue: '2026-08-19', count: 2 },
+    { day: '화', date: 20, dateValue: '2026-08-20' },
+    { day: '수', date: 21, dateValue: '2026-08-21' },
+    { day: '목', date: 22, dateValue: '2026-08-22', count: 2, isToday: true },
+    { day: '금', date: 23, dateValue: '2026-08-23', isFuture: true },
+    { day: '토', date: 24, dateValue: '2026-08-24', count: 5, isFuture: true },
   ],
 } as const satisfies ReportPageMockData;
 
@@ -59,6 +59,7 @@ export const MOCK_REPORT_PREFERENCE = {
 } as const satisfies ReportPreference;
 
 export const MOCK_SPENDING_MONTHS = [
+  { year: 2026, month: 8 },
   { year: 2026, month: 7 },
   { year: 2026, month: 6 },
   { year: 2026, month: 5 },
@@ -68,70 +69,72 @@ export const MOCK_SPENDING_MONTHS = [
   { year: 2026, month: 1 },
   { year: 2025, month: 12 },
   { year: 2025, month: 11 },
-  { year: 2025, month: 10 },
 ] as const satisfies readonly SpendingMonth[];
 
 export const MOCK_SPENDING_RECORD_GROUPS = [
   {
     dateLabel: '22일 목요일',
+    dateValue: '2026-08-22',
     records: [
       {
         id: 'record-01',
         shopName: '투썸플레이스',
         amount: 5500,
-        paidAtLabel: '2026.07.22 · 오전',
+        paidAtLabel: '2026.08.22 · 오전',
         category: '카페',
       },
       {
         id: 'record-02',
         shopName: '투썸플레이스',
         amount: 5500,
-        paidAtLabel: '2026.07.22 · 오전',
+        paidAtLabel: '2026.08.22 · 오전',
         category: '카페',
       },
       {
         id: 'record-03',
         shopName: '투썸플레이스',
         amount: 5500,
-        paidAtLabel: '2026.07.22 · 오전',
+        paidAtLabel: '2026.08.22 · 오전',
         category: '카페',
       },
     ],
   },
   {
     dateLabel: '21일 수요일',
+    dateValue: '2026-08-21',
     records: [
       {
         id: 'record-04',
         shopName: '투썸플레이스',
         amount: 5500,
-        paidAtLabel: '2026.07.21 · 오전',
+        paidAtLabel: '2026.08.21 · 오전',
         category: '카페',
       },
     ],
   },
   {
     dateLabel: '20일 화요일',
+    dateValue: '2026-08-20',
     records: [
       {
         id: 'record-05',
         shopName: '투썸플레이스',
         amount: 5500,
-        paidAtLabel: '2026.07.20 · 오전',
+        paidAtLabel: '2026.08.20 · 오전',
         category: '카페',
       },
       {
         id: 'record-06',
         shopName: '투썸플레이스',
         amount: 5500,
-        paidAtLabel: '2026.07.20 · 오전',
+        paidAtLabel: '2026.08.20 · 오전',
         category: '카페',
       },
       {
         id: 'record-07',
         shopName: '투썸플레이스',
         amount: 5500,
-        paidAtLabel: '2026.07.20 · 오전',
+        paidAtLabel: '2026.08.20 · 오전',
         category: '카페',
       },
     ],

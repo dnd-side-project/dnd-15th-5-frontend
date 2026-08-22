@@ -17,6 +17,7 @@ export type ReportPreference = {
 export type WeeklyRecord = {
   count?: number;
   date: number;
+  dateValue: string;
   day: string;
   isFuture?: boolean;
   isToday?: boolean;
@@ -47,6 +48,7 @@ export type SpendingRecord = {
 
 export type SpendingRecordGroup = {
   dateLabel: string;
+  dateValue: string;
   records: readonly SpendingRecord[];
 };
 
