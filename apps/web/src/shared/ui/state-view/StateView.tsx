@@ -82,7 +82,7 @@ export function StateView(props: StateViewProps) {
 
       <Heading
         id={titleId}
-        className="mt-2.5 break-keep whitespace-pre-line text-balance text-heading-02-semibold text-neutral-900"
+        className="mt-2.5 break-keep whitespace-pre-line text-balance text-title-02-semibold text-neutral-900"
       >
         {title}
       </Heading>
