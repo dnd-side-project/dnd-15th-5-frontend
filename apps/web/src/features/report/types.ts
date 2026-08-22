@@ -1,3 +1,5 @@
+import type { SpendingCategory } from '@chapchap/shared/common/types';
+
 export type PreferenceMetricKey = 'area' | 'routine' | 'shop' | 'time';
 
 export type PreferenceMetric = {
@@ -11,3 +13,33 @@ export type ReportPreference = {
   tags: readonly string[];
   title: string;
 };
+
+export type SpendingMonth = {
+  month: number;
+  year: number;
+};
+
+export type SpendingRecord = {
+  amount: number;
+  category: string;
+  id: string;
+  paidAtLabel: string;
+  shopName: string;
+};
+
+export type SpendingRecordGroup = {
+  dateLabel: string;
+  records: readonly SpendingRecord[];
+};
+
+export type FrequentShop = {
+  category: SpendingCategory;
+  district: string;
+  id: string;
+  monthlyVisitCount: number;
+  name: string;
+  thumbnailSrc: string | null;
+  totalVisitCount: number;
+};
+
+export type FrequentShopPeriod = 'currentMonth' | 'all';

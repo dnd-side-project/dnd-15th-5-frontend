@@ -63,7 +63,7 @@ export default function CurrentLocationButton({
 
   return (
     <div
-      className="fixed right-0 left-0 z-10 mx-auto flex max-w-120 justify-end pr-4 transition-[bottom] duration-300 ease-out"
+      className="mobile-frame fixed right-0 left-0 z-map-control flex justify-end pr-4 transition-[bottom] duration-300 ease-out"
       style={{ bottom: bottomOffset }}
     >
       <div className="flex flex-col items-end gap-2">

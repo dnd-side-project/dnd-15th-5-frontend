@@ -21,8 +21,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
 
   return (
     <div className="flex min-h-screen justify-center bg-neutral-100">
-      {/* TODO: 디자인 확정되면 max-w 값 수정 */}
-      <div className="min-h-screen w-full max-w-120 bg-neutral-00">{children ?? <Outlet />}</div>
+      <div className="mobile-frame min-h-screen bg-neutral-00">{children ?? <Outlet />}</div>
     </div>
   );
 }

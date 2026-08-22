@@ -9,6 +9,10 @@
    * Toast, Modal처럼 앱 화면 전체를 기준으로 표시되는 UI에 사용합니다.
    * 전역 레이어는 `10`부터 시작해 `10` 단위로 추가합니다.
    */
+  --z-index-map-control: 10;
+  --z-index-modal-backdrop: 10;
+  --z-index-bottom-sheet: 20;
+  --z-index-bottom-navigation: 30;
   --z-index-toast: 50;
 
   /*
@@ -17,4 +21,6 @@
    * React Native는 같은 부모 View 안의 형제 요소끼리 `zIndex`로 순서를 조정합니다.
    * 내부 레이어는 `1`부터 시작해 `1` 단위로 추가합니다.
    */
+  --z-index-sticky-header: 1;
+  --z-index-segmented-toggle-label: 1;
 }
