@@ -31,6 +31,9 @@ describe('BottomSheet', () => {
     rerender(<BottomSheet snapPoint="full">내용</BottomSheet>);
     expect(sheet).toHaveStyle({ height: '92dvh' });
 
+    rerender(<BottomSheet snapPoint="large">내용</BottomSheet>);
+    expect(sheet).toHaveStyle({ height: '70dvh' });
+
     rerender(<BottomSheet snapPoint="hidden">내용</BottomSheet>);
     expect(sheet.className).toContain('translate-y-full');
   });
@@ -48,6 +51,32 @@ describe('BottomSheet', () => {
     expect(screen.queryByRole('button', { name: '바텀시트 높이 조절' })).not.toBeInTheDocument();
     expect(content.className).toContain('overflow-visible');
     expect(content.className).not.toContain('overflow-y-auto');
+  });
+
+  it('콘텐츠 맞춤 높이에서 hidden을 지정하면 아래로 드래그해 숨길 수 있다', () => {
+    const onSnapPointChange = jest.fn();
+    const { container } = render(
+      <BottomSheet
+        snapPoint="medium"
+        snapPoints={['hidden', 'medium']}
+        onSnapPointChange={onSnapPointChange}
+        fitContent
+      >
+        내용
+      </BottomSheet>
+    );
+    const sheet = container.firstChild as HTMLElement;
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+    jest.spyOn(sheet, 'getBoundingClientRect').mockReturnValue({
+      ...sheet.getBoundingClientRect(),
+      height: 200,
+    });
+
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(handle, 'pointermove', 680);
+    firePointerEvent(handle, 'pointerup', 680);
+
+    expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
   });
 
   it('핸들을 누르면 onHandleClick을 호출한다', () => {
@@ -128,5 +157,40 @@ describe('BottomSheet', () => {
     firePointerEvent(handle, 'pointerup', 700);
 
     expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
+  });
+
+  it('포인터 입력이 취소되면 드래그 높이를 초기화한다', () => {
+    const { container } = render(<BottomSheet snapPoint="medium">내용</BottomSheet>);
+    const sheet = container.firstChild as HTMLElement;
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(handle, 'pointermove', 400);
+    expect(sheet).toHaveStyle({ height: '460px' });
+
+    firePointerEvent(handle, 'pointercancel', 400);
+
+    expect(sheet).toHaveStyle({ height: '45dvh' });
+  });
+
+  it('지정한 snapPoints 중 가장 가까운 단계로 스냅된다', () => {
+    const onSnapPointChange = jest.fn();
+    render(
+      <BottomSheet
+        snapPoint="large"
+        snapPoints={['hidden', 'large', 'full']}
+        onSnapPointChange={onSnapPointChange}
+      >
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    // large(560px)에서 120px 위로 드래그하면 680px로 full(736px)에 가장 가깝다.
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(handle, 'pointermove', 380);
+    firePointerEvent(handle, 'pointerup', 380);
+
+    expect(onSnapPointChange).toHaveBeenCalledWith('full');
   });
 });

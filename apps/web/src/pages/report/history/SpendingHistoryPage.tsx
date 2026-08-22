@@ -1,10 +1,19 @@
-import { ReportTabs } from '@/features/report';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { SpendingHistory } from '@/features/report';
+import { BackButton } from '@/shared/ui/back-button';
+
+/** 뒤로 가기 버튼과 소비내역 화면을 조립하고 라우터 이동을 연결하는 페이지입니다. */
 export default function SpendingHistoryPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   return (
-    <main>
-      <ReportTabs active="history" />
-      <p>소비 기록 페이지</p>
+    <main className="flex min-h-dvh flex-col pb-8">
+      <SpendingHistory
+        headerContent={<BackButton onClick={() => navigate(-1)} className="mt-0" />}
+        initialDate={searchParams.get('date') ?? undefined}
+      />
     </main>
   );
 }

@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { APILoadingStatus, useApiLoadingStatus, useMapsLibrary } from '@vis.gl/react-google-maps';
 
-import { SHOP_QUERY_KEYS } from '../queryKeys';
-import { searchShops } from '../services';
+import { searchShops } from '@/features/shop/apis/services/searchShops';
+
+const SHOP_SEARCH_QUERY_KEY = (keyword: string) => ['shop', 'search', keyword] as const;
 
 /**
  * 키워드로 장소를 검색하는 쿼리 훅.
@@ -24,7 +25,7 @@ export const useShopSearchQuery = (keyword: string) => {
   // placesLibrary는 로드 후 값이 바뀌지 않는 SDK 인스턴스라 캐시 키에 포함하지 않는다
   // eslint-disable-next-line @tanstack/query/exhaustive-deps
   const query = useQuery({
-    queryKey: SHOP_QUERY_KEYS.search(trimmedKeyword),
+    queryKey: SHOP_SEARCH_QUERY_KEY(trimmedKeyword),
     queryFn: () => {
       if (!placesLibrary) {
         throw new Error('Google Places 라이브러리가 로드되지 않았습니다');

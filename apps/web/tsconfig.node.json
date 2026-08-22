@@ -12,5 +12,5 @@
     "noEmit": true,
     "erasableSyntaxOnly": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["openapiTransformer.ts", "orval.config.ts", "vite.config.ts"]
 }

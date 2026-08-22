@@ -1,9 +1,11 @@
 @import './fonts.css';
+@import './layout.css';
 @import 'tailwindcss';
 @import '@chapchap/shared/design/colors.css';
 @import '@chapchap/shared/design/typography.css';
 @import '@chapchap/shared/design/shadows.css';
 @import '@chapchap/shared/design/radius.css';
+@import '@chapchap/shared/design/layout.css';
 @import '@chapchap/shared/design/z-index.css';
 @import '@chapchap/shared/design/toast.css';
 
