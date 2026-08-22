@@ -1,4 +1,4 @@
-import type { SpendingMonth } from '../types';
+import type { SpendingMonth } from '@/features/report/types';
 
 /** `YYYY-MM-DD` 날짜 문자열에서 소비내역의 연도와 월을 추출합니다. */
 export function parseSpendingMonthFromDate(dateValue?: string): SpendingMonth | null {

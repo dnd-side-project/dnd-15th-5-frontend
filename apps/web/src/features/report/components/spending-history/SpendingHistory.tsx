@@ -2,12 +2,11 @@ import { useState } from 'react';
 
 import { MOCK_SPENDING_MONTHS, MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
 import type { SpendingMonth } from '@/features/report/types';
+import { parseSpendingMonthFromDate } from '@/features/report/utils/parseSpendingMonthFromDate';
 import { CaretLeftIcon, CaretRightIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
 import { StateView } from '@/shared/ui/state-view';
-
-import { parseSpendingMonthFromDate } from '../../utils/parseSpendingMonthFromDate';
 
 import MonthPickerSheet from './MonthPickerSheet';
 import SpendingRecordList from './SpendingRecordList';
@@ -20,8 +19,21 @@ type SpendingHistoryProps = {
   initialDate?: string;
 };
 
+type MonthSelection = {
+  dateValue?: string;
+  month: SpendingMonth;
+};
+
 const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
   month.year === target.year && month.month === target.month;
+
+const getSupportedMonthFromDate = (dateValue?: string) => {
+  const parsedMonth = parseSpendingMonthFromDate(dateValue);
+
+  if (!parsedMonth) return null;
+
+  return MOCK_SPENDING_MONTHS.find((month) => isSameMonth(month, parsedMonth)) ?? null;
+};
 
 /**
  * 선택한 월의 소비내역을 날짜별로 보여주고 월 이동과 월 선택 시트를 제공합니다.
@@ -37,12 +49,15 @@ export default function SpendingHistory({
   initialDate,
 }: SpendingHistoryProps) {
   const initialMonth = parseSpendingMonthFromDate(initialDate);
-  const [selectedMonth, setSelectedMonth] = useState<SpendingMonth>(() =>
-    initialMonth && MOCK_SPENDING_MONTHS.some((month) => isSameMonth(month, initialMonth))
-      ? initialMonth
-      : MOCK_SPENDING_MONTHS[0]
-  );
+  const initialSelectedMonth = getSupportedMonthFromDate(initialDate) ?? MOCK_SPENDING_MONTHS[0];
+  const [monthSelection, setMonthSelection] = useState<MonthSelection>(() => ({
+    dateValue: initialDate,
+    month: initialSelectedMonth,
+  }));
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
+  const selectedMonth =
+    monthSelection.dateValue === initialDate ? monthSelection.month : initialSelectedMonth;
+
   const selectedMonthIndex = MOCK_SPENDING_MONTHS.findIndex((month) =>
     isSameMonth(month, selectedMonth)
   );
@@ -53,6 +68,10 @@ export default function SpendingHistory({
     initialDate && initialMonth && isSameMonth(selectedMonth, initialMonth)
       ? recordGroups.filter(({ dateValue }) => dateValue === initialDate)
       : recordGroups;
+
+  const setSelectedMonth = (month: SpendingMonth) => {
+    setMonthSelection({ dateValue: initialDate, month });
+  };
 
   const handleMonthSelect = (month: SpendingMonth) => {
     setSelectedMonth(month);

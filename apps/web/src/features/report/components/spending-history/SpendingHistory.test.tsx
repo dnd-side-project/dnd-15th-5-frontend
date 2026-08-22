@@ -44,6 +44,25 @@ describe('SpendingHistory', () => {
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(1);
   });
 
+  it('초기 날짜가 변경되면 선택 월과 기록 목록을 동기화한다', () => {
+    const { rerender } = renderSpendingHistory('2026-08-21');
+
+    expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '21일 수요일' })).toBeInTheDocument();
+
+    rerender(
+      <MemoryRouter>
+        <SpendingHistory initialDate="2026-07-01" />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { level: 1, name: '7월 소비 내역' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '21일 수요일' })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: '아직 기록이 없어요' })
+    ).toBeInTheDocument();
+  });
+
   it('월 선택 바텀시트에서 월을 바꾸고 시트를 닫는다', async () => {
     const user = userEvent.setup();
     renderSpendingHistory();
