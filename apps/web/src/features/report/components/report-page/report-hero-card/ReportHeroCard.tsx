@@ -2,9 +2,9 @@ import {
   ReportCardTextureImage,
   ReportGlowBottomImage,
   ReportGlowTopImage,
-} from '@/shared/assets/images/report';
+} from '@/shared/assets/images/report-card';
 
-import '@/features/report/styles/reportHeroCard.css';
+import './reportHeroCard.css';
 
 /** 리포트 생성 중 상태를 보여주는 카드 조립 애니메이션입니다. */
 export default function ReportHeroCard() {
