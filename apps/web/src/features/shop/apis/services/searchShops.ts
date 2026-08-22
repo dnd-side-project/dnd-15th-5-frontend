@@ -3,9 +3,8 @@ import {
   SHOP_SEARCH_MAX_RESULT_COUNT,
   SHOP_SEARCH_PHOTO_MAX_WIDTH,
   SHOP_SEARCH_REGION,
-} from '../../constants';
-
-import type { ShopSearchResult } from '../../types';
+} from '@/features/shop/constants';
+import type { ShopSearchResult } from '@/features/shop/types';
 
 /**
  * 키워드로 장소를 검색한다.

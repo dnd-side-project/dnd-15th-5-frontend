@@ -49,14 +49,12 @@ export const createConsumption = (
  * @summary 영수증 OCR 요청
  */
 export const recognizeReceipt = (
-  receiptOcrRequest?: BodyType<ReceiptOcrRequest>,
+  receiptOcrRequest: BodyType<ReceiptOcrRequest>,
   options?: SecondParameter<typeof apiClient>,
   signal?: AbortSignal
 ) => {
   const formData = new FormData();
-  if (receiptOcrRequest?.receiptImage !== undefined) {
-    formData.append(`receiptImage`, receiptOcrRequest.receiptImage);
-  }
+  formData.append(`receiptImage`, receiptOcrRequest.receiptImage);
 
   return apiClient<ApiResponseReceiptOcrResponse>(
     {

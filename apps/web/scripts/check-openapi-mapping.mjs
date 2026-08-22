@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace']);
+const OPENAPI_REQUEST_TIMEOUT_MS = 30_000;
 
 const configPath = new URL('../openapiFeatureMap.json', import.meta.url);
 const config = JSON.parse(await readFile(configPath, 'utf8'));
@@ -9,7 +10,22 @@ const specSource = process.argv[2] ?? config.specUrl;
 
 const loadOpenApiDocument = async (source) => {
   if (/^https?:\/\//.test(source)) {
-    const response = await fetch(source);
+    let response;
+
+    try {
+      response = await fetch(source, {
+        signal: AbortSignal.timeout(OPENAPI_REQUEST_TIMEOUT_MS),
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === 'TimeoutError') {
+        throw new Error(
+          `OpenAPI 명세 요청 시간이 ${OPENAPI_REQUEST_TIMEOUT_MS / 1000}초를 초과했습니다: ${source}`,
+          { cause: error }
+        );
+      }
+
+      throw error;
+    }
 
     if (!response.ok) {
       throw new Error(`OpenAPI 명세 요청 실패: ${response.status} ${response.statusText}`);
@@ -24,9 +40,15 @@ const loadOpenApiDocument = async (source) => {
 const document = await loadOpenApiDocument(specSource);
 const operationLocations = new Map();
 const operationsWithoutId = [];
+const unsupportedRefPathItems = [];
 
 for (const [route, pathItem] of Object.entries(document.paths ?? {})) {
   if (!pathItem || typeof pathItem !== 'object') {
+    continue;
+  }
+
+  if ('$ref' in pathItem) {
+    unsupportedRefPathItems.push(`${route} -> ${String(pathItem.$ref)}`);
     continue;
   }
 
@@ -73,6 +95,7 @@ const staleMappings = [...mappedFeatures.keys()].filter(
 );
 
 const failures = [
+  ['지원하지 않는 $ref Path Item', unsupportedRefPathItems],
   ['operationId가 없는 엔드포인트', operationsWithoutId],
   ['Swagger에서 중복된 operationId', duplicateSpecOperationIds],
   ['여러 feature에 중복 매핑된 operationId', duplicateMappings],

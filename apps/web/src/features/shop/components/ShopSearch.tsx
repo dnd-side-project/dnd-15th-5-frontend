@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useShopSearchQuery } from '../apis/queries/useShopSearchQuery';
+import { useShopSearchQuery } from '@/features/shop/apis/queries/useShopSearchQuery';
 
 import ShopSearchInput from './ShopSearchInput';
 import ShopSearchResultList from './ShopSearchResultList';

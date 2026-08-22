@@ -99,14 +99,14 @@ export const getRecognizeReceiptMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof recognizeReceipt>>,
     TError,
-    { data?: BodyType<ReceiptOcrRequest> },
+    { data: BodyType<ReceiptOcrRequest> },
     TContext
   >;
   request?: SecondParameter<typeof apiClient>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof recognizeReceipt>>,
   TError,
-  { data?: BodyType<ReceiptOcrRequest> },
+  { data: BodyType<ReceiptOcrRequest> },
   TContext
 > => {
   const mutationKey = ['recognizeReceipt'];
@@ -118,7 +118,7 @@ export const getRecognizeReceiptMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof recognizeReceipt>>,
-    { data?: BodyType<ReceiptOcrRequest> }
+    { data: BodyType<ReceiptOcrRequest> }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -132,7 +132,7 @@ export type RecognizeReceiptMutationResult = NonNullable<
   Awaited<ReturnType<typeof recognizeReceipt>>
 >;
 
-export type RecognizeReceiptMutationBody = BodyType<ReceiptOcrRequest> | undefined;
+export type RecognizeReceiptMutationBody = BodyType<ReceiptOcrRequest>;
 
 export type RecognizeReceiptMutationError = ErrorType<ApiResponse>;
 
@@ -144,7 +144,7 @@ export const useRecognizeReceipt = <TError = ErrorType<ApiResponse>, TContext = 
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof recognizeReceipt>>,
       TError,
-      { data?: BodyType<ReceiptOcrRequest> },
+      { data: BodyType<ReceiptOcrRequest> },
       TContext
     >;
     request?: SecondParameter<typeof apiClient>;
@@ -153,7 +153,7 @@ export const useRecognizeReceipt = <TError = ErrorType<ApiResponse>, TContext = 
 ): UseMutationResult<
   Awaited<ReturnType<typeof recognizeReceipt>>,
   TError,
-  { data?: BodyType<ReceiptOcrRequest> },
+  { data: BodyType<ReceiptOcrRequest> },
   TContext
 > => {
   return useMutation(getRecognizeReceiptMutationOptions(options), queryClient);

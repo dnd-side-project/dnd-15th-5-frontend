@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { APILoadingStatus, useApiLoadingStatus, useMapsLibrary } from '@vis.gl/react-google-maps';
 
-import { searchShops } from '../services/searchShops';
+import { searchShops } from '@/features/shop/apis/services/searchShops';
 
 const SHOP_SEARCH_QUERY_KEY = (keyword: string) => ['shop', 'search', keyword] as const;
 

@@ -98,6 +98,7 @@ HTTP 메서드에 따른 생성 기준은 다음과 같다.
 - `features/*/apis/{clients,queryKeys,queries,mutations,dto}.ts`는 직접 수정하지 않는다.
 - 생성 파일은 ESLint 대상에서 제외하고 TypeScript 검사와 Orval 재생성으로 검증한다.
 - 서버 명세의 비표준 응답 헤더 속성과 누락된 문자열 schema는 transformer에서 생성 전에 보정한다.
+- `recognizeReceipt`는 빈 이미지 요청을 막기 위해 누락된 `requestBody.required`를 transformer에서 `true`로 보정한다.
 - React의 `useCallback`과 충돌하는 OAuth `callback` operation은 생성 설정에서 `completeSocialOAuth`로 이름을 보정한다.
 - 명세가 변경되면 `pnpm api:generate`를 실행하고 생성 결과를 함께 커밋한다.
 - 인증, 쿠키, 타임아웃, 공통 에러 처리는 `axiosInstance.ts`에서 관리한다.
