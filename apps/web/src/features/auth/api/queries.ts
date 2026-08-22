@@ -32,6 +32,8 @@ import type {
 
 import { completeSocialOAuth, start } from '@/features/auth/api/clients';
 
+import { getCompleteSocialOAuthQueryKey, getStartQueryKey } from '@/features/auth/api/queryKeys';
+
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
@@ -45,10 +47,6 @@ export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { 
     });
   }
   return result;
-};
-
-export const getStartQueryKey = (provider: 'kakao' | 'google', params?: StartParams) => {
-  return [`/oauth/${provider}/start`, ...(params ? [params] : [])] as const;
 };
 
 export const getStartQueryOptions = <
@@ -256,13 +254,6 @@ export function useStartSuspense<
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-export const getCompleteSocialOAuthQueryKey = (
-  provider: string,
-  params?: CompleteSocialOAuthParams
-) => {
-  return [`/oauth/${provider}/callback`, ...(params ? [params] : [])] as const;
-};
 
 export const getCompleteSocialOAuthQueryOptions = <
   TData = Awaited<ReturnType<typeof completeSocialOAuth>>,

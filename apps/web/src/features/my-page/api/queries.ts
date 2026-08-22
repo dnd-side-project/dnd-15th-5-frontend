@@ -27,6 +27,8 @@ import type { ApiResponse, SecondParameter } from '@/features/my-page/api/dto';
 
 import { getMyAccount } from '@/features/my-page/api/clients';
 
+import { getGetMyAccountQueryKey } from '@/features/my-page/api/queryKeys';
+
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
@@ -40,10 +42,6 @@ export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { 
     });
   }
   return result;
-};
-
-export const getGetMyAccountQueryKey = () => {
-  return [`/accounts/me`] as const;
 };
 
 export const getGetMyAccountQueryOptions = <

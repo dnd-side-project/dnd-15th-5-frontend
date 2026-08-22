@@ -27,6 +27,11 @@ import type { GetPlaceVisitsParams, SecondParameter } from '@/features/shop/api/
 
 import { getPlaceDetail, getPlaceVisits } from '@/features/shop/api/clients';
 
+import {
+  getGetPlaceDetailQueryKey,
+  getGetPlaceVisitsQueryKey,
+} from '@/features/shop/api/queryKeys';
+
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
@@ -40,10 +45,6 @@ export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { 
     });
   }
   return result;
-};
-
-export const getGetPlaceDetailQueryKey = (placeId: number) => {
-  return [`/consumptions/places/${placeId}`] as const;
 };
 
 export const getGetPlaceDetailQueryOptions = <
@@ -253,10 +254,6 @@ export function useGetPlaceDetailSuspense<
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-export const getGetPlaceVisitsQueryKey = (placeId: number, params?: GetPlaceVisitsParams) => {
-  return [`/consumptions/places/${placeId}/visits`, ...(params ? [params] : [])] as const;
-};
 
 export const getGetPlaceVisitsQueryOptions = <
   TData = Awaited<ReturnType<typeof getPlaceVisits>>,

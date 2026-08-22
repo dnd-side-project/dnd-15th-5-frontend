@@ -18,6 +18,7 @@ const prettierConfig = (await prettier.resolveConfig(sourcePath)) ?? {};
 
 const groups = {
   clients: [],
+  queryKeys: [],
   queries: [],
   mutations: [],
   dto: [],
@@ -25,6 +26,7 @@ const groups = {
 
 const declarationNames = {
   clients: new Set(),
+  queryKeys: new Set(),
   queries: new Set(),
   mutations: new Set(),
   dto: new Set(),
@@ -69,6 +71,10 @@ const dtoTypeNames = new Set(
 const classifyStatement = (statement) => {
   const names = getDeclarationNames(statement);
   const text = statement.getText(sourceFile);
+
+  if (names.some((name) => /^get.*QueryKey$/.test(name))) {
+    return 'queryKeys';
+  }
 
   if (
     ts.isTypeAliasDeclaration(statement) ||
@@ -217,6 +223,18 @@ const buildCrossImports = (group, body) => {
     if (usedClientNames.length > 0) {
       crossImports.push(
         `import { ${usedClientNames.sort().join(', ')} } from '@/features/${featureDirectory}/api/clients';`
+      );
+    }
+  }
+
+  if (group === 'queries') {
+    const usedQueryKeyNames = [...declarationNames.queryKeys].filter((name) =>
+      usesIdentifier(body, name)
+    );
+
+    if (usedQueryKeyNames.length > 0) {
+      crossImports.push(
+        `import { ${usedQueryKeyNames.sort().join(', ')} } from '@/features/${featureDirectory}/api/queryKeys';`
       );
     }
   }

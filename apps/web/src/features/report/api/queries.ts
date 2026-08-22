@@ -38,6 +38,13 @@ import {
   getMonthlyReport,
 } from '@/features/report/api/clients';
 
+import {
+  getGetConsumptionsQueryKey,
+  getGetCurrentStatusQueryKey,
+  getGetFrequentPlacesQueryKey,
+  getGetMonthlyReportQueryKey,
+} from '@/features/report/api/queryKeys';
+
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
@@ -51,10 +58,6 @@ export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { 
     });
   }
   return result;
-};
-
-export const getGetConsumptionsQueryKey = (params?: GetConsumptionsParams) => {
-  return [`/consumptions`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetConsumptionsQueryOptions = <
@@ -262,10 +265,6 @@ export function useGetConsumptionsSuspense<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
-export const getGetMonthlyReportQueryKey = (params?: GetMonthlyReportParams) => {
-  return [`/reports/monthly`, ...(params ? [params] : [])] as const;
-};
-
 export const getGetMonthlyReportQueryOptions = <
   TData = Awaited<ReturnType<typeof getMonthlyReport>>,
   TError = ErrorType<unknown>,
@@ -471,10 +470,6 @@ export function useGetMonthlyReportSuspense<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
-export const getGetCurrentStatusQueryKey = (params?: GetCurrentStatusParams) => {
-  return [`/reports/current`, ...(params ? [params] : [])] as const;
-};
-
 export const getGetCurrentStatusQueryOptions = <
   TData = Awaited<ReturnType<typeof getCurrentStatus>>,
   TError = ErrorType<unknown>,
@@ -679,10 +674,6 @@ export function useGetCurrentStatusSuspense<
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-export const getGetFrequentPlacesQueryKey = (params?: GetFrequentPlacesParams) => {
-  return [`/consumptions/places/rank`, ...(params ? [params] : [])] as const;
-};
 
 export const getGetFrequentPlacesQueryOptions = <
   TData = Awaited<ReturnType<typeof getFrequentPlaces>>,

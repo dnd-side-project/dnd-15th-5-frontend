@@ -17,6 +17,7 @@ export default defineConfig([
   {
     ignores: [
       'src/features/*/api/clients.ts',
+      'src/features/*/api/queryKeys.ts',
       'src/features/*/api/queries.ts',
       'src/features/*/api/mutations.ts',
       'src/features/*/api/dto.ts',

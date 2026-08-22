@@ -6,7 +6,7 @@
 - OpenAPI JSON: `https://chapchap.kr/api/v3/api-docs`
 - 생성 설정: `apps/web/orval.config.ts`
 - 명세 보정: `apps/web/openapiTransformer.ts`
-- 생성 결과: `apps/web/src/features/{feature}/api/{clients,queries,mutations,dto}.ts`
+- 생성 결과: `apps/web/src/features/{feature}/api/{clients,queryKeys,queries,mutations,dto}.ts`
 - 공통 Axios 연결: `apps/web/src/shared/apis/orvalMutator.ts`
 
 ## 생성 방법
@@ -30,13 +30,14 @@ pnpm api:check
 ```
 
 생성 설정의 `operationId → feature` 매핑에 따라 API가 feature별로 분리된다. Orval이 만든
-임시 파일은 생성 후 `clients.ts`, `queries.ts`, `mutations.ts`, `dto.ts`로 자동 분리되고 삭제된다.
+임시 파일은 생성 후 `clients.ts`, `queryKeys.ts`, `queries.ts`, `mutations.ts`, `dto.ts`로
+자동 분리되고 삭제된다.
 GET 엔드포인트에는 `useQuery`와 `useSuspenseQuery`, 그 외 생성·수정·삭제 엔드포인트에는
 `useMutation` 훅이 생성된다.
 
 ## 사용 규칙
 
-- `features/*/api/{clients,queries,mutations,dto}.ts`는 직접 수정하지 않는다.
+- `features/*/api/{clients,queryKeys,queries,mutations,dto}.ts`는 직접 수정하지 않는다.
 - 생성 파일은 ESLint 대상에서 제외하고 TypeScript 검사와 Orval 재생성으로 검증한다.
 - 서버 명세의 비표준 응답 헤더 속성과 누락된 문자열 schema는 transformer에서 생성 전에 보정한다.
 - React의 `useCallback`과 충돌하는 OAuth `callback` operation은 생성 설정에서 `completeSocialOAuth`로 이름을 보정한다.
@@ -52,6 +53,7 @@ GET 엔드포인트에는 `useQuery`와 `useSuspenseQuery`, 그 외 생성·수�
 import { exchangeSocialLoginCode } from '@/features/auth/api/clients';
 import type { LoginCodeExchangeRequest } from '@/features/auth/api/dto';
 import { useExchangeSocialLoginCode } from '@/features/auth/api/mutations';
+import { getStartQueryKey } from '@/features/auth/api/queryKeys';
 ```
 
 현재 매핑은 다음과 같다.

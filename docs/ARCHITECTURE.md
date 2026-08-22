@@ -203,7 +203,8 @@ features/
 features/record/
 ├── api/
 │   ├── clients.ts      # 순수 API 요청 함수
-│   ├── queries.ts      # Query, Suspense Query, query key
+│   ├── queryKeys.ts    # TanStack Query key
+│   ├── queries.ts      # Query, Suspense Query
 │   ├── mutations.ts    # Mutation
 │   └── dto.ts          # 요청·응답 타입
 ├── components/
@@ -227,6 +228,7 @@ features/record/
 features/report/
 ├── api/
 │   ├── clients.ts
+│   ├── queryKeys.ts
 │   ├── queries.ts
 │   ├── mutations.ts
 │   └── dto.ts
@@ -348,7 +350,7 @@ app → screens → features → bridge · native → shared
 
 ### 기능별 API (`apps/web/src/features/{feature}/api`)
 
-- 해당 Feature 전용 OpenAPI 생성 파일 (`clients.ts`, `queries.ts`, `mutations.ts`, `dto.ts`)
+- 해당 Feature 전용 OpenAPI 생성 파일 (`clients.ts`, `queryKeys.ts`, `queries.ts`, `mutations.ts`, `dto.ts`)
 - `shared/apis`에서 만든 공통 Axios 인스턴스를 가져와서 사용
 - 이 Feature에서만 쓰는 엔드포인트 함수만 위치
 - DTO, 요청 함수, Query, Mutation을 역할별 파일로 분리해 생성

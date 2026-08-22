@@ -31,6 +31,11 @@ import type {
 
 import { getNearbyPlaces, getVisitedPlaceMarkers } from '@/features/map/api/clients';
 
+import {
+  getGetNearbyPlacesQueryKey,
+  getGetVisitedPlaceMarkersQueryKey,
+} from '@/features/map/api/queryKeys';
+
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
   for (const key of Object.keys(query)) {
@@ -44,10 +49,6 @@ export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { 
     });
   }
   return result;
-};
-
-export const getGetNearbyPlacesQueryKey = (params?: GetNearbyPlacesParams) => {
-  return [`/recommendations/nearby-places`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetNearbyPlacesQueryOptions = <
@@ -254,10 +255,6 @@ export function useGetNearbyPlacesSuspense<
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-export const getGetVisitedPlaceMarkersQueryKey = (params?: GetVisitedPlaceMarkersParams) => {
-  return [`/consumptions/visited-places`, ...(params ? [params] : [])] as const;
-};
 
 export const getGetVisitedPlaceMarkersQueryOptions = <
   TData = Awaited<ReturnType<typeof getVisitedPlaceMarkers>>,
