@@ -23,11 +23,13 @@ import NotificationUnreadIcon from './ic-notification-unread.svg?react';
 import SearchIcon from './ic-search.svg?react';
 import ShareIcon from './ic-share.svg?react';
 import ShopRecommendIcon from './ic-shop-recommend.svg?react';
+import ChapchapLogo from './logo-chapchap.svg?react';
 export {
   AddIcon,
   AvatarIcon,
   BlueLocationPinIcon,
   CalendarIcon,
+  ChapchapLogo,
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
