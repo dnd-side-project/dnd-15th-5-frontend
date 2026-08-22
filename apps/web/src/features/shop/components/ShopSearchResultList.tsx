@@ -1,3 +1,5 @@
+import { Spinner } from '@/shared/ui/spinner';
+
 import ShopSearchResultItem from './ShopSearchResultItem';
 
 import type { ShopSearchResult } from '../types';
@@ -28,7 +30,12 @@ export default function ShopSearchResultList({
   }
 
   if (isLoading) {
-    return <p className="py-6 text-center text-body-02-regular text-neutral-500">검색 중...</p>;
+    return (
+      <div className="flex flex-col items-center gap-3 py-10 text-neutral-400">
+        <Spinner className="size-6" />
+        <p className="text-body-02-regular text-neutral-500">검색 중...</p>
+      </div>
+    );
   }
 
   if (isError) {
@@ -44,7 +51,7 @@ export default function ShopSearchResultList({
   }
 
   return (
-    <ul>
+    <ul className="mt-4 flex flex-col gap-4">
       {shops.map((shop) => (
         <ShopSearchResultItem key={shop.id} shop={shop} onSelect={onSelect} />
       ))}

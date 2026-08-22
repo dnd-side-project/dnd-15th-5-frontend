@@ -1,0 +1,316 @@
+.report-hero-card {
+  position: relative;
+  width: 137.46px;
+  height: 140px;
+  flex: none;
+  pointer-events: none;
+}
+
+.report-card-layer,
+.report-card-anchor,
+.report-card-glow,
+.report-card-question,
+.report-card-sparkle {
+  position: absolute;
+}
+
+.report-card-layer,
+.report-card-glow,
+.report-card-question,
+.report-card-sparkle {
+  will-change: opacity, transform;
+}
+
+.report-card-layer--back {
+  top: 9.6px;
+  left: 16.19px;
+  width: 125px;
+  height: 132.5px;
+  animation: report-card-back-in 2.08s both;
+}
+
+.report-card-face {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 5px;
+}
+
+.report-card-face--back {
+  top: 14.139px;
+  left: 24.388px;
+  width: 76.224px;
+  height: 104.222px;
+  background: var(--color-primary-500);
+  transform: rotate(29.29deg);
+}
+
+.report-card-face--middle {
+  top: 10.557px;
+  left: 15.977px;
+  width: 81.046px;
+  height: 110.887px;
+  background: var(--color-primary-400);
+  transform: rotate(13.03deg);
+}
+
+.report-card-face--front {
+  top: 4.33px;
+  left: 5.675px;
+  width: 94.151px;
+  height: 128.84px;
+  background: var(--color-primary-300);
+  transform: rotate(-0.15deg);
+}
+
+.report-card-question-panel {
+  position: absolute;
+  z-index: 0;
+  top: 12.65px;
+  left: 9.28px;
+  width: 75.657px;
+  height: 59.789px;
+  border-radius: 5px;
+  background: rgb(0 0 0 / 50%);
+}
+
+.report-card-texture {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: color-dodge;
+}
+
+.report-card-layer--middle {
+  top: -6.3px;
+  left: 14.9px;
+  width: 113px;
+  height: 132px;
+  animation: report-card-middle-in 2.08s both;
+}
+
+.report-card-glow {
+  transform-origin: center;
+}
+
+.report-card-glow-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.report-card-glow--top {
+  top: -125.74px;
+  left: -135.45px;
+  width: 303px;
+  height: 285px;
+  animation: report-card-glow-top-in 2.08s both;
+}
+
+.report-card-glow--bottom {
+  top: -59.54px;
+  left: -65.98px;
+  width: 303px;
+  height: 285px;
+  animation: report-card-glow-bottom-in 2.08s both;
+}
+
+.report-card-anchor--front {
+  top: 6.5px;
+  left: -5.51px;
+  width: 105.5px;
+  height: 137.5px;
+}
+
+.report-card-layer--front {
+  inset: 0;
+  transform-origin: center;
+  animation: report-card-front-in 2.08s both;
+}
+
+.report-card-question {
+  z-index: 2;
+  top: 12.65px;
+  left: 9.28px;
+  display: flex;
+  width: 75.657px;
+  height: 59.789px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-neutral-300);
+  font-size: 52.4px;
+  line-height: 1;
+  text-align: center;
+  transform: rotate(-1.41deg);
+  animation: report-card-question-in 2.08s both;
+}
+
+.report-card-sparkle {
+  display: block;
+  background: var(--color-neutral-00);
+  clip-path: polygon(50% 0, 63% 37%, 100% 50%, 63% 63%, 50% 100%, 37% 63%, 0 50%, 37% 37%);
+}
+
+.report-card-sparkle--large {
+  top: -13px;
+  left: 6.59px;
+  width: 17px;
+  height: 17px;
+  transform: rotate(-26.1deg);
+  animation: report-card-sparkle-large-in 2.08s both;
+}
+
+.report-card-sparkle--medium {
+  top: 125px;
+  left: 82.19px;
+  width: 21.7px;
+  height: 21.8px;
+  opacity: 1;
+  transform: rotate(19.4deg);
+  animation: report-card-sparkle-medium-in 2.08s both;
+}
+
+.report-card-sparkle--small {
+  top: 119.3px;
+  left: 108.79px;
+  width: 9.5px;
+  height: 9.5px;
+  opacity: 1;
+  transform: rotate(-9.25deg);
+  animation: report-card-sparkle-small-in 2.08s both;
+}
+
+@keyframes report-card-back-in {
+  from {
+    opacity: 0;
+    transform: translate(-66.265px, 4.733px) rotate(-29.25deg);
+  }
+  25%,
+  to {
+    opacity: 1;
+  }
+  to {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes report-card-middle-in {
+  from {
+    opacity: 0;
+    transform: translate(-35.973px, 9.466px) rotate(-13.01deg);
+  }
+  12.5%,
+  to {
+    opacity: 1;
+  }
+  47.12%,
+  to {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes report-card-glow-top-in {
+  0%,
+  31.25% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  62.5%,
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes report-card-glow-bottom-in {
+  0%,
+  37.5% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  68.75%,
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes report-card-front-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  9.62%,
+  to {
+    opacity: 1;
+  }
+  31.25%,
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes report-card-question-in {
+  0%,
+  12.5% {
+    opacity: 0;
+    transform: rotate(-1.41deg) scale(0.5);
+  }
+  37.5%,
+  to {
+    opacity: 1;
+    transform: rotate(-1.41deg) scale(1);
+  }
+}
+
+@keyframes report-card-sparkle-large-in {
+  0%,
+  43.75% {
+    opacity: 0;
+    transform: rotate(-26.1deg) scale(0);
+  }
+  62.5%,
+  to {
+    opacity: 1;
+    transform: rotate(-26.1deg) scale(1);
+  }
+}
+
+@keyframes report-card-sparkle-medium-in {
+  0%,
+  50% {
+    opacity: 0;
+    transform: rotate(19.4deg) scale(0);
+  }
+  68.75%,
+  to {
+    opacity: 1;
+    transform: rotate(19.4deg) scale(1);
+  }
+}
+
+@keyframes report-card-sparkle-small-in {
+  0%,
+  53.37% {
+    opacity: 0;
+    transform: rotate(-9.25deg) scale(0);
+  }
+  72.12%,
+  to {
+    opacity: 1;
+    transform: rotate(-9.25deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-hero-card *,
+  .report-hero-card *::before,
+  .report-hero-card *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+}

@@ -26,7 +26,20 @@
   --color-primary-300: #a6b6ff;
   --color-primary-200: #cbd5ff;
   --color-primary-100: #e5eaff;
-  --color-primary-50: #f9ffff;
+  --color-primary-50: #f4f6ff;
+
+  /* Gradient */
+  --background-image-report-hero: linear-gradient(
+    to bottom,
+    var(--color-neutral-00) 0%,
+    var(--color-primary-100) 100%
+  );
+  --background-image-report-button-stroke: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary-600) 93%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary-300) 93%, transparent) 46%,
+    color-mix(in srgb, var(--color-primary-600) 93%, transparent) 100%
+  );
 
   /* Semantic */
   --color-notification: #ff5252;

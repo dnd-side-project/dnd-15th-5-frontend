@@ -13,7 +13,6 @@ import NotificationPage from '@/pages/notifications/NotificationPage';
 import OnboardingPage from '@/pages/onboarding/OnboardingPage';
 import ManualRecordPage from '@/pages/record/manual/ManualRecordPage';
 import ReceiptCameraPage from '@/pages/record/receipt/ReceiptCameraPage';
-import ReceiptRecordPage from '@/pages/record/receipt/ReceiptRecordPage';
 import RecordMethodPage from '@/pages/record/RecordMethodPage';
 import ShopSearchPage from '@/pages/record/shop/search/ShopSearchPage';
 import FrequentShopListPage from '@/pages/report/frequent-shops/FrequentShopListPage';
@@ -48,7 +47,12 @@ export const router = createBrowserRouter([
           },
         ],
       },
+
       // TODO: 인증 구현 시 AppMainLayout 및 아래 인증 필요 화면을 공통 가드 하위로 묶는다.
+      {
+        path: ROUTE_PATHS.report,
+        element: <ReportPage />,
+      },
       {
         // INFO: 네비게이션 화면에만 앱 메인 레이아웃을 중첩 적용한다.
         element: <AppMainLayout />,
@@ -65,10 +69,6 @@ export const router = createBrowserRouter([
               {
                 path: ROUTE_PATHS.homeSearch,
                 element: <MapSearchPage />,
-              },
-              {
-                path: ROUTE_PATHS.report,
-                element: <ReportPage />,
               },
             ],
           },
@@ -106,10 +106,6 @@ export const router = createBrowserRouter([
           {
             path: ROUTE_PATHS.recordShopSearch,
             element: <ShopSearchPage />,
-          },
-          {
-            path: ROUTE_PATHS.receiptRecord,
-            element: <ReceiptRecordPage />,
           },
           {
             path: ROUTE_PATHS.spendingHistory,

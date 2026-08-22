@@ -1,0 +1,154 @@
+import { useState } from 'react';
+
+import { MOCK_SPENDING_MONTHS, MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
+import type { SpendingMonth } from '@/features/report/types';
+import { parseSpendingMonthFromDate } from '@/features/report/utils/parseSpendingMonthFromDate';
+import { CaretLeftIcon, CaretRightIcon } from '@/shared/assets/icons';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { cn } from '@/shared/lib/cn';
+import { StateView } from '@/shared/ui/state-view';
+
+import MonthPickerSheet from './MonthPickerSheet';
+import SpendingRecordList from './SpendingRecordList';
+
+import type { ReactNode } from 'react';
+
+type SpendingHistoryProps = {
+  headerContent?: ReactNode;
+  headerContentGapClassName?: string;
+  initialDate?: string;
+};
+
+type MonthSelection = {
+  dateValue?: string;
+  month: SpendingMonth;
+};
+
+const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
+  month.year === target.year && month.month === target.month;
+
+const getSupportedMonthFromDate = (dateValue?: string) => {
+  const parsedMonth = parseSpendingMonthFromDate(dateValue);
+
+  if (!parsedMonth) return null;
+
+  return MOCK_SPENDING_MONTHS.find((month) => isSameMonth(month, parsedMonth)) ?? null;
+};
+
+/**
+ * 선택한 월의 소비내역을 날짜별로 보여주고 월 이동과 월 선택 시트를 제공합니다.
+ *
+ * @param props - 소비내역 화면 속성입니다.
+ * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
+ * @param props.headerContentGapClassName - 상단 콘텐츠와 월 선택 영역 사이의 간격 클래스입니다.
+ * @param props.initialDate - 처음 표시할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
+ */
+export default function SpendingHistory({
+  headerContent,
+  headerContentGapClassName = 'mt-5',
+  initialDate,
+}: SpendingHistoryProps) {
+  const initialMonth = parseSpendingMonthFromDate(initialDate);
+  const initialSelectedMonth = getSupportedMonthFromDate(initialDate) ?? MOCK_SPENDING_MONTHS[0];
+  const [monthSelection, setMonthSelection] = useState<MonthSelection>(() => ({
+    dateValue: initialDate,
+    month: initialSelectedMonth,
+  }));
+  const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
+  const selectedMonth =
+    monthSelection.dateValue === initialDate ? monthSelection.month : initialSelectedMonth;
+
+  const selectedMonthIndex = MOCK_SPENDING_MONTHS.findIndex((month) =>
+    isSameMonth(month, selectedMonth)
+  );
+  const hasNewerMonth = selectedMonthIndex > 0;
+  const hasOlderMonth = selectedMonthIndex < MOCK_SPENDING_MONTHS.length - 1;
+  const recordGroups = selectedMonthIndex === 0 ? MOCK_SPENDING_RECORD_GROUPS : [];
+  const visibleRecordGroups =
+    initialDate && initialMonth && isSameMonth(selectedMonth, initialMonth)
+      ? recordGroups.filter(({ dateValue }) => dateValue === initialDate)
+      : recordGroups;
+
+  const setSelectedMonth = (month: SpendingMonth) => {
+    setMonthSelection({ dateValue: initialDate, month });
+  };
+
+  const handleMonthSelect = (month: SpendingMonth) => {
+    setSelectedMonth(month);
+    setIsMonthPickerOpen(false);
+  };
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <header
+        className={cn(
+          'sticky top-0 z-sticky-header bg-neutral-00 pb-5',
+          headerContent ? 'pt-4' : 'pt-2'
+        )}
+      >
+        {headerContent}
+        <div
+          className={cn(
+            'flex items-center justify-center gap-3',
+            headerContent && headerContentGapClassName
+          )}
+        >
+          <button
+            type="button"
+            aria-label="이전 달 보기"
+            disabled={!hasOlderMonth}
+            onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex + 1])}
+            className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
+          >
+            <CaretLeftIcon aria-hidden="true" className="size-6" />
+          </button>
+          <h1 aria-label={`${selectedMonth.month}월 소비 내역`}>
+            <button
+              type="button"
+              aria-label="월 선택"
+              aria-expanded={isMonthPickerOpen}
+              onClick={() => setIsMonthPickerOpen(true)}
+              className="min-w-10 text-title-02-bold text-neutral-900"
+            >
+              {selectedMonth.month}월
+            </button>
+          </h1>
+          <button
+            type="button"
+            aria-label="다음 달 보기"
+            disabled={!hasNewerMonth}
+            onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex - 1])}
+            className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
+          >
+            <CaretRightIcon aria-hidden="true" className="size-6" />
+          </button>
+        </div>
+      </header>
+
+      <div className="flex flex-1 flex-col">
+        {visibleRecordGroups.length > 0 ? (
+          <SpendingRecordList groups={visibleRecordGroups} />
+        ) : (
+          <StateView
+            variant="empty"
+            title="아직 기록이 없어요"
+            description={'소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'}
+            actionLabel="소비 기록 작성하기"
+            headingAs="h2"
+            to={ROUTE_PATHS.record}
+            className="my-auto"
+          />
+        )}
+      </div>
+
+      {isMonthPickerOpen && (
+        <MonthPickerSheet
+          months={MOCK_SPENDING_MONTHS}
+          selectedMonth={selectedMonth}
+          onClose={() => setIsMonthPickerOpen(false)}
+          onSelect={handleMonthSelect}
+        />
+      )}
+    </div>
+  );
+}

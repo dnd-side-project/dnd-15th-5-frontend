@@ -18,7 +18,7 @@ type PlaceCardProps = {
  *
  * @example
  * ```tsx
- * import { PlaceCard } from '@/features/shop/components/PlaceCard';
+ * import { PlaceCard } from '@/features/shop';
  *
  * <button type="button" onClick={() => handleSelect(shop)}>
  *   <PlaceCard thumbnailSrc={shop.photoUrl} title={shop.name} location={shop.address} />
@@ -33,9 +33,11 @@ type PlaceCardProps = {
 export function PlaceCard({ thumbnailSrc, title, location }: PlaceCardProps) {
   return (
     <span className="flex w-full items-center gap-4">
-      <CardThumbnail src={thumbnailSrc} />
+      <CardThumbnail src={thumbnailSrc} radius="medium" />
       <span className="flex min-w-0 flex-col gap-2">
-        <CardTitle weight="medium">{title}</CardTitle>
+        <CardTitle weight="medium" className="text-neutral-700">
+          {title}
+        </CardTitle>
         <CardLocation>{location}</CardLocation>
       </span>
     </span>

@@ -8,6 +8,7 @@ const isTypographyToken = (value: string) =>
 const customTwMerge = extendTailwindMerge({
   extend: {
     theme: {
+      radius: ['05', '08', '15', '16', '30', '32', '46'],
       text: [isTypographyToken],
     },
   },

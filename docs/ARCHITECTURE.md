@@ -43,7 +43,7 @@
 | WebView 연동     | 적용 완료                      |
 | 웹·네이티브 브릿지 | 적용 완료 (요청·응답 규약은 `packages/shared`) |
 | 알림·푸시        | 추후 네이티브 구현             |
-| 영수증 촬영·기록 | 추후 네이티브 구현 (브릿지 위에 얹는다) |
+| 영수증 촬영·검토 | RN 네이티브 플로우 적용 (OCR·기록 저장 API 연동 예정) |
 
 > 실기기 테스트는 개발 빌드로 진행한다. Expo Go는 지원 SDK가 낮아 이 프로젝트를 실행할 수 없다.
 
@@ -157,8 +157,7 @@ pages/
 │   │   └── search/
 │   │       └── ShopSearchPage.tsx
 │   ├── receipt/
-│   │   ├── ReceiptCameraPage.tsx
-│   │   └── ReceiptRecordPage.tsx
+│   │   └── ReceiptCameraPage.tsx
 ├── report/
 │   ├── ReportPage.tsx
 │   ├── ReportDetailPage.tsx
@@ -282,6 +281,8 @@ apps/mobile/src/
 - `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 관리한다. 웹의 `app/routes`와 `pages` 관계와 같다.
 - 화면 컴포넌트는 `화면명 + Screen`으로 작성한다 (`HomeScreen`).
 - 웹과 모바일이 함께 쓰는 코드는 `apps/mobile/src/shared`가 아니라 `packages/shared`에 둔다.
+- WebView 화면은 `shared/layout/WebViewScreen`을 사용해 Safe Area·로딩·오류 복구 동작을 통일한다. 지도 홈(`/home`)만 지도를 시스템 영역까지 표시하도록 edge-to-edge 옵션을 사용한다.
+- 수기 입력과 영수증 입력의 공통 규칙은 `packages/shared/record`, 네이티브 영수증 UI와 상태는 `features/record`에서 관리한다.
 - 필요한 폴더만 만든다. 사용처가 생기기 전에는 만들지 않는다.
 
 ---

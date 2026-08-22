@@ -1,0 +1,4 @@
+/* 페이지 공통 레이아웃 간격 토큰 */
+@theme {
+  --spacing-page-bottom: 32px;
+}

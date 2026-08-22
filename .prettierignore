@@ -19,6 +19,7 @@ storybook-static
 # Generated and environment-specific files
 pnpm-lock.yaml
 .env*
+apps/mobile/src/shared/assets/animations/*.json
 
 # Other commonly ignored files
 *.log

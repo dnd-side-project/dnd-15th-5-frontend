@@ -63,7 +63,7 @@ describe('Toast', () => {
 
     const viewport = screen.getByTestId('toast-viewport');
 
-    expect(viewport).toHaveClass('mx-auto', 'max-w-120');
+    expect(viewport).toHaveClass('mobile-frame');
     expect(viewport.style.bottom).toBe('calc(1.25rem + env(safe-area-inset-bottom))');
   });
 

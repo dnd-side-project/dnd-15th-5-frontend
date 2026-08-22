@@ -1,9 +1,12 @@
+import { cn } from '@/shared/lib/cn';
+
 import type { ReactNode } from 'react';
 
 type CardTitleWeight = 'medium' | 'semibold';
 
 type CardTitleProps = {
   children: ReactNode;
+  className?: string;
   weight: CardTitleWeight;
 };
 
@@ -18,8 +21,10 @@ const WEIGHT_CLASS: Record<CardTitleWeight, string> = {
  * 카드 종류마다 디자인상 굵기가 달라(예: `PlaceCard`는 medium, `PlaceTagCard`는 semibold)
  * `weight`로 지정합니다.
  */
-export function CardTitle({ children, weight }: CardTitleProps) {
+export function CardTitle({ children, className, weight }: CardTitleProps) {
   return (
-    <span className={`block truncate ${WEIGHT_CLASS[weight]} text-neutral-900`}>{children}</span>
+    <span className={cn('block truncate text-neutral-900', WEIGHT_CLASS[weight], className)}>
+      {children}
+    </span>
   );
 }

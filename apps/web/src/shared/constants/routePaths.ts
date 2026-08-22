@@ -26,7 +26,6 @@ export const ROUTE_PATHS = {
   manualRecord: '/record/manual',
   recordShopSearch: '/record/shop/search',
   receiptCamera: '/record/receipt/camera',
-  receiptRecord: '/record/receipt',
 
   report: '/report',
   spendingHistory: '/report/history',

@@ -1,5 +1,8 @@
 export const SHOP_SEARCH_MAX_RESULT_COUNT = 20;
 
+/** 입력이 멈춘 뒤 자동 검색까지 기다리는 시간(ms) */
+export const SHOP_SEARCH_DEBOUNCE_MS = 400;
+
 export const SHOP_SEARCH_LANGUAGE = 'ko';
 
 export const SHOP_SEARCH_REGION = 'kr';
