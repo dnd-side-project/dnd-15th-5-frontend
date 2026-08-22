@@ -2,6 +2,7 @@ import { AUTH_FLOW_ERROR_CODE, AuthFlowError } from '@/features/auth/errors';
 
 const CODE_VERIFIER_STORAGE_KEY = 'chapchap.oauth.codeVerifier';
 const CALLBACK_CONSUMED_STORAGE_KEY = 'chapchap.oauth.callbackConsumed';
+const OAUTH_CANCELLATION_ERRORS = new Set(['access_denied', 'cancelled', 'canceled']);
 
 type OAuthCallbackCredentials = {
   loginCode: string;
@@ -44,7 +45,11 @@ export const consumeOAuthCallback = (searchParams: URLSearchParams): OAuthCallba
 
   if (oauthError) {
     clearOAuthSession();
-    throw new AuthFlowError(AUTH_FLOW_ERROR_CODE.OAUTH_CANCELLED, { oauthError });
+    const errorCode = OAUTH_CANCELLATION_ERRORS.has(oauthError)
+      ? AUTH_FLOW_ERROR_CODE.OAUTH_CANCELLED
+      : AUTH_FLOW_ERROR_CODE.OAUTH_FAILED;
+
+    throw new AuthFlowError(errorCode, { oauthError });
   }
 
   const loginCode = searchParams.get('loginCode');

@@ -42,6 +42,17 @@ describe('OAuth session', () => {
     );
   });
 
+  it('사용자 취소가 아닌 OAuth error는 처리 실패로 구분한다', () => {
+    saveCodeVerifier('code-verifier');
+
+    expect(() => consumeOAuthCallback(new URLSearchParams({ error: 'invalid_state' }))).toThrow(
+      expect.objectContaining({
+        code: AUTH_FLOW_ERROR_CODE.OAUTH_FAILED,
+        oauthError: 'invalid_state',
+      })
+    );
+  });
+
   it('loginCode와 저장된 codeVerifier를 토큰 교환 값으로 반환한다', () => {
     saveCodeVerifier('code-verifier');
 

@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import AppMainLayout from '@/app/layouts/AppMainLayout';
 import MobileLayout from '@/app/layouts/MobileLayout';
 import AgreementPage from '@/pages/agreement/AgreementPage';
+import AuthCallbackPage from '@/pages/auth-callback/AuthCallbackPage';
 import HomePage from '@/pages/home/HomePage';
 import MapSearchPage from '@/pages/home/search/MapSearchPage';
 import ShopDetailPage from '@/pages/home/shop/ShopDetailPage';
@@ -36,6 +37,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTE_PATHS.login,
             element: <LoginPage />,
+          },
+          {
+            path: ROUTE_PATHS.authCallback,
+            element: <AuthCallbackPage />,
           },
           {
             path: ROUTE_PATHS.agreement,
