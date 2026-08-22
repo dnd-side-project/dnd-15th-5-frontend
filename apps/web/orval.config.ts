@@ -1,53 +1,25 @@
+import { readFileSync } from 'node:fs';
+
 import { defineConfig } from 'orval';
 
 import { createFeatureOpenApiTransformer } from './openapiTransformer.js';
 
 import type { Options } from 'orval';
 
-const OPENAPI_SPEC_URL = 'https://chapchap.kr/api/v3/api-docs';
-
-const FEATURE_API_CONFIG = {
-  auth: {
-    tags: ['Authentication', 'Social OAuth'],
-    operationIds: [
-      'refreshApp',
-      'refreshWeb',
-      'exchangeSocialLoginCode',
-      'agree',
-      'logoutApp',
-      'logoutWeb',
-      'start',
-      'callback',
-    ],
-  },
-  map: {
-    tags: ['Consumption', 'Recommendation'],
-    operationIds: ['getVisitedPlaceMarkers', 'getNearbyPlaces'],
-  },
-  myPage: {
-    directory: 'my-page',
-    tags: ['Account'],
-    operationIds: ['getMyAccount', 'updateMyAccount', 'withdrawMyAccount'],
-  },
-  record: {
-    tags: ['Consumption'],
-    operationIds: ['createConsumption', 'recognizeReceipt'],
-  },
-  report: {
-    tags: ['Consumption', 'Report'],
-    operationIds: ['getMonthlyReport', 'getCurrentStatus', 'getConsumptions', 'getFrequentPlaces'],
-  },
-  shop: {
-    tags: ['Consumption', 'Place'],
-    operationIds: ['getPlaceDetail', 'getPlaceVisits', 'toggleLike'],
-  },
-} as const;
-
 type FeatureApiOptions = {
   directory?: string;
   operationIds: readonly string[];
   tags: readonly string[];
 };
+
+type OpenApiFeatureMap = {
+  specUrl: string;
+  features: Record<string, FeatureApiOptions>;
+};
+
+const { specUrl: OPENAPI_SPEC_URL, features: FEATURE_API_CONFIG } = JSON.parse(
+  readFileSync(new URL('./openapiFeatureMap.json', import.meta.url), 'utf8')
+) as OpenApiFeatureMap;
 
 const createFeatureApiConfig = (feature: string, options: FeatureApiOptions): Options => {
   const directory = options.directory ?? feature;

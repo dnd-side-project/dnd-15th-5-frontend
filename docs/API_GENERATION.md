@@ -5,9 +5,31 @@
 - Swagger UI: `https://chapchap.kr/api/swagger-ui/index.html`
 - OpenAPI JSON: `https://chapchap.kr/api/v3/api-docs`
 - 생성 설정: `apps/web/orval.config.ts`
+- feature 매핑: `apps/web/openapiFeatureMap.json`
 - 명세 보정: `apps/web/openapiTransformer.ts`
 - 생성 결과: `apps/web/src/features/{feature}/apis/{clients,queryKeys,queries,mutations,dto}.ts`
 - 공통 Axios 연결: `apps/web/src/shared/apis/orvalMutator.ts`
+
+## 한눈에 보는 실행 순서
+
+백엔드 Swagger 명세가 변경되면 다음 순서로 진행한다.
+
+```text
+매핑 검사 → 미매핑 API 등록 → API 생성 → 생성 결과 확인 → 수기 훅 작성 → 최종 검사
+```
+
+| 순서 | 할 일 | 명령 또는 위치 |
+| --- | --- | --- |
+| 1 | Swagger operationId 매핑 검사 | `pnpm api:validate` |
+| 2 | 실패 메시지의 미매핑 API를 feature에 등록 | `apps/web/openapiFeatureMap.json` |
+| 3 | DTO·Client·Query·Mutation 생성 | `pnpm api:generate` |
+| 4 | 생성 결과와 서버 명세 일치 여부 확인 | `pnpm api:check` |
+| 5 | 화면별 옵션·응답 가공이 필요할 때만 수기 훅 작성 | `features/{feature}/apis/hooks/` |
+| 6 | 전체 품질 검사 | `pnpm typecheck`, `pnpm lint`, `pnpm test` |
+
+`api:generate`가 1번 매핑 검사를 먼저 실행하므로 평소에는 바로 실행해도 된다. 매핑 오류가
+발생하면 2번을 처리한 뒤 다시 실행한다. 자동 생성된 `clients.ts`, `queryKeys.ts`,
+`queries.ts`, `mutations.ts`, `dto.ts`는 직접 수정하지 않는다.
 
 ## 생성 방법
 
@@ -15,6 +37,13 @@
 
 ```bash
 pnpm api:generate
+```
+
+`api:generate`는 코드 생성 전에 전체 operationId 매핑을 자동 검증한다. 매핑만 별도로
+검사하려면 다음 명령을 실행한다.
+
+```bash
+pnpm api:validate
 ```
 
 명세 변경을 감시하면서 생성하려면 다음 명령을 실행한다.
@@ -118,7 +147,18 @@ import { getStartQueryKey } from '@/features/auth/apis/queryKeys';
 | shop      | getPlaceDetail, getPlaceVisits, toggleLike                                                     |
 
 명세에 등록된 operationId가 사라지거나 변경되면 생성 단계가 실패한다. 새로운 API는
-`FEATURE_API_CONFIG`에 소유 feature를 지정한 뒤 생성한다.
+`openapiFeatureMap.json`에 소유 feature를 지정한 뒤 생성한다.
+
+다음 중 하나라도 발견되면 생성 전에 실패한다.
+
+- feature에 매핑되지 않은 새 operationId
+- Swagger에서 사라졌지만 매핑에는 남아 있는 operationId
+- 여러 feature에 중복으로 등록한 operationId
+- Swagger에서 중복된 operationId
+- operationId가 없는 엔드포인트
+
+실패 메시지에 표시된 operationId를 `openapiFeatureMap.json`의 해당 feature에 추가한 뒤
+`pnpm api:generate`를 다시 실행한다.
 
 ## Swagger 작성 규칙
 

@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "api:generate": "orval --config ./orval.config.ts",
-    "api:watch": "orval --config ./orval.config.ts --watch",
+    "api:validate": "node ./scripts/check-openapi-mapping.mjs",
+    "api:generate": "pnpm api:validate && orval --config ./orval.config.ts",
+    "api:watch": "pnpm api:validate && orval --config ./orval.config.ts --watch",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",

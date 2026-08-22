@@ -11,6 +11,7 @@
     "dev:mobile": "turbo run dev --filter=@chapchap/mobile",
     "dev:web": "turbo run dev --filter=@chapchap/web",
     "api:generate": "pnpm --filter @chapchap/web api:generate",
+    "api:validate": "pnpm --filter @chapchap/web api:validate",
     "api:check": "pnpm api:generate && git diff --exit-code -- ':(glob)apps/web/src/features/*/apis/clients.ts' ':(glob)apps/web/src/features/*/apis/queryKeys.ts' ':(glob)apps/web/src/features/*/apis/queries.ts' ':(glob)apps/web/src/features/*/apis/mutations.ts' ':(glob)apps/web/src/features/*/apis/dto.ts'",
     "api:watch": "pnpm --filter @chapchap/web api:watch",
     "build": "turbo run build",
