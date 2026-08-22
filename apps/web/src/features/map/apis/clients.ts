@@ -11,7 +11,7 @@ import type {
   GetNearbyPlacesParams,
   GetVisitedPlaceMarkersParams,
   SecondParameter,
-} from '@/features/map/api/dto';
+} from '@/features/map/apis/dto';
 
 /**
  * 지도 중심 좌표 반경 안의 인기 가게를 조회. myTownPlaces는 전체 인기순, sameCategoryPlaces는 내가 가장 많이 방문한 카테고리로 필터링한 결과로 둘 중 중복된건 1개만 응 답

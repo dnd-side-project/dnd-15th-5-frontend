@@ -13,7 +13,7 @@ import type {
   ConsumptionCreateRequest,
   ReceiptOcrRequest,
   SecondParameter,
-} from '@/features/record/api/dto';
+} from '@/features/record/apis/dto';
 
 /**
  * 사용자가 확인한 장소와 소비 정보를 최종 저장합니다.

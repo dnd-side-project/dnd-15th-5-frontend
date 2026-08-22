@@ -16,11 +16,11 @@ const tsconfigPath = fileURLToPath(new URL('./tsconfig.app.json', import.meta.ur
 export default defineConfig([
   {
     ignores: [
-      'src/features/*/api/clients.ts',
-      'src/features/*/api/queryKeys.ts',
-      'src/features/*/api/queries.ts',
-      'src/features/*/api/mutations.ts',
-      'src/features/*/api/dto.ts',
+      'src/features/*/apis/clients.ts',
+      'src/features/*/apis/queryKeys.ts',
+      'src/features/*/apis/queries.ts',
+      'src/features/*/apis/mutations.ts',
+      'src/features/*/apis/dto.ts',
     ],
   },
   ...baseConfig,

@@ -11,7 +11,7 @@ import type {
   ApiResponsePlaceVisitScrollResponse,
   GetPlaceVisitsParams,
   SecondParameter,
-} from '@/features/shop/api/dto';
+} from '@/features/shop/apis/dto';
 
 /**
  * 좋아요 상태를 등록하고 취소한다

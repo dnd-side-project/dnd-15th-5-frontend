@@ -29,21 +29,21 @@ import type {
   GetFrequentPlacesParams,
   GetMonthlyReportParams,
   SecondParameter,
-} from '@/features/report/api/dto';
+} from '@/features/report/apis/dto';
 
 import {
   getConsumptions,
   getCurrentStatus,
   getFrequentPlaces,
   getMonthlyReport,
-} from '@/features/report/api/clients';
+} from '@/features/report/apis/clients';
 
 import {
   getGetConsumptionsQueryKey,
   getGetCurrentStatusQueryKey,
   getGetFrequentPlacesQueryKey,
   getGetMonthlyReportQueryKey,
-} from '@/features/report/api/queryKeys';
+} from '@/features/report/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };

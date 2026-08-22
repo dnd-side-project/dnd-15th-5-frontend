@@ -201,14 +201,16 @@ features/
 
 ```text
 features/record/
-├── api/
+├── apis/
 │   ├── clients.ts      # 순수 API 요청 함수
 │   ├── queryKeys.ts    # TanStack Query key
 │   ├── queries.ts      # Query, Suspense Query
 │   ├── mutations.ts    # Mutation
-│   └── dto.ts          # 요청·응답 타입
+│   ├── dto.ts          # 요청·응답 타입
+│   └── hooks/          # 화면별 Query·Mutation 옵션이 필요할 때만 생성
+│       └── useRecordListQuery.ts
 ├── components/
-├── hooks/
+├── hooks/          # API와 무관한 feature 훅
 ├── stores/         # 해당 도메인 전용 전역 상태
 ├── schemas.ts
 ├── types.ts        # DTO가 아닌 feature 공통 타입
@@ -217,21 +219,25 @@ features/record/
 └── index.ts
 ```
 
-- `api/`의 네 파일은 OpenAPI에서 자동 생성하며 직접 수정하지 않는다
+- `apis/`의 `clients.ts`, `queryKeys.ts`, `queries.ts`, `mutations.ts`, `dto.ts`는 OpenAPI에서 자동 생성하며 직접 수정하지 않는다
 - 페이지와 feature 코드는 역할에 맞는 파일에서 필요한 항목만 직접 import한다
-- 자동 생성 훅으로 부족할 때만 feature의 `hooks/`에 화면·도메인용 커스텀 훅을 작성한다
+- 화면별 `enabled`, `select`, `staleTime` 등의 옵션이나 응답 가공이 필요하면 생성 훅을 감싼 파일을 `apis/hooks/`에 Query·Mutation 훅 하나당 하나씩 작성한다
+- API와 무관한 feature 공통 훅만 feature 루트의 `hooks/`에서 관리한다
 - `types.ts`는 Swagger DTO가 아닌 feature 공통 타입을 관리한다
 
 ### Feature 내부 구조 (화면이 여러 개인 경우)
 
 ```text
 features/report/
-├── api/
+├── apis/
 │   ├── clients.ts
 │   ├── queryKeys.ts
 │   ├── queries.ts
 │   ├── mutations.ts
-│   └── dto.ts
+│   ├── dto.ts
+│   └── hooks/
+│       ├── useMonthlyReportQuery.ts
+│       └── useConsumptionListQuery.ts
 ├── components/
 │   ├── common/     # feature 안에서 2곳 이상 쓰는 것
 │   ├── streak/
@@ -250,7 +256,8 @@ features/report/
 
 - 화면 단위로 나눌지는 컴포넌트 개수 보고 판단하고, 필요한 폴더만 만든다 (`mutations/`처럼 안 쓰면 비워두지 말고 아예 생략)
 - 파일이 적으면 파일 하나로 관리, 많아지면 화면·역할 단위 폴더로 확장
-- `api/` 생성 파일 사용 규칙은 기본형과 동일하다
+- `apis/` 생성 파일 사용 규칙은 기본형과 동일하다
+- `apis/hooks/` 파일은 자동 생성 대상이 아니므로 화면 요구사항에 맞게 직접 작성하고 테스트한다
 
 ### Mobile
 
@@ -348,18 +355,20 @@ app → screens → features → bridge · native → shared
 - 여러 Feature에서 공통으로 사용하는 API 함수
 - OpenAPI 생성 코드가 사용하는 공통 Axios mutator
 
-### 기능별 API (`apps/web/src/features/{feature}/api`)
+### 기능별 API (`apps/web/src/features/{feature}/apis`)
 
 - 해당 Feature 전용 OpenAPI 생성 파일 (`clients.ts`, `queryKeys.ts`, `queries.ts`, `mutations.ts`, `dto.ts`)
 - `shared/apis`에서 만든 공통 Axios 인스턴스를 가져와서 사용
 - 이 Feature에서만 쓰는 엔드포인트 함수만 위치
 - DTO, 요청 함수, Query, Mutation을 역할별 파일로 분리해 생성
+- 화면별 옵션과 데이터 가공을 담당하는 수기 훅은 `apis/hooks/`에 위치
 
 ### 규칙
 
 - 인증/토큰 처리는 `apps/web/src/shared/apis`에서만 관리하고, 생성된 API 파일에서 직접 헤더를 설정하지 않는다
 - 페이지와 컴포넌트는 필요한 항목을 feature의 역할별 API 파일에서 직접 import한다
-- 생성 파일에 옵션이나 응답 가공을 직접 추가하지 않고, 필요하면 feature의 커스텀 훅으로 감싼다
+- 생성 훅을 그대로 사용할 수 있으면 `apis/queries.ts` 또는 `apis/mutations.ts`에서 직접 import한다
+- 화면별 옵션이나 응답 가공이 필요하면 생성 파일을 수정하지 않고 `apis/hooks/`에서 감싼 뒤 해당 수기 훅을 사용한다
 - API 생성 방법과 사용 규칙은 [API_GENERATION.md](./API_GENERATION.md)를 따른다
 
 ---

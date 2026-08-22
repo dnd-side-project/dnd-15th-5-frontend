@@ -10,7 +10,7 @@ if (!featureDirectory) {
   throw new Error('feature directory argument is required');
 }
 
-const apiDirectory = path.resolve('src/features', featureDirectory, 'api');
+const apiDirectory = path.resolve('src/features', featureDirectory, 'apis');
 const sourcePath = path.join(apiDirectory, 'swagger.ts');
 const source = await readFile(sourcePath, 'utf8');
 const sourceFile = ts.createSourceFile(sourcePath, source, ts.ScriptTarget.Latest, true);
@@ -210,7 +210,7 @@ const buildCrossImports = (group, body) => {
 
     if (usedDtoNames.length > 0) {
       crossImports.push(
-        `import type { ${usedDtoNames.sort().join(', ')} } from '@/features/${featureDirectory}/api/dto';`
+        `import type { ${usedDtoNames.sort().join(', ')} } from '@/features/${featureDirectory}/apis/dto';`
       );
     }
   }
@@ -222,7 +222,7 @@ const buildCrossImports = (group, body) => {
 
     if (usedClientNames.length > 0) {
       crossImports.push(
-        `import { ${usedClientNames.sort().join(', ')} } from '@/features/${featureDirectory}/api/clients';`
+        `import { ${usedClientNames.sort().join(', ')} } from '@/features/${featureDirectory}/apis/clients';`
       );
     }
   }
@@ -234,7 +234,7 @@ const buildCrossImports = (group, body) => {
 
     if (usedQueryKeyNames.length > 0) {
       crossImports.push(
-        `import { ${usedQueryKeyNames.sort().join(', ')} } from '@/features/${featureDirectory}/api/queryKeys';`
+        `import { ${usedQueryKeyNames.sort().join(', ')} } from '@/features/${featureDirectory}/apis/queryKeys';`
       );
     }
   }

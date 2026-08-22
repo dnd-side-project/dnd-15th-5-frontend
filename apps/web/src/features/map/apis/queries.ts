@@ -27,14 +27,14 @@ import type {
   GetNearbyPlacesParams,
   GetVisitedPlaceMarkersParams,
   SecondParameter,
-} from '@/features/map/api/dto';
+} from '@/features/map/apis/dto';
 
-import { getNearbyPlaces, getVisitedPlaceMarkers } from '@/features/map/api/clients';
+import { getNearbyPlaces, getVisitedPlaceMarkers } from '@/features/map/apis/clients';
 
 import {
   getGetNearbyPlacesQueryKey,
   getGetVisitedPlaceMarkersQueryKey,
-} from '@/features/map/api/queryKeys';
+} from '@/features/map/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };

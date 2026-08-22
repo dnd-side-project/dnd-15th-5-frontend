@@ -28,11 +28,11 @@ import type {
   CompleteSocialOAuthParams,
   SecondParameter,
   StartParams,
-} from '@/features/auth/api/dto';
+} from '@/features/auth/apis/dto';
 
-import { completeSocialOAuth, start } from '@/features/auth/api/clients';
+import { completeSocialOAuth, start } from '@/features/auth/apis/clients';
 
-import { getCompleteSocialOAuthQueryKey, getStartQueryKey } from '@/features/auth/api/queryKeys';
+import { getCompleteSocialOAuthQueryKey, getStartQueryKey } from '@/features/auth/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };

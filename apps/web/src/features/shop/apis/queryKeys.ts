@@ -3,7 +3,7 @@
  * Do not edit manually.
  */
 
-import type { GetPlaceVisitsParams } from '@/features/shop/api/dto';
+import type { GetPlaceVisitsParams } from '@/features/shop/apis/dto';
 
 export const getGetPlaceDetailQueryKey = (placeId: number) => {
   return [`/consumptions/places/${placeId}`] as const;

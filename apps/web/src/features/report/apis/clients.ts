@@ -15,7 +15,7 @@ import type {
   GetFrequentPlacesParams,
   GetMonthlyReportParams,
   SecondParameter,
-} from '@/features/report/api/dto';
+} from '@/features/report/apis/dto';
 
 /**
  * 계정과 연월(yyyy-MM) 기준으로 소비내역을 최신순 커서 기반으로 조회합니다. nextCursorPurchaseDate/nextCursorPurchaseTime/nextCursorId를 다음 요청에 넣어 보내면 됩니다.

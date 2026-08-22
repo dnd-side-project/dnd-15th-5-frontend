@@ -22,7 +22,7 @@ import type {
   RefreshTokenRequest,
   SecondParameter,
   TermsAgreementRequest,
-} from '@/features/auth/api/dto';
+} from '@/features/auth/apis/dto';
 
 import {
   agree,
@@ -31,7 +31,7 @@ import {
   logoutWeb,
   refreshApp,
   refreshWeb,
-} from '@/features/auth/api/clients';
+} from '@/features/auth/apis/clients';
 
 export const getRefreshAppMutationOptions = <
   TError = ErrorType<ApiResponse>,

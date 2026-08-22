@@ -8,7 +8,7 @@ import type {
   GetCurrentStatusParams,
   GetFrequentPlacesParams,
   GetMonthlyReportParams,
-} from '@/features/report/api/dto';
+} from '@/features/report/apis/dto';
 
 export const getGetConsumptionsQueryKey = (params?: GetConsumptionsParams) => {
   return [`/consumptions`, ...(params ? [params] : [])] as const;

@@ -3,7 +3,7 @@
  * Do not edit manually.
  */
 
-import type { GetNearbyPlacesParams, GetVisitedPlaceMarkersParams } from '@/features/map/api/dto';
+import type { GetNearbyPlacesParams, GetVisitedPlaceMarkersParams } from '@/features/map/apis/dto';
 
 export const getGetNearbyPlacesQueryKey = (params?: GetNearbyPlacesParams) => {
   return [`/recommendations/nearby-places`, ...(params ? [params] : [])] as const;

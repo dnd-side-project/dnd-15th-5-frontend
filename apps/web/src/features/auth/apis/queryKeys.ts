@@ -3,7 +3,7 @@
  * Do not edit manually.
  */
 
-import type { CompleteSocialOAuthParams, StartParams } from '@/features/auth/api/dto';
+import type { CompleteSocialOAuthParams, StartParams } from '@/features/auth/apis/dto';
 
 export const getStartQueryKey = (provider: 'kakao' | 'google', params?: StartParams) => {
   return [`/oauth/${provider}/start`, ...(params ? [params] : [])] as const;

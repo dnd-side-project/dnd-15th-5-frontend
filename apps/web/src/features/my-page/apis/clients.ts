@@ -12,7 +12,7 @@ import type {
   ApiResponseAccountResponse,
   ApiResponseVoid,
   SecondParameter,
-} from '@/features/my-page/api/dto';
+} from '@/features/my-page/apis/dto';
 
 /**
  * Access Token으로 인증된 사용자의 기본 정보를 조회합니다.

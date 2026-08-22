@@ -16,9 +16,9 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type { ErrorType } from '@/shared/apis/orvalMutator';
 
-import type { SecondParameter } from '@/features/shop/api/dto';
+import type { SecondParameter } from '@/features/shop/apis/dto';
 
-import { toggleLike } from '@/features/shop/api/clients';
+import { toggleLike } from '@/features/shop/apis/clients';
 
 export const getToggleLikeMutationOptions = <
   TError = ErrorType<unknown>,

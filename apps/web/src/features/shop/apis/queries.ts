@@ -23,14 +23,14 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type { ErrorType } from '@/shared/apis/orvalMutator';
 
-import type { GetPlaceVisitsParams, SecondParameter } from '@/features/shop/api/dto';
+import type { GetPlaceVisitsParams, SecondParameter } from '@/features/shop/apis/dto';
 
-import { getPlaceDetail, getPlaceVisits } from '@/features/shop/api/clients';
+import { getPlaceDetail, getPlaceVisits } from '@/features/shop/apis/clients';
 
 import {
   getGetPlaceDetailQueryKey,
   getGetPlaceVisitsQueryKey,
-} from '@/features/shop/api/queryKeys';
+} from '@/features/shop/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };

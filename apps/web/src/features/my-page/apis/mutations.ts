@@ -20,9 +20,9 @@ import type {
   AccountUpdateRequest,
   ApiResponse,
   SecondParameter,
-} from '@/features/my-page/api/dto';
+} from '@/features/my-page/apis/dto';
 
-import { updateMyAccount, withdrawMyAccount } from '@/features/my-page/api/clients';
+import { updateMyAccount, withdrawMyAccount } from '@/features/my-page/apis/clients';
 
 export const getWithdrawMyAccountMutationOptions = <
   TError = ErrorType<ApiResponse>,

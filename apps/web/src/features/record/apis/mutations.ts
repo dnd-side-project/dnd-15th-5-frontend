@@ -21,9 +21,9 @@ import type {
   ConsumptionCreateRequest,
   ReceiptOcrRequest,
   SecondParameter,
-} from '@/features/record/api/dto';
+} from '@/features/record/apis/dto';
 
-import { createConsumption, recognizeReceipt } from '@/features/record/api/clients';
+import { createConsumption, recognizeReceipt } from '@/features/record/apis/clients';
 
 export const getCreateConsumptionMutationOptions = <
   TError = ErrorType<ApiResponse>,

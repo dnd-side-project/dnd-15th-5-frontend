@@ -64,7 +64,7 @@ const createFeatureApiConfig = (feature: string, options: FeatureApiOptions): Op
     },
     output: {
       mode: 'single' as const,
-      target: `./src/features/${directory}/api/swagger.ts`,
+      target: `./src/features/${directory}/apis/swagger.ts`,
       client: 'react-query' as const,
       httpClient: 'axios' as const,
       formatter: 'prettier' as const,

@@ -23,11 +23,11 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type { ErrorType } from '@/shared/apis/orvalMutator';
 
-import type { ApiResponse, SecondParameter } from '@/features/my-page/api/dto';
+import type { ApiResponse, SecondParameter } from '@/features/my-page/apis/dto';
 
-import { getMyAccount } from '@/features/my-page/api/clients';
+import { getMyAccount } from '@/features/my-page/apis/clients';
 
-import { getGetMyAccountQueryKey } from '@/features/my-page/api/queryKeys';
+import { getGetMyAccountQueryKey } from '@/features/my-page/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };

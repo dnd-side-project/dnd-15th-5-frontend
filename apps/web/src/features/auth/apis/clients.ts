@@ -16,7 +16,7 @@ import type {
   SecondParameter,
   StartParams,
   TermsAgreementRequest,
-} from '@/features/auth/api/dto';
+} from '@/features/auth/apis/dto';
 
 /**
  * APP Refresh Token을 요청 본문으로 받아 기존 토큰을 폐기하고 새 토큰 쌍을 발급합니다.
