@@ -45,6 +45,7 @@ jest.mock('../../hooks/useCurrentPosition', () => ({
 
 jest.mock('../current-location/CurrentLocationMarker', () => () => null);
 jest.mock('../current-location/CurrentLocationCameraController', () => () => null);
+jest.mock('../stickers/MapStickers', () => () => null);
 jest.mock(
   '../current-location/CurrentLocationButton',
   () =>

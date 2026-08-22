@@ -7,6 +7,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '\\.svg\\?react$': '<rootDir>/test/svgMock.tsx',
+    '\\.png$': '<rootDir>/test/imageMock.ts',
     '^@/shared/lib/env$': '<rootDir>/src/shared/lib/env.mock.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
   },

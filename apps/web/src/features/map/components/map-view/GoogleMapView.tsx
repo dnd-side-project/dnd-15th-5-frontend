@@ -7,6 +7,7 @@ import { useCurrentPosition } from '../../hooks/useCurrentPosition';
 import CurrentLocationButton from '../current-location/CurrentLocationButton';
 import CurrentLocationCameraController from '../current-location/CurrentLocationCameraController';
 import CurrentLocationMarker from '../current-location/CurrentLocationMarker';
+import MapStickers from '../stickers/MapStickers';
 
 const MAP_DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
 const MAP_DEFAULT_ZOOM = 13;
@@ -45,6 +46,7 @@ export default function GoogleMapView() {
     >
       <CurrentLocationCameraController position={position} />
       <CurrentLocationMarker position={position} />
+      <MapStickers />
       <CurrentLocationButton
         position={position}
         isLoading={isLoading}
