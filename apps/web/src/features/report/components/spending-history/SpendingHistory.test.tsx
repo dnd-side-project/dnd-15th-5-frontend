@@ -16,10 +16,10 @@ const firePointerEvent = (element: Element, type: string, clientY: number) => {
   fireEvent(element, event);
 };
 
-const renderSpendingHistory = () =>
+const renderSpendingHistory = (initialDate?: string) =>
   render(
     <MemoryRouter>
-      <SpendingHistory />
+      <SpendingHistory initialDate={initialDate} />
     </MemoryRouter>
   );
 
@@ -27,12 +27,40 @@ describe('SpendingHistory', () => {
   it('날짜별 소비 기록과 금액을 보여준다', () => {
     renderSpendingHistory();
 
-    expect(screen.getByRole('heading', { level: 1, name: '7월 소비 내역' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('7월');
+    expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('8월');
     expect(screen.getByRole('heading', { name: '22일 목요일' })).toBeInTheDocument();
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(7);
     expect(screen.getAllByText('5,500 원')).toHaveLength(7);
-    expect(screen.getAllByText('2026.07.22 · 오전 · 카페')).toHaveLength(3);
+    expect(screen.getAllByText('2026.08.22 · 오전 · 카페')).toHaveLength(3);
+  });
+
+  it('초기 날짜가 있으면 해당 날짜의 소비 기록만 보여준다', () => {
+    renderSpendingHistory('2026-08-21');
+
+    expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '21일 수요일' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '22일 목요일' })).not.toBeInTheDocument();
+    expect(screen.getAllByText('투썸플레이스')).toHaveLength(1);
+  });
+
+  it('초기 날짜가 변경되면 선택 월과 기록 목록을 동기화한다', () => {
+    const { rerender } = renderSpendingHistory('2026-08-21');
+
+    expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '21일 수요일' })).toBeInTheDocument();
+
+    rerender(
+      <MemoryRouter>
+        <SpendingHistory initialDate="2026-07-01" />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { level: 1, name: '7월 소비 내역' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '21일 수요일' })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: '아직 기록이 없어요' })
+    ).toBeInTheDocument();
   });
 
   it('월 선택 바텀시트에서 월을 바꾸고 시트를 닫는다', async () => {
@@ -42,18 +70,18 @@ describe('SpendingHistory', () => {
     await user.click(screen.getByRole('button', { name: '월 선택' }));
 
     expect(screen.getByRole('dialog', { name: '월 선택하기' })).toBeInTheDocument();
-    const selectedMonthButton = screen.getByRole('button', { name: '2026년 7월' });
+    const selectedMonthButton = screen.getByRole('button', { name: '2026년 8월' });
     expect(selectedMonthButton).toHaveAttribute('aria-pressed', 'true');
     expect(selectedMonthButton).toHaveFocus();
 
-    screen.getByRole('button', { name: '2025년 10월' }).focus();
+    screen.getByRole('button', { name: '2025년 11월' }).focus();
     await user.tab();
     expect(screen.getByRole('button', { name: '바텀시트 높이 조절' })).toHaveFocus();
 
-    await user.click(screen.getByRole('button', { name: '2026년 6월' }));
+    await user.click(screen.getByRole('button', { name: '2026년 7월' }));
 
     expect(screen.queryByRole('dialog', { name: '월 선택하기' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('6월');
+    expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('7월');
     expect(
       screen.getByRole('heading', { level: 2, name: '아직 기록이 없어요' })
     ).toBeInTheDocument();

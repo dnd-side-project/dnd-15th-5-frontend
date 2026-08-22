@@ -1,6 +1,13 @@
 export { default as ReportPreferenceCard } from './components/report-preference-card/ReportPreferenceCard';
 export { default as ReportPreferenceShareCard } from './components/report-preference-card/ReportPreferenceShareCard';
+export { default as ReportHeroCard } from './components/report-page/report-hero-card/ReportHeroCard';
+export { default as MonthlyStickerSummary } from './components/report-page/MonthlyStickerSummary';
+export { default as RecentDiscoveryPanel } from './components/report-page/RecentDiscoveryPanel';
+export { default as ReportHeroSection } from './components/report-page/ReportHeroSection';
+export { default as ReportLinkButton } from './components/report-page/ReportLinkButton';
+export { default as ReportSection } from './components/report-page/ReportSection';
+export { default as WeeklyRecordCalendar } from './components/report-page/WeeklyRecordCalendar';
 export { default as FrequentShopList } from './components/frequent-shop-list/FrequentShopList';
 export { default as SpendingHistory } from './components/spending-history/SpendingHistory';
 export { useReportImageDownload } from './hooks/useReportImageDownload';
-export { MOCK_REPORT_PREFERENCE } from './mockData';
+export { MOCK_EMPTY_REPORT_PAGE, MOCK_REPORT_PAGE, MOCK_REPORT_PREFERENCE } from './mockData';

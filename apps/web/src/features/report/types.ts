@@ -14,6 +14,25 @@ export type ReportPreference = {
   title: string;
 };
 
+export type WeeklyRecord = {
+  count?: number;
+  date: number;
+  dateValue: string;
+  day: string;
+  isFuture?: boolean;
+  isToday?: boolean;
+};
+
+export type ReportPageMockData = {
+  monthLabel: string;
+  monthlyAdditionalStickerCount: number;
+  monthlyRecordCount: number;
+  monthlyStickerImages: readonly string[];
+  recentDiscovery: readonly [string, string] | null;
+  weeklyPeriodLabel: string;
+  weeklyRecords: readonly WeeklyRecord[];
+};
+
 export type SpendingMonth = {
   month: number;
   year: number;
@@ -29,6 +48,7 @@ export type SpendingRecord = {
 
 export type SpendingRecordGroup = {
   dateLabel: string;
+  dateValue: string;
   records: readonly SpendingRecord[];
 };
 
