@@ -29,7 +29,7 @@ type BottomSheetProps = {
   snapPoints?: BottomSheetSnapPoints;
   onSnapPointChange?: (snapPoint: BottomSheetSnapPoint) => void;
   onHandleClick?: () => void;
-  /** 콘텐츠 높이에 맞추고 높이 조절 드래그와 내부 스크롤을 사용하지 않습니다. */
+  /** 콘텐츠 높이에 맞추고 내부 스크롤을 사용하지 않습니다. `hidden` 지정 시 아래로 드래그해 닫을 수 있습니다. */
   fitContent?: boolean;
   children: ReactNode;
   contentClassName?: string;
@@ -63,16 +63,17 @@ type BottomSheetProps = {
  * @param props.onSnapPointChange - 드래그를 놓아 스냅될 때 호출됩니다. 드래그가 끝난 위치와
  * 가장 가까운 단계로 알려줍니다.
  * @param props.onHandleClick - 핸들을 클릭했을 때 호출됩니다. 클릭으로 단계를 순환시키는 등에 사용합니다.
- * @param props.fitContent - `true`이면 콘텐츠 높이에 맞추고 높이 조절 드래그와 내부 스크롤을
- * 사용하지 않습니다. 이때 실제 높이는 항상 콘텐츠 크기로 고정되므로 `snapPoint`는 `medium`,
- * `large`, `full` 중 무엇을 넘겨도 결과가 같고, `hidden` 여부만 의미가 있습니다.
+ * @param props.fitContent - `true`이면 콘텐츠 높이에 맞추고 내부 스크롤을 사용하지 않습니다.
+ * `snapPoints`에 `hidden`을 명시하면 현재 콘텐츠 높이와 숨김 단계 사이를 드래그할 수 있습니다.
+ * 실제 열린 높이는 항상 콘텐츠 크기로 고정되므로 `snapPoint`는 `medium`, `large`, `full` 중
+ * 무엇을 넘겨도 결과가 같고, `hidden` 여부만 의미가 있습니다.
  * @param props.children - 바텀시트 안에 표시할 내용입니다.
  * @param props.contentClassName - 콘텐츠 영역에 추가할 스타일입니다.
  * @param props.rootRef - 바텀시트 루트 요소를 참조합니다.
  */
 export function BottomSheet({
   snapPoint,
-  snapPoints = DEFAULT_SNAP_POINTS,
+  snapPoints,
   onSnapPointChange,
   onHandleClick,
   fitContent = false,
@@ -88,15 +89,21 @@ export function BottomSheet({
   const heightAtSnapPointPx = (point: BottomSheetSnapPoint) =>
     point === 'hidden' ? 0 : window.innerHeight * BOTTOM_SHEET_HEIGHT_RATIO[point];
 
+  const resolvedSnapPoints = snapPoints ?? DEFAULT_SNAP_POINTS;
+  const canDismissFitContent = fitContent && Boolean(snapPoints?.includes('hidden'));
+
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (fitContent) {
+    if (fitContent && !canDismissFitContent) {
       return;
     }
+
+    const sheetElement = event.currentTarget.parentElement;
+    const fitContentHeightPx = sheetElement?.getBoundingClientRect().height ?? 0;
 
     event.currentTarget.setPointerCapture?.(event.pointerId);
     dragStartRef.current = {
       pointerY: event.clientY,
-      heightPx: heightAtSnapPointPx(snapPoint),
+      heightPx: fitContent ? fitContentHeightPx : heightAtSnapPointPx(snapPoint),
       hasDragged: false,
     };
     setDragHeightPx(dragStartRef.current.heightPx);
@@ -112,7 +119,7 @@ export function BottomSheet({
       dragStartRef.current.hasDragged = true;
     }
 
-    const fullHeightPx = heightAtSnapPointPx('full');
+    const fullHeightPx = fitContent ? dragStartRef.current.heightPx : heightAtSnapPointPx('full');
     const nextHeightPx = Math.min(
       fullHeightPx,
       Math.max(0, dragStartRef.current.heightPx + draggedUpBy)
@@ -125,7 +132,7 @@ export function BottomSheet({
       return;
     }
 
-    const hasDragged = dragStartRef.current.hasDragged;
+    const { hasDragged, heightPx: fitContentHeightPx } = dragStartRef.current;
     dragStartRef.current = null;
     setDragHeightPx(null);
 
@@ -135,9 +142,9 @@ export function BottomSheet({
       return;
     }
 
-    const candidates: [BottomSheetSnapPoint, number][] = snapPoints.map((point) => [
+    const candidates: [BottomSheetSnapPoint, number][] = resolvedSnapPoints.map((point) => [
       point,
-      heightAtSnapPointPx(point),
+      fitContent && point !== 'hidden' ? fitContentHeightPx : heightAtSnapPointPx(point),
     ]);
     const [nearestSnapPoint] = candidates.reduce((closest, candidate) =>
       Math.abs(candidate[1] - dragHeightPx) < Math.abs(closest[1] - dragHeightPx)
@@ -155,7 +162,7 @@ export function BottomSheet({
 
   const isDragging = dragHeightPx !== null;
   const isHidden = !isDragging && snapPoint === 'hidden';
-  const isHandleInteractive = !fitContent || Boolean(onHandleClick);
+  const isHandleInteractive = !fitContent || canDismissFitContent || Boolean(onHandleClick);
   const handleClassName = 'flex w-full shrink-0 touch-none items-center justify-center py-3';
   const handleBar = <span className="h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true" />;
 

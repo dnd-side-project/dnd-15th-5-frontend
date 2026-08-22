@@ -1,7 +1,16 @@
+import { useNavigate } from 'react-router-dom';
+
+import { FrequentShopList } from '@/features/report';
+import { BackButton } from '@/shared/ui/back-button';
+
 export default function FrequentShopListPage() {
+  const navigate = useNavigate();
+
   return (
-    <main>
-      <p>단골 리스트 페이지</p>
+    <main className="flex min-h-dvh flex-col">
+      <FrequentShopList
+        headerContent={<BackButton onClick={() => navigate(-1)} className="mt-0" />}
+      />
     </main>
   );
 }
