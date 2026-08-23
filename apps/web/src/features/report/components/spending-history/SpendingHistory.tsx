@@ -14,6 +14,7 @@ import SpendingRecordList from './SpendingRecordList';
 import type { ReactNode } from 'react';
 
 type SpendingHistoryProps = {
+  headerDescription?: string;
   headerContent?: ReactNode;
   headerContentGapClassName?: string;
   initialDate?: string;
@@ -39,11 +40,13 @@ const getSupportedMonthFromDate = (dateValue?: string) => {
  * 선택한 월의 소비내역을 날짜별로 보여주고 월 이동과 월 선택 시트를 제공합니다.
  *
  * @param props - 소비내역 화면 속성입니다.
+ * @param props.headerDescription - 월 선택 영역 대신 표시할 상단 안내 문구입니다.
  * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
  * @param props.headerContentGapClassName - 상단 콘텐츠와 월 선택 영역 사이의 간격 클래스입니다.
  * @param props.initialDate - 처음 표시할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
  */
 export default function SpendingHistory({
+  headerDescription,
   headerContent,
   headerContentGapClassName = 'mt-5',
   initialDate,
@@ -82,50 +85,67 @@ export default function SpendingHistory({
     <div className="flex flex-1 flex-col">
       <header
         className={cn(
-          'sticky top-0 z-sticky-header bg-neutral-00 pb-5',
-          headerContent ? 'pt-4' : 'pt-2'
+          'sticky top-0 z-sticky-header bg-neutral-00',
+          !headerDescription && 'pb-5',
+          headerContent ? 'pt-1' : 'pt-2'
         )}
       >
         {headerContent}
-        <div
-          className={cn(
-            'flex items-center justify-center gap-3',
-            headerContent && headerContentGapClassName
-          )}
-        >
-          <button
-            type="button"
-            aria-label="이전 달 보기"
-            disabled={!hasOlderMonth}
-            onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex + 1])}
-            className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
+        {!headerDescription && (
+          <div
+            className={cn(
+              'flex items-center justify-center gap-3',
+              headerContent && headerContentGapClassName
+            )}
           >
-            <CaretLeftIcon aria-hidden="true" className="size-6" />
-          </button>
-          <h1 aria-label={`${selectedMonth.month}월 소비 내역`}>
             <button
               type="button"
-              aria-label="월 선택"
-              aria-expanded={isMonthPickerOpen}
-              onClick={() => setIsMonthPickerOpen(true)}
-              className="min-w-10 text-title-02-bold text-neutral-900"
+              aria-label="이전 달 보기"
+              disabled={!hasOlderMonth}
+              onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex + 1])}
+              className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
             >
-              {selectedMonth.month}월
+              <CaretLeftIcon aria-hidden="true" className="size-6" />
             </button>
-          </h1>
-          <button
-            type="button"
-            aria-label="다음 달 보기"
-            disabled={!hasNewerMonth}
-            onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex - 1])}
-            className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
-          >
-            <CaretRightIcon aria-hidden="true" className="size-6" />
-          </button>
-        </div>
+            <h1 aria-label={`${selectedMonth.month}월 소비 내역`}>
+              <button
+                type="button"
+                aria-label="월 선택"
+                aria-expanded={isMonthPickerOpen}
+                onClick={() => setIsMonthPickerOpen(true)}
+                className="min-w-10 text-title-02-bold text-neutral-900"
+              >
+                {selectedMonth.month}월
+              </button>
+            </h1>
+            <button
+              type="button"
+              aria-label="다음 달 보기"
+              disabled={!hasNewerMonth}
+              onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex - 1])}
+              className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
+            >
+              <CaretRightIcon aria-hidden="true" className="size-6" />
+            </button>
+          </div>
+        )}
       </header>
 
-      <div className="flex flex-1 flex-col">
+      {headerDescription && (
+        <>
+          <h1 className="sr-only">{selectedMonth.month}월 소비 내역</h1>
+          <p
+            className={cn(
+              'text-center text-body-02-medium text-neutral-500 mb-2',
+              headerContent && headerContentGapClassName
+            )}
+          >
+            {headerDescription}
+          </p>
+        </>
+      )}
+
+      <div className="flex flex-1 flex-col mb-28">
         {visibleRecordGroups.length > 0 ? (
           <SpendingRecordList groups={visibleRecordGroups} />
         ) : (
@@ -141,7 +161,7 @@ export default function SpendingHistory({
         )}
       </div>
 
-      {isMonthPickerOpen && (
+      {!headerDescription && isMonthPickerOpen && (
         <MonthPickerSheet
           months={MOCK_SPENDING_MONTHS}
           selectedMonth={selectedMonth}

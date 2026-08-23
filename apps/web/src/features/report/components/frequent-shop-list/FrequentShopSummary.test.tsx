@@ -1,0 +1,38 @@
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+
+import FrequentShopSummary from './FrequentShopSummary';
+
+describe('FrequentShopSummary', () => {
+  it('이번 달 방문 횟수 기준 상위 7개 가게를 보여준다', () => {
+    render(
+      <MemoryRouter>
+        <FrequentShopSummary headerContent={<div>탭 영역</div>} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('탭 영역')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '자주 소비한 곳' })).toBeInTheDocument();
+    const description = screen.getByText('이번달 가장 많이 방문했어요!');
+    expect(description).toBeInTheDocument();
+    expect(description.closest('header')).toBeNull();
+    expect(screen.getByLabelText('1위')).toBeInTheDocument();
+    expect(screen.getByLabelText('7위')).toBeInTheDocument();
+    expect(screen.queryByLabelText('8위')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('12회 방문')).toBeInTheDocument();
+    expect(screen.getAllByText('용산구')).toHaveLength(7);
+  });
+
+  it('누적기록 버튼으로 단골 리스트에 이동한다', () => {
+    render(
+      <MemoryRouter>
+        <FrequentShopSummary />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('link', { name: '누적기록 보기' })).toHaveAttribute(
+      'href',
+      '/report/frequent-shops'
+    );
+  });
+});
