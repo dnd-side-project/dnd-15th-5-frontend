@@ -1,14 +1,14 @@
 import { KakaoIcon } from '@/shared/assets/icons';
 import { Button } from '@/shared/ui/button';
 
-import { useKakaoLogin } from '../../hooks/useKakaoLogin';
+import { useSocialLogin } from '../../hooks/useSocialLogin';
 
 import type { ComponentProps } from 'react';
 
 type KakaoLoginButtonProps = Pick<ComponentProps<typeof Button>, 'disabled'>;
 
 export default function KakaoLoginButton(props: KakaoLoginButtonProps) {
-  const { login, isLoading } = useKakaoLogin();
+  const { login, isLoading } = useSocialLogin('kakao');
 
   return (
     <Button

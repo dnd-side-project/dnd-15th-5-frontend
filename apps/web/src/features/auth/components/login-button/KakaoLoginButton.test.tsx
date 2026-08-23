@@ -1,28 +1,29 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { useKakaoLogin } from '../../hooks/useKakaoLogin';
+import { useSocialLogin } from '../../hooks/useSocialLogin';
 
 import KakaoLoginButton from './KakaoLoginButton';
 
-jest.mock('../../hooks/useKakaoLogin', () => ({ useKakaoLogin: jest.fn() }));
+jest.mock('../../hooks/useSocialLogin', () => ({ useSocialLogin: jest.fn() }));
 
-const mockUseKakaoLogin = jest.mocked(useKakaoLogin);
+const mockUseSocialLogin = jest.mocked(useSocialLogin);
 
 describe('<KakaoLoginButton />', () => {
   it('버튼을 누르면 카카오 로그인 훅을 실행한다', async () => {
     const user = userEvent.setup();
     const login = jest.fn();
-    mockUseKakaoLogin.mockReturnValue({ login, isLoading: false });
+    mockUseSocialLogin.mockReturnValue({ login, isLoading: false });
 
     render(<KakaoLoginButton />);
     await user.click(screen.getByRole('button', { name: 'Kakao 로그인' }));
 
     expect(login).toHaveBeenCalledTimes(1);
+    expect(mockUseSocialLogin).toHaveBeenCalledWith('kakao');
   });
 
   it('로그인 시작 중에는 로딩 상태를 표시한다', () => {
-    mockUseKakaoLogin.mockReturnValue({ login: jest.fn(), isLoading: true });
+    mockUseSocialLogin.mockReturnValue({ login: jest.fn(), isLoading: true });
 
     render(<KakaoLoginButton />);
 
