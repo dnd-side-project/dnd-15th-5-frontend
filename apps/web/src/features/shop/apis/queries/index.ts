@@ -1,1 +1,0 @@
-export { useShopSearchQuery } from './useShopSearchQuery';

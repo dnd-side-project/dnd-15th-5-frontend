@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ManualRecordForm } from '@/features/record';
-import { PlaceCard } from '@/features/shop';
 import type { ShopSearchResult } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { PlaceCard } from '@/shared/ui/card';
 
 type ManualRecordLocationState = {
   shop?: ShopSearchResult;
