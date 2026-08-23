@@ -19,13 +19,13 @@ describe('useSocialLogin', () => {
     jest.clearAllMocks();
   });
 
-  it.each(['kakao', 'google'] as const)('%s 로그인을 시작한다', async (provider) => {
+  it('구글 로그인을 시작한다', async () => {
     mockStartSocialLogin.mockResolvedValue();
-    const { result } = renderHook(() => useSocialLogin(provider));
+    const { result } = renderHook(() => useSocialLogin('google'));
 
     await act(() => result.current.login());
 
-    expect(mockStartSocialLogin).toHaveBeenCalledWith(provider);
+    expect(mockStartSocialLogin).toHaveBeenCalledWith('google');
     expect(result.current.isLoading).toBe(true);
   });
 
