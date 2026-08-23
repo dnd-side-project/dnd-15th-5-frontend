@@ -71,13 +71,11 @@ export type LoginCodeExchangeRequest = {
 };
 
 /**
- * 필수 약관 동의 요청
+ * 서비스 이용약관 동의 요청
  */
 export type TermsAgreementRequest = {
   /** 서비스 이용약관 동의 여부 */
   serviceTermsAgreed: boolean;
-  /** 개인정보 처리방침 동의 여부 */
-  privacyPolicyAgreed: boolean;
 };
 
 export type ApiResponseVoid = {
@@ -88,7 +86,7 @@ export type ApiResponseVoid = {
 
 export type StartParams = {
   /**
-   * 로그인을 시작한 클라이언트 유형
+   * 로그인을 시작한 클라이언트 유형 (WEB_LOCAL은 localhost 테스트용)
    */
   client: StartClient;
   /**
@@ -101,6 +99,7 @@ export type StartClient = (typeof StartClient)[keyof typeof StartClient];
 
 export const StartClient = {
   WEB: 'WEB',
+  WEB_LOCAL: 'WEB_LOCAL',
   APP: 'APP',
 } as const;
 
