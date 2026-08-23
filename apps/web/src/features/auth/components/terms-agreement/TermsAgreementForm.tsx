@@ -9,6 +9,7 @@ type AgreementKey = 'serviceTermsAgreed' | 'privacyPolicyAgreed' | 'locationTerm
 type AgreementState = Record<AgreementKey, boolean>;
 
 type TermsAgreementFormProps = {
+  isLoading?: boolean;
   onSubmit: (agreement: AgreementState) => void;
 };
 
@@ -46,7 +47,10 @@ function AgreementCheckbox({ checked, label, onChange }: AgreementCheckboxProps)
   );
 }
 
-export default function TermsAgreementForm({ onSubmit }: TermsAgreementFormProps) {
+export default function TermsAgreementForm({
+  isLoading = false,
+  onSubmit,
+}: TermsAgreementFormProps) {
   const [agreement, setAgreement] = useState(INITIAL_AGREEMENT);
   const isAllAgreed = Object.values(agreement).every(Boolean);
   const areRequiredTermsAgreed = agreement.serviceTermsAgreed && agreement.privacyPolicyAgreed;
@@ -116,7 +120,7 @@ export default function TermsAgreementForm({ onSubmit }: TermsAgreementFormProps
         >
           필수 항목에 동의해 주세요
         </p>
-        <Button disabled={!areRequiredTermsAgreed} onClick={handleSubmit}>
+        <Button disabled={!areRequiredTermsAgreed} isLoading={isLoading} onClick={handleSubmit}>
           다음으로
         </Button>
       </div>

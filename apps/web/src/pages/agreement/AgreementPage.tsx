@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 
-import { TermsAgreementForm } from '@/features/auth';
-import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { TermsAgreementForm, useTermsAgreement } from '@/features/auth';
 import { BackButton } from '@/shared/ui/back-button';
 
 export default function AgreementPage() {
   const navigate = useNavigate();
+  const { isLoading, submitTermsAgreement } = useTermsAgreement();
 
   return (
     <main className="flex min-h-dvh flex-col">
@@ -17,7 +17,10 @@ export default function AgreementPage() {
         약관에 동의해주세요
       </h1>
 
-      <TermsAgreementForm onSubmit={() => navigate(ROUTE_PATHS.onboarding)} />
+      <TermsAgreementForm
+        isLoading={isLoading}
+        onSubmit={({ serviceTermsAgreed }) => submitTermsAgreement({ serviceTermsAgreed })}
+      />
     </main>
   );
 }

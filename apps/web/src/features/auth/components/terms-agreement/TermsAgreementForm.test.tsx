@@ -46,4 +46,17 @@ describe('TermsAgreementForm', () => {
       locationTermsAgreed: false,
     });
   });
+
+  it('약관 제출 중에는 다음 버튼을 로딩 상태로 비활성화한다', async () => {
+    const user = userEvent.setup();
+    render(<TermsAgreementForm isLoading onSubmit={jest.fn()} />);
+
+    await user.click(screen.getByRole('checkbox', { name: '전체 동의' }));
+
+    expect(screen.getByRole('button', { name: '다음으로' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: '다음으로' })).toHaveAttribute('aria-busy', 'true');
+  });
 });
