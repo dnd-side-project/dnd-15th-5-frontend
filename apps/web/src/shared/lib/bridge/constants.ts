@@ -15,4 +15,7 @@ export const BRIDGE_REQUEST_TIMEOUT_MS = {
   // NOTE: 카메라 화면을 여는 데까지만 기다리며, 촬영 자체는 기다리지 않는다.
   // 첫 실행에는 OS 카메라 권한 팝업에 사용자가 응답할 시간이 포함된다.
   captureReceipt: 30_000,
+  getRefreshToken: 10_000,
+  setRefreshToken: 10_000,
+  clearRefreshToken: 10_000,
 } as const satisfies Record<BridgeMessageType, number>;

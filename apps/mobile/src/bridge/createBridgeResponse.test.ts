@@ -1,5 +1,6 @@
 import { BRIDGE_MESSAGE_KIND } from '@chapchap/shared/bridge';
 
+import { clearRefreshToken, getRefreshToken, setRefreshToken } from '@/native/authTokenStorage';
 import { getCurrentPosition } from '@/native/location';
 import { openReceiptCamera } from '@/native/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/save-image';
@@ -11,10 +12,18 @@ import type { BridgeRequest } from '@chapchap/shared/bridge';
 jest.mock('@/native/location', () => ({ getCurrentPosition: jest.fn() }));
 jest.mock('@/native/save-image', () => ({ saveImageToLibrary: jest.fn() }));
 jest.mock('@/native/openReceiptCamera', () => ({ openReceiptCamera: jest.fn() }));
+jest.mock('@/native/authTokenStorage', () => ({
+  clearRefreshToken: jest.fn(),
+  getRefreshToken: jest.fn(),
+  setRefreshToken: jest.fn(),
+}));
 
+const mockClearRefreshToken = jest.mocked(clearRefreshToken);
+const mockGetRefreshToken = jest.mocked(getRefreshToken);
 const mockGetCurrentPosition = jest.mocked(getCurrentPosition);
 const mockSaveImageToLibrary = jest.mocked(saveImageToLibrary);
 const mockOpenReceiptCamera = jest.mocked(openReceiptCamera);
+const mockSetRefreshToken = jest.mocked(setRefreshToken);
 
 const createRequest = (overrides: Partial<BridgeRequest> = {}): BridgeRequest =>
   ({
@@ -33,6 +42,9 @@ describe('createBridgeResponse', () => {
       position: { lat: 37.5665, lng: 126.978, accuracy: 25 },
     });
     mockSaveImageToLibrary.mockResolvedValue();
+    mockGetRefreshToken.mockResolvedValue(null);
+    mockSetRefreshToken.mockResolvedValue();
+    mockClearRefreshToken.mockResolvedValue();
   });
 
   it('요청을 처리하고 같은 식별자로 응답한다', async () => {
@@ -191,6 +203,66 @@ describe('createBridgeResponse', () => {
       type: request.type,
       ok: false,
       error: { message: '카메라 권한이 필요합니다' },
+    });
+  });
+
+  it('네이티브 보안 저장소에서 Refresh Token을 조회한다', async () => {
+    mockGetRefreshToken.mockResolvedValue('native-refresh-token');
+    const request: BridgeRequest<'getRefreshToken'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-auth-01',
+      type: 'getRefreshToken',
+      payload: {},
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { refreshToken: 'native-refresh-token' },
+    });
+  });
+
+  it('Refresh Token을 네이티브 보안 저장소에 저장한다', async () => {
+    const request: BridgeRequest<'setRefreshToken'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-auth-02',
+      type: 'setRefreshToken',
+      payload: { refreshToken: 'rotated-refresh-token' },
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(mockSetRefreshToken).toHaveBeenCalledWith('rotated-refresh-token');
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { saved: true },
+    });
+  });
+
+  it('네이티브 보안 저장소의 Refresh Token을 제거한다', async () => {
+    const request: BridgeRequest<'clearRefreshToken'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-auth-03',
+      type: 'clearRefreshToken',
+      payload: {},
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(mockClearRefreshToken).toHaveBeenCalledTimes(1);
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { cleared: true },
     });
   });
 });

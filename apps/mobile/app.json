@@ -98,7 +98,8 @@
             "./node_modules/pretendard/dist/public/static/alternative/Pretendard-Bold.ttf"
           ]
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -70,6 +70,18 @@ export type BridgeMessageMap = {
     payload: Record<string, never>;
     result: { opened: true };
   };
+  getRefreshToken: {
+    payload: Record<string, never>;
+    result: { refreshToken: string | null };
+  };
+  setRefreshToken: {
+    payload: { refreshToken: string };
+    result: { saved: true };
+  };
+  clearRefreshToken: {
+    payload: Record<string, never>;
+    result: { cleared: true };
+  };
 };
 
 export type BridgeMessageType = keyof BridgeMessageMap;

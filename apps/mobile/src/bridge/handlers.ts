@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 
+import { clearRefreshToken, getRefreshToken, setRefreshToken } from '@/native/authTokenStorage';
 import { getCurrentPosition } from '@/native/location';
 import { openReceiptCamera } from '@/native/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/save-image';
@@ -31,4 +32,15 @@ export const BRIDGE_HANDLERS: BridgeHandlerMap = {
     return { saved: true };
   },
   captureReceipt: () => openReceiptCamera(),
+  getRefreshToken: async () => ({ refreshToken: await getRefreshToken() }),
+  setRefreshToken: async ({ refreshToken }) => {
+    await setRefreshToken(refreshToken);
+
+    return { saved: true };
+  },
+  clearRefreshToken: async () => {
+    await clearRefreshToken();
+
+    return { cleared: true };
+  },
 };

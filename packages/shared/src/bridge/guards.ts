@@ -10,6 +10,9 @@ const BRIDGE_MESSAGE_TYPES: BridgeMessageType[] = [
   'ping',
   'saveImage',
   'captureReceipt',
+  'getRefreshToken',
+  'setRefreshToken',
+  'clearRefreshToken',
 ];
 
 const isBridgeMessageType = (value: unknown): value is BridgeMessageType =>
@@ -41,6 +44,10 @@ export const isBridgeRequest = (value: unknown): value is BridgeRequest => {
 
   if (value.type === 'saveImage') {
     return typeof value.payload.base64 === 'string' && typeof value.payload.fileName === 'string';
+  }
+
+  if (value.type === 'setRefreshToken') {
+    return typeof value.payload.refreshToken === 'string' && value.payload.refreshToken.length > 0;
   }
 
   return true;
@@ -80,6 +87,18 @@ export const isBridgeResponse = (value: unknown): value is BridgeResponse => {
 
   if (value.type === 'captureReceipt') {
     return value.result.opened === true;
+  }
+
+  if (value.type === 'getRefreshToken') {
+    return typeof value.result.refreshToken === 'string' || value.result.refreshToken === null;
+  }
+
+  if (value.type === 'setRefreshToken') {
+    return value.result.saved === true;
+  }
+
+  if (value.type === 'clearRefreshToken') {
+    return value.result.cleared === true;
   }
 
   if (value.result.status === 'permissionDenied' || value.result.status === 'servicesDisabled') {
