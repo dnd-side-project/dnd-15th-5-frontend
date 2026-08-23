@@ -1,6 +1,11 @@
 import { Platform } from 'react-native';
 
-import { clearRefreshToken, getRefreshToken, setRefreshToken } from '@/native/authTokenStorage';
+import {
+  clearRefreshToken,
+  getRefreshToken,
+  setRefreshToken,
+  startSocialLogin,
+} from '@/native/auth';
 import { getCurrentPosition } from '@/native/location';
 import { openReceiptCamera } from '@/native/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/save-image';
@@ -24,6 +29,7 @@ type BridgeHandlerMap = {
  *
  */
 export const BRIDGE_HANDLERS: BridgeHandlerMap = {
+  startSocialLogin: ({ provider, codeChallenge }) => startSocialLogin(provider, codeChallenge),
   getCurrentPosition: () => getCurrentPosition(),
   ping: () => ({ platform: Platform.OS, receivedAt: Date.now() }),
   saveImage: async ({ base64, fileName }) => {
@@ -33,7 +39,7 @@ export const BRIDGE_HANDLERS: BridgeHandlerMap = {
   },
   captureReceipt: () => openReceiptCamera(),
   getRefreshToken: async () => ({ refreshToken: await getRefreshToken() }),
-  setRefreshToken: async ({ refreshToken }) => {
+  saveRefreshToken: async ({ refreshToken }) => {
     await setRefreshToken(refreshToken);
 
     return { saved: true };

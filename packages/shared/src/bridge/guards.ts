@@ -6,12 +6,13 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
 const BRIDGE_MESSAGE_TYPES: BridgeMessageType[] = [
+  'startSocialLogin',
   'getCurrentPosition',
   'ping',
   'saveImage',
   'captureReceipt',
   'getRefreshToken',
-  'setRefreshToken',
+  'saveRefreshToken',
   'clearRefreshToken',
 ];
 
@@ -46,7 +47,15 @@ export const isBridgeRequest = (value: unknown): value is BridgeRequest => {
     return typeof value.payload.base64 === 'string' && typeof value.payload.fileName === 'string';
   }
 
-  if (value.type === 'setRefreshToken') {
+  if (value.type === 'startSocialLogin') {
+    return (
+      (value.payload.provider === 'kakao' || value.payload.provider === 'google') &&
+      typeof value.payload.codeChallenge === 'string' &&
+      /^[A-Za-z0-9_-]{43}$/u.test(value.payload.codeChallenge)
+    );
+  }
+
+  if (value.type === 'saveRefreshToken') {
     return typeof value.payload.refreshToken === 'string' && value.payload.refreshToken.length > 0;
   }
 
@@ -89,11 +98,23 @@ export const isBridgeResponse = (value: unknown): value is BridgeResponse => {
     return value.result.opened === true;
   }
 
+  if (value.type === 'startSocialLogin') {
+    if (value.result.status === 'cancelled') {
+      return true;
+    }
+
+    if (value.result.status === 'success') {
+      return typeof value.result.loginCode === 'string' && value.result.loginCode.length > 0;
+    }
+
+    return value.result.status === 'error' && typeof value.result.error === 'string';
+  }
+
   if (value.type === 'getRefreshToken') {
     return typeof value.result.refreshToken === 'string' || value.result.refreshToken === null;
   }
 
-  if (value.type === 'setRefreshToken') {
+  if (value.type === 'saveRefreshToken') {
     return value.result.saved === true;
   }
 

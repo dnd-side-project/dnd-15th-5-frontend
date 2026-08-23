@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 
+import { restoreNativeAuthentication } from '@/app/configureAxiosAuth';
 import { refreshWeb } from '@/features/auth/apis/clients';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { useAuthStore } from '@/shared/stores/authStore';
@@ -7,9 +8,11 @@ import { useAuthStore } from '@/shared/stores/authStore';
 import AuthProvider from './AuthProvider';
 
 jest.mock('@/features/auth/apis/clients', () => ({ refreshWeb: jest.fn() }));
+jest.mock('@/app/configureAxiosAuth', () => ({ restoreNativeAuthentication: jest.fn() }));
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn() }));
 
 const mockRefreshWeb = jest.mocked(refreshWeb);
+const mockRestoreNativeAuthentication = jest.mocked(restoreNativeAuthentication);
 const mockIsNativeApp = jest.mocked(isNativeApp);
 
 describe('<AuthProvider />', () => {
@@ -17,6 +20,7 @@ describe('<AuthProvider />', () => {
     jest.clearAllMocks();
     window.history.replaceState(null, '', '/');
     mockIsNativeApp.mockReturnValue(false);
+    mockRestoreNativeAuthentication.mockResolvedValue('app-access-token');
     useAuthStore.setState({
       accessToken: null,
       signupToken: null,
@@ -71,5 +75,21 @@ describe('<AuthProvider />', () => {
 
     await waitFor(() => expect(screen.getByText('콜백 화면')).toBeInTheDocument());
     expect(mockRefreshWeb).not.toHaveBeenCalled();
+  });
+
+  it('앱 시작 시 네이티브 Refresh Token으로 인증 상태를 복원한다', async () => {
+    mockIsNativeApp.mockReturnValue(true);
+
+    render(
+      <AuthProvider>
+        <p>앱 화면</p>
+      </AuthProvider>
+    );
+
+    expect(screen.getByRole('status', { name: '로그인 상태 확인 중' })).toBeInTheDocument();
+    expect(await screen.findByText('앱 화면')).toBeInTheDocument();
+    expect(mockRestoreNativeAuthentication).toHaveBeenCalledTimes(1);
+    expect(mockRefreshWeb).not.toHaveBeenCalled();
+    expect(useAuthStore.getState().isInitialized).toBe(true);
   });
 });

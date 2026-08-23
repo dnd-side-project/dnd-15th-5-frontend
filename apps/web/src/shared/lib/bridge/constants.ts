@@ -7,6 +7,8 @@ import type { BridgeMessageType } from '@chapchap/shared/bridge';
  * `BridgeMessageType`이 추가되면 대응하는 제한 시간도 반드시 정의해야 한다.
  */
 export const BRIDGE_REQUEST_TIMEOUT_MS = {
+  // NOTE: 사용자가 외부 OAuth 화면에서 인증을 마칠 때까지 기다린다.
+  startSocialLogin: 5 * 60_000,
   // NOTE: 현재 위치 조회는 실내나 GPS 신호가 약한 환경에서 지연될 수 있어 네이티브 응답을 최대 30초간 기다린다.
   getCurrentPosition: 30_000,
   ping: 10_000,
@@ -16,6 +18,6 @@ export const BRIDGE_REQUEST_TIMEOUT_MS = {
   // 첫 실행에는 OS 카메라 권한 팝업에 사용자가 응답할 시간이 포함된다.
   captureReceipt: 30_000,
   getRefreshToken: 10_000,
-  setRefreshToken: 10_000,
+  saveRefreshToken: 10_000,
   clearRefreshToken: 10_000,
 } as const satisfies Record<BridgeMessageType, number>;

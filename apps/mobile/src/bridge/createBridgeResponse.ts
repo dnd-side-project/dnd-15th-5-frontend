@@ -25,6 +25,14 @@ export const createBridgeResponse = async (request: BridgeRequest): Promise<Brid
 
   try {
     switch (request.type) {
+      case 'startSocialLogin':
+        return {
+          kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+          id: request.id,
+          type: request.type,
+          ok: true,
+          result: await BRIDGE_HANDLERS.startSocialLogin(request.payload),
+        };
       case 'getCurrentPosition':
         return {
           kind: BRIDGE_MESSAGE_KIND.RESPONSE,
@@ -65,13 +73,13 @@ export const createBridgeResponse = async (request: BridgeRequest): Promise<Brid
           ok: true,
           result: await BRIDGE_HANDLERS.getRefreshToken(request.payload),
         };
-      case 'setRefreshToken':
+      case 'saveRefreshToken':
         return {
           kind: BRIDGE_MESSAGE_KIND.RESPONSE,
           id: request.id,
           type: request.type,
           ok: true,
-          result: await BRIDGE_HANDLERS.setRefreshToken(request.payload),
+          result: await BRIDGE_HANDLERS.saveRefreshToken(request.payload),
         };
       case 'clearRefreshToken':
         return {

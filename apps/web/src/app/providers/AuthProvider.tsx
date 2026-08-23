@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { restoreNativeAuthentication } from '@/app/configureAxiosAuth';
 import { refreshWeb } from '@/features/auth/apis/clients';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { isNativeApp } from '@/shared/lib/bridge';
@@ -10,7 +11,7 @@ import type { PropsWithChildren } from 'react';
 
 type AuthProviderProps = PropsWithChildren;
 
-/** 웹 Refresh Token 쿠키로 앱 시작 시 인증 상태를 복원합니다. */
+/** 웹 쿠키 또는 앱 SecureStore의 Refresh Token으로 시작 시 인증 상태를 복원합니다. */
 export default function AuthProvider({ children }: AuthProviderProps) {
   const isInitialized = useAuthStore((state) => state.isInitialized);
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
@@ -18,9 +19,23 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
   useEffect(() => {
-    if (isNativeApp() || window.location.pathname === ROUTE_PATHS.authCallback) {
+    if (window.location.pathname === ROUTE_PATHS.authCallback) {
       setInitialized(true);
       return;
+    }
+
+    if (isNativeApp()) {
+      let isActive = true;
+
+      void restoreNativeAuthentication()
+        .catch(() => undefined)
+        .finally(() => {
+          if (isActive) setInitialized(true);
+        });
+
+      return () => {
+        isActive = false;
+      };
     }
 
     const abortController = new AbortController();

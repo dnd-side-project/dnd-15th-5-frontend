@@ -10,7 +10,7 @@ type AuthenticationResponse = {
   };
 };
 
-type AuthInterceptorDependencies = {
+export type AuthInterceptorDependencies = {
   isNativeApp: () => boolean;
   refreshWeb: () => Promise<AuthenticationResponse>;
   refreshApp: (refreshToken: string) => Promise<AuthenticationResponse>;
@@ -56,6 +56,59 @@ const getAccessTokenFromResponse = (response: AuthenticationResponse) => {
   return accessToken;
 };
 
+/** 현재 환경의 Refresh Token으로 새 Access Token을 발급합니다. */
+export const refreshAuthentication = async (dependencies: AuthInterceptorDependencies) => {
+  if (!dependencies.isNativeApp()) {
+    const response = await dependencies.refreshWeb();
+    const accessToken = getAccessTokenFromResponse(response);
+
+    useAuthStore.getState().setAccessToken(accessToken);
+    return accessToken;
+  }
+
+  const refreshToken = await dependencies.getNativeRefreshToken();
+
+  if (!refreshToken) {
+    throw new Error('앱 Refresh Token이 없습니다.');
+  }
+
+  const response = await dependencies.refreshApp(refreshToken);
+  const accessToken = getAccessTokenFromResponse(response);
+  const rotatedRefreshToken = response.data?.refreshToken;
+
+  if (!rotatedRefreshToken) {
+    throw new Error('토큰 재발급 응답에 Refresh Token이 없습니다.');
+  }
+
+  await dependencies.setNativeRefreshToken(rotatedRefreshToken);
+  useAuthStore.getState().setAccessToken(accessToken);
+
+  return accessToken;
+};
+
+/** 인증 상태와 앱 Refresh Token을 정리한 뒤 로그인 화면으로 이동합니다. */
+export const clearAuthentication = async (dependencies: AuthInterceptorDependencies) => {
+  useAuthStore.getState().clearAuth();
+
+  if (dependencies.isNativeApp()) {
+    try {
+      await dependencies.clearNativeRefreshToken();
+    } catch {
+      // INFO: 네이티브 저장소 정리 실패와 관계없이 웹 인증 상태와 화면 이동은 완료한다.
+    }
+  }
+
+  const redirectToLogin =
+    dependencies.redirectToLogin ??
+    (() => {
+      if (window.location.pathname !== ROUTE_PATHS.login) {
+        window.location.replace(ROUTE_PATHS.login);
+      }
+    });
+
+  redirectToLogin();
+};
+
 /**
  * Axios 인스턴스에 Access Token 및 401 재발급 인터셉터를 연결합니다.
  * 반환된 함수는 테스트나 앱 종료 시 인터셉터를 해제할 때 사용합니다.
@@ -66,62 +119,11 @@ export const attachAuthInterceptors = (
 ) => {
   let refreshPromise: Promise<string> | null = null;
 
-  const refreshAuthentication = async () => {
-    if (!dependencies.isNativeApp()) {
-      const response = await dependencies.refreshWeb();
-      const accessToken = getAccessTokenFromResponse(response);
-
-      useAuthStore.getState().setAccessToken(accessToken);
-      return accessToken;
-    }
-
-    const refreshToken = await dependencies.getNativeRefreshToken();
-
-    if (!refreshToken) {
-      throw new Error('앱 Refresh Token이 없습니다.');
-    }
-
-    const response = await dependencies.refreshApp(refreshToken);
-    const accessToken = getAccessTokenFromResponse(response);
-    const rotatedRefreshToken = response.data?.refreshToken;
-
-    if (!rotatedRefreshToken) {
-      throw new Error('토큰 재발급 응답에 Refresh Token이 없습니다.');
-    }
-
-    await dependencies.setNativeRefreshToken(rotatedRefreshToken);
-    useAuthStore.getState().setAccessToken(accessToken);
-
-    return accessToken;
-  };
-
-  const clearAuthentication = async () => {
-    useAuthStore.getState().clearAuth();
-
-    if (dependencies.isNativeApp()) {
-      try {
-        await dependencies.clearNativeRefreshToken();
-      } catch {
-        // INFO: 네이티브 저장소 정리 실패와 관계없이 웹 인증 상태와 화면 이동은 완료한다.
-      }
-    }
-
-    const redirectToLogin =
-      dependencies.redirectToLogin ??
-      (() => {
-        if (window.location.pathname !== ROUTE_PATHS.login) {
-          window.location.replace(ROUTE_PATHS.login);
-        }
-      });
-
-    redirectToLogin();
-  };
-
   const getRefreshPromise = () => {
     if (!refreshPromise) {
-      refreshPromise = refreshAuthentication()
+      refreshPromise = refreshAuthentication(dependencies)
         .catch(async (error: unknown) => {
-          await clearAuthentication();
+          await clearAuthentication(dependencies);
           throw error;
         })
         .finally(() => {

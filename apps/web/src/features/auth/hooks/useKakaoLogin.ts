@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { AuthFlowError } from '@/features/auth/errors';
 import { startSocialLogin } from '@/features/auth/utils/startSocialLogin';
 import { useToast } from '@/shared/ui/toast';
 
@@ -13,11 +14,14 @@ export const useKakaoLogin = () => {
 
     try {
       await startSocialLogin('kakao');
-    } catch {
+    } catch (error) {
       setIsLoading(false);
       showToast({
         type: 'error',
-        message: '카카오 로그인을 시작하지 못했습니다. 다시 시도해 주세요.',
+        message:
+          error instanceof AuthFlowError
+            ? error.message
+            : '카카오 로그인을 시작하지 못했습니다. 다시 시도해 주세요.',
       });
     }
   };

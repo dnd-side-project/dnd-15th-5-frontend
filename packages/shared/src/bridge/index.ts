@@ -12,4 +12,6 @@ export type {
   BridgeRequest,
   BridgeResponse,
   BridgeResult,
+  SocialLoginProvider,
+  SocialLoginResult,
 } from './types';

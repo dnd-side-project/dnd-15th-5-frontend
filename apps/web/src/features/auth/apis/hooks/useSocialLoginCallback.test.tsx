@@ -4,6 +4,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import type { ApiResponseAuthenticationResponse } from '@/features/auth/apis/dto';
 import { useExchangeSocialLoginCode } from '@/features/auth/apis/mutations';
 import { saveCodeVerifier } from '@/features/auth/utils/oauthSession';
+import { setNativeRefreshToken } from '@/shared/apis/nativeAuthToken';
+import { isNativeApp } from '@/shared/lib/bridge';
 import { useAuthStore } from '@/shared/stores/authStore';
 
 import { useSocialLoginCallback } from './useSocialLoginCallback';
@@ -11,10 +13,15 @@ import { useSocialLoginCallback } from './useSocialLoginCallback';
 jest.mock('@/features/auth/apis/mutations', () => ({
   useExchangeSocialLoginCode: jest.fn(),
 }));
+jest.mock('@/shared/apis/nativeAuthToken', () => ({ setNativeRefreshToken: jest.fn() }));
+jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn() }));
 
 const mockUseExchangeSocialLoginCode = jest.mocked(useExchangeSocialLoginCode);
+const mockSetNativeRefreshToken = jest.mocked(setNativeRefreshToken);
+const mockIsNativeApp = jest.mocked(isNativeApp);
 const mockMutate = jest.fn();
-let handleSuccess: ((response: ApiResponseAuthenticationResponse) => void) | undefined;
+let handleSuccess:
+  ((response: ApiResponseAuthenticationResponse) => void | Promise<void>) | undefined;
 
 function CallbackHarness() {
   const { error, isLoading } = useSocialLoginCallback();
@@ -40,6 +47,8 @@ describe('useSocialLoginCallback', () => {
     jest.clearAllMocks();
     sessionStorage.clear();
     handleSuccess = undefined;
+    mockIsNativeApp.mockReturnValue(false);
+    mockSetNativeRefreshToken.mockResolvedValue();
     useAuthStore.setState({
       accessToken: null,
       signupToken: null,
@@ -78,7 +87,7 @@ describe('useSocialLoginCallback', () => {
     renderCallback('/auth/callback?loginCode=login-code');
     await waitFor(() => expect(mockMutate).toHaveBeenCalled());
 
-    act(() => handleSuccess?.({ data: { accessToken: 'access-token' } }));
+    await act(() => handleSuccess?.({ data: { accessToken: 'access-token' } }));
 
     expect(await screen.findByText('홈 화면')).toBeInTheDocument();
     expect(useAuthStore.getState()).toMatchObject({
@@ -89,12 +98,47 @@ describe('useSocialLoginCallback', () => {
     });
   });
 
+  it('앱 기존 회원은 Access Token 적용 전에 Refresh Token을 네이티브에 저장한다', async () => {
+    mockIsNativeApp.mockReturnValue(true);
+    saveCodeVerifier('code-verifier');
+    renderCallback('/auth/callback?loginCode=login-code');
+    await waitFor(() => expect(mockMutate).toHaveBeenCalled());
+
+    await act(() =>
+      handleSuccess?.({
+        data: {
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token',
+        },
+      })
+    );
+
+    expect(mockSetNativeRefreshToken).toHaveBeenCalledWith('refresh-token');
+    expect(await screen.findByText('홈 화면')).toBeInTheDocument();
+    expect(useAuthStore.getState().accessToken).toBe('access-token');
+  });
+
+  it('앱 인증 완료 응답에 Refresh Token이 없으면 로그인 상태를 적용하지 않는다', async () => {
+    mockIsNativeApp.mockReturnValue(true);
+    saveCodeVerifier('code-verifier');
+    renderCallback('/auth/callback?loginCode=login-code');
+    await waitFor(() => expect(mockMutate).toHaveBeenCalled());
+
+    await act(() => handleSuccess?.({ data: { accessToken: 'access-token' } }));
+
+    expect(
+      await screen.findByText('로그인 결과를 확인할 수 없습니다. 다시 로그인해 주세요.')
+    ).toBeInTheDocument();
+    expect(mockSetNativeRefreshToken).not.toHaveBeenCalled();
+    expect(useAuthStore.getState().accessToken).toBeNull();
+  });
+
   it('신규 회원은 Signup Token을 저장하고 약관 동의로 이동한다', async () => {
     saveCodeVerifier('code-verifier');
     renderCallback('/auth/callback?loginCode=login-code');
     await waitFor(() => expect(mockMutate).toHaveBeenCalled());
 
-    act(() =>
+    await act(() =>
       handleSuccess?.({
         data: {
           requiresTermsAgreement: true,
