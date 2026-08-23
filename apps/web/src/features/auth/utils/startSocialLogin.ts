@@ -7,7 +7,7 @@ import { requestToNative } from '@/shared/lib/bridge';
 import { clearOAuthSession } from './oauthSession';
 import { prepareOAuthLogin } from './prepareOAuthLogin';
 
-type SocialLoginProvider = 'kakao' | 'google';
+import type { SocialLoginProvider } from '@chapchap/shared/bridge';
 
 type Redirect = (url: string) => void;
 
@@ -49,9 +49,7 @@ export const startSocialLogin = async (
         throw new AuthFlowError(AUTH_FLOW_ERROR_CODE.OAUTH_CANCELLED);
       }
 
-      throw new AuthFlowError(AUTH_FLOW_ERROR_CODE.OAUTH_FAILED, {
-        oauthError: result.error,
-      });
+      throw new AuthFlowError(AUTH_FLOW_ERROR_CODE.OAUTH_FAILED);
     } catch (error) {
       clearOAuthSession();
       throw error;

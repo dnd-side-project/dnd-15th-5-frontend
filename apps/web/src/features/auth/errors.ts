@@ -23,12 +23,10 @@ const AUTH_FLOW_ERROR_MESSAGE: Record<AuthFlowErrorCode, string> = {
 /** OAuth 진행 중 사용자에게 안내할 수 있는 인증 흐름 오류입니다. */
 export class AuthFlowError extends Error {
   readonly code: AuthFlowErrorCode;
-  readonly oauthError?: string;
 
-  constructor(code: AuthFlowErrorCode, options?: { oauthError?: string }) {
+  constructor(code: AuthFlowErrorCode) {
     super(AUTH_FLOW_ERROR_MESSAGE[code]);
     this.name = 'AuthFlowError';
     this.code = code;
-    this.oauthError = options?.oauthError;
   }
 }

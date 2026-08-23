@@ -1,2 +1,6 @@
 export { axiosInstance } from './axiosInstance';
-export { attachAuthInterceptors, isAuthRetryExcludedRequest } from './authInterceptors';
+export {
+  attachAuthInterceptors,
+  clearAuthentication,
+  refreshAuthentication,
+} from './authInterceptors';

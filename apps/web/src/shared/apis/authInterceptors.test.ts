@@ -73,6 +73,20 @@ describe('authInterceptors', () => {
     detach();
   });
 
+  it('약관 동의 요청에는 Signup Token을 추가한다', async () => {
+    useAuthStore.getState().setSignupToken('signup-token');
+    const instance = axios.create({
+      adapter: async (config) => createResponse(config, 200),
+    });
+    const dependencies = createDependencies();
+    const detach = attachAuthInterceptors(instance, dependencies);
+
+    const response = await instance.post('/auth/signup/terms');
+
+    expect(response.config.headers.get('Authorization')).toBe('Bearer signup-token');
+    detach();
+  });
+
   it('인증 발급·교환·로그아웃 요청에는 토큰을 추가하거나 401 재시도를 하지 않는다', async () => {
     useAuthStore.getState().setAccessToken('access-token');
     const instance = axios.create({ adapter: rejectUnauthorized });
@@ -82,6 +96,7 @@ describe('authInterceptors', () => {
     await expect(instance.post('/auth/social/exchange')).rejects.toBeInstanceOf(AxiosError);
 
     expect(dependencies.refreshWeb).not.toHaveBeenCalled();
+    expect(isAuthRetryExcludedRequest('/api/auth/signup/terms')).toBe(true);
     expect(isAuthRetryExcludedRequest('/api/auth/logout/web?source=test')).toBe(true);
     detach();
   });

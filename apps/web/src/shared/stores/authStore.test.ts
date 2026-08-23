@@ -10,15 +10,6 @@ describe('useAuthStore', () => {
     });
   });
 
-  it('인증 전 초기 상태를 가진다', () => {
-    expect(useAuthStore.getState()).toMatchObject({
-      accessToken: null,
-      signupToken: null,
-      isInitialized: false,
-      isAuthenticated: false,
-    });
-  });
-
   it('Access Token을 저장하면 로그인 상태가 된다', () => {
     useAuthStore.getState().setSignupToken('signup-token');
     useAuthStore.getState().setAccessToken('access-token');

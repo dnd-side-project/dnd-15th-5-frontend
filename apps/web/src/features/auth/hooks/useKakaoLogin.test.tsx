@@ -54,4 +54,16 @@ describe('useKakaoLogin', () => {
       message: '소셜 로그인이 취소되었습니다.',
     });
   });
+
+  it('OAuth 처리 실패 시 사용자용 오류 메시지를 안내한다', async () => {
+    mockStartSocialLogin.mockRejectedValue(new AuthFlowError(AUTH_FLOW_ERROR_CODE.OAUTH_FAILED));
+    const { result } = renderHook(() => useKakaoLogin());
+
+    await act(() => result.current.login());
+
+    expect(mockShowToast).toHaveBeenCalledWith({
+      type: 'error',
+      message: '소셜 로그인을 완료하지 못했습니다. 다시 시도해 주세요.',
+    });
+  });
 });

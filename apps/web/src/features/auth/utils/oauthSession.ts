@@ -1,9 +1,9 @@
+import { isOAuthCancellationError } from '@chapchap/shared/bridge';
+
 import { AUTH_FLOW_ERROR_CODE, AuthFlowError } from '@/features/auth/errors';
 
 const CODE_VERIFIER_STORAGE_KEY = 'chapchap.oauth.codeVerifier';
 const CALLBACK_CONSUMED_STORAGE_KEY = 'chapchap.oauth.callbackConsumed';
-const OAUTH_CANCELLATION_ERRORS = new Set(['access_denied', 'cancelled', 'canceled']);
-
 type OAuthCallbackCredentials = {
   loginCode: string;
   codeVerifier: string;
@@ -45,11 +45,11 @@ export const consumeOAuthCallback = (searchParams: URLSearchParams): OAuthCallba
 
   if (oauthError) {
     clearOAuthSession();
-    const errorCode = OAUTH_CANCELLATION_ERRORS.has(oauthError)
+    const errorCode = isOAuthCancellationError(oauthError)
       ? AUTH_FLOW_ERROR_CODE.OAUTH_CANCELLED
       : AUTH_FLOW_ERROR_CODE.OAUTH_FAILED;
 
-    throw new AuthFlowError(errorCode, { oauthError });
+    throw new AuthFlowError(errorCode);
   }
 
   const loginCode = searchParams.get('loginCode');

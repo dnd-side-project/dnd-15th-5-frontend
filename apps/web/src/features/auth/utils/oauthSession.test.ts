@@ -26,13 +26,12 @@ describe('OAuth session', () => {
     );
   });
 
-  it('OAuth error가 전달되면 취소 오류와 제공자 오류를 보존한다', () => {
+  it('OAuth error가 전달되면 취소 오류로 분류하고 임시 정보를 정리한다', () => {
     saveCodeVerifier('code-verifier');
 
     expect(() => consumeOAuthCallback(new URLSearchParams({ error: 'access_denied' }))).toThrow(
       expect.objectContaining({
         code: AUTH_FLOW_ERROR_CODE.OAUTH_CANCELLED,
-        oauthError: 'access_denied',
       })
     );
     expect(() => consumeCodeVerifier()).toThrow(
@@ -48,7 +47,6 @@ describe('OAuth session', () => {
     expect(() => consumeOAuthCallback(new URLSearchParams({ error: 'invalid_state' }))).toThrow(
       expect.objectContaining({
         code: AUTH_FLOW_ERROR_CODE.OAUTH_FAILED,
-        oauthError: 'invalid_state',
       })
     );
   });

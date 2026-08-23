@@ -1,3 +1,7 @@
+import {
+  clearAuthenticationTokens,
+  persistAuthenticationTokens,
+} from '@/shared/apis/authTokenLifecycle';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { useAuthStore } from '@/shared/stores/authStore';
 
@@ -28,9 +32,11 @@ const AUTH_RETRY_EXCLUDED_PATHS = new Set([
   '/auth/token/refresh',
   '/auth/token/refresh/web',
   '/auth/social/exchange',
+  '/auth/signup/terms',
   '/auth/logout',
   '/auth/logout/web',
 ]);
+const TERMS_AGREEMENT_PATH = '/auth/signup/terms';
 
 const getRequestPath = (url: string | undefined) => {
   if (!url) return '';
@@ -62,7 +68,7 @@ export const refreshAuthentication = async (dependencies: AuthInterceptorDepende
     const response = await dependencies.refreshWeb();
     const accessToken = getAccessTokenFromResponse(response);
 
-    useAuthStore.getState().setAccessToken(accessToken);
+    await persistAuthenticationTokens({ accessToken }, dependencies);
     return accessToken;
   }
 
@@ -80,23 +86,17 @@ export const refreshAuthentication = async (dependencies: AuthInterceptorDepende
     throw new Error('토큰 재발급 응답에 Refresh Token이 없습니다.');
   }
 
-  await dependencies.setNativeRefreshToken(rotatedRefreshToken);
-  useAuthStore.getState().setAccessToken(accessToken);
+  await persistAuthenticationTokens(
+    { accessToken, refreshToken: rotatedRefreshToken },
+    dependencies
+  );
 
   return accessToken;
 };
 
 /** 인증 상태와 앱 Refresh Token을 정리한 뒤 로그인 화면으로 이동합니다. */
 export const clearAuthentication = async (dependencies: AuthInterceptorDependencies) => {
-  useAuthStore.getState().clearAuth();
-
-  if (dependencies.isNativeApp()) {
-    try {
-      await dependencies.clearNativeRefreshToken();
-    } catch {
-      // INFO: 네이티브 저장소 정리 실패와 관계없이 웹 인증 상태와 화면 이동은 완료한다.
-    }
-  }
+  await clearAuthenticationTokens(dependencies);
 
   const redirectToLogin =
     dependencies.redirectToLogin ??
@@ -135,10 +135,17 @@ export const attachAuthInterceptors = (
   };
 
   const requestInterceptorId = instance.interceptors.request.use((config) => {
-    const accessToken = useAuthStore.getState().accessToken;
+    const requestPath = getRequestPath(config.url);
+    const { accessToken, signupToken } = useAuthStore.getState();
+    const authorizationToken =
+      requestPath === TERMS_AGREEMENT_PATH
+        ? signupToken
+        : AUTH_RETRY_EXCLUDED_PATHS.has(requestPath)
+          ? null
+          : accessToken;
 
-    if (accessToken && !isAuthRetryExcludedRequest(config.url)) {
-      config.headers.set('Authorization', `Bearer ${accessToken}`);
+    if (authorizationToken) {
+      config.headers.set('Authorization', `Bearer ${authorizationToken}`);
     }
 
     return config;

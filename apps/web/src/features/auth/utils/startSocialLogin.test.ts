@@ -4,7 +4,7 @@ import { requestToNative } from '@/shared/lib/bridge';
 
 import { clearOAuthSession } from './oauthSession';
 import { prepareOAuthLogin } from './prepareOAuthLogin';
-import { createSocialLoginStartUrl, startSocialLogin } from './startSocialLogin';
+import { startSocialLogin } from './startSocialLogin';
 
 jest.mock('./prepareOAuthLogin', () => ({ prepareOAuthLogin: jest.fn() }));
 jest.mock('./oauthSession', () => ({ clearOAuthSession: jest.fn() }));
@@ -17,15 +17,6 @@ const mockClearOAuthSession = jest.mocked(clearOAuthSession);
 describe('startSocialLogin', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  it('백엔드 카카오 로그인 시작 URL을 생성한다', () => {
-    expect(
-      createSocialLoginStartUrl('kakao', {
-        client: StartClient.WEB,
-        codeChallenge: 'code-challenge',
-      })
-    ).toBe('/api/oauth/kakao/start?client=WEB&codeChallenge=code-challenge');
   });
 
   it('PKCE 값을 준비한 뒤 생성된 URL로 이동한다', async () => {
@@ -72,7 +63,7 @@ describe('startSocialLogin', () => {
     expect(mockClearOAuthSession).toHaveBeenCalledTimes(1);
   });
 
-  it('앱 OAuth 제공자 오류를 인증 흐름 오류로 보존한다', async () => {
+  it('앱 OAuth 제공자 오류를 인증 흐름 실패로 분류한다', async () => {
     mockPrepareOAuthLogin.mockResolvedValue({
       client: StartClient.APP,
       codeChallenge: 'code-challenge',
@@ -81,7 +72,6 @@ describe('startSocialLogin', () => {
 
     await expect(startSocialLogin('google')).rejects.toMatchObject({
       code: AUTH_FLOW_ERROR_CODE.OAUTH_FAILED,
-      oauthError: 'invalid_state',
     });
     expect(mockClearOAuthSession).toHaveBeenCalledTimes(1);
   });

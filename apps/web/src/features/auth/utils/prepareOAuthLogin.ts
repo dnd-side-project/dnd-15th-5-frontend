@@ -1,4 +1,4 @@
-import { getAuthClient } from './authClient';
+import { getOAuthClientType } from './authClient';
 import { saveCodeVerifier } from './oauthSession';
 import { createCodeChallenge, createCodeVerifier } from './pkce';
 
@@ -10,7 +10,7 @@ export const prepareOAuthLogin = async () => {
   saveCodeVerifier(codeVerifier);
 
   return {
-    client: getAuthClient(),
+    client: getOAuthClientType(),
     codeChallenge,
   };
 };

@@ -1,3 +1,5 @@
+import { sha256 } from 'js-sha256';
+
 const PKCE_RANDOM_BYTE_LENGTH = 32;
 
 /** 바이트 배열을 패딩 없는 Base64 URL-safe 문자열로 변환합니다. */
@@ -17,7 +19,9 @@ export const createCodeVerifier = () => {
 /** codeVerifier를 SHA-256으로 해싱해 PKCE S256 codeChallenge를 생성합니다. */
 export const createCodeChallenge = async (codeVerifier: string) => {
   const encodedVerifier = new TextEncoder().encode(codeVerifier);
-  const digest = await crypto.subtle.digest('SHA-256', encodedVerifier);
+  const digest = crypto.subtle
+    ? new Uint8Array(await crypto.subtle.digest('SHA-256', encodedVerifier))
+    : new Uint8Array(sha256.array(encodedVerifier));
 
-  return encodeBase64Url(new Uint8Array(digest));
+  return encodeBase64Url(digest);
 };

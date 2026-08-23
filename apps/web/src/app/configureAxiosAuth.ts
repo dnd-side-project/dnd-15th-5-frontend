@@ -3,8 +3,8 @@ import {
   attachAuthInterceptors,
   clearAuthentication,
   refreshAuthentication,
-} from '@/shared/apis/authInterceptors';
-import { axiosInstance } from '@/shared/apis/axiosInstance';
+  axiosInstance,
+} from '@/shared/apis';
 import {
   clearNativeRefreshToken,
   getNativeRefreshToken,
