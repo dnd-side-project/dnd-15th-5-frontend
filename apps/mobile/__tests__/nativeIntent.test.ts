@@ -15,7 +15,7 @@ describe('redirectSystemPath', () => {
     mockIsOAuthCallbackUrl.mockReturnValue(true);
 
     expect(
-      redirectSystemPath({ path: 'chapchap:///auth/callback?loginCode=code', initial: false })
+      redirectSystemPath({ path: 'chapchap://oauth/callback?loginCode=code', initial: false })
     ).toBeNull();
   });
 

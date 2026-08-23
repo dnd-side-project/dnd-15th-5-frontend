@@ -21,7 +21,7 @@ describe('startSocialLogin', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_BASE_URL = 'https://chapchap.kr/api';
-    mockCreateUrl.mockReturnValue('chapchap:///auth/callback');
+    mockCreateUrl.mockReturnValue('chapchap://oauth/callback');
   });
 
   afterAll(() => {
@@ -31,17 +31,17 @@ describe('startSocialLogin', () => {
   it('외부 인증 세션에서 받은 loginCode를 반환한다', async () => {
     mockOpenAuthSessionAsync.mockResolvedValue({
       type: 'success',
-      url: 'chapchap:///auth/callback?loginCode=login-code',
+      url: 'chapchap://oauth/callback?loginCode=login-code',
     });
 
     await expect(startSocialLogin('kakao', 'a'.repeat(43))).resolves.toEqual({
       status: 'success',
       loginCode: 'login-code',
     });
-    expect(mockCreateUrl).toHaveBeenCalledWith('/auth/callback');
+    expect(mockCreateUrl).toHaveBeenCalledWith('/oauth/callback');
     expect(mockOpenAuthSessionAsync).toHaveBeenCalledWith(
       `https://chapchap.kr/api/oauth/kakao/start?client=APP&codeChallenge=${'a'.repeat(43)}`,
-      'chapchap:///auth/callback'
+      'chapchap://oauth/callback'
     );
   });
 
@@ -53,7 +53,7 @@ describe('startSocialLogin', () => {
 
     expect(mockOpenAuthSessionAsync).toHaveBeenCalledWith(
       `https://chapchap.kr/api/oauth/kakao/start?client=APP&codeChallenge=${'a'.repeat(43)}`,
-      'chapchap:///auth/callback'
+      'chapchap://oauth/callback'
     );
   });
 
@@ -71,7 +71,7 @@ describe('startSocialLogin', () => {
   it('callback의 제공자 오류를 보존한다', async () => {
     mockOpenAuthSessionAsync.mockResolvedValue({
       type: 'success',
-      url: 'chapchap:///auth/callback?error=invalid_state',
+      url: 'chapchap://oauth/callback?error=invalid_state',
     });
 
     await expect(startSocialLogin('kakao', 'a'.repeat(43))).resolves.toEqual({
@@ -83,7 +83,7 @@ describe('startSocialLogin', () => {
   it('callback에 loginCode가 없으면 오류로 반환한다', async () => {
     mockOpenAuthSessionAsync.mockResolvedValue({
       type: 'success',
-      url: 'chapchap:///auth/callback',
+      url: 'chapchap://oauth/callback',
     });
 
     await expect(startSocialLogin('google', 'a'.repeat(43))).resolves.toEqual({
@@ -95,7 +95,7 @@ describe('startSocialLogin', () => {
   it('등록한 callback과 다른 URL은 loginCode가 있어도 거부한다', async () => {
     mockOpenAuthSessionAsync.mockResolvedValue({
       type: 'success',
-      url: 'chapchap://evil/auth/callback?loginCode=login-code',
+      url: 'chapchap://evil/oauth/callback?loginCode=login-code',
     });
 
     await expect(startSocialLogin('kakao', 'a'.repeat(43))).resolves.toEqual({

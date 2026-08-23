@@ -1,10 +1,9 @@
+import { isOAuthCancellationError } from '@chapchap/shared/bridge';
 import * as WebBrowser from 'expo-web-browser';
 
 import { createOAuthCallbackUrl, isOAuthCallbackUrl } from './oauthCallbackUrl';
 
 import type { SocialLoginProvider, SocialLoginResult } from '@chapchap/shared/bridge';
-
-const OAUTH_CANCELLATION_ERRORS = new Set(['access_denied', 'cancelled', 'canceled']);
 
 const createSocialLoginStartUrl = (
   apiBaseUrl: string,
@@ -32,7 +31,7 @@ const parseOAuthRedirect = (
   const oauthError = searchParams.get('error');
 
   if (oauthError) {
-    return OAUTH_CANCELLATION_ERRORS.has(oauthError)
+    return isOAuthCancellationError(oauthError)
       ? { status: 'cancelled' }
       : { status: 'error', error: oauthError };
   }
