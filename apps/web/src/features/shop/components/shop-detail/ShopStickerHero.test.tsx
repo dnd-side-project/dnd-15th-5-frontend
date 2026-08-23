@@ -113,6 +113,42 @@ describe('ShopStickerHero', () => {
     expect(firstImage).toHaveClass('shop-sticker-hero__stamp--playing');
   });
 
+  it('빈 목록에서 스티커가 추가되면 새 이미지 로드를 기다린 뒤 애니메이션을 재생한다', () => {
+    const { container, rerender } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={[]} />
+    );
+
+    rerender(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={['new-sticker.png']} />
+    );
+    const image = container.querySelector('img') as HTMLImageElement;
+    expect(image).not.toHaveClass('shop-sticker-hero__stamp--playing');
+
+    fireEvent.load(image);
+
+    expect(image).toHaveClass('shop-sticker-hero__stamp--playing');
+  });
+
+  it('같은 개수의 스티커 URL이 바뀌면 로드 상태를 초기화한다', () => {
+    const initialImages = ['sticker-a.png', 'sticker-b.png'];
+    const nextImages = ['sticker-c.png', 'sticker-d.png'];
+    const { container, rerender } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={initialImages} />
+    );
+    Array.from(container.querySelectorAll('img')).forEach((image) => fireEvent.load(image));
+
+    rerender(<ShopStickerHero headerContent={null} placeId={101} stickerImages={nextImages} />);
+    const replacedImages = Array.from(container.querySelectorAll<HTMLImageElement>('img'));
+    replacedImages.forEach((image) => {
+      expect(image).not.toHaveClass('shop-sticker-hero__stamp--playing');
+    });
+
+    replacedImages.forEach((image) => fireEvent.load(image));
+    replacedImages.forEach((image) => {
+      expect(image).toHaveClass('shop-sticker-hero__stamp--playing');
+    });
+  });
+
   it('newestStickerIndex로 지정한 스티커는 나머지가 다 찍힌 뒤 강조 애니메이션으로 재생한다', () => {
     const { container } = render(
       <ShopStickerHero

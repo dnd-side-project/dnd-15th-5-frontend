@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 import { MOCK_MAP_STICKERS } from '../../mockData';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
+import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 import { useShopRecommendationStore } from '../../stores/shopRecommendationStore';
 import HomeCategoryFilter from '../home-overlay/HomeCategoryFilter';
 import HomeBottomSheet from '../HomeBottomSheet';
@@ -33,10 +34,42 @@ describe('MapStickers', () => {
     moveCamera.mockReset();
     panBy.mockReset();
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
+    useMapCategoryFilterStore.setState({ selectedCategory: null });
     useShopRecommendationStore.setState({
       activeRecommendationId: null,
       likedRecommendationIds: [],
     });
+  });
+
+  it('카테고리를 선택하면 관련된 지도 스티커만 표시한다', async () => {
+    const user = userEvent.setup();
+    const cafeSticker = MOCK_MAP_STICKERS.find(({ place }) => place.category === '카페');
+    const hobbySticker = MOCK_MAP_STICKERS.find(({ place }) => place.category === '취미/놀거리');
+    expect(cafeSticker).toBeDefined();
+    expect(hobbySticker).toBeDefined();
+
+    render(
+      <>
+        <HomeCategoryFilter />
+        <MapStickers />
+      </>
+    );
+
+    expect(
+      screen.getByRole('button', { name: `${cafeSticker?.label} 스티커` })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: `${hobbySticker?.label} 스티커` })
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '카페' }));
+
+    expect(
+      screen.getByRole('button', { name: `${cafeSticker?.label} 스티커` })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: `${hobbySticker?.label} 스티커` })
+    ).not.toBeInTheDocument();
   });
 
   it('스티커를 선택하면 해당 좌표로 지도를 이동하고 70px로 확대한다', async () => {

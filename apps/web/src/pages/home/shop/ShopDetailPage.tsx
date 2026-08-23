@@ -32,13 +32,23 @@ export default function ShopDetailPage() {
     navigate(ROUTE_PATHS.home);
   };
 
+  const handleBack = () => {
+    const historyIndex = window.history.state?.idx;
+    if (typeof historyIndex === 'number' && historyIndex > 0) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(ROUTE_PATHS.home, { replace: true });
+  };
+
   return (
     <main>
       <ShopDetail
         placeId={placeId}
         mockData={mockData}
         onViewOnMap={handleViewOnMap}
-        headerContent={<BackButton onClick={() => navigate(-1)} />}
+        headerContent={<BackButton onClick={handleBack} />}
       />
     </main>
   );

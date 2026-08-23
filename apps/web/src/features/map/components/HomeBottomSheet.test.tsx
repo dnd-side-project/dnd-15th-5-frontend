@@ -283,4 +283,40 @@ describe('HomeBottomSheet', () => {
     expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 1, name: '가게 추천' })).not.toBeInTheDocument();
   });
+
+  it('지도에서 먼 추천 마커를 선택해 캐러셀을 이동할 때 중간 카드로 선택을 덮어쓰지 않는다', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    const carousel = screen.getByRole('list', { name: '추천 가게 목록' });
+    Object.defineProperty(carousel.firstElementChild, 'offsetWidth', {
+      configurable: true,
+      value: 320,
+    });
+    const scrollTo = jest.fn();
+    carousel.scrollTo = scrollTo;
+    const lastRecommendation = MOCK_SHOP_RECOMMENDATIONS.at(-1);
+    expect(lastRecommendation).toBeDefined();
+
+    act(() => {
+      useShopRecommendationStore.getState().setActiveRecommendation(lastRecommendation?.id ?? '');
+    });
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 996, behavior: 'smooth' });
+    carousel.scrollLeft = 332;
+    fireEvent.scroll(carousel);
+
+    expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(
+      lastRecommendation?.id
+    );
+  });
 });

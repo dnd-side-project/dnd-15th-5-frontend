@@ -10,6 +10,7 @@ import { PlaceTagCard } from '@/shared/ui/card';
 import type { UIEvent } from 'react';
 
 const CARD_GAP_PX = 12;
+const PROGRAMMATIC_SCROLL_FALLBACK_MS = 1_000;
 
 /** 가게 추천 바텀시트 안에 표시하는 추천 캐러셀 콘텐츠입니다. */
 export default function ShopRecommendationSheet() {
@@ -26,6 +27,8 @@ export default function ShopRecommendationSheet() {
     (state) => state.toggleLikedRecommendation
   );
   const carouselRef = useRef<HTMLUListElement>(null);
+  const programmaticScrollTargetRef = useRef<number | null>(null);
+  const programmaticScrollTimeoutRef = useRef<number | null>(null);
   const activeIndex = Math.max(
     0,
     MOCK_SHOP_RECOMMENDATIONS.findIndex(({ id }) => id === activeRecommendationId)
@@ -49,16 +52,47 @@ export default function ShopRecommendationSheet() {
       return;
     }
 
-    carousel.scrollTo?.({
-      left: activeIndex * (firstCard.offsetWidth + CARD_GAP_PX),
+    const targetLeft = activeIndex * (firstCard.offsetWidth + CARD_GAP_PX);
+    if (!carousel.scrollTo || Math.abs(carousel.scrollLeft - targetLeft) <= 1) {
+      programmaticScrollTargetRef.current = null;
+      return;
+    }
+
+    programmaticScrollTargetRef.current = targetLeft;
+    programmaticScrollTimeoutRef.current = window.setTimeout(() => {
+      programmaticScrollTargetRef.current = null;
+      programmaticScrollTimeoutRef.current = null;
+    }, PROGRAMMATIC_SCROLL_FALLBACK_MS);
+    carousel.scrollTo({
+      left: targetLeft,
       behavior: 'smooth',
     });
+
+    return () => {
+      if (programmaticScrollTimeoutRef.current !== null) {
+        window.clearTimeout(programmaticScrollTimeoutRef.current);
+        programmaticScrollTimeoutRef.current = null;
+      }
+      programmaticScrollTargetRef.current = null;
+    };
   }, [activeIndex]);
 
   const handleCarouselScroll = (event: UIEvent<HTMLUListElement>) => {
     const carousel = event.currentTarget;
     const firstCard = carousel.firstElementChild as HTMLElement | null;
     if (!firstCard) {
+      return;
+    }
+
+    const programmaticTarget = programmaticScrollTargetRef.current;
+    if (programmaticTarget !== null) {
+      if (Math.abs(carousel.scrollLeft - programmaticTarget) <= 1) {
+        programmaticScrollTargetRef.current = null;
+        if (programmaticScrollTimeoutRef.current !== null) {
+          window.clearTimeout(programmaticScrollTimeoutRef.current);
+          programmaticScrollTimeoutRef.current = null;
+        }
+      }
       return;
     }
 

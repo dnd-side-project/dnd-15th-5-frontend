@@ -50,6 +50,7 @@ export function PlaceSearchInput({
       className="flex min-h-14 items-center gap-2 rounded-08 bg-neutral-50 px-4 focus-within:ring-2 focus-within:ring-primary-300"
     >
       <input
+        aria-label="장소 검색어"
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
         placeholder={placeholder}

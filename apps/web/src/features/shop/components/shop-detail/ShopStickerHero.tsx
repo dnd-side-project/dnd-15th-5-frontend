@@ -42,14 +42,44 @@ export default function ShopStickerHero({
     () => createShopStickerStampDelays(visibleStickerImages.length, newestStickerIndex),
     [newestStickerIndex, visibleStickerImages.length]
   );
+  const stickerSetKey = JSON.stringify([placeId, newestStickerIndex, visibleStickerImages]);
 
+  return (
+    <div className="relative h-75.25 shrink-0 overflow-hidden bg-[linear-gradient(to_bottom,transparent_25%,var(--color-primary-100)_100%)]">
+      <div className="absolute top-0 left-4 z-10">{headerContent}</div>
+
+      <ShopStickerCanvas
+        key={stickerSetKey}
+        newestStickerIndex={newestStickerIndex}
+        placements={placements}
+        stampDelays={stampDelays}
+        stickerImages={visibleStickerImages}
+      />
+    </div>
+  );
+}
+
+type ShopStickerCanvasProps = {
+  newestStickerIndex?: number;
+  placements: ReturnType<typeof createShopStickerPlacements>;
+  stampDelays: readonly number[];
+  stickerImages: readonly string[];
+};
+
+/** 이미지 집합이 바뀔 때 key로 다시 마운트되어 로드 진행 상태를 처음부터 계산합니다. */
+function ShopStickerCanvas({
+  newestStickerIndex,
+  placements,
+  stampDelays,
+  stickerImages,
+}: ShopStickerCanvasProps) {
   // NOTE: 스티커가 하나도 없으면 로드를 기다릴 필요가 없어 처음부터 준비된 상태로 시작한다.
-  const [isReady, setIsReady] = useState(() => visibleStickerImages.length === 0);
+  const [isReady, setIsReady] = useState(() => stickerImages.length === 0);
   const hasStartedRef = useRef(isReady);
   const loadedCountRef = useRef(0);
 
   useEffect(() => {
-    if (visibleStickerImages.length === 0) return;
+    if (stickerImages.length === 0) return;
 
     // NOTE: WebView 초기 로딩이 느려 이미지가 뜨기 전에 애니메이션이 끝나는 것을 막기 위해
     // 모든 이미지의 onLoad를 기다리되, 캐시 등으로 onLoad가 안 오는 경우를 대비한 폴백을 둔다.
@@ -60,40 +90,36 @@ export default function ShopStickerHero({
     }, STICKER_LOAD_FALLBACK_MS);
 
     return () => window.clearTimeout(timeoutId);
-  }, [visibleStickerImages.length]);
+  }, [stickerImages.length]);
 
   const handleStickerLoad = () => {
     loadedCountRef.current += 1;
-    if (loadedCountRef.current < visibleStickerImages.length) return;
+    if (loadedCountRef.current < stickerImages.length) return;
     if (hasStartedRef.current) return;
     hasStartedRef.current = true;
     setIsReady(true);
   };
 
   return (
-    <div className="relative h-75.25 shrink-0 overflow-hidden bg-[linear-gradient(to_bottom,transparent_25%,var(--color-primary-100)_100%)]">
-      <div className="absolute top-0 left-4 z-10">{headerContent}</div>
+    <div aria-label="최근 획득한 스티커" className="absolute inset-0">
+      {stickerImages.map((stickerImage, index) => {
+        const placement = placements[index];
+        if (!placement) return null;
 
-      <div aria-label="최근 획득한 스티커" className="absolute inset-0">
-        {visibleStickerImages.map((stickerImage, index) => {
-          const placement = placements[index];
-          if (!placement) return null;
+        const slotStyle = getShopStickerSlotStyle(placement) satisfies CSSProperties;
 
-          const slotStyle = getShopStickerSlotStyle(placement) satisfies CSSProperties;
-
-          return (
-            <ShopStickerStamp
-              key={`${stickerImage}-${index}`}
-              delayMs={stampDelays[index] ?? 0}
-              isNewest={index === newestStickerIndex}
-              isReady={isReady}
-              onLoad={handleStickerLoad}
-              slotStyle={slotStyle}
-              src={stickerImage}
-            />
-          );
-        })}
-      </div>
+        return (
+          <ShopStickerStamp
+            key={`${stickerImage}-${index}`}
+            delayMs={stampDelays[index] ?? 0}
+            isNewest={index === newestStickerIndex}
+            isReady={isReady}
+            onLoad={handleStickerLoad}
+            slotStyle={slotStyle}
+            src={stickerImage}
+          />
+        );
+      })}
     </div>
   );
 }

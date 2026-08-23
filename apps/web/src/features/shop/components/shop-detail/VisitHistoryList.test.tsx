@@ -49,4 +49,21 @@ describe('VisitHistoryList', () => {
 
     expect(onLoadMore).toHaveBeenCalledTimes(1);
   });
+
+  it('다음 페이지 요청이 실패한 상태에서는 목록 끝을 관찰하지 않는다', () => {
+    render(
+      <VisitHistoryList
+        visits={[{ visitedAt: '2026-08-23', amount: 23_000 }]}
+        isLoading={false}
+        isError
+        hasNextPage
+        isFetchingNextPage={false}
+        onLoadMore={jest.fn()}
+        onRetry={jest.fn()}
+        scrollRootRef={{ current: document.createElement('div') }}
+      />
+    );
+
+    expect(globalThis.IntersectionObserver).not.toHaveBeenCalled();
+  });
 });

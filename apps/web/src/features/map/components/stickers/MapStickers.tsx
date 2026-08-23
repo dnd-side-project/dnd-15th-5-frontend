@@ -3,6 +3,7 @@ import { useMap } from '@vis.gl/react-google-maps';
 import { SELECTED_PLACE_MAP_ZOOM } from '../../constants';
 import { MOCK_MAP_STICKERS } from '../../mockData';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
+import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 import { focusMapOnPosition } from '../../utils/focusMapOnPosition';
 
 import MapSticker from './MapSticker';
@@ -15,7 +16,11 @@ export default function MapStickers() {
   const map = useMap();
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const showSelectedPlace = useHomeBottomSheetStore((state) => state.showSelectedPlace);
+  const selectedCategory = useMapCategoryFilterStore((state) => state.selectedCategory);
   const selectedStickerId = activeSheet.type === 'selectedPlace' ? activeSheet.stickerId : null;
+  const visibleStickers = selectedCategory
+    ? MOCK_MAP_STICKERS.filter(({ place }) => place.category === selectedCategory)
+    : MOCK_MAP_STICKERS;
 
   const handleStickerSelect = (sticker: MapStickerData) => {
     showSelectedPlace(sticker.id);
@@ -26,7 +31,7 @@ export default function MapStickers() {
 
   return (
     <>
-      {MOCK_MAP_STICKERS.map((sticker) => (
+      {visibleStickers.map((sticker) => (
         <MapSticker
           key={sticker.id}
           sticker={sticker}

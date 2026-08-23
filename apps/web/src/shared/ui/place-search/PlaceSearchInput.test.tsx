@@ -8,6 +8,12 @@ describe('PlaceSearchInput', () => {
     jest.useRealTimers();
   });
 
+  it('검색 입력의 목적을 접근 가능한 이름으로 제공한다', () => {
+    render(<PlaceSearchInput onSearch={jest.fn()} />);
+
+    expect(screen.getByRole('textbox', { name: '장소 검색어' })).toBeInTheDocument();
+  });
+
   it('검색 버튼으로 현재 검색어를 즉시 전달한다', async () => {
     const user = userEvent.setup();
     const onSearch = jest.fn();

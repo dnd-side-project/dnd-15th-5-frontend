@@ -33,7 +33,7 @@ export default function VisitHistoryList({
 
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
-    if (!loadMoreElement || !hasNextPage || isFetchingNextPage) {
+    if (!loadMoreElement || isError || !hasNextPage || isFetchingNextPage) {
       return;
     }
 
@@ -48,7 +48,7 @@ export default function VisitHistoryList({
 
     observer.observe(loadMoreElement);
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, onLoadMore, scrollRootRef]);
+  }, [hasNextPage, isError, isFetchingNextPage, onLoadMore, scrollRootRef]);
 
   return (
     <section aria-labelledby="visit-history-title" className="mt-8 pb-8">
