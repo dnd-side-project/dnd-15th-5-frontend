@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { useSocialLogin } from '../../hooks/useSocialLogin';
+import { useSocialLogin } from '@/features/auth/hooks/useSocialLogin';
 
 import GoogleLoginButton from './GoogleLoginButton';
 
-jest.mock('../../hooks/useSocialLogin', () => ({ useSocialLogin: jest.fn() }));
+jest.mock('@/features/auth/hooks/useSocialLogin', () => ({ useSocialLogin: jest.fn() }));
 
 const mockUseSocialLogin = jest.mocked(useSocialLogin);
 

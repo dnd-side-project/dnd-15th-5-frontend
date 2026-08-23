@@ -1,7 +1,6 @@
+import { useSocialLogin } from '@/features/auth/hooks/useSocialLogin';
 import { KakaoIcon } from '@/shared/assets/icons';
 import { Button } from '@/shared/ui/button';
-
-import { useSocialLogin } from '../../hooks/useSocialLogin';
 
 import type { ComponentProps } from 'react';
 
