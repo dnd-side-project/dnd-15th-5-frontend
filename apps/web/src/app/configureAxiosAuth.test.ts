@@ -30,7 +30,7 @@ const mockIsNativeApp = jest.mocked(isNativeApp);
 describe('restoreNativeAuthentication', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.history.replaceState(null, '', '/');
+    window.history.replaceState(null, '', '/record');
     mockIsNativeApp.mockReturnValue(true);
     mockGetNativeRefreshToken.mockResolvedValue('refresh-token');
     mockSetNativeRefreshToken.mockResolvedValue();
@@ -54,6 +54,7 @@ describe('restoreNativeAuthentication', () => {
       signupToken: null,
       isAuthenticated: false,
     });
+    expect(window.location.pathname).toBe('/record');
     expect(mockRefreshWeb).not.toHaveBeenCalled();
   });
 });
