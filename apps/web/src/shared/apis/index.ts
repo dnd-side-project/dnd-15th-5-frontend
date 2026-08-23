@@ -4,3 +4,4 @@ export {
   clearAuthentication,
   refreshAuthentication,
 } from './authInterceptors';
+export { logoutAuthentication } from './logoutAuthentication';
