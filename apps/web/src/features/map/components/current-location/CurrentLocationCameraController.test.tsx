@@ -16,16 +16,18 @@ describe('<CurrentLocationCameraController />', () => {
   });
 
   it('현재 위치가 없으면 지도 중심을 이동하지 않는다', () => {
-    render(<CurrentLocationCameraController position={null} />);
+    render(<CurrentLocationCameraController isAutomaticPanEnabled position={null} />);
 
     expect(panTo).not.toHaveBeenCalled();
   });
 
   it('현재 위치가 확인되면 지도 중심을 해당 좌표로 이동한다', () => {
     const position = { lat: 37.5665, lng: 126.978 };
-    const { rerender } = render(<CurrentLocationCameraController position={null} />);
+    const { rerender } = render(
+      <CurrentLocationCameraController isAutomaticPanEnabled position={null} />
+    );
 
-    rerender(<CurrentLocationCameraController position={position} />);
+    rerender(<CurrentLocationCameraController isAutomaticPanEnabled position={position} />);
 
     expect(panTo).toHaveBeenCalledWith(position);
   });
@@ -33,11 +35,24 @@ describe('<CurrentLocationCameraController />', () => {
   it('최초 이동 후 위치가 바뀌어도 지도 중심을 다시 이동하지 않는다', () => {
     const initialPosition = { lat: 37.5665, lng: 126.978 };
     const nextPosition = { lat: 35.1796, lng: 129.0756 };
-    const { rerender } = render(<CurrentLocationCameraController position={initialPosition} />);
+    const { rerender } = render(
+      <CurrentLocationCameraController isAutomaticPanEnabled position={initialPosition} />
+    );
 
-    rerender(<CurrentLocationCameraController position={nextPosition} />);
+    rerender(<CurrentLocationCameraController isAutomaticPanEnabled position={nextPosition} />);
 
     expect(panTo).toHaveBeenCalledTimes(1);
     expect(panTo).toHaveBeenCalledWith(initialPosition);
+  });
+
+  it('다른 장소를 포커스한 채 진입하면 현재 위치 자동 이동을 이후에도 실행하지 않는다', () => {
+    const position = { lat: 37.5665, lng: 126.978 };
+    const { rerender } = render(
+      <CurrentLocationCameraController isAutomaticPanEnabled={false} position={position} />
+    );
+
+    rerender(<CurrentLocationCameraController isAutomaticPanEnabled position={position} />);
+
+    expect(panTo).not.toHaveBeenCalled();
   });
 });

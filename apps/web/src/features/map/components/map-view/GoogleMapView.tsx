@@ -4,10 +4,14 @@ import { useState } from 'react';
 import { GOOGLE_MAPS_MAP_ID } from '@/shared/lib/env';
 
 import { useCurrentPosition } from '../../hooks/useCurrentPosition';
+import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 import CurrentLocationButton from '../current-location/CurrentLocationButton';
 import CurrentLocationCameraController from '../current-location/CurrentLocationCameraController';
 import CurrentLocationMarker from '../current-location/CurrentLocationMarker';
+import RecommendationMapMarkers from '../RecommendationMapMarkers';
 import MapStickers from '../stickers/MapStickers';
+
+import MapFocusController from './MapFocusController';
 
 const MAP_DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
 const MAP_DEFAULT_ZOOM = 13;
@@ -21,9 +25,14 @@ const MAP_DEFAULT_ZOOM = 13;
 export default function GoogleMapView() {
   const { position, isLoading, error, requestPosition } = useCurrentPosition();
   const [showLocationError, setShowLocationError] = useState(false);
+  const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
+  const showHome = useHomeBottomSheetStore((state) => state.showHome);
 
   const handleMapClick = () => {
     setShowLocationError(false);
+    if (activeSheetType === 'selectedPlace' || activeSheetType === 'likedRecommendation') {
+      showHome();
+    }
   };
 
   const handleCurrentPositionRequest = () => {
@@ -44,9 +53,14 @@ export default function GoogleMapView() {
       clickableIcons={false}
       onClick={handleMapClick}
     >
-      <CurrentLocationCameraController position={position} />
+      <CurrentLocationCameraController
+        isAutomaticPanEnabled={activeSheetType === 'home'}
+        position={position}
+      />
       <CurrentLocationMarker position={position} />
+      <MapFocusController />
       <MapStickers />
+      <RecommendationMapMarkers />
       <CurrentLocationButton
         position={position}
         isLoading={isLoading}

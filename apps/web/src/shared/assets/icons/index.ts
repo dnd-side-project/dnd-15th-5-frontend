@@ -15,6 +15,8 @@ import CurrentLocationIcon from './ic-current-location.svg?react';
 import FilterIcon from './ic-filter.svg?react';
 import GoogleIcon from './ic-google.svg?react';
 import KakaoIcon from './ic-kakao.svg?react';
+import LikePinActiveIcon from './ic-like-pin-active.svg?react';
+import LikePinIcon from './ic-like-pin.svg?react';
 import LikeIcon from './ic-like.svg?react';
 import LocationPinIcon from './ic-location-pin.svg?react';
 import MapIcon from './ic-map.svg?react';
@@ -47,6 +49,8 @@ export {
   GoogleIcon,
   KakaoIcon,
   LikeIcon,
+  LikePinActiveIcon,
+  LikePinIcon,
   LocationPinIcon,
   MapIcon,
   NavigationHomeIcon,

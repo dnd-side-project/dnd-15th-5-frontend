@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 
-import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useHomeBottomSheetStore } from '@/features/map';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import BottomTabBar from '@/shared/layout/BottomTabBar';
 
@@ -14,6 +14,9 @@ import BottomTabBar from '@/shared/layout/BottomTabBar';
 export default function AppMainLayout() {
   const location = useLocation();
   const advanceHomeBottomSheet = useHomeBottomSheetStore((state) => state.advance);
+  const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
+  const isHomeModalSheetVisible =
+    location.pathname === ROUTE_PATHS.home && activeSheetType !== 'home';
 
   const handleHomeClick = () => {
     // NOTE: 다른 화면에서 홈으로 처음 들어올 때는 순환시키지 않는다. 이미 홈 화면을 보고 있는
@@ -28,7 +31,7 @@ export default function AppMainLayout() {
       <div className="flex-1">
         <Outlet />
       </div>
-      <BottomTabBar onHomeClick={handleHomeClick} />
+      {!isHomeModalSheetVisible && <BottomTabBar onHomeClick={handleHomeClick} />}
     </div>
   );
 }

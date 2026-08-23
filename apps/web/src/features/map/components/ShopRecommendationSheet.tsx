@@ -1,0 +1,159 @@
+import { useEffect, useRef } from 'react';
+
+import { MOCK_SHOP_RECOMMENDATIONS } from '@/features/map/mockData';
+import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
+import { getDistrict, getGoogleMapsPlaceUrl } from '@/features/map/utils/recommendation';
+import { BlueLocationPinIcon, ChevronRightIcon, LikeIcon } from '@/shared/assets/icons';
+import { cn } from '@/shared/lib/cn';
+import { PlaceTagCard } from '@/shared/ui/card';
+
+import type { UIEvent } from 'react';
+
+const CARD_GAP_PX = 12;
+
+/** 가게 추천 바텀시트 안에 표시하는 추천 캐러셀 콘텐츠입니다. */
+export default function ShopRecommendationSheet() {
+  const activeRecommendationId = useShopRecommendationStore(
+    (state) => state.activeRecommendationId
+  );
+  const likedRecommendationIds = useShopRecommendationStore(
+    (state) => state.likedRecommendationIds
+  );
+  const setActiveRecommendation = useShopRecommendationStore(
+    (state) => state.setActiveRecommendation
+  );
+  const toggleLikedRecommendation = useShopRecommendationStore(
+    (state) => state.toggleLikedRecommendation
+  );
+  const carouselRef = useRef<HTMLUListElement>(null);
+  const activeIndex = Math.max(
+    0,
+    MOCK_SHOP_RECOMMENDATIONS.findIndex(({ id }) => id === activeRecommendationId)
+  );
+
+  useEffect(() => {
+    const currentActiveRecommendationId =
+      useShopRecommendationStore.getState().activeRecommendationId;
+    const hasActiveRecommendation = MOCK_SHOP_RECOMMENDATIONS.some(
+      ({ id }) => id === currentActiveRecommendationId
+    );
+    if (!hasActiveRecommendation) {
+      setActiveRecommendation(MOCK_SHOP_RECOMMENDATIONS[0].id);
+    }
+  }, [setActiveRecommendation]);
+
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    const firstCard = carousel?.firstElementChild as HTMLElement | null;
+    if (!carousel || !firstCard) {
+      return;
+    }
+
+    carousel.scrollTo?.({
+      left: activeIndex * (firstCard.offsetWidth + CARD_GAP_PX),
+      behavior: 'smooth',
+    });
+  }, [activeIndex]);
+
+  const handleCarouselScroll = (event: UIEvent<HTMLUListElement>) => {
+    const carousel = event.currentTarget;
+    const firstCard = carousel.firstElementChild as HTMLElement | null;
+    if (!firstCard) {
+      return;
+    }
+
+    const cardStep = firstCard.offsetWidth + CARD_GAP_PX;
+    if (cardStep === 0) {
+      return;
+    }
+
+    const nextIndex = Math.min(
+      MOCK_SHOP_RECOMMENDATIONS.length - 1,
+      Math.max(0, Math.round(carousel.scrollLeft / cardStep))
+    );
+    const nextRecommendation = MOCK_SHOP_RECOMMENDATIONS[nextIndex];
+    if (nextRecommendation) {
+      setActiveRecommendation(nextRecommendation.id);
+    }
+  };
+
+  return (
+    <section aria-labelledby="shop-recommendation-title">
+      <h1 id="shop-recommendation-title" className="px-2 text-title-01-semibold text-neutral-700">
+        가게 추천
+      </h1>
+
+      <ul
+        ref={carouselRef}
+        aria-label="추천 가게 목록"
+        onScroll={handleCarouselScroll}
+        className="scrollbar-hidden mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto"
+      >
+        {MOCK_SHOP_RECOMMENDATIONS.map(({ id, reason, place, thumbnailSrc }, index) => {
+          const isLiked = likedRecommendationIds.includes(id);
+
+          return (
+            <li
+              key={id}
+              aria-label={`${index + 1}/${MOCK_SHOP_RECOMMENDATIONS.length} ${place.name}`}
+              className="relative flex w-80 max-w-[calc(100vw-4.5rem)] shrink-0 snap-start flex-col overflow-hidden rounded-15 border border-neutral-200 bg-neutral-00"
+            >
+              <span className="absolute top-0 left-0 rounded-br-16 bg-primary-500 px-3 py-2 text-caption-01-medium text-neutral-00">
+                {reason}
+              </span>
+              <button
+                type="button"
+                aria-label={`${place.name} 관심 가게`}
+                aria-pressed={isLiked}
+                onClick={() => toggleLikedRecommendation(id)}
+                className={cn(
+                  'absolute top-4 right-4 flex size-7 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-300',
+                  isLiked ? 'text-primary-500' : 'text-neutral-200'
+                )}
+              >
+                <LikeIcon aria-hidden="true" className="size-5" />
+              </button>
+
+              <div className="flex min-h-32 items-end px-4 pt-12 pb-4">
+                <PlaceTagCard
+                  thumbnailSrc={thumbnailSrc}
+                  title={place.name}
+                  tags={[
+                    { label: getDistrict(place.address), icon: BlueLocationPinIcon },
+                    { label: place.category },
+                  ]}
+                />
+              </div>
+
+              <a
+                href={getGoogleMapsPlaceUrl(place.name, place.address)}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${place.name} 지도앱에서 확인하기`}
+                className="flex h-11 items-center gap-1 justify-center border-t border-neutral-200 text-body-02-regular text-neutral-500 outline-none hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset"
+              >
+                지도앱에서 확인하기
+                <ChevronRightIcon aria-hidden="true" className="size-3" />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="mt-4 flex items-center justify-center gap-1" aria-hidden="true">
+        {MOCK_SHOP_RECOMMENDATIONS.map(({ id }, index) => (
+          <span
+            key={id}
+            className={cn(
+              'size-1.5 rounded-full',
+              index === activeIndex ? 'w-5 bg-neutral-500' : 'bg-neutral-300'
+            )}
+          />
+        ))}
+      </div>
+      <p className="sr-only" aria-live="polite">
+        {activeIndex + 1}번째 추천 가게
+      </p>
+    </section>
+  );
+}

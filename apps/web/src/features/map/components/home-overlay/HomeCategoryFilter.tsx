@@ -1,17 +1,36 @@
+import { useState } from 'react';
+
 import { CategoryChip } from '@/shared/ui/category-chip';
 
 import { HOME_CATEGORIES } from '../../constants';
-import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
+import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 
-/**
- * 지도 홈 상단에 뜨는 가게 추천·카테고리 필터입니다.
- *
- * 한 줄로 가로 스크롤되며, 선택한 카테고리는 `useMapCategoryFilterStore`를 통해 지도 스티커
- * 목록 조회(`MapStickers`)에 전달됩니다.
- */
+/** 지도 홈 상단에 한 줄로 표시하는 가게 추천·카테고리 칩입니다. */
 export default function HomeCategoryFilter() {
-  const selected = useMapCategoryFilterStore((state) => state.selected);
-  const setSelected = useMapCategoryFilterStore((state) => state.setSelected);
+  const [selectedCategory, setSelectedCategory] = useState<(typeof HOME_CATEGORIES)[number] | null>(
+    null
+  );
+  const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
+  const showHome = useHomeBottomSheetStore((state) => state.showHome);
+  const showRecommendation = useHomeBottomSheetStore((state) => state.showRecommendation);
+
+  const handleRecommendationSelection = (isSelected: boolean) => {
+    if (isSelected) {
+      setSelectedCategory(null);
+      showRecommendation();
+      return;
+    }
+
+    showHome();
+  };
+
+  const handleCategorySelection = (
+    category: (typeof HOME_CATEGORIES)[number],
+    isSelected: boolean
+  ) => {
+    setSelectedCategory(isSelected ? category : null);
+    showHome();
+  };
 
   return (
     <div
@@ -23,8 +42,8 @@ export default function HomeCategoryFilter() {
         <CategoryChip
           variant="compact"
           hasRecommendationIcon
-          selected={selected === 'recommendation'}
-          onSelectedChange={(isSelected) => isSelected && setSelected('recommendation')}
+          selected={activeSheetType === 'recommendation'}
+          onSelectedChange={handleRecommendationSelection}
         >
           가게 추천
         </CategoryChip>
@@ -33,8 +52,8 @@ export default function HomeCategoryFilter() {
           <CategoryChip
             key={category}
             variant="compact"
-            selected={selected === category}
-            onSelectedChange={(isSelected) => isSelected && setSelected(category)}
+            selected={selectedCategory === category}
+            onSelectedChange={(isSelected) => handleCategorySelection(category, isSelected)}
           >
             {category}
           </CategoryChip>

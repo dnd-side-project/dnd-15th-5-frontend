@@ -40,7 +40,9 @@ export default function CurrentLocationButton({
   const map = useMap();
   const isDisabled = !map || isLoading;
   const stepIndex = useHomeBottomSheetStore((state) => state.stepIndex);
-  const bottomSheetSnapPoint = getHomeBottomSheetSnapPoint(stepIndex);
+  const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
+  const bottomSheetSnapPoint =
+    activeSheetType === 'home' ? getHomeBottomSheetSnapPoint(stepIndex) : 'medium';
   // NOTE: 바텀시트가 열려 있으면(medium/full) 항상 핸들 바로 위에 떠 있도록, 바텀시트와
   // 같은 비율로 위치를 맞춘다.
   const bottomOffset =
@@ -70,7 +72,7 @@ export default function CurrentLocationButton({
         {errorMessage && (
           <p
             role="status"
-            className="max-w-52 rounded-lg bg-gray-900/85 px-3 py-2 text-xs text-white"
+            className="max-w-52 rounded-08 bg-neutral-700/85 px-3 py-2 text-caption-01-medium text-neutral-00"
           >
             {errorMessage}
           </p>

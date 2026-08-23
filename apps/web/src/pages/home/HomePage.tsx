@@ -1,5 +1,5 @@
 import { GoogleMapView, HomeBottomSheet, HomeMapOverlay } from '@/features/map';
-import { SpendingHistory } from '@/features/report';
+import { FrequentShopSummary, SpendingHistory } from '@/features/report';
 
 export default function HomePage() {
   return (
@@ -7,8 +7,15 @@ export default function HomePage() {
       <GoogleMapView />
       <HomeMapOverlay />
       <HomeBottomSheet
+        renderFrequentShops={(headerContent) => (
+          <FrequentShopSummary headerContent={headerContent} />
+        )}
         renderSpendingHistory={(headerContent) => (
-          <SpendingHistory headerContent={headerContent} headerContentGapClassName="mt-4" />
+          <SpendingHistory
+            headerContent={headerContent}
+            headerContentGapClassName="mt-4"
+            headerDescription="이번달 작성한 소비기록을 확인해보세요"
+          />
         )}
       />
     </div>

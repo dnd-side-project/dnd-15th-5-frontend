@@ -5,7 +5,7 @@ export type MapPosition = {
   lng: number;
 };
 
-export type HomeCategoryFilterValue = (typeof HOME_CATEGORIES)[number] | 'recommendation';
+export type HomeCategory = (typeof HOME_CATEGORIES)[number];
 
 export type CurrentPositionError =
   | { reason: 'permissionDenied'; message: string }
@@ -17,6 +17,26 @@ export type MapSticker = {
   id: string;
   image: string;
   label: string;
+  place: MapPlaceDetail;
   position: MapPosition;
   visitCount: number;
+};
+
+export type MapPlaceDetail = {
+  address: string;
+  category: HomeCategory;
+  id: string;
+  isRegular: boolean;
+  name: string;
+  stickerImages: readonly string[];
+};
+
+export type ShopRecommendationReason = '나의 관심 카테고리' | '내 동네에서 많이 방문한 곳';
+
+export type ShopRecommendation = {
+  id: string;
+  place: MapPlaceDetail;
+  position: MapPosition;
+  reason: ShopRecommendationReason;
+  thumbnailSrc: string | null;
 };
