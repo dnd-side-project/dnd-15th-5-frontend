@@ -42,6 +42,12 @@
   --color-report-card-explorer-back: #cad7ff;
   --color-report-card-explorer-spot: #fff8f9;
   --color-report-question-panel: rgb(0 0 0 / 50%);
+  --color-report-category-cafe: #7a93ff;
+  --color-report-category-restaurant: #f8bb52;
+  --color-report-category-exercise: #4ca49d;
+  --color-report-category-market: #ff6243;
+  --color-report-category-entertainment: #98d7f0;
+  --color-report-category-beauty: #e5eaff;
 
   /* Gradient */
   --background-image-report-hero: linear-gradient(

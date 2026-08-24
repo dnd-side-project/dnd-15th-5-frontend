@@ -30,6 +30,14 @@ const SHOP_STICKERS = [
 ] as const;
 const VISIBLE_SHOP_STICKERS = SHOP_STICKERS.slice(0, MAX_VISIBLE_SHOP_STICKERS);
 const ADDITIONAL_SHOP_STICKER_COUNT = SHOP_STICKERS.length - VISIBLE_SHOP_STICKERS.length;
+const SHOP_STICKER_SIZE = 60;
+const SHOP_STICKER_MORE_BADGE_SIZE = 30;
+const SHOP_STICKER_ITEM_COUNT =
+  VISIBLE_SHOP_STICKERS.length + (ADDITIONAL_SHOP_STICKER_COUNT > 0 ? 1 : 0);
+const SHOP_STICKER_NATURAL_WIDTH =
+  VISIBLE_SHOP_STICKERS.length * SHOP_STICKER_SIZE +
+  (ADDITIONAL_SHOP_STICKER_COUNT > 0 ? SHOP_STICKER_MORE_BADGE_SIZE : 0);
+const SHOP_STICKER_GAP_COUNT = Math.max(SHOP_STICKER_ITEM_COUNT - 1, 1);
 
 type TopShop = {
   id: string;
@@ -84,7 +92,8 @@ export default function ReportTopShops({ shops }: ReportTopShopsProps) {
                   aria-label={`1위 가게 스티커 ${VISIBLE_SHOP_STICKERS.length}개, 추가 ${ADDITIONAL_SHOP_STICKER_COUNT}개`}
                   className="grid items-center px-4 pb-4"
                   style={{
-                    gridTemplateColumns: `repeat(${VISIBLE_SHOP_STICKERS.length}, minmax(0, 1fr)) ${ADDITIONAL_SHOP_STICKER_COUNT > 0 ? '36px' : ''}`,
+                    columnGap: `max(0px, calc((100% - ${SHOP_STICKER_NATURAL_WIDTH}px) / ${SHOP_STICKER_GAP_COUNT}))`,
+                    gridTemplateColumns: `repeat(${VISIBLE_SHOP_STICKERS.length - 1}, minmax(0, 1fr)) ${SHOP_STICKER_SIZE}px ${ADDITIONAL_SHOP_STICKER_COUNT > 0 ? `${SHOP_STICKER_MORE_BADGE_SIZE}px` : ''}`,
                   }}
                 >
                   {VISIBLE_SHOP_STICKERS.map((sticker, index) => (
@@ -92,13 +101,13 @@ export default function ReportTopShops({ shops }: ReportTopShopsProps) {
                       <img
                         alt=""
                         aria-hidden
-                        className="size-16 max-w-none object-contain"
+                        className="size-[60px] max-w-none object-contain"
                         src={sticker}
                       />
                     </span>
                   ))}
                   {ADDITIONAL_SHOP_STICKER_COUNT > 0 && (
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-body-02-semibold text-neutral-600">
+                    <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-neutral-200 text-label-01-medium text-neutral-600">
                       +{ADDITIONAL_SHOP_STICKER_COUNT}
                     </span>
                   )}
