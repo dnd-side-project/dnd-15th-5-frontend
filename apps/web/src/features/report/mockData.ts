@@ -103,7 +103,7 @@ export const MOCK_REPORT_DETAIL = {
   categories: [
     { category: '카페', percentage: 60 },
     { category: '음식점', percentage: 30 },
-    { category: '운동', percentage: 20 },
+    { category: '운동', percentage: 10 },
   ],
   weekdaySpending: [
     { day: '월', amount: 26_000 },
