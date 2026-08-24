@@ -66,6 +66,7 @@ export default function CategoryChart({ categories }: CategoryChartProps) {
                           ? 'end'
                           : 'center'
                     }
+                    markerClassName={colorClassName}
                   >
                     {category.category} {category.percentage}%
                   </ReportChartTooltip>
