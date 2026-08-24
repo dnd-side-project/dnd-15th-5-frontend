@@ -4,7 +4,8 @@ type ReportPreferenceCardProps = {
   title: string;
 };
 
-// TODO: 디자인 시스템 확정 후 컬러·타이포그래피 토큰과 카드 유형별 variant를 적용한다.
+// TODO: 리포트 취향 카드 시안 확정 후 임시 색상·타이포그래피 값을
+// 디자인 토큰과 variant로 교체한다.
 /**
  * 사용자의 리포트 취향 결과를 이미지 영역, 제목, 설명, 태그로 표현하는 카드.
  *
@@ -17,7 +18,7 @@ export default function ReportPreferenceCard({
 }: ReportPreferenceCardProps) {
   return (
     <article className="box-border w-69 overflow-hidden rounded-15 bg-[#506FAF] px-3.5 pb-6 pt-3.5">
-      {/* TODO: 이미지 영역에 이미지 넣기 */}
+      {/* TODO: 취향 유형별 이미지 에셋이 확정되면 현재 placeholder 영역에 연결한다. */}
       <div
         aria-label="이미지 영역"
         className="box-border h-65 w-62 rounded-2xl border border-neutral-900"

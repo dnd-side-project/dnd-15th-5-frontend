@@ -19,8 +19,8 @@ const PREFERENCE_METRIC_LABELS: Record<
   routine: { leftLabel: '즉흥형', rightLabel: '규칙형' },
 };
 
-// TODO: 디자인 시스템 확정 후 컬러·타이포그래피 토큰과 카드 유형별 variant를 적용한다.
-// TODO: 피그마 디자인 확정 후 레이아웃 조정 필요
+// TODO: 리포트 공유 카드 시안 확정 후 임시 색상·타이포그래피·레이아웃 값을
+// 디자인 토큰과 variant로 교체한다.
 /**
  * PNG 저장에 사용하는 리포트 취향 카드.
  *
