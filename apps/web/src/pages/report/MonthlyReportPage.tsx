@@ -21,6 +21,7 @@ export default function MonthlyReportPage() {
     handleNewerMonth,
     handleOlderMonth,
     handlePreferenceCardFlip,
+    handleReportCardSelect,
     handleShareSheetClose,
     handleShareSheetOpen,
     hasNewerMonth,
@@ -29,6 +30,8 @@ export default function MonthlyReportPage() {
     isDownloading,
     isShareSheetOpen,
     report,
+    reportCards,
+    selectedCardIndex,
     selectedMonth,
   } = useMonthlyReport();
 
@@ -46,15 +49,13 @@ export default function MonthlyReportPage() {
           selectedMonth={selectedMonth}
         />
         <ReportPreferenceSection
+          cards={reportCards}
           captureRef={captureRef}
-          description={report.persona.description}
           isFlipped={isCardFlipped}
-          metrics={report.persona.metrics}
+          onCardSelect={handleReportCardSelect}
           onFlip={handlePreferenceCardFlip}
           onShare={handleShareSheetOpen}
-          tags={report.persona.tags}
-          title={report.persona.title}
-          variant={report.persona.variant}
+          selectedCardIndex={selectedCardIndex}
         />
       </div>
 

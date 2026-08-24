@@ -1,0 +1,79 @@
+.report-preference-section {
+  --report-card-side-gap: max(20px, calc(50cqi - 161px));
+
+  container-type: inline-size;
+}
+
+.report-preference-carousel {
+  display: flex;
+  width: 100%;
+  margin-block: -12px;
+  overflow-x: hidden;
+  overscroll-behavior-inline: contain;
+  padding-block: 12px;
+  padding-inline: calc(50% - 138px);
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+
+.report-preference-carousel[data-dragging='true'] {
+  cursor: grabbing;
+}
+
+.report-preference-carousel-card {
+  flex: none;
+  transition: transform 460ms cubic-bezier(0.22, 1.35, 0.36, 1);
+}
+
+.report-preference-carousel-card--current,
+.report-preference-carousel-card--right {
+  margin-right: var(--report-card-side-gap);
+}
+
+.report-preference-carousel-card--left {
+  margin-right: var(--report-card-side-gap);
+  pointer-events: none;
+  transform: rotate(-2deg);
+}
+
+.report-preference-carousel-card--right {
+  pointer-events: none;
+  transform: rotate(2deg);
+}
+
+.report-preference-carousel[data-dragging='true'] .report-preference-carousel-card--current {
+  transform: translateY(2px) scale(0.985);
+}
+
+.report-preference-carousel[data-settling='true']
+  .report-preference-carousel-card--current
+  > .report-preference-card {
+  animation: report-preference-card-settle 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes report-preference-card-settle {
+  0% {
+    transform: scale(0.985);
+  }
+
+  72% {
+    transform: scale(1.008);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-preference-carousel-card {
+    transition: none;
+  }
+
+  .report-preference-carousel[data-settling='true']
+    .report-preference-carousel-card--current
+    > .report-preference-card {
+    animation: none;
+  }
+}

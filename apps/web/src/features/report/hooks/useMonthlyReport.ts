@@ -18,6 +18,11 @@ export const useMonthlyReport = () => {
 
   const hasNewerMonth = selectedReportIndex > 0;
   const hasOlderMonth = selectedReportIndex < MOCK_MONTHLY_REPORTS.length - 1;
+  const reportCards = [...MOCK_MONTHLY_REPORTS].reverse().map(({ month, persona }) => ({
+    ...persona,
+    id: `${month.year}-${month.month}`,
+  }));
+  const selectedCardIndex = reportCards.length - 1 - selectedReportIndex;
 
   useEffect(() => {
     if (!hasDownloadError) return;
@@ -28,18 +33,21 @@ export const useMonthlyReport = () => {
     });
   }, [hasDownloadError, showToast]);
 
-  const handleNewerMonth = () => {
-    if (!hasNewerMonth) return;
+  const handleReportSelect = (index: number) => {
+    if (index < 0 || index >= MOCK_MONTHLY_REPORTS.length || index === selectedReportIndex) return;
 
     setIsCardFlipped(false);
-    setSelectedReportIndex((index) => index - 1);
+    setSelectedReportIndex(index);
   };
 
-  const handleOlderMonth = () => {
-    if (!hasOlderMonth) return;
+  const handleNewerMonth = () => handleReportSelect(selectedReportIndex - 1);
 
-    setIsCardFlipped(false);
-    setSelectedReportIndex((index) => index + 1);
+  const handleOlderMonth = () => {
+    handleReportSelect(selectedReportIndex + 1);
+  };
+
+  const handleReportCardSelect = (index: number) => {
+    handleReportSelect(reportCards.length - 1 - index);
   };
 
   const handlePreferenceCardFlip = () => setIsCardFlipped((isFlipped) => !isFlipped);
@@ -52,6 +60,7 @@ export const useMonthlyReport = () => {
     handleNewerMonth,
     handleOlderMonth,
     handlePreferenceCardFlip,
+    handleReportCardSelect,
     handleShareSheetClose,
     handleShareSheetOpen,
     hasNewerMonth,
@@ -60,6 +69,8 @@ export const useMonthlyReport = () => {
     isDownloading,
     isShareSheetOpen,
     report,
+    reportCards,
+    selectedCardIndex,
     selectedMonth: report.month,
   };
 };
