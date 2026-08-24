@@ -10,11 +10,29 @@ import {
 } from '@/features/my-page';
 import { AccountRemoveIcon, ContactIcon, TermsIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { StateView } from '@/shared/ui/state-view';
 
 export default function MyPage() {
   const navigate = useNavigate();
   const accountQuery = useGetMyAccount();
   const account = accountQuery.data?.data;
+
+  // TODO: 계정 정보 조회 중에는 프로필 영역에 스켈레톤 UI를 표시한다.
+  if (accountQuery.isError || (!accountQuery.isPending && !account)) {
+    return (
+      <main className="-mx-4 min-h-dvh bg-neutral-00 px-4">
+        <StateView
+          variant="error"
+          headingAs="h1"
+          title="계정 정보를 불러오지 못했어요"
+          description="잠시 후 다시 시도해주세요."
+          actionLabel="다시 불러오기"
+          onAction={() => void accountQuery.refetch()}
+          className="pt-30"
+        />
+      </main>
+    );
+  }
 
   return (
     <main className="-mx-4 min-h-dvh bg-primary-100">
