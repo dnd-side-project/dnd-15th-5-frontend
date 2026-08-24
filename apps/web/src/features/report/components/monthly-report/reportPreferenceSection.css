@@ -1,5 +1,6 @@
 .report-preference-section {
   --report-card-side-gap: max(20px, calc(50cqi - 161px));
+  --report-card-shadow-space: 28px;
 
   container-type: inline-size;
 }
@@ -7,10 +8,10 @@
 .report-preference-carousel {
   display: flex;
   width: 100%;
-  margin-block: -12px;
+  margin-block: calc(var(--report-card-shadow-space) * -1);
   overflow-x: hidden;
   overscroll-behavior-inline: contain;
-  padding-block: 12px;
+  padding-block: var(--report-card-shadow-space);
   padding-inline: calc(50% - 138px);
   touch-action: pan-y;
   cursor: grab;
