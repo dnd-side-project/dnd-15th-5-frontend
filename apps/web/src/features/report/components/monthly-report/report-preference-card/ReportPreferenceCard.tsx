@@ -88,7 +88,7 @@ export default function ReportPreferenceCard({
             <span aria-hidden className="text-xl">
               ✦
             </span>
-            <h1 className="text-center font-waguri text-card-title">{title}</h1>
+            <h1 className="text-center font-waguri text-card-title-01-regular">{title}</h1>
             <span aria-hidden className="text-xl">
               ✦
             </span>
@@ -122,13 +122,13 @@ export default function ReportPreferenceCard({
           )}
         >
           <div className="absolute inset-x-3.5 top-4 h-85.75 rounded-16 border border-neutral-900 bg-neutral-00 px-3.75 pt-5.25">
-            <h1 className="text-center font-waguri text-card-back-title text-neutral-700">
+            <h1 className="text-center font-waguri text-card-title-02-regular text-neutral-700">
               <span aria-hidden>✦ </span>
               {title}
               <span aria-hidden> ✦</span>
             </h1>
             {description && (
-              <p className="mt-3 text-center text-body-medium-card break-keep text-neutral-600">
+              <p className="mt-3 text-center text-card-body-01-medium break-keep text-neutral-600">
                 {description}
               </p>
             )}

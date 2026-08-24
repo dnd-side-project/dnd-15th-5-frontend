@@ -7,6 +7,12 @@ describe('cn', () => {
     );
   });
 
+  it('카드 타이포그래피와 텍스트 색상 클래스를 함께 유지한다', () => {
+    expect(cn('text-card-title-01-regular', 'text-card-body-01-medium', 'text-neutral-700')).toBe(
+      'text-card-body-01-medium text-neutral-700'
+    );
+  });
+
   it('같은 타이포그래피 그룹에서는 마지막 클래스를 적용한다', () => {
     expect(cn('text-body-01-medium', 'text-body-01-semibold', 'text-neutral-900')).toBe(
       'text-body-01-semibold text-neutral-900'

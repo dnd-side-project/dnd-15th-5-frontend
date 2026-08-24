@@ -56,7 +56,7 @@ export default function ReportPreferenceShareCard({
         <span aria-hidden className="text-base">
           ✦
         </span>
-        <h1 className="text-center font-waguri text-card-save-title">{title}</h1>
+        <h1 className="text-center font-waguri text-card-title-03-regular">{title}</h1>
         <span aria-hidden className="text-base">
           ✦
         </span>
