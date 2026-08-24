@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
+import MonthSelector from '@/features/report/components/common/MonthSelector';
 import { MOCK_SPENDING_MONTHS, MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
 import type { SpendingMonth } from '@/features/report/types';
 import { parseSpendingMonthFromDate } from '@/features/report/utils/parseSpendingMonthFromDate';
-import { CaretLeftIcon, CaretRightIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
 import { StateView } from '@/shared/ui/state-view';
@@ -87,42 +87,17 @@ export default function SpendingHistory({
         )}
       >
         {headerContent}
-        <div
-          className={cn(
-            'flex items-center justify-center gap-3',
-            headerContent && headerContentGapClassName
-          )}
-        >
-          <button
-            type="button"
-            aria-label="이전 달 보기"
-            disabled={!hasOlderMonth}
-            onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex + 1])}
-            className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
-          >
-            <CaretLeftIcon aria-hidden="true" className="size-6" />
-          </button>
-          <h1 aria-label={`${selectedMonth.month}월 소비 내역`}>
-            <button
-              type="button"
-              aria-label="월 선택"
-              aria-expanded={isMonthPickerOpen}
-              onClick={() => setIsMonthPickerOpen(true)}
-              className="min-w-10 text-title-02-bold text-neutral-900"
-            >
-              {selectedMonth.month}월
-            </button>
-          </h1>
-          <button
-            type="button"
-            aria-label="다음 달 보기"
-            disabled={!hasNewerMonth}
-            onClick={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex - 1])}
-            className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-300"
-          >
-            <CaretRightIcon aria-hidden="true" className="size-6" />
-          </button>
-        </div>
+        <MonthSelector
+          className={cn(headerContent && headerContentGapClassName)}
+          hasNewerMonth={hasNewerMonth}
+          hasOlderMonth={hasOlderMonth}
+          headingLabel={`${selectedMonth.month}월 소비 내역`}
+          isMonthPickerOpen={isMonthPickerOpen}
+          onMonthClick={() => setIsMonthPickerOpen(true)}
+          onNewerMonth={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex - 1])}
+          onOlderMonth={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex + 1])}
+          selectedMonth={selectedMonth}
+        />
       </header>
 
       <div className="flex flex-1 flex-col">

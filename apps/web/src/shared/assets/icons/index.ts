@@ -14,6 +14,7 @@ import CrownIcon from './ic-crown.svg?react';
 import CurrentLocationIcon from './ic-current-location.svg?react';
 import FilterIcon from './ic-filter.svg?react';
 import GoogleIcon from './ic-google.svg?react';
+import ImageDownloadIcon from './ic-image-download.svg?react';
 import KakaoIcon from './ic-kakao.svg?react';
 import LikeIcon from './ic-like.svg?react';
 import LocationPinIcon from './ic-location-pin.svg?react';
@@ -26,6 +27,7 @@ import NotificationUnreadIcon from './ic-notification-unread.svg?react';
 import RankFirstIcon from './ic-rank-first.svg?react';
 import RankSecondIcon from './ic-rank-second.svg?react';
 import RankThirdIcon from './ic-rank-third.svg?react';
+import ReportCardFlipIcon from './ic-report-card-flip.svg?react';
 import SearchIcon from './ic-search.svg?react';
 import ShareIcon from './ic-share.svg?react';
 import ShopRecommendIcon from './ic-shop-recommend.svg?react';
@@ -43,6 +45,7 @@ export {
   CurrentLocationIcon,
   FilterIcon,
   GoogleIcon,
+  ImageDownloadIcon,
   KakaoIcon,
   LikeIcon,
   LocationPinIcon,
@@ -55,6 +58,7 @@ export {
   RankFirstIcon,
   RankSecondIcon,
   RankThirdIcon,
+  ReportCardFlipIcon,
   SearchIcon,
   ShareIcon,
   ShopRecommendIcon,

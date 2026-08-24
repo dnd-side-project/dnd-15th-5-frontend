@@ -28,11 +28,21 @@
   --color-primary-100: #e5eaff;
   --color-primary-50: #f4f6ff;
 
+  /* Report */
+  --color-report-preference-card-front: #a8b7ff;
+  --color-report-preference-card-back: #2c478b;
+  --color-report-question-panel: rgb(0 0 0 / 50%);
+
   /* Gradient */
   --background-image-report-hero: linear-gradient(
     to bottom,
     var(--color-neutral-00) 0%,
     var(--color-primary-100) 100%
+  );
+  --background-image-monthly-report-hero: linear-gradient(
+    to bottom,
+    var(--color-primary-200) 0%,
+    var(--color-neutral-00) 100%
   );
   --background-image-report-button-stroke: linear-gradient(
     90deg,

@@ -1,5 +1,13 @@
-export { default as ReportPreferenceCard } from './components/report-preference-card/ReportPreferenceCard';
-export { default as ReportPreferenceShareCard } from './components/report-preference-card/ReportPreferenceShareCard';
+export { default as ReportPreferenceCard } from './components/monthly-report/report-preference-card/ReportPreferenceCard';
+export { default as ReportPreferenceShareCard } from './components/monthly-report/report-preference-card/ReportPreferenceShareCard';
+export { default as CategoryChart } from './components/monthly-report/CategoryChart';
+export { default as ReportMyPlace } from './components/monthly-report/ReportMyPlace';
+export { default as MonthlyReportHeader } from './components/monthly-report/MonthlyReportHeader';
+export { default as ReportActivitySummary } from './components/monthly-report/ReportActivitySummary';
+export { default as ReportPreferenceSection } from './components/monthly-report/ReportPreferenceSection';
+export { default as ReportShareSheet } from './components/monthly-report/ReportShareSheet';
+export { default as ReportTopShops } from './components/monthly-report/ReportTopShops';
+export { default as WeekdaySpendingChart } from './components/monthly-report/WeekdaySpendingChart';
 export { default as ReportHeroCard } from './components/report-page/report-hero-card/ReportHeroCard';
 export { default as MonthlyStickerSummary } from './components/report-page/MonthlyStickerSummary';
 export { default as RecentDiscoveryPanel } from './components/report-page/RecentDiscoveryPanel';
@@ -10,4 +18,10 @@ export { default as WeeklyRecordCalendar } from './components/report-page/Weekly
 export { default as FrequentShopList } from './components/frequent-shop-list/FrequentShopList';
 export { default as SpendingHistory } from './components/spending-history/SpendingHistory';
 export { useReportImageDownload } from './hooks/useReportImageDownload';
-export { MOCK_EMPTY_REPORT_PAGE, MOCK_REPORT_PAGE, MOCK_REPORT_PREFERENCE } from './mockData';
+export { useMonthlyReport } from './hooks/useMonthlyReport';
+export {
+  MOCK_EMPTY_REPORT_PAGE,
+  MOCK_REPORT_DETAIL,
+  MOCK_REPORT_PAGE,
+  MOCK_REPORT_PREFERENCE,
+} from './mockData';

@@ -26,7 +26,7 @@ export default function ReportPage() {
   return (
     <main className="overflow-hidden">
       <ReportHeroSection
-        lastMonthReportPath={ROUTE_PATHS.reportDetail('last-month')}
+        monthlyReportPath={ROUTE_PATHS.monthlyReport}
         monthLabel={monthLabel}
         onBack={() => navigate(-1)}
       />

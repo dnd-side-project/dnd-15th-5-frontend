@@ -18,7 +18,7 @@ import ShopSearchPage from '@/pages/record/shop/search/ShopSearchPage';
 import FrequentShopListPage from '@/pages/report/frequent-shops/FrequentShopListPage';
 import SpendingHistoryPage from '@/pages/report/history/SpendingHistoryPage';
 import MonthlyRecordListPage from '@/pages/report/monthly-records/MonthlyRecordListPage';
-import ReportDetailPage from '@/pages/report/ReportDetailPage';
+import MonthlyReportPage from '@/pages/report/MonthlyReportPage';
 import ReportPage from '@/pages/report/ReportPage';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import PaddedLayout from '@/shared/layout/PaddedLayout';
@@ -52,6 +52,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTE_PATHS.report,
         element: <ReportPage />,
+      },
+      {
+        path: ROUTE_PATHS.monthlyReport,
+        element: <MonthlyReportPage />,
       },
       {
         // INFO: 네비게이션 화면에만 앱 메인 레이아웃을 중첩 적용한다.
@@ -118,10 +122,6 @@ export const router = createBrowserRouter([
           {
             path: ROUTE_PATHS.monthlyRecordList,
             element: <MonthlyRecordListPage />,
-          },
-          {
-            path: ROUTE_PATTERNS.reportDetail,
-            element: <ReportDetailPage />,
           },
           {
             path: '*',
