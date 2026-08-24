@@ -2,20 +2,40 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
-import { MOCK_MAP_STICKERS, MOCK_SHOP_RECOMMENDATIONS } from '../mockData';
-import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
-import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
+import { MOCK_MAP_STICKERS, MOCK_SHOP_RECOMMENDATIONS } from '@/features/map/mockData';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 
 import HomeCategoryFilter from './home-overlay/HomeCategoryFilter';
 import HomeBottomSheet from './HomeBottomSheet';
 
 describe('HomeBottomSheet', () => {
   beforeEach(() => {
-    useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
+    useHomeBottomSheetStore.setState({
+      activeSheet: { type: 'home' },
+      stepIndex: 0,
+      topActionBottomPx: 0,
+      visibleHeightPx: 0,
+    });
     useShopRecommendationStore.setState({
       activeRecommendationId: null,
       likedRecommendationIds: [],
     });
+  });
+
+  it('최대 높이에서 마이페이지 버튼 아래에 12px 간격을 유지한다', () => {
+    useHomeBottomSheetStore.setState({ stepIndex: 1, topActionBottomPx: 96 });
+    render(
+      <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+
+    const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' })
+      .parentElement as HTMLElement;
+
+    expect(sheet).toHaveStyle({ height: 'calc(100dvh - 108px)' });
   });
 
   it('자주 소비한 곳 탭에 페이지에서 전달한 요약을 표시한다', () => {

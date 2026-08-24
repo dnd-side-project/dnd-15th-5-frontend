@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+
 import CurrentLocationButton from './CurrentLocationButton';
 
 import type { PropsWithChildren } from 'react';
@@ -20,6 +22,44 @@ describe('<CurrentLocationButton />', () => {
     panTo.mockReset();
     requestPosition.mockReset();
     map = { panTo };
+    useHomeBottomSheetStore.setState({ visibleHeightPx: 0 });
+  });
+
+  it('현재 바텀시트의 실제 높이만큼 위에 같은 간격으로 배치한다', () => {
+    useHomeBottomSheetStore.setState({ visibleHeightPx: 320 });
+    render(
+      <CurrentLocationButton
+        position={null}
+        isLoading={false}
+        errorMessage={null}
+        onRequestPosition={requestPosition}
+      />
+    );
+
+    const buttonContainer = screen.getByRole('button', { name: '현재 위치로 이동' }).parentElement
+      ?.parentElement as HTMLElement;
+
+    expect(buttonContainer).toHaveStyle({
+      bottom: 'max(calc(320px + 0.75rem), calc(6.5rem + env(safe-area-inset-bottom)))',
+    });
+  });
+
+  it('바텀시트가 내려가도 하단 탭바 아래로 이동하지 않는다', () => {
+    render(
+      <CurrentLocationButton
+        position={null}
+        isLoading={false}
+        errorMessage={null}
+        onRequestPosition={requestPosition}
+      />
+    );
+
+    const buttonContainer = screen.getByRole('button', { name: '현재 위치로 이동' }).parentElement
+      ?.parentElement as HTMLElement;
+
+    expect(buttonContainer).toHaveStyle({
+      bottom: 'max(calc(0px + 0.75rem), calc(6.5rem + env(safe-area-inset-bottom)))',
+    });
   });
 
   it('현재 위치가 없으면 버튼을 눌러 위치를 다시 요청한다', async () => {

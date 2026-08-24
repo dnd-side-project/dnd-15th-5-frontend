@@ -27,12 +27,16 @@ type HomeBottomSheetContent =
 
 type HomeBottomSheetStore = {
   activeSheet: HomeBottomSheetContent;
+  topActionBottomPx: number;
+  visibleHeightPx: number;
   stepIndex: number;
   advance: () => void;
   showHome: () => void;
   showLikedRecommendation: (recommendationId: string) => void;
   showRecommendation: () => void;
   showSelectedPlace: (stickerId: string) => void;
+  setTopActionBottom: (bottomPx: number) => void;
+  setVisibleHeight: (heightPx: number) => void;
   setSnapPoint: (snapPoint: BottomSheetSnapPoint) => void;
 };
 
@@ -42,9 +46,15 @@ type HomeBottomSheetStore = {
  * `activeSheet`를 판별 가능한 유니온으로 제한해 홈·추천·선택 장소·좋아요 장소 중 두 종류가
  * 동시에 열릴 수 없도록 합니다. `features/map` 안에서만 사용하며, 하단 탭바 표시 여부는
  * `app/layouts/AppMainLayout`이 이 상태를 구독해 결정합니다.
+ *
+ * `topActionBottomPx`는 최대 시트의 상단 경계를 계산하고, `visibleHeightPx`는 현재 위치 버튼을
+ * 실제 시트 높이에 맞추는 레이아웃 측정값입니다. 두 값은 서버 상태가 아니므로 이 feature
+ * 전용 스토어 밖으로 노출하지 않습니다.
  */
 export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
   activeSheet: { type: 'home' },
+  topActionBottomPx: 0,
+  visibleHeightPx: 0,
   stepIndex: 0,
   advance: () =>
     set((state) => ({
@@ -55,6 +65,12 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
     set({ activeSheet: { type: 'likedRecommendation', recommendationId } }),
   showRecommendation: () => set({ activeSheet: { type: 'recommendation' } }),
   showSelectedPlace: (stickerId) => set({ activeSheet: { type: 'selectedPlace', stickerId } }),
+  setTopActionBottom: (bottomPx) =>
+    set((state) =>
+      state.topActionBottomPx === bottomPx ? state : { topActionBottomPx: bottomPx }
+    ),
+  setVisibleHeight: (heightPx) =>
+    set((state) => (state.visibleHeightPx === heightPx ? state : { visibleHeightPx: heightPx })),
   // NOTE: 드래그로 직접 높이를 바꿨을 때 호출한다. 그 이후 홈 버튼 클릭이 드래그로 도착한
   // 위치를 기준으로 이어지도록 stepIndex를 맞춰준다.
   setSnapPoint: (snapPoint) => set({ stepIndex: SNAP_POINT_TO_STEP_INDEX[snapPoint] }),

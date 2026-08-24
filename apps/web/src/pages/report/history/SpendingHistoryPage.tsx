@@ -9,7 +9,7 @@ export default function SpendingHistoryPage() {
   const [searchParams] = useSearchParams();
 
   return (
-    <main className="flex min-h-dvh flex-col pb-8">
+    <main className="min-h-screen-safe-bottom flex flex-col pb-8">
       <SpendingHistory
         headerContent={<BackButton onClick={() => navigate(-1)} className="mt-0" />}
         initialDate={searchParams.get('date') ?? undefined}
