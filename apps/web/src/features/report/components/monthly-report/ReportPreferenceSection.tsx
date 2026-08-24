@@ -29,6 +29,7 @@ type ReportPreferenceCarouselCard = {
   variant: ReportPreferenceCardVariant;
 };
 
+/** 소비 취향 카드를 탐색하고 뒤집거나 공유할 수 있는 영역입니다. */
 export default function ReportPreferenceSection({
   cards,
   captureRef,

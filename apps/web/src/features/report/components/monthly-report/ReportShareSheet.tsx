@@ -9,6 +9,7 @@ type ReportShareSheetProps = {
   onDownload: () => void;
 };
 
+/** 취향 카드의 이미지 저장과 외부 공유 동작을 제공하는 하단 패널입니다. */
 export default function ReportShareSheet({
   isDownloading,
   isOpen,

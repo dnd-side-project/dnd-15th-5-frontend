@@ -51,6 +51,7 @@ type ReportTopShopsProps = {
   shops: readonly TopShop[];
 };
 
+/** 월간 방문 횟수가 많은 가게를 최대 3위까지 표시합니다. */
 export default function ReportTopShops({ shops }: ReportTopShopsProps) {
   return (
     <section>

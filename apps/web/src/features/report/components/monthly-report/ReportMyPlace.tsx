@@ -9,6 +9,7 @@ type ReportMyPlaceProps = {
   districts: readonly District[];
 };
 
+/** 월간 방문이 많았던 동네를 순위별로 표시합니다. */
 export default function ReportMyPlace({ districts }: ReportMyPlaceProps) {
   const [topDistrict, ...otherDistricts] = districts;
 

@@ -11,6 +11,7 @@ type MonthlyReportHeaderProps = {
   selectedMonth: SpendingMonth;
 };
 
+/** 월간 리포트의 이전·다음 달 이동과 뒤로가기를 제공합니다. */
 export default function MonthlyReportHeader({
   hasNewerMonth,
   hasOlderMonth,

@@ -15,6 +15,7 @@ type CategoryChartProps = {
   categories: readonly Category[];
 };
 
+/** 월간 소비 기록의 카테고리별 비율을 막대와 범례로 표시합니다. */
 export default function CategoryChart({ categories }: CategoryChartProps) {
   const normalizedPercentages = normalizePercentages(
     categories.map((category) => category.percentage)

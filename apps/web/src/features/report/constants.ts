@@ -11,6 +11,7 @@ export const REPORT_CATEGORY_COLOR_CLASS_NAMES: Record<SpendingCategory, string>
   기타: 'bg-neutral-300',
 };
 
+/** 요일 축약 표기를 접근성 안내에 사용하는 전체 이름으로 변환합니다. */
 export const WEEKDAY_FULL_LABELS = {
   월: '월요일',
   화: '화요일',

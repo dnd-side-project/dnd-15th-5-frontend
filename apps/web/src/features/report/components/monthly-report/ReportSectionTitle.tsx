@@ -3,6 +3,7 @@ type ReportSectionTitleProps = {
   title: string;
 };
 
+/** 월간 리포트 섹션의 제목과 선택적 설명을 표시합니다. */
 export default function ReportSectionTitle({ description, title }: ReportSectionTitleProps) {
   return (
     <div>

@@ -18,6 +18,7 @@ type ReportPreferenceCardVariantConfig = {
   titleClassName: string;
 };
 
+/** 소비 성향별 카드 이미지와 앞·뒷면 색상 구성을 정의합니다. */
 export const REPORT_PREFERENCE_CARD_VARIANTS: Record<
   ReportPreferenceCardVariant,
   ReportPreferenceCardVariantConfig

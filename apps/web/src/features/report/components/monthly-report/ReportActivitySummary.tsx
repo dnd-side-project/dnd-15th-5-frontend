@@ -9,6 +9,7 @@ type ReportActivitySummaryProps = {
   items: readonly SummaryItem[];
 };
 
+/** 방문 횟수 등 월간 활동의 핵심 수치를 요약해 표시합니다. */
 export default function ReportActivitySummary({ items }: ReportActivitySummaryProps) {
   return (
     <section>

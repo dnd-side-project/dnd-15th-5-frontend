@@ -14,6 +14,7 @@ type WeekdaySpendingChartProps = {
   items: readonly WeekdaySpending[];
 };
 
+/** 요일별 소비 금액을 상대 높이의 막대 차트로 표시합니다. */
 export default function WeekdaySpendingChart({ insight, items }: WeekdaySpendingChartProps) {
   const maximumAmount = Math.max(...items.map((item) => item.amount), 0);
 
