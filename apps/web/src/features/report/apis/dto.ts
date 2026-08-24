@@ -95,6 +95,11 @@ export type ApiResponseMonthlyReportResponse = {
   data?: MonthlyReportResponse;
 };
 
+export type StickerResponse = {
+  itemName?: string;
+  acquiredDate?: string;
+};
+
 export type CurrentStatusResponseMonthlyCategoryCounts = { [key: string]: number };
 
 export type CurrentStatusResponse = {
@@ -103,7 +108,7 @@ export type CurrentStatusResponse = {
   monthlyCount?: number;
   monthlyCategoryCounts?: CurrentStatusResponseMonthlyCategoryCounts;
   recentDiscoveryMessage?: string;
-  monthlyStickerNames?: string[];
+  monthlyStickers?: StickerResponse[];
 };
 
 export type ApiResponseCurrentStatusResponse = {

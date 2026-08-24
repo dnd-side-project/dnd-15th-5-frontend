@@ -1,5 +1,11 @@
 import { BRIDGE_MESSAGE_KIND } from '@chapchap/shared/bridge';
 
+import {
+  clearRefreshToken,
+  getRefreshToken,
+  setRefreshToken,
+  startSocialLogin,
+} from '@/native/auth';
 import { getCurrentPosition } from '@/native/location';
 import { openReceiptCamera } from '@/native/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/save-image';
@@ -11,10 +17,20 @@ import type { BridgeRequest } from '@chapchap/shared/bridge';
 jest.mock('@/native/location', () => ({ getCurrentPosition: jest.fn() }));
 jest.mock('@/native/save-image', () => ({ saveImageToLibrary: jest.fn() }));
 jest.mock('@/native/openReceiptCamera', () => ({ openReceiptCamera: jest.fn() }));
+jest.mock('@/native/auth', () => ({
+  clearRefreshToken: jest.fn(),
+  getRefreshToken: jest.fn(),
+  setRefreshToken: jest.fn(),
+  startSocialLogin: jest.fn(),
+}));
 
+const mockClearRefreshToken = jest.mocked(clearRefreshToken);
+const mockGetRefreshToken = jest.mocked(getRefreshToken);
 const mockGetCurrentPosition = jest.mocked(getCurrentPosition);
 const mockSaveImageToLibrary = jest.mocked(saveImageToLibrary);
 const mockOpenReceiptCamera = jest.mocked(openReceiptCamera);
+const mockSetRefreshToken = jest.mocked(setRefreshToken);
+const mockStartSocialLogin = jest.mocked(startSocialLogin);
 
 const createRequest = (overrides: Partial<BridgeRequest> = {}): BridgeRequest =>
   ({
@@ -33,6 +49,10 @@ describe('createBridgeResponse', () => {
       position: { lat: 37.5665, lng: 126.978, accuracy: 25 },
     });
     mockSaveImageToLibrary.mockResolvedValue();
+    mockGetRefreshToken.mockResolvedValue(null);
+    mockSetRefreshToken.mockResolvedValue(undefined);
+    mockClearRefreshToken.mockResolvedValue(undefined);
+    mockStartSocialLogin.mockResolvedValue({ status: 'cancelled' });
   });
 
   it('요청을 처리하고 같은 식별자로 응답한다', async () => {
@@ -191,6 +211,130 @@ describe('createBridgeResponse', () => {
       type: request.type,
       ok: false,
       error: { message: '카메라 권한이 필요합니다' },
+    });
+  });
+
+  it('네이티브 보안 저장소에서 Refresh Token을 조회한다', async () => {
+    mockGetRefreshToken.mockResolvedValue('native-refresh-token');
+    const request: BridgeRequest<'getRefreshToken'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-auth-01',
+      type: 'getRefreshToken',
+      payload: {},
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { refreshToken: 'native-refresh-token' },
+    });
+  });
+
+  it('외부 OAuth를 시작하고 loginCode를 웹에 반환한다', async () => {
+    mockStartSocialLogin.mockResolvedValue({ status: 'success', loginCode: 'login-code' });
+    const request: BridgeRequest<'startSocialLogin'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-oauth-01',
+      type: 'startSocialLogin',
+      payload: { provider: 'kakao', codeChallenge: 'a'.repeat(43) },
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(mockStartSocialLogin).toHaveBeenCalledWith('kakao', 'a'.repeat(43));
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { status: 'success', loginCode: 'login-code' },
+    });
+  });
+
+  it.each([{ status: 'cancelled' } as const, { status: 'error', error: 'invalid_state' } as const])(
+    '외부 OAuth의 $status 결과를 같은 요청의 응답으로 반환한다',
+    async (result) => {
+      mockStartSocialLogin.mockResolvedValue(result);
+      const request: BridgeRequest<'startSocialLogin'> = {
+        kind: BRIDGE_MESSAGE_KIND.REQUEST,
+        id: 'request-oauth-02',
+        type: 'startSocialLogin',
+        payload: { provider: 'google', codeChallenge: 'a'.repeat(43) },
+      };
+
+      const response = await createBridgeResponse(request);
+
+      expect(response).toEqual({
+        kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+        id: request.id,
+        type: request.type,
+        ok: true,
+        result,
+      });
+    }
+  );
+
+  it('외부 OAuth 실행 실패를 같은 요청의 실패 응답으로 반환한다', async () => {
+    mockStartSocialLogin.mockRejectedValue(new Error('외부 인증 화면을 열지 못했습니다.'));
+    const request: BridgeRequest<'startSocialLogin'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-oauth-03',
+      type: 'startSocialLogin',
+      payload: { provider: 'kakao', codeChallenge: 'a'.repeat(43) },
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: false,
+      error: { message: '외부 인증 화면을 열지 못했습니다.' },
+    });
+  });
+
+  it('Refresh Token을 네이티브 보안 저장소에 저장한다', async () => {
+    const request: BridgeRequest<'saveRefreshToken'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-auth-02',
+      type: 'saveRefreshToken',
+      payload: { refreshToken: 'rotated-refresh-token' },
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(mockSetRefreshToken).toHaveBeenCalledWith('rotated-refresh-token');
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { saved: true },
+    });
+  });
+
+  it('네이티브 보안 저장소의 Refresh Token을 제거한다', async () => {
+    const request: BridgeRequest<'clearRefreshToken'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-auth-03',
+      type: 'clearRefreshToken',
+      payload: {},
+    };
+
+    const response = await createBridgeResponse(request);
+
+    expect(mockClearRefreshToken).toHaveBeenCalledTimes(1);
+    expect(response).toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { cleared: true },
     });
   });
 });

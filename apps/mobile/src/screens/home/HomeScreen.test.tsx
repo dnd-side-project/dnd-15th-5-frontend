@@ -85,18 +85,18 @@ describe('<HomeScreen />', () => {
     getByText('웹 주소가 설정되지 않았습니다');
   });
 
-  it('웹 주소가 설정되면 지도 홈을 edge-to-edge 최초 화면으로 띄운다', async () => {
+  it('웹 주소가 설정되면 인증 진입점인 루트 경로를 최초로 띄운다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173/record/receipt/camera';
 
     const { getByTestId } = await render(<HomeScreen />);
 
     expect(getByTestId('home-webview')).toHaveProp('source', {
-      uri: 'http://192.168.0.2:5173/home',
+      uri: 'http://192.168.0.2:5173/',
     });
-    expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
+    expect(getByTestId('home-safe-area').props.edges).toEqual(bottomEdgeToEdgeEdges);
     expect(getByTestId('home-webview')).toHaveProp('automaticallyAdjustContentInsets', false);
     expect(getByTestId('home-webview')).toHaveProp('contentInsetAdjustmentBehavior', 'never');
-    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
+    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
     expect(getByTestId('home-webview')).toHaveProp('setSupportMultipleWindows', false);
   });
 

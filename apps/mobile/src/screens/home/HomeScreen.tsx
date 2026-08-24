@@ -15,10 +15,8 @@ import { useWebViewNavigationState } from './useWebViewNavigationState';
 
 import type { WebViewMessageEvent, WebViewProps } from 'react-native-webview';
 
-const MAP_HOME_PATH = '/home';
-
 /**
- * 웹의 지도 홈을 하나의 WebView로 띄우는 앱의 기본 화면입니다.
+ * 웹 인증 진입점부터 지도 홈까지 하나의 WebView로 띄우는 앱의 기본 화면입니다.
  *
  * 설정된 웹 origin과 같은 문서에서 온 브릿지 요청만 처리하고, 외부 HTTP(S) 링크는 기기의
  * 기본 앱으로 전달합니다. 웹 주소가 없거나 로드에 실패하면 `WebViewScreen`의 안내 화면을
@@ -28,7 +26,7 @@ export default function HomeScreen() {
   // 개발 빌드는 .env의 로컬 개발 서버를, preview·production 빌드는 eas.json에 지정한 배포 주소를 사용한다
   const webUrl = process.env.EXPO_PUBLIC_WEB_URL;
   const trustedWebOrigin = webUrl ? getUrlOrigin(webUrl) : null;
-  const initialWebUrl = trustedWebOrigin ? `${trustedWebOrigin}${MAP_HOME_PATH}` : null;
+  const initialWebUrl = trustedWebOrigin ? `${trustedWebOrigin}/` : null;
   const webViewRef = useRef<WebView>(null);
   const { canGoBack, handleNavigationStateChange, handleRouteChange, isMapHome } =
     useWebViewNavigationState(initialWebUrl ?? undefined);
