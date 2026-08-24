@@ -103,8 +103,12 @@ export const mapCurrentStatusToReportPageData = (
   const weeklyRecords = createWeeklyRecords(statusDate, status?.weeklyCounts ?? []);
   const monthlyRecordCount = status?.monthlyCount ?? 0;
   const monthlyStickerImages = (status?.monthlyStickers ?? [])
-    .slice(0, MAX_VISIBLE_STICKERS)
-    .map(({ itemName }) => getStickerImageByName(itemName));
+    .flatMap(({ itemName }) => {
+      const stickerImage = getStickerImageByName(itemName);
+
+      return stickerImage ? [stickerImage] : [];
+    })
+    .slice(0, MAX_VISIBLE_STICKERS);
 
   return {
     monthLabel: `${statusDate.getMonth() + 1}월`,

@@ -10,7 +10,7 @@ describe('mapCurrentStatusToReportPageData', () => {
           { itemName: '커피' },
           { itemName: '피자' },
           { itemName: '다트' },
-          { itemName: '브라보' },
+          { itemName: '아이스크림' },
           { itemName: 'LP' },
           { itemName: '도넛' },
         ],
