@@ -80,6 +80,10 @@
   --text-card-back-title--line-height: normal;
   --text-card-back-title--font-weight: 400;
 
+  --text-card-save-title: 23px;
+  --text-card-save-title--line-height: normal;
+  --text-card-save-title--font-weight: 400;
+
   --text-label-01-semibold: 12px;
   --text-label-01-semibold--line-height: 1.4;
   --text-label-01-semibold--font-weight: 600;

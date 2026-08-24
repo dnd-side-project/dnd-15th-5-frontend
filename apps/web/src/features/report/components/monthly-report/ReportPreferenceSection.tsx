@@ -45,7 +45,6 @@ export default function ReportPreferenceSection({
       <div aria-hidden className="pointer-events-none fixed top-0 left-[-9999px]">
         <div ref={captureRef}>
           <ReportPreferenceShareCard
-            description={description}
             metrics={metrics}
             tags={tags}
             title={title}
@@ -68,7 +67,7 @@ export default function ReportPreferenceSection({
           onClick={onFlip}
           type="button"
         >
-          <ReportCardFlipIcon aria-hidden className="h-[13px] w-[12.34px]" />
+          <ReportCardFlipIcon aria-hidden className="h-3.25 w-3" />
         </button>
       </div>
     </section>
