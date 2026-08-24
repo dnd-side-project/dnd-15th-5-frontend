@@ -6,7 +6,6 @@ import { generatePath } from 'react-router-dom';
  */
 export const ROUTE_PATTERNS = {
   shopDetail: '/home/shop/:shopId',
-  reportDetail: '/report/:reportId',
 } as const;
 
 /**
@@ -32,7 +31,7 @@ export const ROUTE_PATHS = {
   spendingHistory: '/report/history',
   frequentShopList: '/report/frequent-shops',
   monthlyRecordList: '/report/monthly-records',
-  reportDetail: (reportId: string) => generatePath(ROUTE_PATTERNS.reportDetail, { reportId }),
+  monthlyReport: '/report/monthly-report',
 
   notifications: '/notifications',
   myPage: '/my-page',

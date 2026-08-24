@@ -160,7 +160,7 @@ pages/
 │   │   └── ReceiptCameraPage.tsx
 ├── report/
 │   ├── ReportPage.tsx
-│   ├── ReportDetailPage.tsx
+│   ├── MonthlyReportPage.tsx
 │   ├── history/
 │   │   └── SpendingHistoryPage.tsx
 │   ├── frequent-shops/

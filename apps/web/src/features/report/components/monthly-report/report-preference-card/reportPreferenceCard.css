@@ -1,0 +1,27 @@
+.report-preference-card {
+  perspective: 1000px;
+}
+
+.report-preference-card-inner {
+  transform-style: preserve-3d;
+  transition: transform 500ms ease-in-out;
+}
+
+.report-preference-card[data-flipped='true'] .report-preference-card-inner {
+  transform: rotateY(180deg);
+}
+
+.report-preference-card-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.report-preference-card-face--back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-preference-card-inner {
+    transition: none;
+  }
+}

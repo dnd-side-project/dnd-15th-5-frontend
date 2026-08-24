@@ -68,6 +68,22 @@
   --text-body-02-semibold--line-height: normal;
   --text-body-02-semibold--font-weight: 600;
 
+  --text-card-body-01-medium: 14px;
+  --text-card-body-01-medium--line-height: 1.5;
+  --text-card-body-01-medium--font-weight: 500;
+
+  --text-card-title-01-regular: 26px;
+  --text-card-title-01-regular--line-height: normal;
+  --text-card-title-01-regular--font-weight: 400;
+
+  --text-card-title-02-regular: 22px;
+  --text-card-title-02-regular--line-height: normal;
+  --text-card-title-02-regular--font-weight: 400;
+
+  --text-card-title-03-regular: 23px;
+  --text-card-title-03-regular--line-height: normal;
+  --text-card-title-03-regular--font-weight: 400;
+
   --text-label-01-semibold: 12px;
   --text-label-01-semibold--line-height: 1.4;
   --text-label-01-semibold--font-weight: 600;
