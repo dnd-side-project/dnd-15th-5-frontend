@@ -75,7 +75,7 @@ export default function ManualRecordForm({
   };
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="min-h-screen-safe-bottom flex flex-col">
       <BackButton onClick={onBack} />
 
       <h1 className="mt-6 text-heading-01-bold text-neutral-700">소비 정보를 입력해주세요</h1>
