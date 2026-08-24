@@ -38,7 +38,7 @@
     },
     "shop": {
       "tags": ["Consumption", "Place"],
-      "operationIds": ["getPlaceDetail", "getPlaceVisits", "toggleLike"]
+      "operationIds": ["getPlaceDetail", "getPlaceVisits", "toggleLike", "searchVisitedPlaces"]
     }
   }
 }

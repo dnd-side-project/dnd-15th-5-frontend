@@ -86,7 +86,7 @@ export type ApiResponseVoid = {
 
 export type StartParams = {
   /**
-   * 로그인을 시작한 클라이언트 유형 (WEB_LOCAL은 localhost 테스트용)
+   * 로그인을 시작한 클라이언트 유형
    */
   client: StartClient;
   /**
@@ -99,7 +99,6 @@ export type StartClient = (typeof StartClient)[keyof typeof StartClient];
 
 export const StartClient = {
   WEB: 'WEB',
-  WEB_LOCAL: 'WEB_LOCAL',
   APP: 'APP',
 } as const;
 

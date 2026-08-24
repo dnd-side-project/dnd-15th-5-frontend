@@ -13,6 +13,55 @@ export type ApiResponsePlaceLikeResponse = {
   data?: PlaceLikeResponse;
 };
 
+/**
+ * 방문 장소 검색 항목
+ */
+export type VisitedPlaceItem = {
+  /** 장소 식별자 */
+  placeId?: number;
+  /** 장소명 */
+  placeName?: string;
+  /** 도로명주소 */
+  roadAddress?: string;
+  /**
+   * 목록에 표시할 Google Places 단기 사진 URL, 사진이 없거나 조회에 실패하면 null
+   * @nullable
+   */
+  thumbnailUrl?: string | null;
+  /**
+   * 같은 사진을 Google Maps에서 확인하는 페이지 URL. 썸네일 클릭 또는 별도 링크로 해당 사진을 확인할 때 사용하며, 사진이 없으면 null
+   * @nullable
+   */
+  googleMapsUri?: string | null;
+};
+
+/**
+ * 방문 장소 검색 결과
+ */
+export type VisitedPlaceSearchResponse = {
+  /** 최근 방문순으로 정렬된 장소 목록 */
+  places?: VisitedPlaceItem[];
+  /** 다음 페이지 존재 여부 */
+  hasNext?: boolean;
+  /**
+   * 다음 페이지 조회용 커서, 다음 페이지가 없으면 null
+   * @nullable
+   */
+  nextCursor?: string | null;
+};
+
+export type ApiResponseVisitedPlaceSearchResponse = {
+  code?: string;
+  message?: string;
+  data?: VisitedPlaceSearchResponse;
+};
+
+export type ApiResponse = {
+  code?: string;
+  message?: string;
+  data?: unknown;
+};
+
 export type StatsResponse = {
   firstVisitedDate?: string;
   monthlyVisitCount?: number;
@@ -64,6 +113,21 @@ export type ApiResponsePlaceVisitScrollResponse = {
   code?: string;
   message?: string;
   data?: PlaceVisitScrollResponse;
+};
+
+export type SearchVisitedPlacesParams = {
+  /**
+   * 장소명 또는 도로명주소에 포함될 검색어 (1~100자)
+   */
+  keyword: string;
+  /**
+   * 이전 응답의 nextCursor, 첫 조회 또는 검색어 변경 시 생략
+   */
+  cursor?: string;
+  /**
+   * 페이지 크기 (1~5, 기본값 5)
+   */
+  size?: number;
 };
 
 export type GetPlaceVisitsParams = {
