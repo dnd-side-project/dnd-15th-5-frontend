@@ -32,7 +32,7 @@
 .report-card-face {
   position: absolute;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--radius-05);
 }
 
 .report-card-face--back {
@@ -69,7 +69,7 @@
   left: 9.28px;
   width: 75.657px;
   height: 59.789px;
-  border-radius: 5px;
+  border-radius: var(--radius-05);
   background: var(--color-report-question-panel);
 }
 

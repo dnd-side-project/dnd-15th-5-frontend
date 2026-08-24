@@ -26,7 +26,7 @@ export default function ReportShareSheet({
         type="button"
       />
       <BottomSheet
-        contentClassName="pb-[47px]"
+        contentClassName="pb-11.75"
         fitContent
         onSnapPointChange={(snapPoint) => snapPoint === 'hidden' && onClose()}
         snapPoint="medium"
