@@ -2,9 +2,9 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
-import { MOCK_MAP_STICKERS, MOCK_SHOP_RECOMMENDATIONS } from '../mockData';
-import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
-import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
+import { MOCK_MAP_STICKERS, MOCK_SHOP_RECOMMENDATIONS } from '@/features/map/mockData';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 
 import HomeCategoryFilter from './home-overlay/HomeCategoryFilter';
 import HomeBottomSheet from './HomeBottomSheet';

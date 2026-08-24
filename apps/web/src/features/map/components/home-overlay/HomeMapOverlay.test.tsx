@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 
 import HomeMapOverlay from './HomeMapOverlay';
 

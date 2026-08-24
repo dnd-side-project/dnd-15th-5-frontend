@@ -1,6 +1,5 @@
+import type { MapPosition } from '@/features/map/types';
 import { BOTTOM_SHEET_HEIGHT_RATIO } from '@/shared/ui/bottom-sheet';
-
-import type { MapPosition } from '../types';
 
 const MARKER_VERTICAL_OFFSET_DIVISOR = 2.4;
 

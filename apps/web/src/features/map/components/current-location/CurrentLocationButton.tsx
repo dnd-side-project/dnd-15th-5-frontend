@@ -1,10 +1,8 @@
 import { useMap } from '@vis.gl/react-google-maps';
 
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import type { MapPosition } from '@/features/map/types';
 import { CurrentLocationIcon } from '@/shared/assets/icons';
-
-import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
-
-import type { MapPosition } from '../../types';
 
 // TODO: BottomTabBar의 실제 높이를 CSS 변수나 공통 레이아웃 상태로 공유해
 // 숨김 오프셋의 수동 동기화를 제거한다.

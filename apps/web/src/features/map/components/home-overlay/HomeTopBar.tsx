@@ -1,10 +1,9 @@
 import { useLayoutEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { ChapchapLogo, NotificationDefaultIcon, SearchIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-
-import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 
 import HomePreferenceBanner from './HomePreferenceBanner';
 

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 
 import CurrentLocationButton from './CurrentLocationButton';
 
