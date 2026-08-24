@@ -16,6 +16,7 @@ export { default as ReportLinkButton } from './components/report-page/ReportLink
 export { default as ReportSection } from './components/report-page/ReportSection';
 export { default as WeeklyRecordCalendar } from './components/report-page/WeeklyRecordCalendar';
 export { default as FrequentShopList } from './components/frequent-shop-list/FrequentShopList';
+export { default as FrequentShopSummary } from './components/frequent-shop-list/FrequentShopSummary';
 export { default as SpendingHistory } from './components/spending-history/SpendingHistory';
 export { useReportImageDownload } from './hooks/useReportImageDownload';
 export { useMonthlyReport } from './hooks/useMonthlyReport';

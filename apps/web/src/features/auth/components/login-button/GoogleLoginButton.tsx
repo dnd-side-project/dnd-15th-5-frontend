@@ -1,18 +1,20 @@
+import { useSocialLogin } from '@/features/auth/hooks/useSocialLogin';
 import { GoogleIcon } from '@/shared/assets/icons';
 import { Button } from '@/shared/ui/button';
 
 import type { ComponentProps } from 'react';
 
-type GoogleLoginButtonProps = Pick<
-  ComponentProps<typeof Button>,
-  'disabled' | 'isLoading' | 'onClick'
->;
+type GoogleLoginButtonProps = Pick<ComponentProps<typeof Button>, 'disabled'>;
 
 export default function GoogleLoginButton(props: GoogleLoginButtonProps) {
+  const { login, isLoading } = useSocialLogin('google');
+
   return (
     <Button
       type="button"
       className="relative bg-neutral-50 text-body-01-medium text-neutral-700 hover:bg-neutral-50 active:bg-neutral-50"
+      isLoading={isLoading}
+      onClick={login}
       {...props}
     >
       <GoogleIcon className="absolute left-4 size-7" aria-hidden="true" />

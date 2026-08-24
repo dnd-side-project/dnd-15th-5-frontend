@@ -24,7 +24,7 @@ export default function ReceiptCameraPage() {
 
   return (
     <main className="flex min-h-full flex-col">
-      <BackButton onClick={() => navigate(-1)} />
+      <BackButton className="ml-4" onClick={() => navigate(-1)} />
 
       {state.status === 'error' && (
         <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">

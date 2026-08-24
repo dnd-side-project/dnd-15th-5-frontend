@@ -23,13 +23,19 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type { ErrorType } from '@/shared/apis/orvalMutator';
 
-import type { GetPlaceVisitsParams, SecondParameter } from '@/features/shop/apis/dto';
+import type {
+  ApiResponse,
+  GetPlaceVisitsParams,
+  SearchVisitedPlacesParams,
+  SecondParameter,
+} from '@/features/shop/apis/dto';
 
-import { getPlaceDetail, getPlaceVisits } from '@/features/shop/apis/clients';
+import { getPlaceDetail, getPlaceVisits, searchVisitedPlaces } from '@/features/shop/apis/clients';
 
 import {
   getGetPlaceDetailQueryKey,
   getGetPlaceVisitsQueryKey,
+  getSearchVisitedPlacesQueryKey,
 } from '@/features/shop/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
@@ -46,6 +52,223 @@ export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { 
   }
   return result;
 };
+
+export const getSearchVisitedPlacesQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchVisitedPlacesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchVisitedPlaces>>> = ({ signal }) =>
+    searchVisitedPlaces(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchVisitedPlaces>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SearchVisitedPlacesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchVisitedPlaces>>
+>;
+
+export type SearchVisitedPlacesQueryError = ErrorType<ApiResponse>;
+
+export function useSearchVisitedPlaces<
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchVisitedPlaces>>,
+          TError,
+          Awaited<ReturnType<typeof searchVisitedPlaces>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useSearchVisitedPlaces<
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchVisitedPlaces>>,
+          TError,
+          Awaited<ReturnType<typeof searchVisitedPlaces>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useSearchVisitedPlaces<
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 방문 장소 검색
+ */
+
+export function useSearchVisitedPlaces<
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getSearchVisitedPlacesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getSearchVisitedPlacesSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchVisitedPlacesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchVisitedPlaces>>> = ({ signal }) =>
+    searchVisitedPlaces(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof searchVisitedPlaces>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SearchVisitedPlacesSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchVisitedPlaces>>
+>;
+
+export type SearchVisitedPlacesSuspenseQueryError = ErrorType<ApiResponse>;
+
+export function useSearchVisitedPlacesSuspense<
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useSearchVisitedPlacesSuspense<
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useSearchVisitedPlacesSuspense<
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 방문 장소 검색
+ */
+
+export function useSearchVisitedPlacesSuspense<
+  TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  params: SearchVisitedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchVisitedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getSearchVisitedPlacesSuspenseQueryOptions(params, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
 
 export const getGetPlaceDetailQueryOptions = <
   TData = Awaited<ReturnType<typeof getPlaceDetail>>,

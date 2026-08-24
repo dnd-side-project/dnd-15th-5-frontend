@@ -11,6 +11,8 @@ import StickerMicrophoneImage from './img-sticker-microphone.png';
 import StickerPizzaImage from './img-sticker-pizza.png';
 import StickerSpecialImage from './img-sticker-special.png';
 
+export { getStickerImageByName } from './stickerImageByName';
+
 export {
   StickerBravoImage,
   StickerCoffeeImage,

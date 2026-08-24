@@ -71,13 +71,11 @@ export type LoginCodeExchangeRequest = {
 };
 
 /**
- * 필수 약관 동의 요청
+ * 서비스 이용약관 동의 요청
  */
 export type TermsAgreementRequest = {
   /** 서비스 이용약관 동의 여부 */
   serviceTermsAgreed: boolean;
-  /** 개인정보 처리방침 동의 여부 */
-  privacyPolicyAgreed: boolean;
 };
 
 export type ApiResponseVoid = {

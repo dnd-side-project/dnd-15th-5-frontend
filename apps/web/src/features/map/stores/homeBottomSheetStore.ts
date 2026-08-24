@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 
 // NOTE: 클릭할 때마다 이 순서대로 순환한다. 마지막(hidden) 다음 클릭은 다시 처음(medium)으로 돌아간다.
-export const HOME_BOTTOM_SHEET_SNAP_SEQUENCE: readonly BottomSheetSnapPoint[] = [
+const HOME_BOTTOM_SHEET_SNAP_SEQUENCE: readonly BottomSheetSnapPoint[] = [
   'medium',
   'full',
   'medium',
@@ -19,22 +19,42 @@ const SNAP_POINT_TO_STEP_INDEX: Record<BottomSheetSnapPoint, number> = {
   hidden: 3,
 };
 
+type HomeBottomSheetContent =
+  | { type: 'home' }
+  | { type: 'recommendation' }
+  | { type: 'selectedPlace'; stickerId: string }
+  | { type: 'likedRecommendation'; recommendationId: string };
+
 type HomeBottomSheetStore = {
+  activeSheet: HomeBottomSheetContent;
   stepIndex: number;
   advance: () => void;
+  showHome: () => void;
+  showLikedRecommendation: (recommendationId: string) => void;
+  showRecommendation: () => void;
+  showSelectedPlace: (stickerId: string) => void;
   setSnapPoint: (snapPoint: BottomSheetSnapPoint) => void;
 };
 
 /**
- * 홈 화면 바텀시트의 높이 단계를 관리하는 전역 상태입니다.
+ * 홈 화면에 표시할 바텀시트 하나와 기본 홈 시트의 높이 단계를 관리합니다.
  *
- * `features/map` 안에서만 사용합니다(바텀시트 자체와, 하단 탭바 "홈" 클릭을 이 상태에 연결하는
- * `app/layouts/AppMainLayout`). 하단 탭바(`shared/layout/BottomTabBar`)는 `shared`라서 이
- * feature 전용 상태를 직접 import할 수 없으므로 `onHomeClick` 콜백으로만 연결됩니다.
+ * `activeSheet`를 판별 가능한 유니온으로 제한해 홈·추천·선택 장소·좋아요 장소 중 두 종류가
+ * 동시에 열릴 수 없도록 합니다. `features/map` 안에서만 사용하며, 하단 탭바 표시 여부는
+ * `app/layouts/AppMainLayout`이 이 상태를 구독해 결정합니다.
  */
 export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
+  activeSheet: { type: 'home' },
   stepIndex: 0,
-  advance: () => set((state) => ({ stepIndex: state.stepIndex + 1 })),
+  advance: () =>
+    set((state) => ({
+      stepIndex: (state.stepIndex + 1) % HOME_BOTTOM_SHEET_SNAP_SEQUENCE.length,
+    })),
+  showHome: () => set({ activeSheet: { type: 'home' } }),
+  showLikedRecommendation: (recommendationId) =>
+    set({ activeSheet: { type: 'likedRecommendation', recommendationId } }),
+  showRecommendation: () => set({ activeSheet: { type: 'recommendation' } }),
+  showSelectedPlace: (stickerId) => set({ activeSheet: { type: 'selectedPlace', stickerId } }),
   // NOTE: 드래그로 직접 높이를 바꿨을 때 호출한다. 그 이후 홈 버튼 클릭이 드래그로 도착한
   // 위치를 기준으로 이어지도록 stepIndex를 맞춰준다.
   setSnapPoint: (snapPoint) => set({ stepIndex: SNAP_POINT_TO_STEP_INDEX[snapPoint] }),

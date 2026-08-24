@@ -9,7 +9,9 @@ import type {
   ApiResponsePlaceDetailResponse,
   ApiResponsePlaceLikeResponse,
   ApiResponsePlaceVisitScrollResponse,
+  ApiResponseVisitedPlaceSearchResponse,
   GetPlaceVisitsParams,
+  SearchVisitedPlacesParams,
   SecondParameter,
 } from '@/features/shop/apis/dto';
 
@@ -24,6 +26,27 @@ export const toggleLike = (
 ) => {
   return apiClient<ApiResponsePlaceLikeResponse>(
     { url: `/places/${placeId}/likes`, method: 'PUT', signal },
+    options
+  );
+};
+
+/**
+ * 인증된 사용자의 소비 기록에 존재하는 장소를 이름 또는 도로명주소로 검색합니다.
+ *
+ * 동일한 장소의 소비 기록이 여러 개라면 가장 최근 방문을 기준으로 정렬합니다.
+ *
+ * 검색 결과는 최대 5개까지 반환하며, 다음 페이지 조회 시 동일한 검색어와 함께 이전 응답의 nextCursor를 전달합니다.
+ *
+ * 장소 사진이 없거나 Google 사진 조회에 실패하면 thumbnailUrl과 googleMapsUri는 null로 반환됩니다.
+ * @summary 방문 장소 검색
+ */
+export const searchVisitedPlaces = (
+  params: SearchVisitedPlacesParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseVisitedPlaceSearchResponse>(
+    { url: `/places/visited/search`, method: 'GET', params, signal },
     options
   );
 };

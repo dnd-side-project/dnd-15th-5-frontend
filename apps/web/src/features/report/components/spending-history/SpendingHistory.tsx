@@ -14,6 +14,7 @@ import SpendingRecordList from './SpendingRecordList';
 import type { ReactNode } from 'react';
 
 type SpendingHistoryProps = {
+  headerDescription?: string;
   headerContent?: ReactNode;
   headerContentGapClassName?: string;
   initialDate?: string;
@@ -39,11 +40,13 @@ const getSupportedMonthFromDate = (dateValue?: string) => {
  * 선택한 월의 소비내역을 날짜별로 보여주고 월 이동과 월 선택 시트를 제공합니다.
  *
  * @param props - 소비내역 화면 속성입니다.
+ * @param props.headerDescription - 월 선택 영역 대신 표시할 상단 안내 문구입니다.
  * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
  * @param props.headerContentGapClassName - 상단 콘텐츠와 월 선택 영역 사이의 간격 클래스입니다.
  * @param props.initialDate - 처음 표시할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
  */
 export default function SpendingHistory({
+  headerDescription,
   headerContent,
   headerContentGapClassName = 'mt-5',
   initialDate,
@@ -82,25 +85,42 @@ export default function SpendingHistory({
     <div className="flex flex-1 flex-col">
       <header
         className={cn(
-          'sticky top-0 z-sticky-header bg-neutral-00 pb-5',
-          headerContent ? 'pt-4' : 'pt-2'
+          'sticky top-0 z-sticky-header bg-neutral-00',
+          !headerDescription && 'pb-5',
+          headerContent ? 'pt-1' : 'pt-2'
         )}
       >
         {headerContent}
-        <MonthSelector
-          className={cn(headerContent && headerContentGapClassName)}
-          hasNewerMonth={hasNewerMonth}
-          hasOlderMonth={hasOlderMonth}
-          headingLabel={`${selectedMonth.month}월 소비 내역`}
-          isMonthPickerOpen={isMonthPickerOpen}
-          onMonthClick={() => setIsMonthPickerOpen(true)}
-          onNewerMonth={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex - 1])}
-          onOlderMonth={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex + 1])}
-          selectedMonth={selectedMonth}
-        />
+        {!headerDescription && (
+          <MonthSelector
+            className={cn(headerContent && headerContentGapClassName)}
+            hasNewerMonth={hasNewerMonth}
+            hasOlderMonth={hasOlderMonth}
+            headingLabel={`${selectedMonth.month}월 소비 내역`}
+            isMonthPickerOpen={isMonthPickerOpen}
+            onMonthClick={() => setIsMonthPickerOpen(true)}
+            onNewerMonth={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex - 1])}
+            onOlderMonth={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex + 1])}
+            selectedMonth={selectedMonth}
+          />
+        )}
       </header>
 
-      <div className="flex flex-1 flex-col">
+      {headerDescription && (
+        <>
+          <h1 className="sr-only">{selectedMonth.month}월 소비 내역</h1>
+          <p
+            className={cn(
+              'text-center text-body-02-medium text-neutral-500 mb-2',
+              headerContent && headerContentGapClassName
+            )}
+          >
+            {headerDescription}
+          </p>
+        </>
+      )}
+
+      <div className="flex flex-1 flex-col mb-28">
         {visibleRecordGroups.length > 0 ? (
           <SpendingRecordList groups={visibleRecordGroups} />
         ) : (
@@ -116,7 +136,7 @@ export default function SpendingHistory({
         )}
       </div>
 
-      {isMonthPickerOpen && (
+      {!headerDescription && isMonthPickerOpen && (
         <MonthPickerSheet
           months={MOCK_SPENDING_MONTHS}
           selectedMonth={selectedMonth}
