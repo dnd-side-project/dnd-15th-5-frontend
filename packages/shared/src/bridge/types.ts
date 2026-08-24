@@ -1,6 +1,13 @@
 import type { CurrentPosition } from '../location/types';
 import type { ShopSearchResult } from '../shop/types';
 
+export type SocialLoginProvider = 'kakao' | 'google';
+
+export type SocialLoginResult =
+  | { status: 'success'; loginCode: string }
+  | { status: 'cancelled' }
+  | { status: 'error'; error: string };
+
 /**
  * 웹과 네이티브가 주고받는 메시지의 종류.
  * 요청과 이벤트는 웹 → 네이티브, 응답은 네이티브 → 웹 방향이다.
@@ -46,6 +53,13 @@ export type BridgeEvent<TType extends BridgeEventType = BridgeEventType> = {
  * NOTE: ping은 브릿지 동작 확인용이며 실제 기능에서 사용하지 않는다.
  */
 export type BridgeMessageMap = {
+  startSocialLogin: {
+    payload: {
+      provider: SocialLoginProvider;
+      codeChallenge: string;
+    };
+    result: SocialLoginResult;
+  };
   getCurrentPosition: {
     payload: Record<string, never>;
     result:
@@ -69,6 +83,18 @@ export type BridgeMessageMap = {
   captureReceipt: {
     payload: Record<string, never>;
     result: { opened: true };
+  };
+  getRefreshToken: {
+    payload: Record<string, never>;
+    result: { refreshToken: string | null };
+  };
+  saveRefreshToken: {
+    payload: { refreshToken: string };
+    result: { saved: true };
+  };
+  clearRefreshToken: {
+    payload: Record<string, never>;
+    result: { cleared: true };
   };
 };
 

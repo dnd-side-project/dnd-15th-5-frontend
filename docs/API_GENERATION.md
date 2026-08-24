@@ -2,8 +2,6 @@
 
 웹 앱의 백엔드 API 타입과 TanStack Query 훅은 ChapChap OpenAPI 명세를 기준으로 Orval이 생성한다.
 
-- Swagger UI: `https://chapchap.kr/api/swagger-ui/index.html`
-- OpenAPI JSON: `https://chapchap.kr/api/v3/api-docs`
 - 생성 설정: `apps/web/orval.config.ts`
 - feature 매핑: `apps/web/openapiFeatureMap.json`
 - 명세 보정: `apps/web/openapiTransformer.ts`
@@ -145,7 +143,7 @@ import { getStartQueryKey } from '@/features/auth/apis/queryKeys';
 | my-page   | getMyAccount, updateMyAccount, withdrawMyAccount                                               |
 | record    | createConsumption, recognizeReceipt                                                            |
 | report    | getMonthlyReport, getCurrentStatus, getConsumptions, getFrequentPlaces                          |
-| shop      | getPlaceDetail, getPlaceVisits, toggleLike                                                     |
+| shop      | getPlaceDetail, getPlaceVisits, toggleLike, searchVisitedPlaces                                |
 
 명세에 등록된 operationId가 사라지거나 변경되면 생성 단계가 실패한다. 새로운 API는
 `openapiFeatureMap.json`에 소유 feature를 지정한 뒤 생성한다.
