@@ -4,25 +4,25 @@ import CategoryChart from './CategoryChart';
 import WeekdaySpendingChart from './WeekdaySpendingChart';
 
 describe('monthly report charts', () => {
-  it('카테고리 비율을 합계 100으로 정규화해 안내한다', () => {
+  it('서버에서 받은 카테고리 비율을 그대로 안내한다', () => {
     render(
       <CategoryChart
         categories={[
           { category: '카페', percentage: 60 },
           { category: '음식점', percentage: 30 },
-          { category: '운동', percentage: 20 },
+          { category: '운동', percentage: 10 },
         ]}
       />
     );
 
     expect(
       screen.getByRole('group', {
-        name: '카테고리 분포: 카페 55%, 음식점 27%, 운동 18%',
+        name: '카테고리 분포: 카페 60%, 음식점 30%, 운동 10%',
       })
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '카페 55%' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '음식점 27%' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '운동 18%' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '카페 60%' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '음식점 30%' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '운동 10%' })).toBeInTheDocument();
   });
 
   it('요일별 실제 소비 금액을 접근 가능한 이름으로 제공한다', () => {

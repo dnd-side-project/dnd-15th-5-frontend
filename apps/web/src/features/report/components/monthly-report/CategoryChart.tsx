@@ -1,5 +1,4 @@
 import { REPORT_CATEGORY_COLOR_CLASS_NAMES } from '@/features/report/constants';
-import { normalizePercentages } from '@/features/report/utils/reportChart';
 
 import ReportChartTooltip from './ReportChartTooltip';
 import ReportSectionTitle from './ReportSectionTitle';
@@ -17,23 +16,15 @@ type CategoryChartProps = {
 
 /** 월간 소비 기록의 카테고리별 비율을 막대와 범례로 표시합니다. */
 export default function CategoryChart({ categories }: CategoryChartProps) {
-  const normalizedPercentages = normalizePercentages(
-    categories.map((category) => category.percentage)
-  );
-  const normalizedCategories = categories
-    .map((category, index) => ({
-      ...category,
-      percentage: normalizedPercentages[index] ?? 0,
-    }))
-    .filter((category) => category.percentage > 0);
-  const chartLabel = normalizedCategories
+  const visibleCategories = categories.filter((category) => category.percentage > 0);
+  const chartLabel = visibleCategories
     .map((category) => `${category.category} ${category.percentage}%`)
     .join(', ');
 
   return (
     <section>
       <ReportSectionTitle title="카테고리 분포도" />
-      {normalizedCategories.length === 0 ? (
+      {visibleCategories.length === 0 ? (
         <p className="mt-3 rounded-lg bg-neutral-50 py-5 text-center text-body-02-medium text-neutral-500">
           카테고리 소비 데이터가 없어요
         </p>
@@ -44,7 +35,7 @@ export default function CategoryChart({ categories }: CategoryChartProps) {
             className="mt-3 flex h-9.75"
             role="group"
           >
-            {normalizedCategories.map((category, index) => {
+            {visibleCategories.map((category, index) => {
               const colorClassName = REPORT_CATEGORY_COLOR_CLASS_NAMES[category.category];
 
               return (
@@ -57,13 +48,13 @@ export default function CategoryChart({ categories }: CategoryChartProps) {
                 >
                   <span
                     aria-hidden
-                    className={`absolute inset-0 ${colorClassName} ${index === 0 ? 'rounded-l-lg' : ''} ${index === normalizedCategories.length - 1 ? 'rounded-r-lg' : ''} group-focus-visible:ring-2 group-focus-visible:ring-inset group-focus-visible:ring-neutral-900`}
+                    className={`absolute inset-0 ${colorClassName} ${index === 0 ? 'rounded-l-lg' : ''} ${index === visibleCategories.length - 1 ? 'rounded-r-lg' : ''} group-focus-visible:ring-2 group-focus-visible:ring-inset group-focus-visible:ring-neutral-900`}
                   />
                   <ReportChartTooltip
                     alignment={
                       index === 0
                         ? 'start'
-                        : index === normalizedCategories.length - 1
+                        : index === visibleCategories.length - 1
                           ? 'end'
                           : 'center'
                     }
@@ -76,7 +67,7 @@ export default function CategoryChart({ categories }: CategoryChartProps) {
             })}
           </div>
           <ul className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-body-02-medium text-neutral-600">
-            {normalizedCategories.map((category) => (
+            {visibleCategories.map((category) => (
               <li className="flex items-center gap-1.5" key={category.category}>
                 <span
                   aria-hidden
