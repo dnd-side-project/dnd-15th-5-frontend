@@ -13,6 +13,7 @@ describe('mapCurrentStatusToReportPageData', () => {
           { itemName: '아이스크림' },
           { itemName: 'LP' },
           { itemName: '도넛' },
+          { itemName: '마이크' },
         ],
         recentDiscoveryMessage: '밤 활동 비중이 늘었어요',
         weeklyCounts: [1, 0, 2, 0, 3, 0, 0],
