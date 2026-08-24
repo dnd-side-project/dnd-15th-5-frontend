@@ -1,6 +1,5 @@
+import { useLogout } from '@/features/my-page/hooks/useLogout';
 import { LogoutIcon } from '@/shared/assets/icons';
-
-import { useLogout } from '../hooks/useLogout';
 
 import MyPageMenuItem from './MyPageMenuItem';
 
