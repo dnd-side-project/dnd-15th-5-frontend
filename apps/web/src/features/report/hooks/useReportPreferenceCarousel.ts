@@ -9,6 +9,7 @@ type UseReportPreferenceCarouselOptions = {
 };
 
 type CarouselDragState = {
+  hasStartedDrag: boolean;
   pointerId: number;
   startScrollLeft: number;
   startX: number;
@@ -124,13 +125,12 @@ export const useReportPreferenceCarousel = ({
     const carousel = event.currentTarget;
     stopScrollAnimation();
     dragStateRef.current = {
+      hasStartedDrag: false,
       pointerId: event.pointerId,
       startScrollLeft: carousel.scrollLeft,
       startX: event.clientX,
     };
     dragDistanceRef.current = 0;
-    carousel.dataset.dragging = 'true';
-    carousel.setPointerCapture(event.pointerId);
   };
 
   const handleCarouselPointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -139,6 +139,15 @@ export const useReportPreferenceCarousel = ({
 
     const dragDistance = event.clientX - dragState.startX;
     dragDistanceRef.current = dragDistance;
+
+    if (!dragState.hasStartedDrag) {
+      if (Math.abs(dragDistance) < CLICK_SUPPRESSION_DRAG_THRESHOLD) return;
+
+      dragState.hasStartedDrag = true;
+      event.currentTarget.dataset.dragging = 'true';
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+
     event.currentTarget.scrollLeft = dragState.startScrollLeft - dragDistance;
   };
 
@@ -147,17 +156,20 @@ export const useReportPreferenceCarousel = ({
     if (!dragState || dragState.pointerId !== event.pointerId) return;
 
     const dragDistance = dragDistanceRef.current;
-    const hasPassedThreshold = Math.abs(dragDistance) >= CARD_CHANGE_DRAG_THRESHOLD;
+    const hasPassedThreshold =
+      dragState.hasStartedDrag && Math.abs(dragDistance) >= CARD_CHANGE_DRAG_THRESHOLD;
     const direction = dragDistance < 0 ? 1 : -1;
     const targetIndex = hasPassedThreshold
       ? Math.min(Math.max(selectedCardIndex + direction, 0), cardCount - 1)
       : selectedCardIndex;
 
-    if (Math.abs(dragDistance) >= CLICK_SUPPRESSION_DRAG_THRESHOLD) {
+    if (dragState.hasStartedDrag) {
       suppressClickUntilRef.current = Date.now() + 300;
     }
 
-    event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
     finishDrag(targetIndex);
   };
 

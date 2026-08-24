@@ -65,8 +65,9 @@ export default function ReportPreferenceCard({
           <img
             alt=""
             aria-hidden
+            draggable={false}
             className={cn(
-              'absolute inset-0 size-full object-cover mix-blend-overlay',
+              'pointer-events-none absolute inset-0 size-full object-cover mix-blend-overlay select-none',
               variantConfig.textureClassName
             )}
             src={ReportCardTextureImage}
@@ -94,7 +95,11 @@ export default function ReportPreferenceCard({
           </div>
           <img
             alt={variantConfig.characterAlt}
-            className={cn('absolute object-contain', variantConfig.characterClassName)}
+            className={cn(
+              'pointer-events-none absolute object-contain select-none',
+              variantConfig.characterClassName
+            )}
+            draggable={false}
             src={variantConfig.characterImage}
           />
           <div className="absolute right-0 bottom-4.5 left-0 flex justify-center gap-1.5">
