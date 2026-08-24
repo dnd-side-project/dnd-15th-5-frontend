@@ -31,6 +31,7 @@ type BottomSheetPresentation = {
 };
 
 const MODAL_SHEET_SNAP_POINTS = ['hidden', 'medium'] as const;
+const TOP_ACTION_TO_SHEET_GAP_PX = 12;
 
 /**
  * 홈 화면 지도 위에 뜨는 바텀시트입니다.
@@ -38,6 +39,8 @@ const MODAL_SHEET_SNAP_POINTS = ['hidden', 'medium'] as const;
  * 높이 단계는 `useHomeBottomSheetStore`가 갖고 있습니다. 하단 탭바의 "홈" 버튼을 누르면 정해진
  * 순서(중간 → 최대 → 중간 → 숨김)로 바뀌고, 핸들을 드래그하면 손가락을 따라 자유롭게 움직이다가
  * 가장 가까운 단계로 스냅됩니다. 지도 스티커를 선택하면 탭 대신 해당 장소의 요약을 표시합니다.
+ * 최대 단계는 상단 마이페이지 버튼 아래의 측정된 경계를 넘지 않으며, 실제 노출 높이를 스토어에
+ * 기록해 현재 위치 버튼이 모든 시트에서 핸들과 같은 간격을 유지하도록 합니다.
  *
  * @param props - 홈 바텀시트 속성입니다.
  * @param props.renderFrequentShops - 세그먼트 토글과 자주 소비한 곳을 하나의 sticky 헤더로 조립합니다.
@@ -51,6 +54,8 @@ export default function HomeBottomSheet({
   const setSnapPoint = useHomeBottomSheetStore((state) => state.setSnapPoint);
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
+  const topActionBottomPx = useHomeBottomSheetStore((state) => state.topActionBottomPx);
+  const setVisibleHeight = useHomeBottomSheetStore((state) => state.setVisibleHeight);
   const snapPoint = getHomeBottomSheetSnapPoint(stepIndex);
   const selectedSticker =
     activeSheet.type === 'selectedPlace'
@@ -160,6 +165,10 @@ export default function HomeBottomSheet({
   }
 
   const isHomeSheet = !sheetPresentation.isModal;
+  const fullTopBoundaryPx =
+    isHomeSheet && topActionBottomPx > 0
+      ? topActionBottomPx + TOP_ACTION_TO_SHEET_GAP_PX
+      : undefined;
 
   return (
     <BottomSheet
@@ -169,6 +178,8 @@ export default function HomeBottomSheet({
       onSnapPointChange={isHomeSheet ? setSnapPoint : handleModalSheetSnapPointChange}
       fitContent={!isHomeSheet}
       contentClassName={sheetPresentation.contentClassName}
+      fullTopBoundaryPx={fullTopBoundaryPx}
+      onVisibleHeightChange={setVisibleHeight}
     >
       {sheetPresentation.content}
     </BottomSheet>

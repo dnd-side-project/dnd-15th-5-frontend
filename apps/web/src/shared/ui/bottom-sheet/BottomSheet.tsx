@@ -1,17 +1,13 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { cn } from '@/shared/lib/cn';
 
 import { BOTTOM_SHEET_HEIGHT_RATIO, BOTTOM_SHEET_TRANSITION_MS } from './constants';
+import { useBottomSheetDrag } from './useBottomSheetDrag';
+import { useBottomSheetVisibleHeight } from './useBottomSheetVisibleHeight';
 
-import type { PointerEvent as ReactPointerEvent, ReactNode, Ref } from 'react';
-
-export type BottomSheetSnapPoint = 'full' | 'large' | 'medium' | 'hidden';
-
-// NOTE: 이 값보다 적게 움직이면 드래그가 아니라 클릭으로 본다. 클릭은 pointerdown→pointerup을
-// 그대로 거치므로, 임계값 없이 매번 onSnapPointChange를 부르면 핸들을 그냥 클릭만 해도
-// onHandleClick과 onSnapPointChange가 동시에 호출된다.
-const DRAG_THRESHOLD_PX = 4;
+import type { BottomSheetSnapPoint, BottomSheetSnapPoints } from './types';
+import type { ReactNode, Ref } from 'react';
 
 const SNAP_POINT_HEIGHT: Record<BottomSheetSnapPoint, string> = {
   full: `${BOTTOM_SHEET_HEIGHT_RATIO.full * 100}dvh`,
@@ -19,10 +15,6 @@ const SNAP_POINT_HEIGHT: Record<BottomSheetSnapPoint, string> = {
   medium: `${BOTTOM_SHEET_HEIGHT_RATIO.medium * 100}dvh`,
   hidden: `${BOTTOM_SHEET_HEIGHT_RATIO.medium * 100}dvh`,
 };
-
-type BottomSheetSnapPoints = readonly [BottomSheetSnapPoint, ...BottomSheetSnapPoint[]];
-
-const DEFAULT_SNAP_POINTS: BottomSheetSnapPoints = ['hidden', 'medium', 'full'];
 
 type BottomSheetProps = {
   snapPoint: BottomSheetSnapPoint;
@@ -34,6 +26,19 @@ type BottomSheetProps = {
   children: ReactNode;
   contentClassName?: string;
   rootRef?: Ref<HTMLDivElement>;
+  fullTopBoundaryPx?: number;
+  onVisibleHeightChange?: (heightPx: number) => void;
+};
+
+const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
+  if (typeof ref === 'function') {
+    ref(value);
+    return;
+  }
+
+  if (ref) {
+    ref.current = value;
+  }
 };
 
 /**
@@ -70,6 +75,8 @@ type BottomSheetProps = {
  * @param props.children - 바텀시트 안에 표시할 내용입니다.
  * @param props.contentClassName - 콘텐츠 영역에 추가할 스타일입니다.
  * @param props.rootRef - 바텀시트 루트 요소를 참조합니다.
+ * @param props.fullTopBoundaryPx - `full` 단계에서 시트 상단이 넘어가지 않을 화면 기준 Y 좌표입니다.
+ * @param props.onVisibleHeightChange - 드래그·스냅·콘텐츠 변경을 반영한 실제 노출 높이를 알립니다.
  */
 export function BottomSheet({
   snapPoint,
@@ -80,101 +87,61 @@ export function BottomSheet({
   children,
   contentClassName,
   rootRef,
+  fullTopBoundaryPx,
+  onVisibleHeightChange,
 }: BottomSheetProps) {
-  const [dragHeightPx, setDragHeightPx] = useState<number | null>(null);
-  const dragStartRef = useRef<{ pointerY: number; heightPx: number; hasDragged: boolean } | null>(
-    null
-  );
+  const sheetElementRef = useRef<HTMLDivElement>(null);
+  const hasFullTopBoundary = fullTopBoundaryPx !== undefined && fullTopBoundaryPx > 0;
 
-  const heightAtSnapPointPx = (point: BottomSheetSnapPoint) =>
-    point === 'hidden' ? 0 : window.innerHeight * BOTTOM_SHEET_HEIGHT_RATIO[point];
-
-  const resolvedSnapPoints = snapPoints ?? DEFAULT_SNAP_POINTS;
-  const canDismissFitContent = fitContent && Boolean(snapPoints?.includes('hidden'));
-
-  const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (fitContent && !canDismissFitContent) {
-      return;
+  const getSnapPointHeightPx = (point: BottomSheetSnapPoint) => {
+    if (point === 'hidden') {
+      return 0;
     }
 
-    const sheetElement = event.currentTarget.parentElement;
-    const fitContentHeightPx = sheetElement?.getBoundingClientRect().height ?? 0;
+    if (point === 'full' && hasFullTopBoundary) {
+      return Math.max(0, window.innerHeight - fullTopBoundaryPx);
+    }
 
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    dragStartRef.current = {
-      pointerY: event.clientY,
-      heightPx: fitContent ? fitContentHeightPx : heightAtSnapPointPx(snapPoint),
-      hasDragged: false,
-    };
-    setDragHeightPx(dragStartRef.current.heightPx);
+    return window.innerHeight * BOTTOM_SHEET_HEIGHT_RATIO[point];
   };
 
-  const handlePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (!dragStartRef.current) {
-      return;
-    }
-
-    const draggedUpBy = dragStartRef.current.pointerY - event.clientY;
-    if (Math.abs(draggedUpBy) >= DRAG_THRESHOLD_PX) {
-      dragStartRef.current.hasDragged = true;
-    }
-
-    const fullHeightPx = fitContent ? dragStartRef.current.heightPx : heightAtSnapPointPx('full');
-    const nextHeightPx = Math.min(
-      fullHeightPx,
-      Math.max(0, dragStartRef.current.heightPx + draggedUpBy)
-    );
-    setDragHeightPx(nextHeightPx);
-  };
-
-  const handlePointerUp = () => {
-    if (dragHeightPx === null || !dragStartRef.current) {
-      return;
-    }
-
-    const { hasDragged, heightPx: fitContentHeightPx } = dragStartRef.current;
-    dragStartRef.current = null;
-    setDragHeightPx(null);
-
-    // NOTE: 실제로 움직인 적 없는 클릭이면 여기서 끝낸다. 뒤이어 브라우저가 발생시키는
-    // click 이벤트가 onHandleClick을 부른다.
-    if (!hasDragged) {
-      return;
-    }
-
-    const candidates: [BottomSheetSnapPoint, number][] = resolvedSnapPoints.map((point) => [
-      point,
-      fitContent && point !== 'hidden' ? fitContentHeightPx : heightAtSnapPointPx(point),
-    ]);
-    const [nearestSnapPoint] = candidates.reduce((closest, candidate) =>
-      Math.abs(candidate[1] - dragHeightPx) < Math.abs(closest[1] - dragHeightPx)
-        ? candidate
-        : closest
-    );
-
-    onSnapPointChange?.(nearestSnapPoint);
-  };
-
-  const handlePointerCancel = () => {
-    dragStartRef.current = null;
-    setDragHeightPx(null);
-  };
-
-  const isDragging = dragHeightPx !== null;
+  const { canDismissFitContent, dragHeightPx, handleClick, handlePointerDown, isDragging } =
+    useBottomSheetDrag({
+      fitContent,
+      getSnapPointHeightPx,
+      onHandleClick,
+      onSnapPointChange,
+      snapPoint,
+      snapPoints,
+    });
   const isHidden = !isDragging && snapPoint === 'hidden';
   const isHandleInteractive = !fitContent || canDismissFitContent || Boolean(onHandleClick);
-  const handleClassName = 'flex w-full shrink-0 touch-none items-center justify-center py-3';
+  const handleClassName =
+    'flex w-full shrink-0 touch-none select-none items-center justify-center py-3';
   const handleBar = <span className="h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true" />;
+  const heightAtSnapPoint =
+    snapPoint === 'full' && hasFullTopBoundary
+      ? `calc(100dvh - ${fullTopBoundaryPx}px)`
+      : SNAP_POINT_HEIGHT[snapPoint];
+  const handleRootRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      sheetElementRef.current = element;
+      assignRef(rootRef, element);
+    },
+    [rootRef]
+  );
+
+  useBottomSheetVisibleHeight({
+    elementRef: sheetElementRef,
+    isHidden,
+    onVisibleHeightChange,
+  });
 
   return (
     <div
-      ref={rootRef}
+      ref={handleRootRef}
       style={{
-        height: isDragging
-          ? `${dragHeightPx}px`
-          : fitContent
-            ? 'auto'
-            : SNAP_POINT_HEIGHT[snapPoint],
+        height: isDragging ? `${dragHeightPx}px` : fitContent ? 'auto' : heightAtSnapPoint,
         // NOTE: Tailwind duration 클래스 대신 상수를 그대로 써서, 이 값을 재사용하는
         // 다른 컴포넌트(예: useBottomSheetTransition)와 항상 같은 값을 유지한다.
         transitionDuration: `${BOTTOM_SHEET_TRANSITION_MS}ms`,
@@ -188,15 +155,12 @@ export function BottomSheet({
       {isHandleInteractive ? (
         <button
           type="button"
-          onClick={onHandleClick}
+          onClick={handleClick}
           onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerCancel}
           aria-label="바텀시트 높이 조절"
           className={cn(
             handleClassName,
-            'rounded-t-30 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset'
+            'cursor-grab rounded-t-30 outline-none active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset'
           )}
         >
           {handleBar}
@@ -206,7 +170,7 @@ export function BottomSheet({
       )}
       <div
         className={cn(
-          'px-4 pb-4',
+          'px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]',
           fitContent
             ? 'shrink-0 overflow-visible'
             : 'scrollbar-hidden min-h-0 flex-1 overflow-y-auto',
