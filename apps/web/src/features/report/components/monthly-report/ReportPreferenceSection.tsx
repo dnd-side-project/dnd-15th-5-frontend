@@ -36,6 +36,7 @@ export default function ReportPreferenceSection({
           description={description}
           isFlipped={isFlipped}
           metrics={metrics}
+          onFlip={onFlip}
           tags={tags}
           title={title}
           variant={variant}
