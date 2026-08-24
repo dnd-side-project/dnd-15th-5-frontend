@@ -1,4 +1,8 @@
+import { useRef } from 'react';
+
 import { ImageDownloadIcon } from '@/shared/assets/icons';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
+import { useScrollLock } from '@/shared/hooks/useScrollLock';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { Button } from '@/shared/ui/button';
 
@@ -9,14 +13,16 @@ type ReportShareSheetProps = {
   onDownload: () => void;
 };
 
-/** 취향 카드의 이미지 저장과 외부 공유 동작을 제공하는 하단 패널입니다. */
-export default function ReportShareSheet({
-  isDownloading,
-  isOpen,
-  onClose,
-  onDownload,
-}: ReportShareSheetProps) {
-  if (!isOpen) return null;
+type ReportShareDialogProps = Omit<ReportShareSheetProps, 'isOpen'>;
+
+function ReportShareDialog({ isDownloading, onClose, onDownload }: ReportShareDialogProps) {
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  useScrollLock();
+  useFocusTrap(sheetRef, {
+    initialFocusSelector: '[data-report-share-download]',
+    onEscape: onClose,
+  });
 
   return (
     <>
@@ -30,19 +36,45 @@ export default function ReportShareSheet({
         contentClassName="pb-11.75"
         fitContent
         onSnapPointChange={(snapPoint) => snapPoint === 'hidden' && onClose()}
+        rootRef={sheetRef}
         snapPoint="medium"
         snapPoints={['hidden', 'medium']}
       >
-        <div className="grid gap-2.5 pt-4">
-          <Button isLoading={isDownloading} onClick={onDownload} size="medium" variant="secondary">
-            <ImageDownloadIcon aria-hidden className="size-4" />
-            이미지 저장
-          </Button>
-          <Button size="medium" variant="secondary">
-            카카오톡으로 공유하기
-          </Button>
-        </div>
+        <section aria-labelledby="report-share-title" aria-modal="true" role="dialog">
+          <h2 className="sr-only" id="report-share-title">
+            취향 카드 공유하기
+          </h2>
+          <div className="grid gap-2.5 pt-4">
+            <Button
+              data-report-share-download
+              isLoading={isDownloading}
+              onClick={onDownload}
+              size="medium"
+              variant="secondary"
+            >
+              <ImageDownloadIcon aria-hidden className="size-4" />
+              이미지 저장
+            </Button>
+            <Button size="medium" variant="secondary">
+              카카오톡으로 공유하기
+            </Button>
+          </div>
+        </section>
       </BottomSheet>
     </>
+  );
+}
+
+/** 취향 카드의 이미지 저장과 외부 공유 동작을 제공하는 하단 패널입니다. */
+export default function ReportShareSheet({
+  isDownloading,
+  isOpen,
+  onClose,
+  onDownload,
+}: ReportShareSheetProps) {
+  if (!isOpen) return null;
+
+  return (
+    <ReportShareDialog isDownloading={isDownloading} onClose={onClose} onDownload={onDownload} />
   );
 }
