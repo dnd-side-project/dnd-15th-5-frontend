@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 
 import { BottomSheet } from '.';
 
@@ -38,6 +38,76 @@ describe('BottomSheet', () => {
     expect(sheet.className).toContain('translate-y-full');
   });
 
+  it('full 단계에서 지정한 화면 상단 경계를 넘지 않는다', () => {
+    const { container } = render(
+      <BottomSheet snapPoint="full" fullTopBoundaryPx={96}>
+        내용
+      </BottomSheet>
+    );
+
+    expect(container.firstChild).toHaveStyle({ height: 'calc(100dvh - 96px)' });
+  });
+
+  it('열림·닫힘 전환 중 화면에 실제로 노출된 높이를 알린다', () => {
+    const onVisibleHeightChange = jest.fn();
+    let sheetTop = 440;
+    let animationFrameCallback: FrameRequestCallback | undefined;
+    const originalRequestAnimationFrame = window.requestAnimationFrame;
+    const originalCancelAnimationFrame = window.cancelAnimationFrame;
+    window.requestAnimationFrame = jest.fn((callback: FrameRequestCallback) => {
+      animationFrameCallback = callback;
+      return 1;
+    });
+    window.cancelAnimationFrame = jest.fn();
+    const boundingClientRectSpy = jest
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(() => ({
+        bottom: sheetTop + 360,
+        height: 360,
+        left: 0,
+        right: 480,
+        top: sheetTop,
+        width: 480,
+        x: 0,
+        y: sheetTop,
+        toJSON: () => ({}),
+      }));
+    const { container, rerender } = render(
+      <BottomSheet snapPoint="medium" onVisibleHeightChange={onVisibleHeightChange}>
+        내용
+      </BottomSheet>
+    );
+
+    expect(onVisibleHeightChange).toHaveBeenLastCalledWith(360);
+
+    rerender(
+      <BottomSheet snapPoint="hidden" onVisibleHeightChange={onVisibleHeightChange}>
+        내용
+      </BottomSheet>
+    );
+
+    expect(onVisibleHeightChange).toHaveBeenLastCalledWith(360);
+
+    const sheet = container.firstChild as HTMLElement;
+    act(() => {
+      sheet.dispatchEvent(new Event('transitionrun', { bubbles: true }));
+      sheetTop = 600;
+      animationFrameCallback?.(0);
+    });
+
+    expect(onVisibleHeightChange).toHaveBeenLastCalledWith(200);
+
+    act(() => {
+      sheetTop = 800;
+      sheet.dispatchEvent(new Event('transitionend', { bubbles: true }));
+    });
+
+    expect(onVisibleHeightChange).toHaveBeenLastCalledWith(0);
+    boundingClientRectSpy.mockRestore();
+    window.requestAnimationFrame = originalRequestAnimationFrame;
+    window.cancelAnimationFrame = originalCancelAnimationFrame;
+  });
+
   it('콘텐츠 맞춤 높이에서는 드래그와 내부 스크롤을 사용하지 않는다', () => {
     const { container } = render(
       <BottomSheet snapPoint="medium" fitContent>
@@ -49,6 +119,7 @@ describe('BottomSheet', () => {
 
     expect(sheet).toHaveStyle({ height: 'auto' });
     expect(screen.queryByRole('button', { name: '바텀시트 높이 조절' })).not.toBeInTheDocument();
+    expect(content).toHaveClass('pb-[calc(1rem+env(safe-area-inset-bottom))]');
     expect(content.className).toContain('overflow-visible');
     expect(content.className).not.toContain('overflow-y-auto');
   });
@@ -124,6 +195,43 @@ describe('BottomSheet', () => {
     firePointerEvent(handle, 'pointermove', 400);
 
     expect(sheet).toHaveStyle({ height: '460px' });
+  });
+
+  it('손가락이 핸들 영역을 벗어나도 드래그를 계속 추적한다', () => {
+    const onSnapPointChange = jest.fn();
+    const { container } = render(
+      <BottomSheet snapPoint="medium" onSnapPointChange={onSnapPointChange}>
+        내용
+      </BottomSheet>
+    );
+    const sheet = container.firstChild as HTMLElement;
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(document.body, 'pointermove', 150);
+
+    expect(sheet).toHaveStyle({ height: '710px' });
+
+    firePointerEvent(document.body, 'pointerup', 150);
+
+    expect(onSnapPointChange).toHaveBeenCalledWith('full');
+  });
+
+  it('드래그 직후 발생한 click으로 높이 변경 콜백을 중복 호출하지 않는다', () => {
+    const onHandleClick = jest.fn();
+    render(
+      <BottomSheet snapPoint="medium" onHandleClick={onHandleClick}>
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(document.body, 'pointermove', 400);
+    firePointerEvent(document.body, 'pointerup', 400);
+    fireEvent.click(handle);
+
+    expect(onHandleClick).not.toHaveBeenCalled();
   });
 
   it('드래그를 놓으면 가장 가까운 단계로 스냅되고 onSnapPointChange를 호출한다', () => {

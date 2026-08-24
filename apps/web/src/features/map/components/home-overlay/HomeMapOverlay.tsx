@@ -12,7 +12,7 @@ const MOCK_RECORDED_SHOP_COUNT = 7;
  */
 export default function HomeMapOverlay() {
   return (
-    <div className="pointer-events-none fixed top-0 right-0 left-0 z-10 mx-auto flex max-w-120 flex-col gap-3">
+    <div className="pointer-events-none fixed top-0 right-0 left-0 z-10 mx-auto flex max-w-120 flex-col gap-3 pt-[env(safe-area-inset-top)]">
       <div className="pointer-events-auto">
         <HomeTopBar recordedShopCount={MOCK_RECORDED_SHOP_COUNT} />
       </div>

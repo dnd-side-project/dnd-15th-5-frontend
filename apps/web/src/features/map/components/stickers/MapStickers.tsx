@@ -1,16 +1,15 @@
 import { useMap } from '@vis.gl/react-google-maps';
 
-import { SELECTED_PLACE_MAP_ZOOM } from '../../constants';
-import { MOCK_MAP_STICKERS } from '../../mockData';
-import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
-import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
-import { focusMapOnPosition } from '../../utils/focusMapOnPosition';
+import { SELECTED_PLACE_MAP_ZOOM } from '@/features/map/constants';
+import { MOCK_MAP_STICKERS } from '@/features/map/mockData';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useMapCategoryFilterStore } from '@/features/map/stores/mapCategoryFilterStore';
+import type { MapSticker as MapStickerData } from '@/features/map/types';
+import { focusMapOnPosition } from '@/features/map/utils/focusMapOnPosition';
 
 import MapSticker from './MapSticker';
 
-import type { MapSticker as MapStickerData } from '../../types';
-
-// TODO: 백엔드 API(`useVisitedPlacesQuery`, features/map/api) 연동 시 목업 대신 실제 쿼리로 교체한다.
+// TODO: 방문 장소 조회 API 훅이 생성되면 `MOCK_MAP_STICKERS`를 실제 응답 변환 결과로 교체한다.
 /** 지도 위 스티커 전체를 렌더링한다. 현재는 목업 데이터를 그대로 표시한다. */
 export default function MapStickers() {
   const map = useMap();

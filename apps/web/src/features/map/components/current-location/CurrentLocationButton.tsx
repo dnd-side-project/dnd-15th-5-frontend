@@ -1,18 +1,12 @@
 import { useMap } from '@vis.gl/react-google-maps';
 
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import type { MapPosition } from '@/features/map/types';
 import { CurrentLocationIcon } from '@/shared/assets/icons';
-import { BOTTOM_SHEET_HEIGHT_RATIO } from '@/shared/ui/bottom-sheet';
 
-import {
-  getHomeBottomSheetSnapPoint,
-  useHomeBottomSheetStore,
-} from '../../stores/homeBottomSheetStore';
-
-import type { MapPosition } from '../../types';
-
-// NOTE: 바텀시트가 숨김 상태일 때는 BottomTabBar 높이(86px, h-15.5 + 상하 패딩 pt-3/pb-3)만
-// 가리지 않으면 된다. BottomTabBar 높이가 바뀌면 이 값도 같이 조정해야 한다.
-const HIDDEN_BOTTOM_OFFSET = '6.5rem';
+// TODO: BottomTabBar의 실제 높이를 CSS 변수나 공통 레이아웃 상태로 공유해
+// 숨김 오프셋의 수동 동기화를 제거한다.
+const HIDDEN_BOTTOM_OFFSET = 'calc(6.5rem + env(safe-area-inset-bottom))';
 // 핸들과 버튼 사이 여백.
 const HANDLE_GAP = '0.75rem';
 
@@ -30,6 +24,8 @@ type CurrentLocationButtonProps = {
  * 띄웁니다. `MapControl`을 그대로 쓰면 바텀시트가 `full` 단계일 때처럼 버튼을 화면 위쪽까지
  * 밀어 올려야 하는 경우, Google Maps가 내부적으로 관리하는 컨트롤 pane의 쌓임 순서 때문에
  * 지도 자체 레이어에 버튼이 가려 클릭이 안 되는 문제가 있었습니다.
+ * 열린 시트에서는 스토어에 보고된 실제 높이를 사용하고, 숨김 상태에서는 하단 탭바 높이를
+ * 반영한 기본 오프셋을 사용합니다.
  */
 export default function CurrentLocationButton({
   position,
@@ -39,16 +35,10 @@ export default function CurrentLocationButton({
 }: CurrentLocationButtonProps) {
   const map = useMap();
   const isDisabled = !map || isLoading;
-  const stepIndex = useHomeBottomSheetStore((state) => state.stepIndex);
-  const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
-  const bottomSheetSnapPoint =
-    activeSheetType === 'home' ? getHomeBottomSheetSnapPoint(stepIndex) : 'medium';
-  // NOTE: 바텀시트가 열려 있으면(medium/full) 항상 핸들 바로 위에 떠 있도록, 바텀시트와
-  // 같은 비율로 위치를 맞춘다.
-  const bottomOffset =
-    bottomSheetSnapPoint === 'hidden'
-      ? HIDDEN_BOTTOM_OFFSET
-      : `calc(${BOTTOM_SHEET_HEIGHT_RATIO[bottomSheetSnapPoint] * 100}dvh + ${HANDLE_GAP})`;
+  const bottomSheetHeightPx = useHomeBottomSheetStore((state) => state.visibleHeightPx);
+  // NOTE: 스냅 포인트 비율이 아닌 실제 렌더링 높이를 사용해야 콘텐츠 맞춤 시트에서도
+  // 핸들과 버튼 사이 간격이 동일하게 유지된다.
+  const bottomOffset = `max(calc(${bottomSheetHeightPx}px + ${HANDLE_GAP}), ${HIDDEN_BOTTOM_OFFSET})`;
 
   const handleCurrentLocationClick = () => {
     if (!map) {
@@ -65,7 +55,7 @@ export default function CurrentLocationButton({
 
   return (
     <div
-      className="mobile-frame fixed right-0 left-0 z-map-control flex justify-end pr-4 transition-[bottom] duration-300 ease-out"
+      className="mobile-frame fixed right-0 left-0 z-map-control flex justify-end pr-4"
       style={{ bottom: bottomOffset }}
     >
       <div className="flex flex-col items-end gap-2">

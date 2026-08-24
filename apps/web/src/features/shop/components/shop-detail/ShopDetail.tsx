@@ -1,6 +1,8 @@
 import { useCallback, useRef } from 'react';
 
+import { usePlaceVisitsInfiniteQuery } from '@/features/shop/apis/hooks/usePlaceVisitsInfiniteQuery';
 import { useGetPlaceDetail } from '@/features/shop/apis/queries';
+import type { MockShopDetailData } from '@/features/shop/mockData';
 import { LocationPinIcon } from '@/shared/assets/icons';
 import { getStickerImageByName } from '@/shared/assets/images/stickers';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
@@ -9,13 +11,10 @@ import { RegularShopBadge } from '@/shared/ui/regular-shop-badge';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
 
-import { usePlaceVisitsInfiniteQuery } from '../../apis/hooks/usePlaceVisitsInfiniteQuery';
-
 import ShopStickerHero from './ShopStickerHero';
 import VisitHistoryList from './VisitHistoryList';
 import VisitSummaryCard from './VisitSummaryCard';
 
-import type { MockShopDetailData } from '../../mockData';
 import type { ReactNode } from 'react';
 
 type ShopDetailProps = {
@@ -126,7 +125,7 @@ export default function ShopDetail({
           ref={scrollRootRef}
           role="region"
           aria-label="방문 요약과 방문 기록"
-          className="scrollbar-hidden -mx-4 mt-6 min-h-0 flex-1 overflow-y-auto px-4"
+          className="scrollbar-hidden pb-safe-bottom -mx-4 mt-6 min-h-0 flex-1 overflow-y-auto px-4"
         >
           <VisitSummaryCard
             firstVisitedDate={place.stats?.firstVisitedDate}

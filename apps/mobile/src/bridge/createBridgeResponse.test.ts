@@ -50,8 +50,8 @@ describe('createBridgeResponse', () => {
     });
     mockSaveImageToLibrary.mockResolvedValue();
     mockGetRefreshToken.mockResolvedValue(null);
-    mockSetRefreshToken.mockResolvedValue();
-    mockClearRefreshToken.mockResolvedValue();
+    mockSetRefreshToken.mockResolvedValue(undefined);
+    mockClearRefreshToken.mockResolvedValue(undefined);
     mockStartSocialLogin.mockResolvedValue({ status: 'cancelled' });
   });
 

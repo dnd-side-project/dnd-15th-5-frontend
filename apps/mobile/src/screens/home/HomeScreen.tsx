@@ -1,5 +1,6 @@
 import { isBridgeEvent, isBridgeRequest, parseBridgeMessage } from '@chapchap/shared/bridge';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { BackHandler, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import {
@@ -12,13 +13,14 @@ import { WebViewScreen } from '@/shared/layout/WebViewScreen';
 
 import { useWebViewNavigationState } from './useWebViewNavigationState';
 
-import type { WebViewMessageEvent } from 'react-native-webview';
+import type { WebViewMessageEvent, WebViewProps } from 'react-native-webview';
 
 /**
- * 웹 화면을 WebView로 띄우는 앱의 기본 화면.
+ * 웹 인증 진입점부터 지도 홈까지 하나의 WebView로 띄우는 앱의 기본 화면입니다.
  *
- * 웹에서 온 브릿지 요청을 받아 처리하고 응답을 돌려주는 진입점이기도 하다.
- * 웹 주소가 설정되지 않았거나 화면을 불러오지 못하면 원인을 알 수 있도록 안내 화면을 보여준다.
+ * 설정된 웹 origin과 같은 문서에서 온 브릿지 요청만 처리하고, 외부 HTTP(S) 링크는 기기의
+ * 기본 앱으로 전달합니다. 웹 주소가 없거나 로드에 실패하면 `WebViewScreen`의 안내 화면을
+ * 사용하며, Android 하드웨어 뒤로 가기는 지도 홈 이외의 웹 경로에서 WebView 기록을 이동합니다.
  */
 export default function HomeScreen() {
   // 개발 빌드는 .env의 로컬 개발 서버를, preview·production 빌드는 eas.json에 지정한 배포 주소를 사용한다
@@ -26,9 +28,21 @@ export default function HomeScreen() {
   const trustedWebOrigin = webUrl ? getUrlOrigin(webUrl) : null;
   const initialWebUrl = trustedWebOrigin ? `${trustedWebOrigin}/` : null;
   const webViewRef = useRef<WebView>(null);
-  const { handleNavigationStateChange, handleRouteChange, isMapHome } = useWebViewNavigationState(
-    initialWebUrl ?? undefined
-  );
+  const { canGoBack, handleNavigationStateChange, handleRouteChange, isMapHome } =
+    useWebViewNavigationState(initialWebUrl ?? undefined);
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (isMapHome || !canGoBack || !webViewRef.current) {
+        return false;
+      }
+
+      webViewRef.current.goBack();
+      return true;
+    });
+
+    return () => subscription.remove();
+  }, [canGoBack, isMapHome]);
 
   const handleBridgeMessage = async (event: WebViewMessageEvent) => {
     if (!trustedWebOrigin || !isTrustedBridgeUrl(event.nativeEvent.url, trustedWebOrigin)) {
@@ -54,6 +68,23 @@ export default function HomeScreen() {
     webViewRef.current?.injectJavaScript(createResponseScript(response, trustedWebOrigin));
   };
 
+  const handleShouldStartLoadWithRequest: NonNullable<
+    WebViewProps['onShouldStartLoadWithRequest']
+  > = ({ url }) => {
+    if (!trustedWebOrigin || isTrustedBridgeUrl(url, trustedWebOrigin)) {
+      return true;
+    }
+
+    if (/^https?:\/\//i.test(url)) {
+      void Linking.openURL(url).catch(() => {
+        // TODO: 네이티브 공통 오류 안내 UI가 생기면 외부 링크 실행 실패를 사용자에게 알린다.
+      });
+    }
+
+    return false;
+  };
+
+  // TODO: iOS 실기기 개발 빌드에서 경로별 Safe Area, 뒤로 가기 제스처, 바텀시트 드래그·스크롤을 E2E 확인한다.
   return (
     <WebViewScreen
       uri={initialWebUrl}
@@ -66,9 +97,12 @@ export default function HomeScreen() {
       }}
       loadErrorTitle="웹 화면을 불러오지 못했습니다"
       loadErrorDescriptions={webUrl ? [webUrl] : []}
-      edgeToEdge={isMapHome}
+      safeAreaMode={isMapHome ? 'none' : 'except-bottom'}
       allowsBackForwardNavigationGestures={!isMapHome}
-      onNavigationStateChange={({ url }) => handleNavigationStateChange(url)}
+      onNavigationStateChange={({ canGoBack: nextCanGoBack, url }) =>
+        handleNavigationStateChange(url, nextCanGoBack)
+      }
+      onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
       onMessage={handleBridgeMessage}
     />
   );

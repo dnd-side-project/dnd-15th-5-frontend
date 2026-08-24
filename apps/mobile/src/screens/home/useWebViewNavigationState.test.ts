@@ -9,12 +9,14 @@ describe('useWebViewNavigationState', () => {
     );
 
     expect(result.current.isMapHome).toBe(true);
+    expect(result.current.canGoBack).toBe(false);
 
     await act(async () => {
-      result.current.handleNavigationStateChange('https://chapchap.example.com/report');
+      result.current.handleNavigationStateChange('https://chapchap.example.com/report', true);
     });
 
     expect(result.current.isMapHome).toBe(false);
+    expect(result.current.canGoBack).toBe(true);
   });
 
   it('웹에서 전달한 SPA 경로를 반영한다', async () => {
