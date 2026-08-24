@@ -35,6 +35,21 @@ describe('SpendingHistory', () => {
     expect(screen.getAllByText('2026.08.22 · 오전 · 카페')).toHaveLength(3);
   });
 
+  it('상단 안내 문구를 전달하면 월 선택 대신 안내를 보여준다', () => {
+    render(
+      <MemoryRouter>
+        <SpendingHistory headerDescription="이번달 작성한 소비기록을 확인해보세요" />
+      </MemoryRouter>
+    );
+
+    const description = screen.getByText('이번달 작성한 소비기록을 확인해보세요');
+    expect(description).toBeInTheDocument();
+    expect(description.closest('header')).toBeNull();
+    expect(screen.queryByRole('button', { name: '월 선택' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '이전 달 보기' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '다음 달 보기' })).not.toBeInTheDocument();
+  });
+
   it('초기 날짜가 있으면 해당 날짜의 소비 기록만 보여준다', () => {
     renderSpendingHistory('2026-08-21');
 

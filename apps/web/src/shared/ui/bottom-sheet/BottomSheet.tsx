@@ -207,7 +207,9 @@ export function BottomSheet({
       <div
         className={cn(
           'px-4 pb-4',
-          fitContent ? 'shrink-0 overflow-visible' : 'min-h-0 flex-1 overflow-y-auto',
+          fitContent
+            ? 'shrink-0 overflow-visible'
+            : 'scrollbar-hidden min-h-0 flex-1 overflow-y-auto',
           contentClassName
         )}
       >

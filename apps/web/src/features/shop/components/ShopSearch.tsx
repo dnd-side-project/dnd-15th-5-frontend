@@ -1,9 +1,7 @@
 import { useState } from 'react';
 
-import { useShopSearchQuery } from '@/features/shop/apis/queries/useShopSearchQuery';
-
-import ShopSearchInput from './ShopSearchInput';
-import ShopSearchResultList from './ShopSearchResultList';
+import { useShopSearchQuery } from '@/features/shop/apis/hooks/useShopSearchQuery';
+import { PlaceSearchInput, PlaceSearchResultList } from '@/shared/ui/place-search';
 
 import type { ShopSearchResult } from '../types';
 
@@ -33,12 +31,13 @@ export default function ShopSearch({ onSelectShop }: ShopSearchProps) {
 
   return (
     <>
-      <ShopSearchInput onSearch={handleSearch} />
-      <ShopSearchResultList
-        shops={shops ?? []}
+      <PlaceSearchInput onSearch={handleSearch} />
+      <PlaceSearchResultList
+        places={shops ?? []}
         isLoading={isFetching || isLibraryLoading}
         isError={isError || isLibraryError}
         hasKeyword={keyword.trim().length > 0}
+        getThumbnailSrc={(shop) => shop.photoUrl}
         onSelect={onSelectShop}
       />
     </>

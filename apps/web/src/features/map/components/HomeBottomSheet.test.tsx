@@ -1,13 +1,47 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 
+import { MOCK_MAP_STICKERS, MOCK_SHOP_RECOMMENDATIONS } from '../mockData';
+import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
+import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
+
+import HomeCategoryFilter from './home-overlay/HomeCategoryFilter';
 import HomeBottomSheet from './HomeBottomSheet';
 
 describe('HomeBottomSheet', () => {
+  beforeEach(() => {
+    useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
+    useShopRecommendationStore.setState({
+      activeRecommendationId: null,
+      likedRecommendationIds: [],
+    });
+  });
+
+  it('자주 소비한 곳 탭에 페이지에서 전달한 요약을 표시한다', () => {
+    render(
+      <HomeBottomSheet
+        renderFrequentShops={(headerContent) => (
+          <div>
+            {headerContent}
+            자주 소비한 곳 콘텐츠
+          </div>
+        )}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+
+    expect(screen.getByText('자주 소비한 곳 콘텐츠').closest('[aria-hidden]')).toHaveAttribute(
+      'aria-hidden',
+      'false'
+    );
+  });
+
   it('소비 기록 탭을 선택하면 페이지에서 전달한 소비내역을 표시한다', async () => {
     const user = userEvent.setup();
     render(
       <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
         renderSpendingHistory={(headerContent) => (
           <div>
             {headerContent}
@@ -29,6 +63,7 @@ describe('HomeBottomSheet', () => {
     const user = userEvent.setup();
     render(
       <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
         renderSpendingHistory={(headerContent) => (
           <div>
             {headerContent}
@@ -58,7 +93,10 @@ describe('HomeBottomSheet', () => {
   it('탭 전환 후 새로 렌더링된 활성 탭 버튼으로 포커스를 복원한다', async () => {
     const user = userEvent.setup();
     render(
-      <HomeBottomSheet renderSpendingHistory={(headerContent) => <div>{headerContent}</div>} />
+      <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
     );
 
     await user.click(screen.getByRole('button', { name: '소비 기록' }));
@@ -66,5 +104,219 @@ describe('HomeBottomSheet', () => {
 
     await user.click(screen.getByRole('button', { name: '자주 소비한 곳' }));
     expect(screen.getByRole('button', { name: '자주 소비한 곳' })).toHaveFocus();
+  });
+
+  it('스티커를 선택하면 탭 대신 해당 장소의 상세 바텀시트를 표시한다', () => {
+    const selectedSticker = MOCK_MAP_STICKERS[0];
+    act(() => {
+      useHomeBottomSheetStore.getState().showSelectedPlace(selectedSticker.id);
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { name: selectedSticker.place.name })).toBeInTheDocument();
+    expect(screen.getByText('나의 단골')).toBeInTheDocument();
+    expect(screen.getByText('|')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByText(selectedSticker.place.address)).toBeInTheDocument();
+    const emptyStickerSlots = screen.getAllByLabelText('빈 스티커 자리');
+    expect(emptyStickerSlots).toHaveLength(2);
+    expect(emptyStickerSlots[0]).toHaveClass('size-12');
+    expect(emptyStickerSlots[0]?.parentElement).toHaveClass('w-18');
+    expect(screen.getByRole('link', { name: '상세보기' })).toHaveAttribute(
+      'href',
+      `/home/shop/${selectedSticker.place.id}`
+    );
+    expect(screen.queryByRole('button', { name: '자주 소비한 곳' })).not.toBeInTheDocument();
+  });
+
+  it('스티커 선택을 해제하면 원래 홈 바텀시트를 복원한다', () => {
+    act(() => {
+      useHomeBottomSheetStore.getState().showSelectedPlace(MOCK_MAP_STICKERS[0].id);
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+    expect(
+      screen.getByRole('heading', { name: MOCK_MAP_STICKERS[0].place.name })
+    ).toBeInTheDocument();
+
+    act(() => {
+      useHomeBottomSheetStore.getState().showHome();
+    });
+
+    expect(screen.getByRole('button', { name: '자주 소비한 곳' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: MOCK_MAP_STICKERS[0].place.name })
+    ).not.toBeInTheDocument();
+  });
+
+  it('좋아요 마커를 선택하면 좋아요 가게 시트로 바꾸고 좋아요 해제 시 원래 시트를 복원한다', async () => {
+    const user = userEvent.setup();
+    const recommendation = MOCK_SHOP_RECOMMENDATIONS[0];
+    useShopRecommendationStore.setState({ likedRecommendationIds: [recommendation.id] });
+    useHomeBottomSheetStore.setState({
+      activeSheet: { type: 'likedRecommendation', recommendationId: recommendation.id },
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => (
+            <div>
+              {headerContent}
+              기존 홈 시트
+            </div>
+          )}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+
+    const likedPlaceHeading = screen.getByRole('heading', {
+      level: 2,
+      name: recommendation.place.name,
+    });
+    expect(likedPlaceHeading).toBeInTheDocument();
+    expect(
+      likedPlaceHeading.closest('section')?.querySelector('span[aria-hidden="true"]')
+    ).toHaveClass('size-22.5', 'rounded-12');
+    const googleMapsLink = screen.getByRole('link', { name: '지도앱에서 확인하기' });
+    expect(googleMapsLink).toHaveAttribute(
+      'href',
+      expect.stringContaining('https://www.google.com/maps/search/')
+    );
+    const googleMapsPlaceUrl = new URL(googleMapsLink.getAttribute('href') ?? '');
+    expect(googleMapsPlaceUrl.pathname).toBe('/maps/search/');
+    expect(googleMapsPlaceUrl.searchParams.get('query')).toBe(
+      `${recommendation.place.name} ${recommendation.place.address}`
+    );
+    expect(googleMapsPlaceUrl.searchParams.has('destination')).toBe(false);
+    expect(
+      within(googleMapsLink.parentElement as HTMLElement).getByText(recommendation.place.name)
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '기록하기' })).toHaveAttribute('href', '/record');
+    expect(screen.queryByText('기존 홈 시트')).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: `${recommendation.place.name} 좋아요 해제` })
+    );
+
+    expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
+  });
+
+  it('가게 추천 칩을 다시 누르면 추천 시트를 닫고 기존 홈 시트를 복원한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => (
+            <div>
+              {headerContent}
+              기존 홈 시트
+            </div>
+          )}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+
+    expect(screen.getByRole('heading', { level: 1, name: '가게 추천' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: '추천 가게 목록' })).toBeInTheDocument();
+    expect(screen.getAllByText('나의 관심 카테고리')).toHaveLength(2);
+    expect(screen.getAllByText('내 동네에서 많이 방문한 곳')).toHaveLength(2);
+    expect(screen.queryByText('기존 홈 시트')).not.toBeInTheDocument();
+    const firstRecommendation = MOCK_SHOP_RECOMMENDATIONS[0];
+    const likeButton = screen.getByRole('button', {
+      name: `${firstRecommendation.place.name} 관심 가게`,
+    });
+    await user.click(likeButton);
+    expect(likeButton).toHaveAttribute('aria-pressed', 'true');
+    expect(useShopRecommendationStore.getState().likedRecommendationIds).toContain(
+      firstRecommendation.id
+    );
+
+    const googleMapsLink = screen.getByRole('link', {
+      name: `${firstRecommendation.place.name} 지도앱에서 확인하기`,
+    });
+    const googleMapsUrl = new URL(googleMapsLink.getAttribute('href') ?? '');
+    expect(googleMapsUrl.origin).toBe('https://www.google.com');
+    expect(googleMapsUrl.pathname).toBe('/maps/search/');
+    expect(googleMapsUrl.searchParams.get('api')).toBe('1');
+    expect(googleMapsUrl.searchParams.get('query')).toBe(
+      `${firstRecommendation.place.name} ${firstRecommendation.place.address}`
+    );
+
+    const carousel = screen.getByRole('list', { name: '추천 가게 목록' });
+    Object.defineProperty(carousel.firstElementChild, 'offsetWidth', {
+      configurable: true,
+      value: 320,
+    });
+    carousel.scrollLeft = 332;
+    fireEvent.scroll(carousel);
+    expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(
+      MOCK_SHOP_RECOMMENDATIONS[1].id
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+
+    expect(screen.getByRole('button', { name: '가게 추천' })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+    expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 1, name: '가게 추천' })).not.toBeInTheDocument();
+  });
+
+  it('지도에서 먼 추천 마커를 선택해 캐러셀을 이동할 때 중간 카드로 선택을 덮어쓰지 않는다', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    const carousel = screen.getByRole('list', { name: '추천 가게 목록' });
+    Object.defineProperty(carousel.firstElementChild, 'offsetWidth', {
+      configurable: true,
+      value: 320,
+    });
+    const scrollTo = jest.fn();
+    carousel.scrollTo = scrollTo;
+    const lastRecommendation = MOCK_SHOP_RECOMMENDATIONS.at(-1);
+    expect(lastRecommendation).toBeDefined();
+
+    act(() => {
+      useShopRecommendationStore.getState().setActiveRecommendation(lastRecommendation?.id ?? '');
+    });
+
+    expect(scrollTo).toHaveBeenCalledWith({ left: 996, behavior: 'smooth' });
+    carousel.scrollLeft = 332;
+    fireEvent.scroll(carousel);
+
+    expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(
+      lastRecommendation?.id
+    );
   });
 });

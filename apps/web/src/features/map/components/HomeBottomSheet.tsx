@@ -1,35 +1,65 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
+import { MOCK_MAP_STICKERS, MOCK_SHOP_RECOMMENDATIONS } from '@/features/map/mockData';
 import {
   getHomeBottomSheetSnapPoint,
   useHomeBottomSheetStore,
 } from '@/features/map/stores/homeBottomSheetStore';
 import { cn } from '@/shared/lib/cn';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
+import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 import { SegmentedToggle } from '@/shared/ui/segmented-toggle';
+
+import LikedRecommendationSheet from './LikedRecommendationSheet';
+import SelectedPlaceSheet from './SelectedPlaceSheet';
+import ShopRecommendationSheet from './ShopRecommendationSheet';
 
 import type { ReactNode } from 'react';
 
 type TabValue = 'frequentShops' | 'history';
 
 type HomeBottomSheetProps = {
+  renderFrequentShops: (headerContent: ReactNode) => ReactNode;
   renderSpendingHistory: (headerContent: ReactNode) => ReactNode;
 };
+
+type BottomSheetPresentation = {
+  content: ReactNode;
+  contentClassName?: string;
+  isModal: boolean;
+  key: string;
+};
+
+const MODAL_SHEET_SNAP_POINTS = ['hidden', 'medium'] as const;
 
 /**
  * 홈 화면 지도 위에 뜨는 바텀시트입니다.
  *
  * 높이 단계는 `useHomeBottomSheetStore`가 갖고 있습니다. 하단 탭바의 "홈" 버튼을 누르면 정해진
  * 순서(중간 → 최대 → 중간 → 숨김)로 바뀌고, 핸들을 드래그하면 손가락을 따라 자유롭게 움직이다가
- * 가장 가까운 단계로 스냅됩니다.
+ * 가장 가까운 단계로 스냅됩니다. 지도 스티커를 선택하면 탭 대신 해당 장소의 요약을 표시합니다.
  *
  * @param props - 홈 바텀시트 속성입니다.
+ * @param props.renderFrequentShops - 세그먼트 토글과 자주 소비한 곳을 하나의 sticky 헤더로 조립합니다.
  * @param props.renderSpendingHistory - 세그먼트 토글과 소비내역을 하나의 sticky 헤더로 조립합니다.
  */
-export default function HomeBottomSheet({ renderSpendingHistory }: HomeBottomSheetProps) {
+export default function HomeBottomSheet({
+  renderFrequentShops,
+  renderSpendingHistory,
+}: HomeBottomSheetProps) {
   const stepIndex = useHomeBottomSheetStore((state) => state.stepIndex);
   const setSnapPoint = useHomeBottomSheetStore((state) => state.setSnapPoint);
+  const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
+  const showHome = useHomeBottomSheetStore((state) => state.showHome);
   const snapPoint = getHomeBottomSheetSnapPoint(stepIndex);
+  const selectedSticker =
+    activeSheet.type === 'selectedPlace'
+      ? MOCK_MAP_STICKERS.find(({ id }) => id === activeSheet.stickerId)
+      : undefined;
+  const selectedLikedRecommendation =
+    activeSheet.type === 'likedRecommendation'
+      ? MOCK_SHOP_RECOMMENDATIONS.find(({ id }) => id === activeSheet.recommendationId)
+      : undefined;
   const [tab, setTab] = useState<TabValue>('frequentShops');
   const contentRootRef = useRef<HTMLDivElement>(null);
   const scrollPositionsRef = useRef<Record<TabValue, number>>({
@@ -52,7 +82,7 @@ export default function HomeBottomSheet({ renderSpendingHistory }: HomeBottomShe
     contentRootRef.current
       ?.querySelector<HTMLElement>('[data-active-tab-panel="true"] [data-pressed]')
       ?.focus();
-  }, [tab]);
+  }, [activeSheet, tab]);
 
   const handleTabChange = (nextTab: TabValue) => {
     const scrollContainer = contentRootRef.current?.parentElement;
@@ -75,26 +105,72 @@ export default function HomeBottomSheet({ renderSpendingHistory }: HomeBottomShe
     />
   );
 
-  return (
-    <BottomSheet snapPoint={snapPoint} onSnapPointChange={setSnapPoint}>
-      <div ref={contentRootRef} className="contents">
-        {tab === 'frequentShops' && (
-          <div
-            data-active-tab-panel="true"
-            className="sticky top-0 z-sticky-header bg-neutral-00 pt-4"
-          >
-            {renderSegmentedToggle()}
-          </div>
-        )}
+  const handleModalSheetSnapPointChange = (nextSnapPoint: BottomSheetSnapPoint) => {
+    if (nextSnapPoint === 'hidden') {
+      showHome();
+    }
+  };
 
-        <div
-          data-active-tab-panel={tab === 'history' ? 'true' : undefined}
-          aria-hidden={tab !== 'history'}
-          className={cn('min-h-0 flex-1 flex-col', tab === 'history' ? 'flex' : 'hidden')}
-        >
-          {renderSpendingHistory(renderSegmentedToggle())}
-        </div>
+  const homeSheetContent = (
+    <div ref={contentRootRef} className="contents">
+      <div
+        data-active-tab-panel={tab === 'frequentShops' ? 'true' : undefined}
+        aria-hidden={tab !== 'frequentShops'}
+        className={cn('min-h-0 flex-1 flex-col', tab === 'frequentShops' ? 'flex' : 'hidden')}
+      >
+        {renderFrequentShops(renderSegmentedToggle())}
       </div>
+
+      <div
+        data-active-tab-panel={tab === 'history' ? 'true' : undefined}
+        aria-hidden={tab !== 'history'}
+        className={cn('min-h-0 flex-1 flex-col', tab === 'history' ? 'flex' : 'hidden')}
+      >
+        {renderSpendingHistory(renderSegmentedToggle())}
+      </div>
+    </div>
+  );
+  let sheetPresentation: BottomSheetPresentation = {
+    content: homeSheetContent,
+    isModal: false,
+    key: 'home',
+  };
+
+  if (selectedLikedRecommendation) {
+    sheetPresentation = {
+      content: <LikedRecommendationSheet recommendation={selectedLikedRecommendation} />,
+      contentClassName: 'pb-6',
+      isModal: true,
+      key: `likedRecommendation:${selectedLikedRecommendation.id}`,
+    };
+  } else if (activeSheet.type === 'recommendation') {
+    sheetPresentation = {
+      content: <ShopRecommendationSheet />,
+      contentClassName: 'pt-2 pb-10',
+      isModal: true,
+      key: 'recommendation',
+    };
+  } else if (selectedSticker) {
+    sheetPresentation = {
+      content: <SelectedPlaceSheet place={selectedSticker.place} />,
+      contentClassName: 'pb-6',
+      isModal: true,
+      key: `selectedPlace:${selectedSticker.id}`,
+    };
+  }
+
+  const isHomeSheet = !sheetPresentation.isModal;
+
+  return (
+    <BottomSheet
+      key={sheetPresentation.key}
+      snapPoint={isHomeSheet ? snapPoint : 'medium'}
+      snapPoints={isHomeSheet ? undefined : MODAL_SHEET_SNAP_POINTS}
+      onSnapPointChange={isHomeSheet ? setSnapPoint : handleModalSheetSnapPointChange}
+      fitContent={!isHomeSheet}
+      contentClassName={sheetPresentation.contentClassName}
+    >
+      {sheetPresentation.content}
     </BottomSheet>
   );
 }

@@ -68,16 +68,6 @@ export const router = createBrowserRouter([
                 path: ROUTE_PATHS.home,
                 element: <HomePage />,
               },
-              {
-                // INFO: 지도 홈을 제외한 네비게이션 화면에 좌우 여백을 적용한다.
-                element: <PaddedLayout />,
-                children: [
-                  {
-                    path: ROUTE_PATHS.homeSearch,
-                    element: <MapSearchPage />,
-                  },
-                ],
-              },
             ],
           },
           // 영수증 촬영은 좌우 여백 없이 전체 너비를 사용한다.
@@ -89,6 +79,10 @@ export const router = createBrowserRouter([
             // INFO: 지도 홈과 영수증 촬영을 제외한 화면에 좌우 여백을 적용한다.
             element: <PaddedLayout />,
             children: [
+              {
+                path: ROUTE_PATHS.homeSearch,
+                element: <MapSearchPage />,
+              },
               {
                 path: ROUTE_PATHS.notifications,
                 element: <NotificationPage />,
