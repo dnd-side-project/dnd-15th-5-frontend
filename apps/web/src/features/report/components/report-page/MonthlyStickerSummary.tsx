@@ -24,7 +24,7 @@ export default function MonthlyStickerSummary({
       <div
         className={cn(
           REPORT_PANEL_CLASS_NAME,
-          'flex py-7.5 flex-col items-center justify-center gap-2 text-center'
+          'flex min-h-25.25 py-7.5 flex-col items-center justify-center gap-2 text-center'
         )}
       >
         <p className="text-body-02-semibold text-neutral-600">아직 받은 스티커가 없어요</p>
@@ -40,7 +40,9 @@ export default function MonthlyStickerSummary({
   }
 
   return (
-    <div className={cn(REPORT_PANEL_CLASS_NAME, 'flex items-center justify-center p-4')}>
+    <div
+      className={cn(REPORT_PANEL_CLASS_NAME, 'flex min-h-25.25 items-center justify-center p-4')}
+    >
       <div className="flex w-full max-w-81.25 items-center gap-2">
         <div className="flex min-w-0 flex-1 items-center justify-between">
           {stickers.map((src, index) => (
@@ -52,9 +54,11 @@ export default function MonthlyStickerSummary({
             />
           ))}
         </div>
-        <span className="flex size-8.75 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-label-01-medium text-neutral-500">
-          +{additionalCount}
-        </span>
+        {additionalCount > 0 && (
+          <span className="flex size-8.75 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-label-01-medium text-neutral-500">
+            +{additionalCount}
+          </span>
+        )}
       </div>
     </div>
   );

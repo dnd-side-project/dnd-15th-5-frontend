@@ -64,7 +64,8 @@ export default function ManualRecordForm({
     setAmount(sanitizeAmount(event.target.value));
   };
 
-  // TODO: 기록 생성 API 연동. 지금은 새로고침만 막고 실제로 기록을 저장하지 않는다.
+  // TODO: 기록 생성 API 연동 후 성공 시 현재 리포트 쿼리를 무효화하고 이전 화면으로 이동한다.
+  // 지금은 새로고침만 막고 실제로 기록을 저장하지 않는다.
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
   };

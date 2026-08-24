@@ -49,7 +49,7 @@ export default function WeeklyRecordCalendar({
   return (
     <ol
       aria-label={`${periodLabel} 소비 기록`}
-      className="grid grid-cols-7 gap-1 rounded-16 bg-primary-50 px-3 py-3.25"
+      className="grid h-29.75 grid-cols-7 gap-1 rounded-16 bg-primary-50 px-3 py-3.25"
     >
       {records.map((record) => {
         const { count, dateValue, isFuture, isToday } = record;
