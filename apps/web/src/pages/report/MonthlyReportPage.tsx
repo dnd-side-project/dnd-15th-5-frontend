@@ -54,6 +54,7 @@ export default function MonthlyReportPage() {
           onShare={handleShareSheetOpen}
           tags={report.persona.tags}
           title={report.persona.title}
+          variant={report.persona.variant}
         />
       </div>
 

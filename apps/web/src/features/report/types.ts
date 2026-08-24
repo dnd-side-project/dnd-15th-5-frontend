@@ -7,11 +7,15 @@ export type PreferenceMetric = {
   value: number;
 };
 
+export type ReportPreferenceCardVariant =
+  'alley-explorer' | 'food-nomad' | 'local-regular' | 'night-watch';
+
 export type ReportPreference = {
   description: string;
   metrics: readonly PreferenceMetric[];
   tags: readonly string[];
   title: string;
+  variant: ReportPreferenceCardVariant;
 };
 
 export type WeeklyRecord = {

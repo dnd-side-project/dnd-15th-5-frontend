@@ -1,6 +1,7 @@
 import ReportPreferenceCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
 import type { ReportPreferenceCardMetric } from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
 import ReportPreferenceShareCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceShareCard';
+import type { ReportPreferenceCardVariant } from '@/features/report/types';
 import { ReportCardFlipIcon, ShareIcon } from '@/shared/assets/icons';
 
 import type { Ref } from 'react';
@@ -14,6 +15,7 @@ type ReportPreferenceSectionProps = {
   onShare: () => void;
   tags: readonly string[];
   title: string;
+  variant: ReportPreferenceCardVariant;
 };
 
 export default function ReportPreferenceSection({
@@ -25,6 +27,7 @@ export default function ReportPreferenceSection({
   onShare,
   tags,
   title,
+  variant,
 }: ReportPreferenceSectionProps) {
   return (
     <section className="mt-4.5 flex flex-col items-center">
@@ -35,6 +38,7 @@ export default function ReportPreferenceSection({
           metrics={metrics}
           tags={tags}
           title={title}
+          variant={variant}
         />
       </div>
       {/* INFO: PNG 변환을 위해 저장용 카드를 display: none 없이 화면 밖에 렌더링한다. */}
@@ -45,6 +49,7 @@ export default function ReportPreferenceSection({
             metrics={metrics}
             tags={tags}
             title={title}
+            variant={variant}
           />
         </div>
       </div>

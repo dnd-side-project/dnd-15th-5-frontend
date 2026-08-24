@@ -68,6 +68,18 @@
   --text-body-02-semibold--line-height: normal;
   --text-body-02-semibold--font-weight: 600;
 
+  --text-body-medium-card: 14px;
+  --text-body-medium-card--line-height: 1.5;
+  --text-body-medium-card--font-weight: 500;
+
+  --text-card-title: 26px;
+  --text-card-title--line-height: normal;
+  --text-card-title--font-weight: 400;
+
+  --text-card-back-title: 22px;
+  --text-card-back-title--line-height: normal;
+  --text-card-back-title--font-weight: 400;
+
   --text-label-01-semibold: 12px;
   --text-label-01-semibold--line-height: 1.4;
   --text-label-01-semibold--font-weight: 600;

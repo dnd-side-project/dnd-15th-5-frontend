@@ -29,8 +29,18 @@
   --color-primary-50: #f4f6ff;
 
   /* Report */
-  --color-report-preference-card-front: #a8b7ff;
-  --color-report-preference-card-back: #2c478b;
+  --color-report-card-night-front: #2b4689;
+  --color-report-card-night-back: #2c478b;
+  --color-report-card-night-spot: #182b54;
+  --color-report-card-nomad-front: #cccdff;
+  --color-report-card-nomad-back: #cdceff;
+  --color-report-card-nomad-spot: #adaaff;
+  --color-report-card-regular-front: #a8b7ff;
+  --color-report-card-regular-back: #a9b8ff;
+  --color-report-card-regular-spot: #4a6bff;
+  --color-report-card-explorer-front: #c9d6ff;
+  --color-report-card-explorer-back: #cad7ff;
+  --color-report-card-explorer-spot: #fff8f9;
   --color-report-question-panel: rgb(0 0 0 / 50%);
 
   /* Gradient */

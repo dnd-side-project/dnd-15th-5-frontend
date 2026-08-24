@@ -29,11 +29,17 @@ export const useMonthlyReport = () => {
   }, [hasDownloadError, showToast]);
 
   const handleNewerMonth = () => {
-    if (hasNewerMonth) setSelectedReportIndex((index) => index - 1);
+    if (!hasNewerMonth) return;
+
+    setIsCardFlipped(false);
+    setSelectedReportIndex((index) => index - 1);
   };
 
   const handleOlderMonth = () => {
-    if (hasOlderMonth) setSelectedReportIndex((index) => index + 1);
+    if (!hasOlderMonth) return;
+
+    setIsCardFlipped(false);
+    setSelectedReportIndex((index) => index + 1);
   };
 
   const handlePreferenceCardFlip = () => setIsCardFlipped((isFlipped) => !isFlipped);
