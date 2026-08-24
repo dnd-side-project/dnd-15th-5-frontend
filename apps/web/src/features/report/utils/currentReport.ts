@@ -102,17 +102,19 @@ export const mapCurrentStatusToReportPageData = (
   const statusDate = parseStatusDate(status?.date, requestedYearMonth, fallbackDate);
   const weeklyRecords = createWeeklyRecords(statusDate, status?.weeklyCounts ?? []);
   const monthlyRecordCount = status?.monthlyCount ?? 0;
-  const monthlyStickerImages = (status?.monthlyStickers ?? [])
-    .flatMap(({ itemName }) => {
-      const stickerImage = getStickerImageByName(itemName);
+  const supportedStickerImages = (status?.monthlyStickers ?? []).flatMap(({ itemName }) => {
+    const stickerImage = getStickerImageByName(itemName);
 
-      return stickerImage ? [stickerImage] : [];
-    })
-    .slice(0, MAX_VISIBLE_STICKERS);
+    return stickerImage ? [stickerImage] : [];
+  });
+  const monthlyStickerImages = supportedStickerImages.slice(0, MAX_VISIBLE_STICKERS);
 
   return {
     monthLabel: `${statusDate.getMonth() + 1}월`,
-    monthlyAdditionalStickerCount: Math.max(monthlyRecordCount - monthlyStickerImages.length, 0),
+    monthlyAdditionalStickerCount: Math.max(
+      supportedStickerImages.length - monthlyStickerImages.length,
+      0
+    ),
     monthlyRecordCount,
     monthlyStickerImages,
     recentDiscovery: status?.recentDiscoveryMessage?.trim() ?? '',

@@ -47,4 +47,26 @@ describe('mapCurrentStatusToReportPageData', () => {
     expect(report.recentDiscovery).toBe('');
     expect(report.weeklyRecords).toHaveLength(7);
   });
+
+  it('추가 개수는 소비 기록 수가 아닌 지원되는 스티커 수를 기준으로 계산한다', () => {
+    const report = mapCurrentStatusToReportPageData(
+      {
+        date: '2026-08-20',
+        monthlyCount: 7,
+        monthlyStickers: [
+          { itemName: '커피' },
+          { itemName: '피자' },
+          { itemName: '다트' },
+          { itemName: '아이스크림' },
+          { itemName: 'LP' },
+          { itemName: '도넛' },
+          { itemName: '스페셜' },
+        ],
+      },
+      '2026-08'
+    );
+
+    expect(report.monthlyStickerImages).toHaveLength(5);
+    expect(report.monthlyAdditionalStickerCount).toBe(1);
+  });
 });
