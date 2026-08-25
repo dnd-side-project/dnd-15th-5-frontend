@@ -3,6 +3,7 @@ export { RECORD_CATEGORIES } from './constants';
 export {
   createInitialVisitDateTime,
   createMonthDate,
+  formatPurchaseDateTime,
   formatVisitDateTime,
   getCalendarDays,
   getVisitPeriodForHour,
