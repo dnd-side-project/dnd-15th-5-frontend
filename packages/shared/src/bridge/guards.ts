@@ -147,7 +147,7 @@ export const isBridgeEvent = (value: unknown): value is BridgeEvent => {
     return typeof value.payload.pathname === 'string';
   }
 
-  if (value.type === 'receiptShopSearchCancelled') {
+  if (value.type === 'receiptShopSearchCancelled' || value.type === 'receiptRecordCloseRequested') {
     return true;
   }
 

@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ManualRecordForm } from '@/features/record';
 import type { ShopSearchResult } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import { PlaceCard } from '@/shared/ui/card';
 
 type ManualRecordLocationState = {
   shop?: ShopSearchResult;
@@ -20,12 +19,9 @@ export default function ManualRecordPage() {
   return (
     <main>
       <ManualRecordForm
-        selectedShop={
-          shop ? (
-            <PlaceCard thumbnailSrc={shop.photoUrl} title={shop.name} location={shop.address} />
-          ) : null
-        }
+        selectedShop={shop ?? null}
         onBack={handleBack}
+        onClose={() => navigate(ROUTE_PATHS.home, { replace: true })}
         onChangeShop={() => navigate(ROUTE_PATHS.recordShopSearch)}
         onSelectShop={() =>
           navigate(ROUTE_PATHS.recordShopSearch, {

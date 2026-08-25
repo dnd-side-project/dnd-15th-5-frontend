@@ -6,9 +6,11 @@ import { WebView } from 'react-native-webview';
 import {
   createBridgeResponse,
   createResponseScript,
+  getTrustedInternalUrl,
   getUrlOrigin,
   isTrustedBridgeUrl,
 } from '@/bridge';
+import { subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
 
 import { useWebViewNavigationState } from './useWebViewNavigationState';
@@ -43,6 +45,24 @@ export default function HomeScreen() {
 
     return () => subscription.remove();
   }, [canGoBack, isMapHome]);
+
+  useEffect(() => {
+    if (!trustedWebOrigin) {
+      return;
+    }
+
+    return subscribeWebViewNavigation((path) => {
+      const targetUrl = getTrustedInternalUrl(path, trustedWebOrigin);
+
+      if (!targetUrl) {
+        return;
+      }
+
+      webViewRef.current?.injectJavaScript(
+        `window.location.replace(${JSON.stringify(targetUrl)}); true;`
+      );
+    });
+  }, [trustedWebOrigin]);
 
   const handleBridgeMessage = async (event: WebViewMessageEvent) => {
     if (!trustedWebOrigin || !isTrustedBridgeUrl(event.nativeEvent.url, trustedWebOrigin)) {

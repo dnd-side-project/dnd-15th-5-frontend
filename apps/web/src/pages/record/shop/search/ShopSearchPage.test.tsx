@@ -13,6 +13,8 @@ const selectedShop: ShopSearchResult = {
   name: '투썸플레이스 신논현점',
   address: '서울특별시 강남구 봉은사로 125 1층',
   photoUrl: null,
+  latitude: 37.506481,
+  longitude: 127.024551,
 };
 
 jest.mock('@/features/shop', () => ({
@@ -156,5 +158,41 @@ describe('<ShopSearchPage />', () => {
     await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
 
     expect(mockNotifyNative).toHaveBeenCalledWith('receiptShopSearchCancelled', {});
+  });
+
+  it('X 버튼을 누르면 기록을 종료하고 홈으로 이동한다', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/record/shop/search']}>
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+          <Route path="/home" element={<p>홈 화면</p>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await user.click(screen.getByRole('button', { name: '나가기' }));
+
+    expect(screen.getByText('홈 화면')).toBeInTheDocument();
+  });
+
+  it('앱 영수증 플로우에서 X 버튼을 누르면 네이티브에 기록 종료를 요청한다', async () => {
+    mockNotifyNative.mockReturnValue(true);
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/record/shop/search?source=receipt-native']}>
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await user.click(screen.getByRole('button', { name: '나가기' }));
+
+    expect(mockNotifyNative).toHaveBeenCalledWith('receiptRecordCloseRequested', {});
   });
 });

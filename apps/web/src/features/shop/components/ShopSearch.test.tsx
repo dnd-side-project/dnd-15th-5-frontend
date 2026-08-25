@@ -44,6 +44,7 @@ const searchResponse = {
       displayName: '투썸플레이스 신논현점',
       formattedAddress: '서울특별시 강남구 봉은사로 125 1층',
       photos: [],
+      location: { lat: () => 37.506481, lng: () => 127.024551 },
     },
   ],
 };

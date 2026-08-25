@@ -4,16 +4,48 @@ import { useRef, useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import {
-  getReceiptProcessingErrorMessage,
+  getRecordErrorMessage,
+  parseReceiptVisitDateTime,
   processReceiptImage,
+  RecordExitConfirmDialog,
   RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET,
   ReceiptScanLoading,
 } from '@/features/record';
+import type { ReceiptReviewRouteParams } from '@/features/record';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
-import { GalleryIcon } from '@/shared/assets/icons';
+import { CloseIcon, GalleryIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
 import { useToast } from '@/shared/ui/toast';
+
+type ProcessedReceipt = Awaited<ReturnType<typeof processReceiptImage>>;
+
+const createReceiptConfirmParams = ({
+  uri,
+  receiptImageId,
+  storeName,
+  address,
+  purchaseDate,
+  purchaseTime,
+  amount,
+}: ProcessedReceipt): ReceiptReviewRouteParams => {
+  const visitDateTime = parseReceiptVisitDateTime(purchaseDate, purchaseTime);
+
+  return {
+    uri,
+    receiptImageId: String(receiptImageId),
+    ...(storeName ? { shopName: storeName } : {}),
+    ...(address ? { shopAddress: address } : {}),
+    ...(amount !== null && amount !== undefined ? { amount: String(amount) } : {}),
+    ...(visitDateTime
+      ? {
+          visitedAt: String(visitDateTime.date.getTime()),
+          visitPeriod: visitDateTime.period,
+        }
+      : {}),
+  };
+};
 
 /**
  * 영수증을 촬영하는 화면.
@@ -31,6 +63,7 @@ export default function ReceiptCameraScreen() {
   const [isCameraReady, setIsCameraReady] = useState(false);
   // NOTE: 촬영과 갤러리 선택 중 하나만 동시에 진행될 수 있어 상태 하나로 함께 관리한다.
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   const [scanImageUri, setScanImageUri] = useState<string | null>(null);
 
   const resetProcessing = () => {
@@ -46,6 +79,11 @@ export default function ReceiptCameraScreen() {
   const showScanLoading = (imageUri: string) => {
     isScanVisibleRef.current = true;
     setScanImageUri(imageUri);
+  };
+
+  const handleClose = () => {
+    requestWebViewNavigation('/home');
+    router.dismissTo('/');
   };
 
   const startProcessing = () => {
@@ -67,13 +105,16 @@ export default function ReceiptCameraScreen() {
       // NOTE: 압축은 normalizeReceiptImage가 백엔드 제약에 맞춰 처리하므로 최대 화질로 촬영한다.
       const picture = await cameraRef.current.takePictureAsync();
       showScanLoading(picture.uri);
-      const normalized = await processReceiptImage(picture);
+      const processedReceipt = await processReceiptImage(picture);
 
-      router.replace({ pathname: '/receipt-confirm', params: { uri: normalized.uri } });
+      router.replace({
+        pathname: '/receipt-confirm',
+        params: createReceiptConfirmParams(processedReceipt),
+      });
     } catch (error) {
       // NOTE: 촬영에 실패해도 화면을 유지해 다시 시도할 수 있게 한다.
       resetProcessing();
-      const serverErrorMessage = getReceiptProcessingErrorMessage(error);
+      const serverErrorMessage = getRecordErrorMessage(error);
 
       if (serverErrorMessage) {
         showToast({ message: serverErrorMessage, type: 'info' });
@@ -98,12 +139,15 @@ export default function ReceiptCameraScreen() {
       }
 
       showScanLoading(picked.uri);
-      const normalized = await processReceiptImage(picked);
+      const processedReceipt = await processReceiptImage(picked);
 
-      router.replace({ pathname: '/receipt-confirm', params: { uri: normalized.uri } });
+      router.replace({
+        pathname: '/receipt-confirm',
+        params: createReceiptConfirmParams(processedReceipt),
+      });
     } catch (error) {
       resetProcessing();
-      const serverErrorMessage = getReceiptProcessingErrorMessage(error);
+      const serverErrorMessage = getRecordErrorMessage(error);
 
       if (serverErrorMessage) {
         showToast({ message: serverErrorMessage, type: 'info' });
@@ -141,6 +185,19 @@ export default function ReceiptCameraScreen() {
       />
 
       <Pressable
+        onPress={() => setIsExitConfirmOpen(true)}
+        disabled={isProcessing}
+        hitSlop={12}
+        accessibilityRole="button"
+        accessibilityLabel="기록 닫고 홈으로 이동"
+        className={`absolute right-4 h-6 w-6 items-center justify-center ${isProcessing ? 'opacity-40' : ''}`}
+        style={{ top: insets.top + RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET }}
+      >
+        {/* #ffffff = neutral-00 */}
+        <CloseIcon width={14} height={14} color="#ffffff" />
+      </Pressable>
+
+      <Pressable
         onPress={handlePickFromLibrary}
         disabled={isProcessing}
         hitSlop={12}
@@ -163,6 +220,13 @@ export default function ReceiptCameraScreen() {
           <View className="h-15 w-15 rounded-full border-[3px] border-neutral-900" />
         </Pressable>
       </View>
+
+      {isExitConfirmOpen && (
+        <RecordExitConfirmDialog
+          onExit={handleClose}
+          onContinue={() => setIsExitConfirmOpen(false)}
+        />
+      )}
     </View>
   );
 }
