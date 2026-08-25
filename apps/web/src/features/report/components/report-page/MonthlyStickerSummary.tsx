@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { ChevronRightIcon } from '@/shared/assets/icons';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
 
 import { REPORT_PANEL_CLASS_NAME } from './reportPageStyles';
@@ -60,9 +61,13 @@ export default function MonthlyStickerSummary({
           ))}
         </div>
         {additionalCount > 0 && (
-          <span className="flex size-8.75 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-label-01-medium text-neutral-500">
+          <Link
+            aria-label={`추가 스티커 ${additionalCount}개 모두 보기`}
+            className="flex size-8.75 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-label-01-medium text-neutral-500 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
+            to={ROUTE_PATHS.monthlyRecordList}
+          >
             +{additionalCount}
-          </span>
+          </Link>
         )}
       </div>
     </div>

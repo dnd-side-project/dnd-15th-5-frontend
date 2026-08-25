@@ -22,10 +22,13 @@ describe('MonthlyStickerSummary', () => {
     expect(screen.queryByText('+0')).not.toBeInTheDocument();
   });
 
-  it('추가 스티커가 있으면 개수 배지를 표시한다', () => {
+  it('추가 스티커가 있으면 월별 쌓인 기록 링크를 표시한다', () => {
     renderSummary(2);
 
-    expect(screen.getByText('+2')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '추가 스티커 2개 모두 보기' })).toHaveAttribute(
+      'href',
+      '/report/monthly-records'
+    );
   });
 
   it('소비 기록 수와 관계없이 받은 스티커가 없으면 빈 상태를 표시한다', () => {
