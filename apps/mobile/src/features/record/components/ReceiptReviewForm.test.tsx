@@ -24,6 +24,30 @@ beforeAll(() => {
 afterAll(() => jest.restoreAllMocks());
 
 describe('<ReceiptReviewForm />', () => {
+  it('X 버튼에서 계속 작성을 선택하면 폼을 유지한다', async () => {
+    const onClose = jest.fn();
+    const user = userEvent.setup();
+    const { findByText, getByRole, queryByText } = await render(
+      <ReceiptReviewForm receiptUri="file://receipt.jpg" onBack={jest.fn()} onClose={onClose} />
+    );
+
+    await user.press(getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await findByText('기록 작성을 그만둘까요?');
+    expect(await findByText('나가기')).toHaveProp(
+      'className',
+      expect.stringContaining('font-pretendard-medium text-body-01-medium')
+    );
+    expect(await findByText('계속 작성하기')).toHaveProp(
+      'className',
+      expect.stringContaining('font-pretendard-medium text-body-01-medium')
+    );
+
+    await user.press(getByRole('button', { name: '계속 작성하기' }));
+
+    expect(queryByText('기록 작성을 그만둘까요?')).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('촬영 이미지와 OCR 초기값을 폼에 표시하고 제출한다', async () => {
     const onSubmit = jest.fn();
     const visitDateTime = { date: new Date(2026, 7, 20), period: 'afternoon' as const };

@@ -173,6 +173,7 @@ describe('<ShopSearchPage />', () => {
     );
 
     await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await user.click(screen.getByRole('button', { name: '나가기' }));
 
     expect(screen.getByText('홈 화면')).toBeInTheDocument();
   });
@@ -190,6 +191,7 @@ describe('<ShopSearchPage />', () => {
     );
 
     await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await user.click(screen.getByRole('button', { name: '나가기' }));
 
     expect(mockNotifyNative).toHaveBeenCalledWith('receiptRecordCloseRequested', {});
   });

@@ -60,10 +60,19 @@ describe('<ReceiptConfirmScreen />', () => {
     expect(router.replace).toHaveBeenCalledWith('/camera');
   });
 
-  it('닫기 버튼을 누르면 메인 WebView의 지도 홈으로 돌아간다', async () => {
-    const { getByRole } = await render(<ReceiptConfirmScreen />);
+  it('닫기 확인 후 나가기를 누르면 메인 WebView의 지도 홈으로 돌아간다', async () => {
+    const { findByText, getByRole } = await render(<ReceiptConfirmScreen />);
 
-    fireEvent.press(getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    });
+
+    await findByText('기록 작성을 그만둘까요?');
+    expect(requestWebViewNavigation).not.toHaveBeenCalled();
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '나가기' }));
+    });
 
     expect(requestWebViewNavigation).toHaveBeenCalledWith('/home');
     expect(router.dismissTo).toHaveBeenCalledWith('/');

@@ -1,3 +1,4 @@
+export { default as RecordExitConfirmDialog } from './components/RecordExitConfirmDialog';
 export { default as ReceiptReviewForm } from './components/ReceiptReviewForm';
 export { default as ReceiptScanLoading } from './components/ReceiptScanLoading';
 export {

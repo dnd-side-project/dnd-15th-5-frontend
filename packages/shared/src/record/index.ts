@@ -1,5 +1,5 @@
 export { formatAmount, isValidRecordAmount, sanitizeAmount } from './amount';
-export { RECORD_CATEGORIES } from './constants';
+export { RECORD_CATEGORIES, RECORD_EXIT_CONFIRM_TEXT } from './constants';
 export {
   createInitialVisitDateTime,
   createMonthDate,

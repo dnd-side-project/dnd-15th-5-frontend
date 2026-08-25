@@ -110,10 +110,19 @@ describe('<ReceiptCameraScreen />', () => {
     });
   });
 
-  it('X 버튼을 누르면 기록 화면을 닫고 메인 WebView를 홈으로 이동시킨다', async () => {
-    const { getByRole } = await render(<ReceiptCameraScreen />);
+  it('X 버튼에서 나가기를 확인하면 기록 화면을 닫고 메인 WebView를 홈으로 이동시킨다', async () => {
+    const { findByText, getByRole } = await render(<ReceiptCameraScreen />);
 
-    fireEvent.press(getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    });
+
+    await findByText('기록 작성을 그만둘까요?');
+    expect(requestWebViewNavigation).not.toHaveBeenCalled();
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '나가기' }));
+    });
 
     expect(requestWebViewNavigation).toHaveBeenCalledWith('/home');
     expect(router.dismissTo).toHaveBeenCalledWith('/');

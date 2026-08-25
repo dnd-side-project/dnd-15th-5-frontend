@@ -25,6 +25,7 @@ import type { ReceiptDraft, ReceiptReviewState } from '@/features/record/types';
 import { CalendarIcon, CloseIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
 
+import RecordExitConfirmDialog from './RecordExitConfirmDialog';
 import VisitDateTimePicker from './VisitDateTimePicker';
 
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
@@ -94,6 +95,7 @@ export default function ReceiptReviewForm({
     () => initialVisitDateTime ?? createInitialVisitDateTime()
   );
   const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   const [amount, setAmount] = useState(() => sanitizeAmount(initialAmount));
   const [category, setCategory] = useState<RecordCategory>(initialCategory ?? RECORD_CATEGORIES[0]);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -167,7 +169,7 @@ export default function ReceiptReviewForm({
             <View className="flex-row items-center justify-between">
               <BackButton onPress={onBack} />
               <Pressable
-                onPress={onClose}
+                onPress={() => setIsExitConfirmOpen(true)}
                 hitSlop={12}
                 accessibilityRole="button"
                 accessibilityLabel="기록 닫고 홈으로 이동"
@@ -360,6 +362,10 @@ export default function ReceiptReviewForm({
             setIsDateTimePickerOpen(false);
           }}
         />
+      )}
+
+      {isExitConfirmOpen && (
+        <RecordExitConfirmDialog onExit={onClose} onContinue={() => setIsExitConfirmOpen(false)} />
       )}
     </>
   );

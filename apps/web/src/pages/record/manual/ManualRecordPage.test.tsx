@@ -103,11 +103,33 @@ describe('<ManualRecordPage />', () => {
     expect(screen.getByText('가게 검색 화면')).toBeInTheDocument();
   });
 
-  it('닫기 버튼을 누르면 지도 홈으로 이동한다', async () => {
+  it('닫기 확인 후 나가기를 선택하면 지도 홈으로 이동한다', async () => {
     const user = userEvent.setup();
     renderPage();
 
     await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+
+    expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
+    expect(screen.queryByText('홈 화면')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '나가기' })).toHaveClass(
+      'w-0',
+      'flex-1',
+      'text-body-01-medium'
+    );
+    expect(screen.getByRole('button', { name: '계속 작성하기' })).toHaveClass(
+      'w-0',
+      'flex-1',
+      'text-body-01-medium'
+    );
+
+    await user.click(screen.getByRole('button', { name: '계속 작성하기' }));
+    expect(
+      screen.queryByRole('dialog', { name: '기록 작성을 그만둘까요?' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '소비 정보를 입력해주세요' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await user.click(screen.getByRole('button', { name: '나가기' }));
 
     expect(screen.getByText('홈 화면')).toBeInTheDocument();
   });

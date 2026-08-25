@@ -9,6 +9,7 @@ import {
   getRecordErrorMessage,
   parseReceiptVisitDateTime,
   processReceiptImage,
+  RecordExitConfirmDialog,
   RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET,
   ReceiptScanLoading,
 } from '@/features/record';
@@ -62,6 +63,7 @@ export default function ReceiptCameraScreen() {
   const [isCameraReady, setIsCameraReady] = useState(false);
   // NOTE: 촬영과 갤러리 선택 중 하나만 동시에 진행될 수 있어 상태 하나로 함께 관리한다.
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   const [scanImageUri, setScanImageUri] = useState<string | null>(null);
 
   const resetProcessing = () => {
@@ -183,7 +185,7 @@ export default function ReceiptCameraScreen() {
       />
 
       <Pressable
-        onPress={handleClose}
+        onPress={() => setIsExitConfirmOpen(true)}
         disabled={isProcessing}
         hitSlop={12}
         accessibilityRole="button"
@@ -218,6 +220,13 @@ export default function ReceiptCameraScreen() {
           <View className="h-15 w-15 rounded-full border-[3px] border-neutral-900" />
         </Pressable>
       </View>
+
+      {isExitConfirmOpen && (
+        <RecordExitConfirmDialog
+          onExit={handleClose}
+          onContinue={() => setIsExitConfirmOpen(false)}
+        />
+      )}
     </View>
   );
 }
