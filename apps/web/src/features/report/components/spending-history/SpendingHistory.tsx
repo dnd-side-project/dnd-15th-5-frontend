@@ -1,14 +1,15 @@
 import { useState } from 'react';
 
+import MonthPickerSheet from '@/features/report/components/common/MonthPickerSheet';
 import MonthSelector from '@/features/report/components/common/MonthSelector';
 import { MOCK_SPENDING_MONTHS, MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
-import type { SpendingMonth } from '@/features/report/types';
 import { parseSpendingMonthFromDate } from '@/features/report/utils/parseSpendingMonthFromDate';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
+import type { YearMonth } from '@/shared/types/yearMonth';
 import { StateView } from '@/shared/ui/state-view';
+import { isSameMonth } from '@/shared/utils/yearMonth';
 
-import MonthPickerSheet from './MonthPickerSheet';
 import SpendingRecordList from './SpendingRecordList';
 
 import type { ReactNode } from 'react';
@@ -22,11 +23,8 @@ type SpendingHistoryProps = {
 
 type MonthSelection = {
   dateValue?: string;
-  month: SpendingMonth;
+  month: YearMonth;
 };
-
-const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
-  month.year === target.year && month.month === target.month;
 
 const getSupportedMonthFromDate = (dateValue?: string) => {
   const parsedMonth = parseSpendingMonthFromDate(dateValue);
@@ -72,11 +70,11 @@ export default function SpendingHistory({
       ? recordGroups.filter(({ dateValue }) => dateValue === initialDate)
       : recordGroups;
 
-  const setSelectedMonth = (month: SpendingMonth) => {
+  const setSelectedMonth = (month: YearMonth) => {
     setMonthSelection({ dateValue: initialDate, month });
   };
 
-  const handleMonthSelect = (month: SpendingMonth) => {
+  const handleMonthSelect = (month: YearMonth) => {
     setSelectedMonth(month);
     setIsMonthPickerOpen(false);
   };

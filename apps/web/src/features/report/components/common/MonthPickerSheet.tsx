@@ -1,27 +1,24 @@
 import { useRef, useState } from 'react';
 
-import type { SpendingMonth } from '@/features/report/types';
 import { CheckIcon } from '@/shared/assets/icons';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import { useScrollLock } from '@/shared/hooks/useScrollLock';
+import type { YearMonth } from '@/shared/types/yearMonth';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 import { Overlay } from '@/shared/ui/overlay';
+import { formatMonthLabel, isSameMonth } from '@/shared/utils/yearMonth';
 
 import type { UIEvent } from 'react';
 
 type MonthPickerSheetProps = {
-  months: readonly SpendingMonth[];
+  months: readonly YearMonth[];
   onClose: () => void;
-  onSelect: (month: SpendingMonth) => void;
-  selectedMonth: SpendingMonth;
+  onSelect: (month: YearMonth) => void;
+  selectedMonth: YearMonth;
 };
 
-const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
-  month.year === target.year && month.month === target.month;
-
-const formatMonth = ({ year, month }: SpendingMonth) => `${year}년 ${month}월`;
 const MONTH_PICKER_SNAP_POINTS = ['hidden', 'large', 'full'] as const;
 
 /** 월 목록과 선택 상태를 보여주며, 목록 스크롤 시 전체 높이로 확장되는 월 선택 바텀시트입니다. */
@@ -90,7 +87,7 @@ export default function MonthPickerSheet({
                     onClick={() => onSelect(month)}
                     className="flex h-13 w-full items-center justify-between rounded-08 text-left text-body-01-regular text-neutral-600 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
                   >
-                    <span>{formatMonth(month)}</span>
+                    <span>{formatMonthLabel(month)}</span>
                     {isSelected && (
                       <CheckIcon aria-hidden="true" className="mr-1 w-4 text-primary-600" />
                     )}

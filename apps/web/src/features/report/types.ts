@@ -37,9 +37,10 @@ export type ReportPageMockData = {
   weeklyRecords: readonly WeeklyRecord[];
 };
 
-export type SpendingMonth = {
-  month: number;
-  year: number;
+export type MonthlyStickerRecordGroup = {
+  dateLabel: string;
+  dateValue: string;
+  stickerImages: readonly string[];
 };
 
 export type SpendingRecord = {

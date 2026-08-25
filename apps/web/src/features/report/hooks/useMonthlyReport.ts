@@ -2,15 +2,11 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { MOCK_MONTHLY_REPORTS } from '@/features/report/mockData';
-import type { SpendingMonth } from '@/features/report/types';
+import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
 import { useToast } from '@/shared/ui/toast';
+import { formatYearMonth } from '@/shared/utils/yearMonth';
 
 import { useReportImageDownload } from './useReportImageDownload';
-
-const YEAR_MONTH_SEARCH_PARAM = 'yearMonth';
-
-const formatYearMonth = ({ year, month }: SpendingMonth) =>
-  `${year}-${String(month).padStart(2, '0')}`;
 
 /** 월간 상세 리포트의 월 이동, 취향 카드, 공유 상태를 관리합니다. */
 export const useMonthlyReport = () => {

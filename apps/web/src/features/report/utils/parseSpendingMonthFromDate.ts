@@ -1,11 +1,11 @@
-import type { SpendingMonth } from '@/features/report/types';
+import type { YearMonth } from '@/shared/types/yearMonth';
 
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
 const isLeapYear = (year: number) => year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
 
 /** 유효한 `YYYY-MM-DD` 날짜 문자열에서 소비내역의 연도와 월을 추출합니다. */
-export function parseSpendingMonthFromDate(dateValue?: string): SpendingMonth | null {
+export function parseSpendingMonthFromDate(dateValue?: string): YearMonth | null {
   const match = dateValue?.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 
   if (!match) return null;

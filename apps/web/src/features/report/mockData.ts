@@ -3,12 +3,12 @@ import {
   StickerPizzaImage,
   StickerSpecialImage,
 } from '@/shared/assets/images/stickers';
+import type { YearMonth } from '@/shared/types/yearMonth';
 
 import type {
   FrequentShop,
   ReportPageMockData,
   ReportPreference,
-  SpendingMonth,
   SpendingRecordGroup,
 } from './types';
 
@@ -151,7 +151,7 @@ export const MOCK_SPENDING_MONTHS = [
   { year: 2026, month: 1 },
   { year: 2025, month: 12 },
   { year: 2025, month: 11 },
-] as const satisfies readonly SpendingMonth[];
+] as const satisfies readonly YearMonth[];
 
 export const MOCK_SPENDING_RECORD_GROUPS = [
   {

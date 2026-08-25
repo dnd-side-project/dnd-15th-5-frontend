@@ -1,5 +1,5 @@
 import MonthSelector from '@/features/report/components/common/MonthSelector';
-import type { SpendingMonth } from '@/features/report/types';
+import type { YearMonth } from '@/shared/types/yearMonth';
 import { BackButton } from '@/shared/ui/back-button';
 
 type MonthlyReportHeaderProps = {
@@ -8,7 +8,7 @@ type MonthlyReportHeaderProps = {
   onBack: () => void;
   onNewerMonth: () => void;
   onOlderMonth: () => void;
-  selectedMonth: SpendingMonth;
+  selectedMonth: YearMonth;
 };
 
 /** 월간 리포트의 이전·다음 달 이동과 뒤로가기를 제공합니다. */
