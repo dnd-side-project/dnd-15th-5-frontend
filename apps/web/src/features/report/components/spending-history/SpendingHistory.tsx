@@ -154,7 +154,7 @@ export default function SpendingHistory({
         </>
       )}
 
-      <div className="flex flex-1 flex-col mb-28">
+      <div className="flex flex-1 flex-col pb-8">
         {consumptionsQuery.isPending && <SpendingHistorySkeleton />}
 
         {!consumptionsQuery.isPending &&
