@@ -16,14 +16,14 @@ import { PlaceCard } from '@/shared/ui/card';
 import { CategoryChip } from '@/shared/ui/category-chip';
 
 import RecordNavigationHeader from './RecordNavigationHeader';
-import VisitDateTimePicker from './VisitDateTimePicker';
+import VisitDateTimeSheet from './visit-date-time-sheet/VisitDateTimeSheet';
 
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 
 type ManualRecordFormProps = {
-  initialDateTimePickerOpen?: boolean;
+  initialVisitDateTimeSheetOpen?: boolean;
   initialVisitDateTime?: VisitDateTimeValue;
   selectedShop: ShopSearchResult | null;
   onBack: () => void;
@@ -53,7 +53,7 @@ function RequiredField({ children, label }: RequiredFieldProps) {
 
 /** 선택한 가게에 방문 일시·금액·카테고리를 입력하는 웹 수기 기록 폼. */
 export default function ManualRecordForm({
-  initialDateTimePickerOpen = false,
+  initialVisitDateTimeSheetOpen = false,
   initialVisitDateTime,
   selectedShop,
   onBack,
@@ -70,7 +70,9 @@ export default function ManualRecordForm({
   const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(
     () => initialVisitDateTime ?? createInitialVisitDateTime()
   );
-  const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(initialDateTimePickerOpen);
+  const [isVisitDateTimeSheetOpen, setIsVisitDateTimeSheetOpen] = useState(
+    initialVisitDateTimeSheetOpen
+  );
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<RecordCategory>(RECORD_CATEGORIES[0]);
   const { canSubmit } = validateRecordRequiredFields({ hasShop: hasShopLocation, amount });
@@ -91,9 +93,9 @@ export default function ManualRecordForm({
     );
   };
 
-  const handleDateTimeConfirm = (nextValue: VisitDateTimeValue) => {
+  const handleVisitDateTimeConfirm = (nextValue: VisitDateTimeValue) => {
     setVisitDateTime(nextValue);
-    setIsDateTimePickerOpen(false);
+    setIsVisitDateTimeSheetOpen(false);
   };
 
   return (
@@ -134,7 +136,7 @@ export default function ManualRecordForm({
           <button
             type="button"
             aria-label={`방문 일시 변경, ${formatVisitDateTime(visitDateTime)}`}
-            onClick={() => setIsDateTimePickerOpen(true)}
+            onClick={() => setIsVisitDateTimeSheetOpen(true)}
             className="flex w-full items-center justify-between rounded-08 border border-neutral-300 p-4 text-body-01-regular text-neutral-700 outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
           >
             <span>{formatVisitDateTime(visitDateTime)}</span>
@@ -182,11 +184,11 @@ export default function ManualRecordForm({
         </div>
       </form>
 
-      {isDateTimePickerOpen && (
-        <VisitDateTimePicker
+      {isVisitDateTimeSheetOpen && (
+        <VisitDateTimeSheet
           value={visitDateTime}
-          onClose={() => setIsDateTimePickerOpen(false)}
-          onConfirm={handleDateTimeConfirm}
+          onClose={() => setIsVisitDateTimeSheetOpen(false)}
+          onConfirm={handleVisitDateTimeConfirm}
         />
       )}
     </div>

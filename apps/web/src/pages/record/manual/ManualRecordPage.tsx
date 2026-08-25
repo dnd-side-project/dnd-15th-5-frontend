@@ -30,7 +30,7 @@ export default function ManualRecordPage() {
   return (
     <main>
       <ManualRecordForm
-        initialDateTimePickerOpen={Boolean(shop) && hasRequestedYearMonth && !isShopChange}
+        initialVisitDateTimeSheetOpen={Boolean(shop) && hasRequestedYearMonth && !isShopChange}
         initialVisitDateTime={visitDateTime ?? createInitialVisitDateTimeForMonth(yearMonth)}
         selectedShop={shop ?? null}
         onBack={handleBack}

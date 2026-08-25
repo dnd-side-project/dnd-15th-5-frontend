@@ -1,13 +1,9 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { CheckIcon } from '@/shared/assets/icons';
-import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
-import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
-import { useScrollLock } from '@/shared/hooks/useScrollLock';
 import type { YearMonth } from '@/shared/types/yearMonth';
-import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
-import { Overlay } from '@/shared/ui/overlay';
+import { PickerSheet } from '@/shared/ui/picker-sheet';
 import { formatMonthLabel, isSameMonth } from '@/shared/utils/yearMonth';
 
 import type { UIEvent } from 'react';
@@ -28,21 +24,7 @@ export default function MonthPickerSheet({
   onSelect,
   selectedMonth,
 }: MonthPickerSheetProps) {
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const [snapPoint, setSnapPoint] = useState<BottomSheetSnapPoint>('large');
-
-  useScrollLock();
-  useOutsidePress(sheetRef, onClose);
-  useFocusTrap(sheetRef, { initialFocusSelector: '[aria-pressed="true"]', onEscape: onClose });
-
-  const handleSnapPointChange = (nextSnapPoint: BottomSheetSnapPoint) => {
-    if (nextSnapPoint === 'hidden') {
-      onClose();
-      return;
-    }
-
-    setSnapPoint(nextSnapPoint);
-  };
+  const [snapPoint, setSnapPoint] = useState<Exclude<BottomSheetSnapPoint, 'hidden'>>('large');
 
   const handleMonthListScroll = (event: UIEvent<HTMLUListElement>) => {
     if (snapPoint === 'large' && event.currentTarget.scrollTop > 0) {
@@ -51,53 +33,46 @@ export default function MonthPickerSheet({
   };
 
   return (
-    <>
-      <Overlay />
-      <BottomSheet
-        rootRef={sheetRef}
-        snapPoint={snapPoint}
-        snapPoints={MONTH_PICKER_SNAP_POINTS}
-        onSnapPointChange={handleSnapPointChange}
-        contentClassName="overflow-hidden px-0 pb-0"
+    <PickerSheet
+      ariaLabelledBy="month-picker-title"
+      contentClassName="overflow-hidden px-0 pb-0"
+      dialogClassName="flex h-full min-h-0 flex-col"
+      initialFocusSelector={'[aria-pressed="true"]'}
+      onClose={onClose}
+      onSnapPointChange={setSnapPoint}
+      snapPoint={snapPoint}
+      snapPoints={MONTH_PICKER_SNAP_POINTS}
+    >
+      <h2
+        id="month-picker-title"
+        className="shrink-0 px-4 pt-1 pb-4 text-title-02-bold text-neutral-900"
       >
-        <section
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="month-picker-title"
-          className="flex h-full min-h-0 flex-col"
-        >
-          <h2
-            id="month-picker-title"
-            className="shrink-0 px-4 pt-1 pb-4 text-title-02-bold text-neutral-900"
-          >
-            월 선택하기
-          </h2>
-          <ul
-            onScroll={handleMonthListScroll}
-            className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto px-4 pb-8"
-          >
-            {months.map((month) => {
-              const isSelected = isSameMonth(month, selectedMonth);
+        월 선택하기
+      </h2>
+      <ul
+        onScroll={handleMonthListScroll}
+        className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto px-4 pb-8"
+      >
+        {months.map((month) => {
+          const isSelected = isSameMonth(month, selectedMonth);
 
-              return (
-                <li key={`${month.year}-${month.month}`}>
-                  <button
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() => onSelect(month)}
-                    className="flex h-13 w-full items-center justify-between rounded-08 text-left text-body-01-regular text-neutral-600 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
-                  >
-                    <span>{formatMonthLabel(month)}</span>
-                    {isSelected && (
-                      <CheckIcon aria-hidden="true" className="mr-1 w-4 text-primary-600" />
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      </BottomSheet>
-    </>
+          return (
+            <li key={`${month.year}-${month.month}`}>
+              <button
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => onSelect(month)}
+                className="flex h-13 w-full items-center justify-between rounded-08 text-left text-body-01-regular text-neutral-600 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
+              >
+                <span>{formatMonthLabel(month)}</span>
+                {isSelected && (
+                  <CheckIcon aria-hidden="true" className="mr-1 w-4 text-primary-600" />
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </PickerSheet>
   );
 }

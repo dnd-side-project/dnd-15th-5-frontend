@@ -20,6 +20,9 @@ export default function MonthlyReportPage() {
     downloadImage,
     handleNewerMonth,
     handleOlderMonth,
+    handleMonthPickerClose,
+    handleMonthPickerOpen,
+    handleMonthSelect,
     handlePreferenceCardFlip,
     handleReportCardSelect,
     handleShareSheetClose,
@@ -28,9 +31,11 @@ export default function MonthlyReportPage() {
     hasOlderMonth,
     isCardFlipped,
     isDownloading,
+    isMonthPickerOpen,
     isShareSheetOpen,
     report,
     reportCards,
+    selectableMonths,
     selectedCardIndex,
     selectedMonth,
   } = useMonthlyReport();
@@ -43,9 +48,14 @@ export default function MonthlyReportPage() {
         <MonthlyReportHeader
           hasNewerMonth={hasNewerMonth}
           hasOlderMonth={hasOlderMonth}
+          isMonthPickerOpen={isMonthPickerOpen}
           onBack={() => navigate(-1)}
+          onMonthPickerClose={handleMonthPickerClose}
+          onMonthPickerOpen={handleMonthPickerOpen}
+          onMonthSelect={handleMonthSelect}
           onNewerMonth={handleNewerMonth}
           onOlderMonth={handleOlderMonth}
+          selectableMonths={selectableMonths}
           selectedMonth={selectedMonth}
         />
         <ReportPreferenceSection
