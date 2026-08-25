@@ -6,6 +6,8 @@ import type { ShopSearchResult } from '@/features/shop';
 
 import ShopSearchPage from './ShopSearchPage';
 
+import type { VisitDateTimeValue } from '@chapchap/shared/record';
+
 const mockNotifyNative = jest.fn((_type: string, _payload: unknown) => false);
 
 const selectedShop: ShopSearchResult = {
@@ -29,9 +31,20 @@ jest.mock('@/shared/lib/bridge', () => ({
 
 function ManualRecordTarget() {
   const location = useLocation();
-  const state = location.state as { shop: ShopSearchResult };
+  const state = location.state as {
+    isShopChange?: boolean;
+    shop: ShopSearchResult;
+    visitDateTime?: VisitDateTimeValue;
+  };
 
-  return <p>수기 입력 대상: {state.shop.name}</p>;
+  return (
+    <p
+      data-shop-change={String(Boolean(state.isShopChange))}
+      data-visit-date={state.visitDateTime?.date.toISOString()}
+    >
+      수기 입력 대상: {state.shop.name} {location.search}
+    </p>
+  );
 }
 
 describe('<ShopSearchPage />', () => {
@@ -55,6 +68,62 @@ describe('<ShopSearchPage />', () => {
     await user.click(screen.getByRole('button', { name: '목업 장소 선택' }));
 
     expect(screen.getByText(`수기 입력 대상: ${selectedShop.name}`)).toBeInTheDocument();
+  });
+
+  it('지난달 기록 진입이면 장소 선택 후에도 선택한 연월을 유지한다', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/record/shop/search?yearMonth=2026-07']}>
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+          <Route path="/record/manual" element={<ManualRecordTarget />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '목업 장소 선택' }));
+
+    expect(
+      screen.getByText(`수기 입력 대상: ${selectedShop.name} ?yearMonth=2026-07`)
+    ).toBeInTheDocument();
+  });
+
+  it('기존 기록의 장소 변경이면 수기 입력 화면에 변경 상태를 전달한다', async () => {
+    const user = userEvent.setup();
+    const visitDateTime: VisitDateTimeValue = {
+      date: new Date(2026, 6, 15),
+      period: 'night',
+    };
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/shop/search',
+            search: '?yearMonth=2026-07',
+            state: {
+              isChangingManualRecordShop: true,
+              manualRecordVisitDateTime: visitDateTime,
+            },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+          <Route path="/record/manual" element={<ManualRecordTarget />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '목업 장소 선택' }));
+
+    const manualRecordTarget = screen.getByText(
+      `수기 입력 대상: ${selectedShop.name} ?yearMonth=2026-07`
+    );
+
+    expect(manualRecordTarget).toHaveAttribute('data-shop-change', 'true');
+    expect(manualRecordTarget).toHaveAttribute('data-visit-date', visitDateTime.date.toISOString());
   });
 
   it('일반적으로 진입했다면 뒤로 가기 버튼을 누르면 이전 화면으로 돌아간다', async () => {

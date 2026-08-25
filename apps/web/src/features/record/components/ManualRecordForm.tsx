@@ -19,9 +19,11 @@ import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record
 import type { ChangeEvent, FormEvent, ReactElement, ReactNode } from 'react';
 
 type ManualRecordFormProps = {
+  initialDateTimePickerOpen?: boolean;
+  initialVisitDateTime?: VisitDateTimeValue;
   selectedShop: ReactElement | null;
   onBack: () => void;
-  onChangeShop: () => void;
+  onChangeShop: (visitDateTime: VisitDateTimeValue) => void;
   onSelectShop: () => void;
 };
 
@@ -46,6 +48,8 @@ function RequiredField({ children, label }: RequiredFieldProps) {
 
 /** 선택한 가게에 방문 일시·금액·카테고리를 입력하는 웹 수기 기록 폼. */
 export default function ManualRecordForm({
+  initialDateTimePickerOpen = false,
+  initialVisitDateTime,
   selectedShop,
   onBack,
   onChangeShop,
@@ -53,9 +57,9 @@ export default function ManualRecordForm({
 }: ManualRecordFormProps) {
   const hasSelectedShop = selectedShop !== null;
   const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(
-    createInitialVisitDateTime
+    () => initialVisitDateTime ?? createInitialVisitDateTime()
   );
-  const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
+  const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(initialDateTimePickerOpen);
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<RecordCategory>(RECORD_CATEGORIES[0]);
   const { canSubmit } = validateRecordRequiredFields({ hasShop: hasSelectedShop, amount });
@@ -85,7 +89,7 @@ export default function ManualRecordForm({
           <div className="min-w-0 flex-1 overflow-hidden">{selectedShop}</div>
           <button
             type="button"
-            onClick={onChangeShop}
+            onClick={() => onChangeShop(visitDateTime)}
             className="ml-4 shrink-0 rounded-05 p-2 text-body-02-regular text-primary-500 outline-none hover:bg-primary-50 focus-visible:ring-2 focus-visible:ring-primary-300"
           >
             변경
