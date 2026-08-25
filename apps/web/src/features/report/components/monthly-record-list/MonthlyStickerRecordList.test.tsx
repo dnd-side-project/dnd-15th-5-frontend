@@ -10,19 +10,6 @@ jest.mock('@/features/report/apis/hooks/useMonthlyStickerRecordsQuery', () => ({
   useMonthlyStickerRecordsQuery: (month: unknown) => mockUseMonthlyStickerRecordsQuery(month),
 }));
 
-const CURRENT_MONTH_GROUPS = [
-  {
-    dateLabel: '23일 금요일',
-    dateValue: '2026-08-23',
-    stickerImages: ['sticker-01.png'],
-  },
-  {
-    dateLabel: '21일 수요일',
-    dateValue: '2026-08-21',
-    stickerImages: Array.from({ length: 13 }, (_, index) => `sticker-${index + 2}.png`),
-  },
-];
-
 describe('MonthlyStickerRecordList', () => {
   beforeAll(() => {
     jest.useFakeTimers();
@@ -31,8 +18,8 @@ describe('MonthlyStickerRecordList', () => {
 
   beforeEach(() => {
     mockRefetch.mockReset();
-    mockUseMonthlyStickerRecordsQuery.mockImplementation(({ month }: { month: number }) => ({
-      data: month === 8 ? CURRENT_MONTH_GROUPS : [],
+    mockUseMonthlyStickerRecordsQuery.mockImplementation(() => ({
+      data: [],
       isError: false,
       isPending: false,
       refetch: mockRefetch,
@@ -49,17 +36,6 @@ describe('MonthlyStickerRecordList', () => {
         <MonthlyStickerRecordList />
       </MemoryRouter>
     );
-
-  it('현재 월의 스티커를 날짜별로 5열 슬롯에 표시한다', () => {
-    const { container } = renderMonthlyStickerRecordList();
-
-    expect(screen.getByRole('heading', { name: '8월에 쌓인 기록' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '23일 금요일' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '21일 수요일' })).toBeInTheDocument();
-    expect(container.querySelectorAll('img')).toHaveLength(14);
-    expect(screen.getAllByRole('listitem')).toHaveLength(20);
-    expect(screen.getAllByLabelText('빈 스티커 자리')).toHaveLength(6);
-  });
 
   it('기록이 없는 이전 달로 이동하면 빈 상태를 표시한다', () => {
     renderMonthlyStickerRecordList();

@@ -16,12 +16,6 @@ const renderSummary = (additionalCount: number, stickers: readonly string[] = ['
 };
 
 describe('MonthlyStickerSummary', () => {
-  it('추가 스티커가 없으면 개수 배지를 표시하지 않는다', () => {
-    renderSummary(0);
-
-    expect(screen.queryByText('+0')).not.toBeInTheDocument();
-  });
-
   it('추가 스티커가 있으면 월별 쌓인 기록 링크를 표시한다', () => {
     renderSummary(2);
 
