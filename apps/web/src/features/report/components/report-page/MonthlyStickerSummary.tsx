@@ -8,7 +8,6 @@ import { REPORT_PANEL_CLASS_NAME } from './reportPageStyles';
 type MonthlyStickerSummaryProps = {
   additionalCount: number;
   emptyActionPath: string;
-  recordCount: number;
   stickers: readonly string[];
 };
 
@@ -16,10 +15,9 @@ type MonthlyStickerSummaryProps = {
 export default function MonthlyStickerSummary({
   additionalCount,
   emptyActionPath,
-  recordCount,
   stickers,
 }: MonthlyStickerSummaryProps) {
-  if (recordCount === 0) {
+  if (stickers.length === 0) {
     return (
       <div
         className={cn(

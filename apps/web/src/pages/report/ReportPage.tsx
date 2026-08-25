@@ -93,7 +93,6 @@ export default function ReportPage() {
               <MonthlyStickerSummary
                 additionalCount={monthlyAdditionalStickerCount}
                 emptyActionPath={ROUTE_PATHS.record}
-                recordCount={monthlyRecordCount}
                 stickers={monthlyStickerImages}
               />
             )}
