@@ -240,6 +240,20 @@ describe('<ReceiptReviewForm />', () => {
     getByText('필수항목을 작성해주세요');
   });
 
+  it('제출 중에는 뒤로가기와 닫기 버튼을 비활성화한다', async () => {
+    const { getByRole } = await render(
+      <ReceiptReviewForm
+        receiptUri="file://receipt.jpg"
+        onBack={jest.fn()}
+        onClose={jest.fn()}
+        isSubmitting
+      />
+    );
+
+    expect(getByRole('button', { name: '이전 화면으로 돌아가기' })).toBeDisabled();
+    expect(getByRole('button', { name: '기록 닫고 홈으로 이동' })).toBeDisabled();
+  });
+
   it('저장 동작이 연결되지 않은 유효한 폼은 완료 버튼을 활성화하지 않는다', async () => {
     const { getByRole } = await render(
       <ReceiptReviewForm

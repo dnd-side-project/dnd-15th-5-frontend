@@ -167,9 +167,10 @@ export default function ReceiptReviewForm({
             style={{ paddingTop: insets.top + RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET }}
           >
             <View className="flex-row items-center justify-between">
-              <BackButton onPress={onBack} />
+              <BackButton onPress={onBack} disabled={isSubmitting} />
               <Pressable
                 onPress={() => setIsExitConfirmOpen(true)}
+                disabled={isSubmitting}
                 hitSlop={12}
                 accessibilityRole="button"
                 accessibilityLabel="기록 닫고 홈으로 이동"
