@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 
+import { clearAccessToken } from '@/native/api';
 import {
   clearRefreshToken,
   getRefreshToken,
@@ -40,11 +41,13 @@ export const BRIDGE_HANDLERS: BridgeHandlerMap = {
   captureReceipt: () => openReceiptCamera(),
   getRefreshToken: async () => ({ refreshToken: await getRefreshToken() }),
   saveRefreshToken: async ({ refreshToken }) => {
+    clearAccessToken();
     await setRefreshToken(refreshToken);
 
     return { saved: true };
   },
   clearRefreshToken: async () => {
+    clearAccessToken();
     await clearRefreshToken();
 
     return { cleared: true };
