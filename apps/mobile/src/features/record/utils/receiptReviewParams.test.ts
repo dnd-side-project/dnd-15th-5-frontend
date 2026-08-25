@@ -32,10 +32,13 @@ describe('receipt review route params', () => {
 
     expect(
       createReceiptReviewRouteParams({
+        receiptImageId: 15,
         shopId: 'place-01',
         shopName: '카페 차차',
         shopAddress: '서울특별시 마포구',
         shopPhotoUrl: null,
+        latitude: 37.506481,
+        longitude: 127.024551,
         visitDateTime,
         amount: '12000',
         category: '카페',
@@ -43,9 +46,12 @@ describe('receipt review route params', () => {
       })
     ).toEqual({
       uri: 'file://receipt.jpg',
+      receiptImageId: '15',
       shopId: 'place-01',
       shopName: '카페 차차',
       shopAddress: '서울특별시 마포구',
+      latitude: '37.506481',
+      longitude: '127.024551',
       amount: '12000',
       visitedAt: String(visitDateTime.date.getTime()),
       visitPeriod: 'afternoon',

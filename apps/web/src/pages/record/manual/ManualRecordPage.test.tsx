@@ -9,11 +9,22 @@ import ManualRecordPage from './ManualRecordPage';
 
 import type { VisitDateTimeValue } from '@chapchap/shared/record';
 
+const mockCreateConsumption = jest.fn();
+
+jest.mock('@/features/record/apis/hooks/useCreateConsumptionMutation', () => ({
+  useCreateConsumptionMutation: () => ({
+    createConsumption: mockCreateConsumption,
+    isCreatingConsumption: false,
+  }),
+}));
+
 const selectedShop: ShopSearchResult = {
   id: 'place-01',
   name: '투썸플레이스 신논현점',
   address: '서울특별시 강남구 봉은사로 125 1층',
   photoUrl: null,
+  latitude: 37.506481,
+  longitude: 127.024551,
 };
 
 function ShopSearchTarget() {
@@ -39,11 +50,16 @@ const renderPage = () =>
       <Routes>
         <Route path="/record/manual" element={<ManualRecordPage />} />
         <Route path="/record/shop/search" element={<ShopSearchTarget />} />
+        <Route path="/home" element={<p>홈 화면</p>} />
       </Routes>
     </MemoryRouter>
   );
 
 describe('<ManualRecordPage />', () => {
+  beforeEach(() => {
+    mockCreateConsumption.mockClear();
+  });
+
   it('선택한 가게와 소비 정보 입력 폼을 보여준다', async () => {
     const user = userEvent.setup();
     renderPage();
@@ -136,6 +152,26 @@ describe('<ManualRecordPage />', () => {
     expect(screen.getByText('가게 검색 화면 ?yearMonth=2025-07')).toBeInTheDocument();
   });
 
+  it('기록하기를 누르면 선택한 장소와 소비 정보를 등록한다', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByRole('textbox', { name: '금액' }), '33000');
+    await user.click(screen.getByRole('button', { name: '기록하기' }));
+
+    expect(mockCreateConsumption).toHaveBeenCalledWith(
+      expect.objectContaining({
+        googlePlaceId: selectedShop.id,
+        placeName: selectedShop.name,
+        roadAddress: selectedShop.address,
+        latitude: selectedShop.latitude,
+        longitude: selectedShop.longitude,
+        amount: 33000,
+        category: '카페',
+      })
+    );
+  });
+
   it('변경 버튼과 뒤로 가기 버튼으로 가게 검색 화면에 돌아간다', async () => {
     const user = userEvent.setup();
     const { unmount } = renderPage();
@@ -148,6 +184,37 @@ describe('<ManualRecordPage />', () => {
 
     await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
     expect(screen.getByText('가게 검색 화면')).toBeInTheDocument();
+  });
+
+  it('닫기 확인 후 나가기를 선택하면 지도 홈으로 이동한다', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+
+    expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
+    expect(screen.queryByText('홈 화면')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '나가기' })).toHaveClass(
+      'w-0',
+      'flex-1',
+      'text-body-01-medium'
+    );
+    expect(screen.getByRole('button', { name: '계속 작성하기' })).toHaveClass(
+      'w-0',
+      'flex-1',
+      'text-body-01-medium'
+    );
+
+    await user.click(screen.getByRole('button', { name: '계속 작성하기' }));
+    expect(
+      screen.queryByRole('dialog', { name: '기록 작성을 그만둘까요?' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '소비 정보를 입력해주세요' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await user.click(screen.getByRole('button', { name: '나가기' }));
+
+    expect(screen.getByText('홈 화면')).toBeInTheDocument();
   });
 
   it('방문 일시 선택값을 CTA에 표시하고 확인하면 폼에 반영한다', async () => {

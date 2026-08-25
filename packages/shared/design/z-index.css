@@ -13,6 +13,7 @@
   --z-index-modal-backdrop: 10;
   --z-index-bottom-sheet: 20;
   --z-index-bottom-navigation: 30;
+  --z-index-dialog: 40;
   --z-index-toast: 50;
 
   /*

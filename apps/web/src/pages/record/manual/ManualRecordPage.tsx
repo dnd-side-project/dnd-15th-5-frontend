@@ -4,7 +4,6 @@ import { createInitialVisitDateTimeForMonth, ManualRecordForm } from '@/features
 import type { ShopSearchResult } from '@/features/shop';
 import { createYearMonthPath, ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
-import { PlaceCard } from '@/shared/ui/card';
 import { isValidYearMonth } from '@/shared/utils/yearMonth';
 
 import type { VisitDateTimeValue } from '@chapchap/shared/record';
@@ -33,12 +32,9 @@ export default function ManualRecordPage() {
       <ManualRecordForm
         initialDateTimePickerOpen={Boolean(shop) && hasRequestedYearMonth && !isShopChange}
         initialVisitDateTime={visitDateTime ?? createInitialVisitDateTimeForMonth(yearMonth)}
-        selectedShop={
-          shop ? (
-            <PlaceCard thumbnailSrc={shop.photoUrl} title={shop.name} location={shop.address} />
-          ) : null
-        }
+        selectedShop={shop ?? null}
         onBack={handleBack}
+        onClose={() => navigate(ROUTE_PATHS.home, { replace: true })}
         onChangeShop={(currentVisitDateTime) =>
           navigate(shopSearchPath, {
             state: {

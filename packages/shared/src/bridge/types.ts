@@ -32,6 +32,8 @@ export type BridgeEventMap = {
     shop: ShopSearchResult;
   };
   receiptShopSearchCancelled: Record<string, never>;
+  // 영수증 기록 중인 네이티브 화면을 모두 닫고 메인 WebView의 홈으로 이동하도록 요청한다.
+  receiptRecordCloseRequested: Record<string, never>;
 };
 
 export type BridgeEventType = keyof BridgeEventMap;

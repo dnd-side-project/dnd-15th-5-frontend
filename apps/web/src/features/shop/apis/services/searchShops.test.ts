@@ -19,6 +19,7 @@ describe('searchShops', () => {
         displayName: '투썸플레이스 신논현점',
         formattedAddress: '서울특별시 강남구 봉은사로 125 1층',
         photos: [{ getURI: () => 'https://example.com/photo.jpg' }],
+        location: { lat: () => 37.506481, lng: () => 127.024551 },
       },
     ]);
 
@@ -30,19 +31,20 @@ describe('searchShops', () => {
         name: '투썸플레이스 신논현점',
         address: '서울특별시 강남구 봉은사로 125 1층',
         photoUrl: 'https://example.com/photo.jpg',
+        latitude: 37.506481,
+        longitude: 127.024551,
       },
     ]);
   });
 
-  it('이름과 주소가 없으면 빈 문자열로 채운다', async () => {
+  it('등록에 필요한 이름·주소·좌표가 없는 장소는 결과에서 제외한다', async () => {
     const { library } = createPlacesLibrary([
       { id: 'place-02', displayName: null, formattedAddress: null, photos: [] },
     ]);
 
     const shops = await searchShops(library, '없는 가게');
 
-    expect(shops[0].name).toBe('');
-    expect(shops[0].address).toBe('');
+    expect(shops).toEqual([]);
   });
 
   it('사진이 없으면 photoUrl을 null로 둔다', async () => {
@@ -52,6 +54,7 @@ describe('searchShops', () => {
         displayName: '사진 없는 가게',
         formattedAddress: '서울특별시 중구',
         photos: [],
+        location: { lat: () => 37.5665, lng: () => 126.978 },
       },
     ]);
 

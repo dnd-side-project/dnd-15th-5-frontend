@@ -1,6 +1,8 @@
 import { act, render } from '@testing-library/react-native';
 import { BackHandler, Linking } from 'react-native';
 
+import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
+
 import HomeScreen from './HomeScreen';
 
 const mockCreateBridgeResponse = jest.fn();
@@ -50,6 +52,10 @@ jest.mock('@/bridge', () => ({
   createBridgeResponse: (message: unknown) => mockCreateBridgeResponse(message),
   createResponseScript: (response: unknown, trustedOrigin: string) =>
     mockCreateResponseScript(response, trustedOrigin),
+  getTrustedInternalUrl: (path: string, trustedOrigin: string) => {
+    const url = new URL(path, trustedOrigin);
+    return url.origin === trustedOrigin ? url.toString() : null;
+  },
   getUrlOrigin: (url: string) => new URL(url).origin,
   isTrustedBridgeUrl: (url: string, trustedOrigin: string) => new URL(url).origin === trustedOrigin,
 }));
@@ -85,7 +91,7 @@ describe('<HomeScreen />', () => {
     getByText('웹 주소가 설정되지 않았습니다');
   });
 
-  it('웹 주소가 설정되면 인증 진입점인 루트 경로를 최초로 띄운다', async () => {
+  it('웹 주소가 설정되면 로그인 진입점인 루트 경로를 최초로 띄운다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173/record/receipt/camera';
 
     const { getByTestId } = await render(<HomeScreen />);
@@ -216,6 +222,30 @@ describe('<HomeScreen />', () => {
     expect(shouldStartLoad({ url: 'https://chapchap.example.com/home/shop/101' })).toBe(true);
     expect(shouldStartLoad({ url: googleMapsUrl })).toBe(false);
     expect(Linking.openURL).toHaveBeenCalledWith(googleMapsUrl);
+  });
+
+  it('네이티브 기록 완료 요청을 받으면 메인 WebView를 지도 홈으로 새로 이동한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    await render(<HomeScreen />);
+
+    await act(async () => {
+      requestWebViewNavigation('/home');
+    });
+
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      'window.location.replace("https://chapchap.example.com/home"); true;'
+    );
+  });
+
+  it('외부 origin으로 향하는 네이티브 내부 이동 요청은 무시한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    await render(<HomeScreen />);
+
+    await act(async () => {
+      requestWebViewNavigation('https://evil.example.com');
+    });
+
+    expect(mockInjectJavaScript).not.toHaveBeenCalled();
   });
 
   it('Android 뒤로가기는 실제 WebView 기록이 있을 때만 WebView에서 처리한다', async () => {

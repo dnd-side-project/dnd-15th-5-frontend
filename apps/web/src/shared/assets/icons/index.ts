@@ -1,5 +1,6 @@
 import CalendarIcon from '@chapchap/shared/assets/icons/ic-calendar.svg?react';
 import ChevronLeftIcon from '@chapchap/shared/assets/icons/ic-chevron-left.svg?react';
+import CloseIcon from '@chapchap/shared/assets/icons/ic-close.svg?react';
 import StatusErrorIcon from '@chapchap/shared/assets/icons/ic-status-error.svg?react';
 import StatusSuccessIcon from '@chapchap/shared/assets/icons/ic-status-success.svg?react';
 
@@ -51,6 +52,7 @@ export {
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  CloseIcon,
   ContactIcon,
   CrownIcon,
   CurrentLocationIcon,

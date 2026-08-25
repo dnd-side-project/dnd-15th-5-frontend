@@ -12,14 +12,14 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://chapchap.kr/api",
-        "EXPO_PUBLIC_WEB_URL": "https://chap-chap-dev.vercel.app"
+        "EXPO_PUBLIC_WEB_URL": "https://chapchap.kr/"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://chapchap.kr/api",
-        "EXPO_PUBLIC_WEB_URL": "https://chap-chap05.vercel.app"
+        "EXPO_PUBLIC_WEB_URL": "https://chapchap.kr/"
       }
     }
   },

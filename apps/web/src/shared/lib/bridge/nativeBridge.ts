@@ -50,7 +50,7 @@ let isListening = false;
 
 /**
  * 앱의 WebView 안에서 실행 중인지 확인한다.
- * 일반 브라우저(로컬 개발, Vercel 프리뷰)에서는 `false`이므로 네이티브 기능을 호출하면 안 된다.
+ * 일반 브라우저에서는 `false`이므로 네이티브 기능을 호출하면 안 된다.
  */
 export const isNativeApp = () => Boolean(getNativeWebView());
 

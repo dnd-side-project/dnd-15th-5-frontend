@@ -1,13 +1,13 @@
 import { RECEIPT_SHOP_SEARCH_SOURCE } from '@chapchap/shared/bridge';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
+import { RecordNavigationHeader } from '@/features/record';
 import type { ShopSearchLocationState } from '@/features/record';
 import { ShopSearch } from '@/features/shop';
 import type { ShopSearchResult } from '@/features/shop';
 import { createYearMonthPath, ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
 import { notifyNative } from '@/shared/lib/bridge';
-import { BackButton } from '@/shared/ui/back-button';
 
 export default function ShopSearchPage() {
   const navigate = useNavigate();
@@ -49,9 +49,17 @@ export default function ShopSearchPage() {
     navigate(-1);
   };
 
+  const handleClose = () => {
+    if (isReceiptNativeSearch && notifyNative('receiptRecordCloseRequested', {})) {
+      return;
+    }
+
+    navigate(ROUTE_PATHS.home, { replace: true });
+  };
+
   return (
     <main className="flex min-h-full flex-col">
-      <BackButton onClick={handleBack} />
+      <RecordNavigationHeader onBack={handleBack} onClose={handleClose} />
 
       <div className="mt-4">
         <ShopSearch onSelectShop={handleSelectShop} />

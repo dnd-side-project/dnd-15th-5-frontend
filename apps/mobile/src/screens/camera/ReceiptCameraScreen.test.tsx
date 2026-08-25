@@ -1,6 +1,8 @@
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
+import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
+import { recognizeReceipt } from '@/features/record/apis/clients';
 import { normalizeReceiptImage } from '@/native/normalizeReceiptImage';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
 
@@ -27,8 +29,12 @@ jest.mock('expo-camera', () => {
   return { CameraView };
 });
 
-jest.mock('expo-router', () => ({ router: { back: jest.fn(), replace: jest.fn() } }));
+jest.mock('expo-router', () => ({
+  router: { back: jest.fn(), dismissTo: jest.fn(), replace: jest.fn() },
+}));
+jest.mock('@/bridge/webViewNavigation', () => ({ requestWebViewNavigation: jest.fn() }));
 jest.mock('@/native/normalizeReceiptImage', () => ({ normalizeReceiptImage: jest.fn() }));
+jest.mock('@/features/record/apis/clients', () => ({ recognizeReceipt: jest.fn() }));
 jest.mock('@/native/pickReceiptImageFromLibrary', () => ({
   pickReceiptImageFromLibrary: jest.fn(),
 }));
@@ -40,6 +46,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const mockNormalizeReceiptImage = jest.mocked(normalizeReceiptImage);
+const mockRecognizeReceipt = jest.mocked(recognizeReceipt);
 const mockPickReceiptImageFromLibrary = jest.mocked(pickReceiptImageFromLibrary);
 const mockReplace = jest.mocked(router.replace);
 
@@ -47,6 +54,14 @@ describe('<ReceiptCameraScreen />', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    mockRecognizeReceipt.mockResolvedValue({
+      receiptImageId: 15,
+      storeName: null,
+      address: null,
+      purchaseDate: null,
+      purchaseTime: null,
+      amount: null,
+    });
   });
 
   afterEach(() => {
@@ -58,6 +73,14 @@ describe('<ReceiptCameraScreen />', () => {
     const picture = { uri: 'file://captured.jpg', width: 3000, height: 4000 };
     mockTakePictureAsync.mockResolvedValue(picture);
     mockNormalizeReceiptImage.mockResolvedValue({ uri: 'file://normalized.jpg' });
+    mockRecognizeReceipt.mockResolvedValue({
+      receiptImageId: 15,
+      storeName: '투썸플레이스 신논현점',
+      address: '서울특별시 강남구 봉은사로 125 1층',
+      purchaseDate: '2026-07-25',
+      purchaseTime: '11:20:00',
+      amount: 33000,
+    });
     const { getByRole } = await render(<ReceiptCameraScreen />);
 
     expect(getByRole('button', { name: '이전 화면으로 돌아가기' })).toHaveStyle({ top: 65 });
@@ -75,8 +98,34 @@ describe('<ReceiptCameraScreen />', () => {
     expect(mockNormalizeReceiptImage).toHaveBeenCalledWith(picture);
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/receipt-confirm',
-      params: { uri: 'file://normalized.jpg' },
+      params: {
+        uri: 'file://normalized.jpg',
+        receiptImageId: '15',
+        shopName: '투썸플레이스 신논현점',
+        shopAddress: '서울특별시 강남구 봉은사로 125 1층',
+        amount: '33000',
+        visitedAt: String(new Date(2026, 6, 25, 11, 20).getTime()),
+        visitPeriod: 'afternoon',
+      },
     });
+  });
+
+  it('X 버튼에서 나가기를 확인하면 기록 화면을 닫고 메인 WebView를 홈으로 이동시킨다', async () => {
+    const { findByText, getByRole } = await render(<ReceiptCameraScreen />);
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    });
+
+    await findByText('기록 작성을 그만둘까요?');
+    expect(requestWebViewNavigation).not.toHaveBeenCalled();
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '나가기' }));
+    });
+
+    expect(requestWebViewNavigation).toHaveBeenCalledWith('/home');
+    expect(router.dismissTo).toHaveBeenCalledWith('/');
   });
 
   it('촬영한 이미지를 처리하는 동안 스캔 로딩 화면을 보여준다', async () => {
@@ -122,7 +171,7 @@ describe('<ReceiptCameraScreen />', () => {
 
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/receipt-confirm',
-      params: { uri: 'file://normalized.jpg' },
+      params: { uri: 'file://normalized.jpg', receiptImageId: '15' },
     });
   });
 
@@ -146,7 +195,7 @@ describe('<ReceiptCameraScreen />', () => {
     expect(mockNormalizeReceiptImage).toHaveBeenCalledWith(picked);
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/receipt-confirm',
-      params: { uri: 'file://normalized-picked.jpg' },
+      params: { uri: 'file://normalized-picked.jpg', receiptImageId: '15' },
     });
   });
 

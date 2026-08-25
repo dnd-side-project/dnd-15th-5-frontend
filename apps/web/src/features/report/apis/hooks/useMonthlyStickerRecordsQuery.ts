@@ -33,9 +33,13 @@ export const createMonthlyStickerRecordGroups = (
 
   sortedStickers.forEach(({ acquiredDate, itemName }) => {
     const dateValue = acquiredDate.slice(0, 10);
+    const stickerImage = getStickerImageByName(itemName);
+
+    if (!stickerImage) return;
+
     const stickerImages = stickerImagesByDate.get(dateValue) ?? [];
 
-    stickerImages.push(getStickerImageByName(itemName));
+    stickerImages.push(stickerImage);
     stickerImagesByDate.set(dateValue, stickerImages);
   });
 

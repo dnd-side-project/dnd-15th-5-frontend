@@ -17,6 +17,7 @@ export const ROUTE_PATTERNS = {
 export const ROUTE_PATHS = {
   login: '/',
   authCallback: '/auth/callback',
+  oauthCallback: '/oauth/callback',
   agreement: '/agreement',
   onboarding: '/onboarding',
 
