@@ -91,7 +91,11 @@ export default function ShopDetail({
   const totalVisitCount = place.stats?.totalVisitCount ?? visits.length;
   const stickerImages =
     mockData?.stickerImages ??
-    (place.recentStickers ?? []).map((sticker) => getStickerImageByName(sticker.itemName));
+    (place.recentStickers ?? []).flatMap((sticker) => {
+      const stickerImage = getStickerImageByName(sticker.itemName);
+
+      return stickerImage ? [stickerImage] : [];
+    });
 
   return (
     <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
