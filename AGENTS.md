@@ -68,6 +68,6 @@ pnpm preview       # 웹 빌드 결과 미리보기
 ## CI/CD와 Gotchas
 
 - GitHub Actions는 루트 Turbo 명령으로 lint, typecheck, test, format, build를 검사한다. `pnpm build`의 모바일 검증 범위는 iOS·Android Expo export이며 네이티브 빌드는 CI에서 실행하지 않는다. Expo web은 앱의 타깃이 아니라 export 대상에서 제외한다(웹 화면은 `apps/web`).
-- Vercel과 Chromatic은 `apps/web`을 웹 앱 기준 디렉토리로 사용한다.
+- Chromatic은 `apps/web`을 웹 앱 기준 디렉토리로 사용한다.
 - `apps/web/tsconfig.app.json`은 Vite 번들러 전용 옵션(`moduleResolution: bundler`)을 쓰기 때문에 Jest가 그대로 못 읽는다. `apps/web/jest.config.cjs` 안에 별도 inline tsconfig를 둔다.
 - Turbo build 입력에는 각 workspace의 `.env`, `.env.*`를 포함한다. 환경 파일 패턴을 바꿀 때 `turbo.json`도 함께 갱신한다.
