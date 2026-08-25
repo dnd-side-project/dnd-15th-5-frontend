@@ -11,7 +11,7 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://chapchap.kr/api",
+        "EXPO_PUBLIC_API_BASE_URL": "https://chapchap.kr/dev/api",
         "EXPO_PUBLIC_WEB_URL": "https://chap-chap-dev.vercel.app"
       }
     },
