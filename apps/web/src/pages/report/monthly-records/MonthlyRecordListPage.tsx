@@ -1,3 +1,16 @@
+import { useNavigate } from 'react-router-dom';
+
+import { MonthlyStickerRecordList } from '@/features/report';
+import { BackButton } from '@/shared/ui/back-button';
+
 export default function MonthlyRecordListPage() {
-  return <main>이번 달 쌓인 기록 페이지</main>;
+  const navigate = useNavigate();
+
+  return (
+    <main className="min-h-screen-safe-bottom flex flex-col">
+      <MonthlyStickerRecordList
+        headerContent={<BackButton className="mt-0" onClick={() => navigate(-1)} />}
+      />
+    </main>
+  );
 }
