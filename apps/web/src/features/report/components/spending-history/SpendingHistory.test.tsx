@@ -37,6 +37,7 @@ const createQueryResult = (yearMonth: string) =>
     hasNextPage: false,
     isPending: false,
     isError: false,
+    isFetchNextPageError: false,
     isFetchingNextPage: false,
   }) as unknown as ReturnType<typeof useConsumptionsInfiniteQuery>;
 
@@ -114,6 +115,44 @@ describe('SpendingHistory', () => {
     ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '다시 불러오기' }));
     expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('다음 페이지 조회에 실패하면 기존 목록을 유지하고 하단에서 재시도한다', async () => {
+    const user = userEvent.setup();
+    mockedUseConsumptionsInfiniteQuery.mockReturnValue({
+      ...createQueryResult('2026-08'),
+      hasNextPage: true,
+      isError: true,
+      isFetchNextPageError: true,
+    } as unknown as ReturnType<typeof useConsumptionsInfiniteQuery>);
+
+    renderSpendingHistory();
+
+    expect(screen.getByRole('heading', { name: '22일 토요일' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: '소비내역을 불러오지 못했어요' })
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '다시 불러오기' }));
+    expect(fetchNextPage).toHaveBeenCalledTimes(1);
+    expect(refetch).not.toHaveBeenCalled();
+  });
+
+  it('특정 날짜를 찾던 중 다음 페이지 조회에 실패하면 자동 재요청을 멈춘다', async () => {
+    const user = userEvent.setup();
+    mockedUseConsumptionsInfiniteQuery.mockReturnValue({
+      ...createQueryResult('2026-08'),
+      hasNextPage: true,
+      isError: true,
+      isFetchNextPageError: true,
+    } as unknown as ReturnType<typeof useConsumptionsInfiniteQuery>);
+
+    renderSpendingHistory('2026-08-20');
+
+    expect(fetchNextPage).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: '다시 불러오기' }));
+    expect(fetchNextPage).toHaveBeenCalledTimes(1);
+    expect(refetch).not.toHaveBeenCalled();
   });
 
   it('초기 날짜가 있으면 해당 날짜의 소비 기록만 보여준다', () => {

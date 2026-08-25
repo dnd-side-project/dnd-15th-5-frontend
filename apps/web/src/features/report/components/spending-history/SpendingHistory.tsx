@@ -96,10 +96,15 @@ export default function SpendingHistory({
   const { fetchNextPage, isFetchingNextPage } = consumptionsQuery;
 
   useEffect(() => {
-    if (shouldFetchMoreForDate && !isFetchingNextPage) {
+    if (shouldFetchMoreForDate && !isFetchingNextPage && !consumptionsQuery.isFetchNextPageError) {
       void fetchNextPage();
     }
-  }, [fetchNextPage, isFetchingNextPage, shouldFetchMoreForDate]);
+  }, [
+    consumptionsQuery.isFetchNextPageError,
+    fetchNextPage,
+    isFetchingNextPage,
+    shouldFetchMoreForDate,
+  ]);
 
   const setSelectedMonth = (month: YearMonth) => {
     setMonthSelection({ dateValue: initialDate, month });
@@ -161,7 +166,11 @@ export default function SpendingHistory({
               description={'잠시 후 다시 시도해주세요.'}
               actionLabel="다시 불러오기"
               headingAs="h2"
-              onAction={() => void consumptionsQuery.refetch()}
+              onAction={() =>
+                void (consumptionsQuery.isFetchNextPageError
+                  ? fetchNextPage()
+                  : consumptionsQuery.refetch())
+              }
               className="my-auto"
             />
           )}
@@ -178,7 +187,7 @@ export default function SpendingHistory({
             groups={visibleRecordGroups}
             hasNextPage={!isFilteringInitialDate && consumptionsQuery.hasNextPage}
             isFetchingNextPage={isFetchingNextPage}
-            isLoadMoreError={consumptionsQuery.isError}
+            isLoadMoreError={consumptionsQuery.isFetchNextPageError}
             onLoadMore={() => void fetchNextPage()}
             onRetry={() => void fetchNextPage()}
           />
