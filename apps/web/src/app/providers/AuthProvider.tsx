@@ -19,7 +19,10 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
   useEffect(() => {
-    if (window.location.pathname === ROUTE_PATHS.authCallback) {
+    if (
+      window.location.pathname === ROUTE_PATHS.authCallback ||
+      window.location.pathname === ROUTE_PATHS.oauthCallback
+    ) {
       setInitialized(true);
       return;
     }

@@ -64,18 +64,21 @@ describe('<AuthProvider />', () => {
     });
   });
 
-  it('OAuth callback에서는 코드 교환 전에 웹 토큰 재발급을 요청하지 않는다', async () => {
-    window.history.replaceState(null, '', '/auth/callback?loginCode=login-code');
+  it.each(['/auth/callback', '/oauth/callback'])(
+    '%s에서는 코드 교환 전에 웹 토큰 재발급을 요청하지 않는다',
+    async (callbackPath) => {
+      window.history.replaceState(null, '', `${callbackPath}?loginCode=login-code`);
 
-    render(
-      <AuthProvider>
-        <p>콜백 화면</p>
-      </AuthProvider>
-    );
+      render(
+        <AuthProvider>
+          <p>콜백 화면</p>
+        </AuthProvider>
+      );
 
-    await waitFor(() => expect(screen.getByText('콜백 화면')).toBeInTheDocument());
-    expect(mockRefreshWeb).not.toHaveBeenCalled();
-  });
+      await waitFor(() => expect(screen.getByText('콜백 화면')).toBeInTheDocument());
+      expect(mockRefreshWeb).not.toHaveBeenCalled();
+    }
+  );
 
   it('앱 시작 시 네이티브 Refresh Token으로 인증 상태를 복원한다', async () => {
     mockIsNativeApp.mockReturnValue(true);
