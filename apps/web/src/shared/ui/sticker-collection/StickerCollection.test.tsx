@@ -23,11 +23,20 @@ describe('StickerCollection', () => {
     expect(screen.getAllByLabelText('빈 스티커 자리')).toHaveLength(1);
   });
 
-  it('빈 슬롯은 48px 원이 72px 너비를 차지하도록 가운데 배치한다', () => {
+  it('기본 빈 슬롯은 48px 원이 72px 너비를 차지하도록 가운데 배치한다', () => {
     render(<StickerCollection stickers={STICKERS.slice(0, 1)} />);
 
     const emptySlot = screen.getAllByLabelText('빈 스티커 자리')[0];
     expect(emptySlot).toHaveClass('size-12');
     expect(emptySlot?.parentElement).toHaveClass('w-18', 'justify-center');
+  });
+
+  it('compact 크기는 55px 스티커와 45px 빈 슬롯을 사용한다', () => {
+    const { container } = render(
+      <StickerCollection stickers={STICKERS.slice(0, 1)} size="compact" />
+    );
+
+    expect(container.querySelector('img')).toHaveClass('size-13.75');
+    expect(screen.getAllByLabelText('빈 스티커 자리')[0]).toHaveClass('size-11.25');
   });
 });
