@@ -49,7 +49,7 @@ export default function PeriodFilterSheet({
         snapPoints={PERIOD_FILTER_SNAP_POINTS}
         onSnapPointChange={handleSnapPointChange}
         fitContent
-        contentClassName="px-5 pt-2 pb-[38px]"
+        contentClassName="px-5 pt-2 pb-9.5"
       >
         <section role="dialog" aria-modal="true" aria-labelledby="period-filter-title">
           <h2

@@ -32,7 +32,7 @@
 .report-card-face {
   position: absolute;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: var(--radius-05);
 }
 
 .report-card-face--back {
@@ -64,18 +64,18 @@
 
 .report-card-question-panel {
   position: absolute;
-  z-index: 0;
+  z-index: var(--z-index-report-card-face);
   top: 12.65px;
   left: 9.28px;
   width: 75.657px;
   height: 59.789px;
-  border-radius: 5px;
-  background: rgb(0 0 0 / 50%);
+  border-radius: var(--radius-05);
+  background: var(--color-report-question-panel);
 }
 
 .report-card-texture {
   position: absolute;
-  z-index: 1;
+  z-index: var(--z-index-report-card-texture);
   inset: 0;
   display: block;
   width: 100%;
@@ -133,7 +133,7 @@
 }
 
 .report-card-question {
-  z-index: 2;
+  z-index: var(--z-index-report-card-question);
   top: 12.65px;
   left: 9.28px;
   display: flex;

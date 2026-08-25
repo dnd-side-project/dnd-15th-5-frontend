@@ -24,4 +24,9 @@
    */
   --z-index-sticky-header: 1;
   --z-index-segmented-toggle-label: 1;
+  --z-index-report-hero-content: 1;
+  --z-index-report-card-face: 0;
+  --z-index-report-card-texture: 1;
+  --z-index-report-card-question: 2;
+  --z-index-chart-tooltip: 2;
 }

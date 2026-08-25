@@ -1,13 +1,17 @@
-import { Button } from '@/shared/ui/button';
+import { useLogout } from '@/features/my-page/hooks/useLogout';
+import { LogoutIcon } from '@/shared/assets/icons';
 
-import { useLogout } from '../hooks/useLogout';
+import MyPageMenuItem from './MyPageMenuItem';
 
 export default function LogoutButton() {
   const { isLoading, logout } = useLogout();
 
   return (
-    <Button variant="secondary" isLoading={isLoading} onClick={logout}>
-      로그아웃
-    </Button>
+    <MyPageMenuItem
+      icon={LogoutIcon}
+      label={isLoading ? '로그아웃 중' : '로그아웃'}
+      isLoading={isLoading}
+      onClick={logout}
+    />
   );
 }

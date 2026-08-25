@@ -2,8 +2,9 @@ import { useLayoutEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
-import { ChapchapLogo, NotificationDefaultIcon, SearchIcon } from '@/shared/assets/icons';
+import { NotificationDefaultIcon, SearchIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { DefaultProfile } from '@/shared/ui/default-profile';
 
 import HomePreferenceBanner from './HomePreferenceBanner';
 
@@ -81,7 +82,7 @@ export default function HomeTopBar({ recordedShopCount }: HomeTopBarProps) {
           title="마이페이지"
           className="flex size-8 items-center justify-center overflow-hidden rounded-full border-2 border-neutral-00 shadow-current-location-button transition-transform active:scale-95"
         >
-          <ChapchapLogo aria-hidden="true" className="size-full" />
+          <DefaultProfile className="size-full" />
         </Link>
       </div>
     </div>
