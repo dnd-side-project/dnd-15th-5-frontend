@@ -196,9 +196,6 @@ describe('SpendingHistory', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: '7월 소비 내역' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: '21일 금요일' })).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 2, name: '아직 기록이 없어요' })
-    ).toBeInTheDocument();
   });
 
   it('월 선택 바텀시트에서 월을 바꾸고 시트를 닫는다', async () => {
@@ -220,14 +217,6 @@ describe('SpendingHistory', () => {
 
     expect(screen.queryByRole('dialog', { name: '월 선택하기' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('7월');
-    expect(
-      screen.getByRole('heading', { level: 2, name: '아직 기록이 없어요' })
-    ).toBeInTheDocument();
-    expect(screen.getByText(/소비 기록을 작성해보세요/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '소비 기록 작성하기' })).toHaveAttribute(
-      'href',
-      '/record'
-    );
   });
 
   it('월 선택 바텀시트 바깥을 누르면 시트를 닫고 스크롤 잠금을 해제한다', async () => {

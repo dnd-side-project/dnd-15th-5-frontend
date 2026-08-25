@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { useConsumptionsInfiniteQuery } from '@/features/report/apis/hooks/useConsumptionsInfiniteQuery';
+import MonthlyRecordEmptyState from '@/features/report/components/common/MonthlyRecordEmptyState';
 import MonthPickerSheet from '@/features/report/components/common/MonthPickerSheet';
 import MonthSelector from '@/features/report/components/common/MonthSelector';
 import {
@@ -9,7 +10,6 @@ import {
   groupConsumptionsByDate,
 } from '@/features/report/utils/consumptions';
 import { parseSpendingMonthFromDate } from '@/features/report/utils/parseSpendingMonthFromDate';
-import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { StateView } from '@/shared/ui/state-view';
@@ -70,7 +70,8 @@ export default function SpendingHistory({
   const selectedMonthIndex = SPENDING_MONTHS.findIndex((month) =>
     isSameMonth(month, selectedMonth)
   );
-  const hasNewerMonth = selectedMonthIndex > 0;
+  const isPastMonth = selectedMonthIndex > 0;
+  const hasNewerMonth = isPastMonth;
   const hasOlderMonth = selectedMonthIndex < SPENDING_MONTHS.length - 1;
   const consumptionsQuery = useConsumptionsInfiniteQuery(formatSpendingYearMonth(selectedMonth));
   const consumptions = useMemo(
@@ -169,15 +170,7 @@ export default function SpendingHistory({
           !consumptionsQuery.isError &&
           !shouldFetchMoreForDate &&
           visibleRecordGroups.length === 0 && (
-            <StateView
-              variant="empty"
-              title="아직 기록이 없어요"
-              description={'소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'}
-              actionLabel="소비 기록 작성하기"
-              headingAs="h2"
-              to={ROUTE_PATHS.record}
-              className="my-auto"
-            />
+            <MonthlyRecordEmptyState isPastMonth={isPastMonth} selectedMonth={selectedMonth} />
           )}
 
         {!consumptionsQuery.isPending && visibleRecordGroups.length > 0 && (
