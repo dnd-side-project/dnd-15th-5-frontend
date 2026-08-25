@@ -89,8 +89,14 @@ const refreshAccessToken = async () => {
     return nextAccessToken;
   })()
     .catch(async (error: unknown) => {
-      clearAccessToken();
-      await clearRefreshToken();
+      const status = error instanceof NativeApiError ? error.status : undefined;
+      const isRefreshTokenRejected = status === 401 || status === 403;
+
+      if (isRefreshTokenRejected) {
+        clearAccessToken();
+        await clearRefreshToken();
+      }
+
       throw error;
     })
     .finally(() => {

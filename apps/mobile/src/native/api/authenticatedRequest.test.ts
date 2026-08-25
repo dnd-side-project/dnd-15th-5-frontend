@@ -103,4 +103,32 @@ describe('authenticatedRequest', () => {
       })
     );
   });
+
+  it('Refresh Token 재발급이 401로 거절되면 인증 정보를 지운다', async () => {
+    mockFetch.mockResolvedValueOnce(createResponse(401, { message: '만료된 Refresh Token' }));
+
+    await expect(authenticatedRequest('/consumptions/receipt-ocr')).rejects.toThrow(
+      '만료된 Refresh Token'
+    );
+
+    expect(mockClearRefreshToken).toHaveBeenCalledTimes(1);
+  });
+
+  it('Refresh Token 재발급이 일시적인 서버 오류로 실패하면 인증 정보를 유지한다', async () => {
+    mockFetch.mockResolvedValueOnce(createResponse(500, { message: '서버 오류' }));
+
+    await expect(authenticatedRequest('/consumptions/receipt-ocr')).rejects.toThrow('서버 오류');
+
+    expect(mockClearRefreshToken).not.toHaveBeenCalled();
+  });
+
+  it('Refresh Token 재발급이 네트워크 오류로 실패하면 인증 정보를 유지한다', async () => {
+    mockFetch.mockRejectedValueOnce(new TypeError('Network request failed'));
+
+    await expect(authenticatedRequest('/consumptions/receipt-ocr')).rejects.toThrow(
+      'Network request failed'
+    );
+
+    expect(mockClearRefreshToken).not.toHaveBeenCalled();
+  });
 });
