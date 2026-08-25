@@ -19,6 +19,11 @@ export const parseReceiptVisitDateTime = (
 
   const [, yearText, monthText, dayText] = dateMatch;
   const timeMatch = purchaseTime?.match(TIME_PATTERN);
+
+  if (purchaseTime && !timeMatch) {
+    return undefined;
+  }
+
   const hour = timeMatch ? Number(timeMatch[1]) : now.getHours();
   const minute = timeMatch ? Number(timeMatch[2]) : 0;
   const second = timeMatch?.[3] ? Number(timeMatch[3]) : 0;

@@ -21,4 +21,8 @@ describe('parseReceiptVisitDateTime', () => {
     expect(parseReceiptVisitDateTime('2026-02-30', '11:00:00', now)).toBeUndefined();
     expect(parseReceiptVisitDateTime('2026-08-21', '11:00:00', now)).toBeUndefined();
   });
+
+  it('시각이 인식됐지만 형식이 잘못됐다면 현재 시간으로 대체하지 않고 사용하지 않는다', () => {
+    expect(parseReceiptVisitDateTime('2026-07-25', '9:30', now)).toBeUndefined();
+  });
 });
