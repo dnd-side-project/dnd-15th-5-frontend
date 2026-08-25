@@ -37,12 +37,19 @@ export default function MonthlyStickerSummary({
     );
   }
 
+  const fillsStickerRow = stickers.length >= 5;
+
   return (
     <div
       className={cn(REPORT_PANEL_CLASS_NAME, 'flex min-h-25.25 items-center justify-center p-4')}
     >
       <div className="flex w-full max-w-81.25 items-center gap-2">
-        <div className="flex min-w-0 flex-1 items-center justify-between">
+        <div
+          className={cn(
+            'flex min-w-0 flex-1 items-center',
+            fillsStickerRow ? 'justify-between' : 'justify-start gap-0'
+          )}
+        >
           {stickers.map((src, index) => (
             <img
               alt=""
