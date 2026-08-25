@@ -2,21 +2,19 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { MOCK_MONTHLY_REPORTS } from '@/features/report/mockData';
-import type { SpendingMonth } from '@/features/report/types';
+import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
+import type { YearMonth } from '@/shared/types/yearMonth';
 import { useToast } from '@/shared/ui/toast';
+import { formatYearMonth } from '@/shared/utils/yearMonth';
 
 import { useReportImageDownload } from './useReportImageDownload';
-
-const YEAR_MONTH_SEARCH_PARAM = 'yearMonth';
-
-const formatYearMonth = ({ year, month }: SpendingMonth) =>
-  `${year}-${String(month).padStart(2, '0')}`;
 
 /** 월간 상세 리포트의 월 이동, 취향 카드, 공유 상태를 관리합니다. */
 export const useMonthlyReport = () => {
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
   const requestedYearMonth = searchParams.get(YEAR_MONTH_SEARCH_PARAM);
   const requestedReportIndex = MOCK_MONTHLY_REPORTS.findIndex(
@@ -78,11 +76,22 @@ export const useMonthlyReport = () => {
     handleReportSelect(selectedReportIndex + 1);
   };
 
+  const handleMonthSelect = (month: YearMonth) => {
+    const reportIndex = MOCK_MONTHLY_REPORTS.findIndex(
+      ({ month: reportMonth }) => formatYearMonth(reportMonth) === formatYearMonth(month)
+    );
+
+    handleReportSelect(reportIndex);
+    setIsMonthPickerOpen(false);
+  };
+
   const handleReportCardSelect = (index: number) => {
     handleReportSelect(reportCards.length - 1 - index);
   };
 
   const handlePreferenceCardFlip = () => setIsCardFlipped((isFlipped) => !isFlipped);
+  const handleMonthPickerClose = () => setIsMonthPickerOpen(false);
+  const handleMonthPickerOpen = () => setIsMonthPickerOpen(true);
   const handleShareSheetClose = () => setIsShareSheetOpen(false);
   const handleShareSheetOpen = () => setIsShareSheetOpen(true);
 
@@ -91,6 +100,9 @@ export const useMonthlyReport = () => {
     downloadImage,
     handleNewerMonth,
     handleOlderMonth,
+    handleMonthPickerClose,
+    handleMonthPickerOpen,
+    handleMonthSelect,
     handlePreferenceCardFlip,
     handleReportCardSelect,
     handleShareSheetClose,
@@ -99,9 +111,11 @@ export const useMonthlyReport = () => {
     hasOlderMonth,
     isCardFlipped,
     isDownloading,
+    isMonthPickerOpen,
     isShareSheetOpen,
     report,
     reportCards,
+    selectableMonths: MOCK_MONTHLY_REPORTS.map(({ month }) => month),
     selectedCardIndex,
     selectedMonth: report.month,
   };

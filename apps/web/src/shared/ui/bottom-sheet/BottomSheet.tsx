@@ -143,7 +143,7 @@ export function BottomSheet({
       style={{
         height: isDragging ? `${dragHeightPx}px` : fitContent ? 'auto' : heightAtSnapPoint,
         // NOTE: Tailwind duration 클래스 대신 상수를 그대로 써서, 이 값을 재사용하는
-        // 다른 컴포넌트(예: useBottomSheetTransition)와 항상 같은 값을 유지한다.
+        // 다른 컴포넌트(예: 선택 시트 전환 로직)와 항상 같은 값을 유지한다.
         transitionDuration: `${BOTTOM_SHEET_TRANSITION_MS}ms`,
       }}
       className={cn(

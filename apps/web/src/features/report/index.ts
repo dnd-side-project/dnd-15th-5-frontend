@@ -19,6 +19,7 @@ export { default as WeeklyRecordCalendar } from './components/report-page/Weekly
 export { default as FrequentShopList } from './components/frequent-shop-list/FrequentShopList';
 export { default as FrequentShopSummary } from './components/frequent-shop-list/FrequentShopSummary';
 export { default as SpendingHistory } from './components/spending-history/SpendingHistory';
+export { default as MonthlyStickerRecordList } from './components/monthly-record-list/MonthlyStickerRecordList';
 export { useReportImageDownload } from './hooks/useReportImageDownload';
 export { useMonthlyReport } from './hooks/useMonthlyReport';
 export { useCurrentReportQuery } from './apis/hooks/useCurrentReportQuery';

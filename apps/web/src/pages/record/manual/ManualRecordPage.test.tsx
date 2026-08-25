@@ -1,11 +1,13 @@
 import { getVisitPeriodForHour, getVisitPeriodLabel } from '@chapchap/shared/record';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import type { ShopSearchResult } from '@/features/shop';
 
 import ManualRecordPage from './ManualRecordPage';
+
+import type { VisitDateTimeValue } from '@chapchap/shared/record';
 
 const mockCreateConsumption = jest.fn();
 
@@ -25,6 +27,17 @@ const selectedShop: ShopSearchResult = {
   longitude: 127.024551,
 };
 
+function ShopSearchTarget() {
+  const location = useLocation();
+  const state = location.state as { manualRecordVisitDateTime?: VisitDateTimeValue } | null;
+
+  return (
+    <p data-has-visit-date={String(Boolean(state?.manualRecordVisitDateTime))}>
+      가게 검색 화면 {location.search}
+    </p>
+  );
+}
+
 const renderPage = () =>
   render(
     <MemoryRouter
@@ -36,7 +49,7 @@ const renderPage = () =>
     >
       <Routes>
         <Route path="/record/manual" element={<ManualRecordPage />} />
-        <Route path="/record/shop/search" element={<p>가게 검색 화면</p>} />
+        <Route path="/record/shop/search" element={<ShopSearchTarget />} />
         <Route path="/home" element={<p>홈 화면</p>} />
       </Routes>
     </MemoryRouter>
@@ -69,6 +82,76 @@ describe('<ManualRecordPage />', () => {
     expect(screen.getByRole('button', { name: '기록하기' })).toBeEnabled();
   });
 
+  it('지난달 기록에서 장소 선택을 마치면 해당 월 날짜 선택을 바로 연다', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/manual',
+            search: '?yearMonth=2025-07',
+            state: { shop: selectedShop },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('dialog', { name: '방문 일시 선택' })).toBeInTheDocument();
+    expect(screen.getByText('2025년 7월')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2025년 7월 31일' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  });
+
+  it('지난달 기록의 장소를 변경한 뒤에는 날짜 선택을 다시 열지 않는다', () => {
+    const visitDateTime: VisitDateTimeValue = {
+      date: new Date(2025, 6, 15),
+      period: 'night',
+    };
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/manual',
+            search: '?yearMonth=2025-07',
+            state: { isShopChange: true, shop: selectedShop, visitDateTime },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByRole('dialog', { name: '방문 일시 선택' })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /방문 일시 변경, 7월 15일.*밤/ })
+    ).toBeInTheDocument();
+  });
+
+  it('지난달 수기 기록을 직접 열어도 최초 장소 선택 시 연월을 유지한다', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/record/manual?yearMonth=2025-07']}>
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+          <Route path="/record/shop/search" element={<ShopSearchTarget />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게를 선택해주세요' }));
+
+    expect(screen.getByText('가게 검색 화면 ?yearMonth=2025-07')).toBeInTheDocument();
+  });
+
   it('기록하기를 누르면 선택한 장소와 소비 정보를 등록한다', async () => {
     const user = userEvent.setup();
     renderPage();
@@ -94,7 +177,7 @@ describe('<ManualRecordPage />', () => {
     const { unmount } = renderPage();
 
     await user.click(screen.getByRole('button', { name: '변경' }));
-    expect(screen.getByText('가게 검색 화면')).toBeInTheDocument();
+    expect(screen.getByText('가게 검색 화면')).toHaveAttribute('data-has-visit-date', 'true');
 
     unmount();
     renderPage();

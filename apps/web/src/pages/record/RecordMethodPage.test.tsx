@@ -37,6 +37,19 @@ describe('<RecordMethodPage />', () => {
     );
   });
 
+  it('지난달 기록 진입이면 직접 작성 경로에 선택한 연월을 유지한다', () => {
+    render(
+      <MemoryRouter initialEntries={['/record?yearMonth=2026-07']}>
+        <RecordMethodPage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('link', { name: /직접 작성/ })).toHaveAttribute(
+      'href',
+      '/record/shop/search?yearMonth=2026-07'
+    );
+  });
+
   it('뒤로 가기 버튼을 누르면 이전 화면으로 이동한다', async () => {
     const user = userEvent.setup();
 

@@ -1,4 +1,6 @@
-import type { FrequentShop, SpendingMonth, SpendingRecordGroup } from './types';
+import type { YearMonth } from '@/shared/types/yearMonth';
+
+import type { FrequentShop, SpendingRecordGroup } from './types';
 
 const MOCK_REPORT_PERSONAS = {
   nightWatch: {
@@ -125,7 +127,7 @@ export const MOCK_SPENDING_MONTHS = [
   { year: 2026, month: 1 },
   { year: 2025, month: 12 },
   { year: 2025, month: 11 },
-] as const satisfies readonly SpendingMonth[];
+] as const satisfies readonly YearMonth[];
 
 export const MOCK_SPENDING_RECORD_GROUPS = [
   {
