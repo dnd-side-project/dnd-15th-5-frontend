@@ -3,7 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { getConsumptions } from '@/features/report/apis/clients';
 import type { GetConsumptionsParams } from '@/features/report/apis/dto';
 
-const CONSUMPTION_PAGE_SIZE = 20;
+const CONSUMPTION_PAGE_SIZE = 15;
 
 type ConsumptionCursor = Pick<
   GetConsumptionsParams,

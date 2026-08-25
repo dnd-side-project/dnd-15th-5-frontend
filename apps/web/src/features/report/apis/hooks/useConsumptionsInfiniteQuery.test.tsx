@@ -46,7 +46,7 @@ describe('useConsumptionsInfiniteQuery', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockedGetConsumptions).toHaveBeenNthCalledWith(
       1,
-      { yearMonth: '2026-08', size: 20 },
+      { yearMonth: '2026-08', size: 15 },
       undefined,
       expect.any(AbortSignal)
     );
@@ -59,7 +59,7 @@ describe('useConsumptionsInfiniteQuery', () => {
       2,
       {
         yearMonth: '2026-08',
-        size: 20,
+        size: 15,
         cursorPurchaseDate: '2026-08-23',
         cursorPurchaseTime: '12:30:00',
         cursorId: 7,
