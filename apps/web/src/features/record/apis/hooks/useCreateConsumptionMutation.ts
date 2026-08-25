@@ -20,7 +20,16 @@ export const useCreateConsumptionMutation = () => {
   const mutation = useCreateConsumption({
     mutation: {
       onSuccess: async () => {
-        await queryClient.invalidateQueries();
+        await queryClient.invalidateQueries({
+          predicate: (query) => {
+            const [key] = query.queryKey;
+
+            return (
+              typeof key === 'string' &&
+              (key.startsWith('/consumptions') || key.startsWith('/reports'))
+            );
+          },
+        });
         showToast({ type: 'success', message: CREATE_CONSUMPTION_SUCCESS_MESSAGE });
         navigate(ROUTE_PATHS.home, { replace: true });
       },
