@@ -30,14 +30,18 @@ describe('<ReceiptReviewForm />', () => {
     const { getByLabelText, getByRole, getByTestId } = await render(
       <ReceiptReviewForm
         receiptUri="file://receipt.jpg"
+        initialReceiptImageId={15}
         initialShopId="place-01"
         initialShopName="투썸플레이스 신논현점"
         initialShopAddress="서울특별시 강남구 봉은사로 125"
         initialShopPhotoUrl="https://places.example.com/place-01.jpg"
+        initialLatitude={37.506481}
+        initialLongitude={127.024551}
         initialVisitDateTime={visitDateTime}
         initialAmount="54000"
         initialCategory="카페"
         onBack={jest.fn()}
+        onClose={jest.fn()}
         onSubmit={onSubmit}
       />
     );
@@ -57,10 +61,13 @@ describe('<ReceiptReviewForm />', () => {
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
+        receiptImageId: 15,
         shopId: 'place-01',
         shopName: '투썸플레이스 신논현점',
         shopAddress: '서울특별시 강남구 봉은사로 125',
         shopPhotoUrl: 'https://places.example.com/place-01.jpg',
+        latitude: 37.506481,
+        longitude: 127.024551,
         visitDateTime,
         amount: '54000',
         category: '카페',
@@ -77,6 +84,7 @@ describe('<ReceiptReviewForm />', () => {
         receiptUri="file://receipt.jpg"
         initialVisitDateTime={visitDateTime}
         onBack={jest.fn()}
+        onClose={jest.fn()}
       />
     );
 
@@ -91,7 +99,7 @@ describe('<ReceiptReviewForm />', () => {
 
   it('인식된 카테고리가 없으면 카페를 기본 선택한다', async () => {
     const { getByRole } = await render(
-      <ReceiptReviewForm receiptUri="file://receipt.jpg" onBack={jest.fn()} />
+      <ReceiptReviewForm receiptUri="file://receipt.jpg" onBack={jest.fn()} onClose={jest.fn()} />
     );
 
     expect(getByRole('button', { name: '카페' })).toHaveProp('accessibilityState', {
@@ -105,14 +113,18 @@ describe('<ReceiptReviewForm />', () => {
     const { getByRole } = await render(
       <ReceiptReviewForm
         receiptUri="file://receipt.jpg"
+        initialReceiptImageId={15}
         initialShopId="place-02"
         initialShopName="카페 차차"
         initialShopAddress="서울특별시 마포구"
         initialShopPhotoUrl="https://places.example.com/place-02.jpg"
+        initialLatitude={37.5}
+        initialLongitude={127.02}
         initialVisitDateTime={visitDateTime}
         initialAmount="12000"
         initialCategory="카페"
         onBack={jest.fn()}
+        onClose={jest.fn()}
         onChangeShop={onChangeShop}
       />
     );
@@ -120,10 +132,13 @@ describe('<ReceiptReviewForm />', () => {
     fireEvent.press(getByRole('button', { name: '가게 정보 변경' }));
 
     expect(onChangeShop).toHaveBeenCalledWith({
+      receiptImageId: 15,
       shopId: 'place-02',
       shopName: '카페 차차',
       shopAddress: '서울특별시 마포구',
       shopPhotoUrl: 'https://places.example.com/place-02.jpg',
+      latitude: 37.5,
+      longitude: 127.02,
       visitDateTime,
       amount: '12000',
       category: '카페',
@@ -137,8 +152,13 @@ describe('<ReceiptReviewForm />', () => {
     const { getByLabelText, getByRole, getByTestId, getByText, queryByText } = await render(
       <ReceiptReviewForm
         receiptUri="file://receipt.jpg"
+        initialReceiptImageId={15}
+        initialShopId="place-01"
         initialShopName="카페 차차"
+        initialLatitude={37.5}
+        initialLongitude={127.02}
         onBack={jest.fn()}
+        onClose={jest.fn()}
         onSubmit={onSubmit}
       />
     );
@@ -182,6 +202,7 @@ describe('<ReceiptReviewForm />', () => {
         receiptUri="file://receipt.jpg"
         initialAmount="12000"
         onBack={jest.fn()}
+        onClose={jest.fn()}
         onSubmit={jest.fn()}
       />
     );
@@ -199,9 +220,14 @@ describe('<ReceiptReviewForm />', () => {
     const { getByRole } = await render(
       <ReceiptReviewForm
         receiptUri="file://receipt.jpg"
+        initialReceiptImageId={15}
+        initialShopId="place-01"
         initialShopName="카페 차차"
+        initialLatitude={37.5}
+        initialLongitude={127.02}
         initialAmount="12000"
         onBack={jest.fn()}
+        onClose={jest.fn()}
       />
     );
 

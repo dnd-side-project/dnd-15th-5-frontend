@@ -4,11 +4,14 @@ export {
   MINIMUM_RECEIPT_SCAN_DURATION_MS,
   RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET,
 } from './constants';
-export { getReceiptProcessingErrorMessage, processReceiptImage } from './utils/processReceiptImage';
+export { useSubmitReceiptConsumption } from './hooks/useSubmitReceiptConsumption';
+export { processReceiptImage } from './utils/processReceiptImage';
+export { getRecordErrorMessage } from './utils/getRecordErrorMessage';
 export {
   createReceiptReviewRouteParams,
   isRecordCategory,
   parseVisitDateTime,
 } from './utils/receiptReviewParams';
+export { parseReceiptVisitDateTime } from './utils/parseReceiptVisitDateTime';
 
 export type { ReceiptDraft, ReceiptReviewRouteParams, ReceiptReviewState } from './types';

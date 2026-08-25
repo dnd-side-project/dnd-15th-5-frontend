@@ -20,29 +20,33 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CalendarIcon } from '@/shared/assets/icons';
+import { RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET } from '@/features/record/constants';
+import type { ReceiptDraft, ReceiptReviewState } from '@/features/record/types';
+import { CalendarIcon, CloseIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
-
-import { RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET } from '../constants';
 
 import VisitDateTimePicker from './VisitDateTimePicker';
 
-import type { ReceiptDraft, ReceiptReviewState } from '../types';
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
 import type { ReactNode } from 'react';
 
 type ReceiptReviewFormProps = {
   receiptUri: string;
+  initialReceiptImageId?: number | null;
   initialShopId?: string | null;
   initialShopName?: string;
   initialShopAddress?: string;
   initialShopPhotoUrl?: string | null;
+  initialLatitude?: number | null;
+  initialLongitude?: number | null;
   initialVisitDateTime?: VisitDateTimeValue;
   initialAmount?: string;
   initialCategory?: RecordCategory;
   onBack: () => void;
+  onClose: () => void;
   onChangeShop?: (state: ReceiptReviewState) => void;
   onSubmit?: (draft: ReceiptDraft) => void;
+  isSubmitting?: boolean;
 };
 
 type RequiredFieldProps = {
@@ -67,16 +71,21 @@ function RequiredField({ label, children }: RequiredFieldProps) {
 /** 촬영한 영수증과 인식 결과를 확인하고 수정하는 폼. */
 export default function ReceiptReviewForm({
   receiptUri,
+  initialReceiptImageId = null,
   initialShopId = null,
   initialShopName = '',
   initialShopAddress = '',
   initialShopPhotoUrl = null,
+  initialLatitude = null,
+  initialLongitude = null,
   initialVisitDateTime,
   initialAmount = '',
   initialCategory,
   onBack,
+  onClose,
   onChangeShop,
   onSubmit,
+  isSubmitting = false,
 }: ReceiptReviewFormProps) {
   const insets = useSafeAreaInsets();
   const shopName = initialShopName;
@@ -89,7 +98,11 @@ export default function ReceiptReviewForm({
   const [category, setCategory] = useState<RecordCategory>(initialCategory ?? RECORD_CATEGORIES[0]);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const { isShopValid, isAmountValid, canSubmit } = validateRecordRequiredFields({
-    hasShop: shopName.trim().length > 0,
+    hasShop:
+      shopName.trim().length > 0 &&
+      Boolean(initialShopId) &&
+      initialLatitude !== null &&
+      initialLongitude !== null,
     amount,
   });
   const hasShopError = hasAttemptedSubmit && !isShopValid;
@@ -100,15 +113,18 @@ export default function ReceiptReviewForm({
   const handleSubmit = () => {
     setHasAttemptedSubmit(true);
 
-    if (!canSubmit || !onSubmit) {
+    if (!canSubmit || !onSubmit || isSubmitting) {
       return;
     }
 
     onSubmit({
+      receiptImageId: initialReceiptImageId,
       shopId: initialShopId,
       shopName: shopName.trim(),
       shopAddress: shopAddress.trim(),
       shopPhotoUrl: initialShopPhotoUrl,
+      latitude: initialLatitude,
+      longitude: initialLongitude,
       visitDateTime,
       amount,
       category,
@@ -118,10 +134,13 @@ export default function ReceiptReviewForm({
 
   const handleChangeShop = () => {
     onChangeShop?.({
+      receiptImageId: initialReceiptImageId,
       shopId: initialShopId,
       shopName: shopName.trim(),
       shopAddress: shopAddress.trim(),
       shopPhotoUrl: initialShopPhotoUrl,
+      latitude: initialLatitude,
+      longitude: initialLongitude,
       visitDateTime,
       amount,
       category,
@@ -145,7 +164,19 @@ export default function ReceiptReviewForm({
             className="flex-1 px-4"
             style={{ paddingTop: insets.top + RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET }}
           >
-            <BackButton onPress={onBack} />
+            <View className="flex-row items-center justify-between">
+              <BackButton onPress={onBack} />
+              <Pressable
+                onPress={onClose}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel="기록 닫고 홈으로 이동"
+                className="h-6 w-6 items-center justify-center"
+              >
+                {/* #1f1f1f = neutral-700 */}
+                <CloseIcon width={14} height={14} color="#1f1f1f" />
+              </Pressable>
+            </View>
 
             <Text className="mt-6 font-pretendard-semibold text-heading-02-semibold text-neutral-700">
               정보가 정확하게 인식되었나요?
@@ -292,15 +323,27 @@ export default function ReceiptReviewForm({
               )}
               <Pressable
                 onPress={handleSubmit}
-                disabled={isSubmitUnavailable}
+                disabled={isSubmitUnavailable || isSubmitting}
                 accessibilityRole="button"
-                accessibilityLabel={isSubmitUnavailable ? '기록 기능 준비 중' : '기록하기'}
+                accessibilityLabel={
+                  isSubmitting
+                    ? '기록 저장 중'
+                    : isSubmitUnavailable
+                      ? '기록 기능 준비 중'
+                      : '기록하기'
+                }
                 className={`h-13.5 items-center justify-center rounded-full ${
-                  canSubmit && !isSubmitUnavailable ? 'bg-primary-500' : 'bg-neutral-400'
+                  canSubmit && !isSubmitUnavailable && !isSubmitting
+                    ? 'bg-primary-500'
+                    : 'bg-neutral-400'
                 }`}
               >
                 <Text className="font-pretendard-semibold text-body-01-semibold text-neutral-00">
-                  {isSubmitUnavailable ? '기록 기능 준비 중' : '기록하기'}
+                  {isSubmitting
+                    ? '기록 중...'
+                    : isSubmitUnavailable
+                      ? '기록 기능 준비 중'
+                      : '기록하기'}
                 </Text>
               </Pressable>
             </View>
