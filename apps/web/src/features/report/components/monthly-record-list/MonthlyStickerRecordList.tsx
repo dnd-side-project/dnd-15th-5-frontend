@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useMonthlyStickerRecordsQuery } from '@/features/report/apis/hooks/useMonthlyStickerRecordsQuery';
 import MonthPickerSheet from '@/features/report/components/common/MonthPickerSheet';
 import MonthSelector from '@/features/report/components/common/MonthSelector';
+import MonthlyStickerRecordListSkeleton from '@/features/report/components/monthly-record-list/MonthlyStickerRecordListSkeleton';
 import { createYearMonthPath, ROUTE_PATHS } from '@/shared/constants/routePaths';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { StateView } from '@/shared/ui/state-view';
@@ -67,15 +68,8 @@ export default function MonthlyStickerRecordList({ headerContent }: MonthlyStick
         />
       </header>
 
-      {/* TODO: isPending 상태를 월별 스티커 목록 스켈레톤 UI로 교체한다. */}
       {stickerRecordsQuery.isPending ? (
-        <div
-          aria-live="polite"
-          className="my-auto text-center text-body-02-medium text-neutral-500"
-          role="status"
-        >
-          기록을 불러오는 중이에요
-        </div>
+        <MonthlyStickerRecordListSkeleton />
       ) : stickerRecordsQuery.isError ? (
         <StateView
           actionLabel="다시 시도하기"
