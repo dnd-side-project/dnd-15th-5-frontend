@@ -67,7 +67,7 @@ export default function WeeklyRecordCalendar({
                 aria-label={`${dateValue} 소비 기록 ${count}개 보기`}
                 className={cn(
                   cellClassName,
-                  'group active:bg-primary-100 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset focus-visible:outline-none'
+                  'group hover:bg-primary-100 active:bg-primary-100 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset focus-visible:outline-none'
                 )}
                 to={`${historyPath}?date=${dateValue}`}
               >

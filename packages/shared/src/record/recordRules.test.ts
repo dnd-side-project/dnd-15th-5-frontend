@@ -1,6 +1,7 @@
 import {
   createInitialVisitDateTime,
   formatAmount,
+  formatPurchaseDateTime,
   getVisitPeriodForHour,
   isSameOrAfterMonth,
   isValidRecordAmount,
@@ -44,6 +45,20 @@ describe('shared record rules', () => {
       canSubmit: true,
     });
     expect(validateRecordRequiredFields({ hasShop: false, amount: '12000' }).canSubmit).toBe(false);
+  });
+
+  it('선택한 날짜와 시간대를 소비 등록 API 형식으로 변환한다', () => {
+    expect(formatPurchaseDateTime({ date: new Date(2026, 6, 5), period: 'evening' })).toEqual({
+      purchaseDate: '2026-07-05',
+      purchaseTime: '17:00:00',
+    });
+
+    expect(
+      formatPurchaseDateTime({ date: new Date(2026, 6, 5, 19, 30, 15), period: 'evening' })
+    ).toEqual({
+      purchaseDate: '2026-07-05',
+      purchaseTime: '19:30:15',
+    });
   });
 
   it('달력의 7개 요일과 미래 월 이동 제한을 웹·앱에서 같은 규칙으로 계산한다', () => {

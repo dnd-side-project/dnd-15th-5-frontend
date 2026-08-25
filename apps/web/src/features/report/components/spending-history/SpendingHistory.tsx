@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { useConsumptionsInfiniteQuery } from '@/features/report/apis/hooks/useConsumptionsInfiniteQuery';
+import MonthPickerSheet from '@/features/report/components/common/MonthPickerSheet';
 import MonthSelector from '@/features/report/components/common/MonthSelector';
-import type { SpendingMonth } from '@/features/report/types';
 import {
   createRecentSpendingMonths,
   formatSpendingYearMonth,
@@ -11,9 +11,10 @@ import {
 import { parseSpendingMonthFromDate } from '@/features/report/utils/parseSpendingMonthFromDate';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
+import type { YearMonth } from '@/shared/types/yearMonth';
 import { StateView } from '@/shared/ui/state-view';
+import { isSameMonth } from '@/shared/utils/yearMonth';
 
-import MonthPickerSheet from './MonthPickerSheet';
 import SpendingHistorySkeleton from './SpendingHistorySkeleton';
 import SpendingRecordList from './SpendingRecordList';
 
@@ -26,17 +27,14 @@ type SpendingHistoryProps = {
   initialDate?: string;
 };
 
-const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
-  month.year === target.year && month.month === target.month;
-
 const SPENDING_MONTHS = createRecentSpendingMonths(10);
 
 type MonthSelection = {
   dateValue?: string;
-  month: SpendingMonth;
+  month: YearMonth;
 };
 
-const getSupportedMonthFromDate = (dateValue?: string): SpendingMonth | null => {
+const getSupportedMonthFromDate = (dateValue?: string): YearMonth | null => {
   const parsedMonth = parseSpendingMonthFromDate(dateValue);
 
   if (!parsedMonth) return null;
@@ -102,11 +100,11 @@ export default function SpendingHistory({
     }
   }, [fetchNextPage, isFetchingNextPage, shouldFetchMoreForDate]);
 
-  const setSelectedMonth = (month: SpendingMonth) => {
+  const setSelectedMonth = (month: YearMonth) => {
     setMonthSelection({ dateValue: initialDate, month });
   };
 
-  const handleMonthSelect = (month: SpendingMonth) => {
+  const handleMonthSelect = (month: YearMonth) => {
     setSelectedMonth(month);
     setIsMonthPickerOpen(false);
   };

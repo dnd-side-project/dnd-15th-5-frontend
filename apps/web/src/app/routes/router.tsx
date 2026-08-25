@@ -43,6 +43,10 @@ export const router = createBrowserRouter([
             element: <AuthCallbackPage />,
           },
           {
+            path: ROUTE_PATHS.oauthCallback,
+            element: <AuthCallbackPage />,
+          },
+          {
             element: <TermsAgreementRoute />,
             children: [{ path: ROUTE_PATHS.agreement, element: <AgreementPage /> }],
           },

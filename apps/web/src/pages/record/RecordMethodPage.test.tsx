@@ -6,12 +6,7 @@ import { isNativeApp } from '@/shared/lib/bridge';
 
 import RecordMethodPage from './RecordMethodPage';
 
-const mockShowToast = jest.fn();
-
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn() }));
-jest.mock('@/shared/ui/toast', () => ({
-  useToast: () => ({ showToast: mockShowToast, closeToast: jest.fn() }),
-}));
 
 const mockIsNativeApp = jest.mocked(isNativeApp);
 
@@ -32,12 +27,26 @@ describe('<RecordMethodPage />', () => {
       '소비 기록 방법을 선택해주세요'
     );
     expect(screen.getByRole('link', { name: /영수증 인식/ })).toHaveAttribute(
-      'href',
-      '/record/receipt/camera'
+      'aria-disabled',
+      'true'
     );
+    expect(screen.getByRole('link', { name: /영수증 인식/ })).not.toHaveAttribute('href');
     expect(screen.getByRole('link', { name: /직접 작성/ })).toHaveAttribute(
       'href',
       '/record/shop/search'
+    );
+  });
+
+  it('지난달 기록 진입이면 직접 작성 경로에 선택한 연월을 유지한다', () => {
+    render(
+      <MemoryRouter initialEntries={['/record?yearMonth=2026-07']}>
+        <RecordMethodPage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('link', { name: /직접 작성/ })).toHaveAttribute(
+      'href',
+      '/record/shop/search?yearMonth=2026-07'
     );
   });
 
@@ -58,7 +67,7 @@ describe('<RecordMethodPage />', () => {
     expect(screen.getByText('홈 화면')).toBeInTheDocument();
   });
 
-  it('일반 웹에서 영수증 인식을 누르면 이동하지 않고 앱 전용 Toast를 띄운다', async () => {
+  it('일반 웹에서는 영수증 인식 카드를 비활성 스타일로 표시하고 이동하지 않는다', async () => {
     const user = userEvent.setup();
 
     render(
@@ -70,12 +79,11 @@ describe('<RecordMethodPage />', () => {
       </MemoryRouter>
     );
 
-    await user.click(screen.getByRole('link', { name: /영수증 인식/ }));
+    const receiptMethod = screen.getByRole('link', { name: /영수증 인식/ });
 
-    expect(mockShowToast).toHaveBeenCalledWith({
-      message: '영수증 인식은 앱에서만 사용할 수 있어요',
-      type: 'info',
-    });
+    expect(receiptMethod).toHaveClass('cursor-not-allowed', 'bg-neutral-200', 'text-neutral-500');
+    await user.click(receiptMethod);
+
     expect(screen.queryByText('영수증 촬영')).not.toBeInTheDocument();
   });
 
@@ -95,6 +103,5 @@ describe('<RecordMethodPage />', () => {
     await user.click(screen.getByRole('link', { name: /영수증 인식/ }));
 
     expect(screen.getByText('영수증 촬영')).toBeInTheDocument();
-    expect(mockShowToast).not.toHaveBeenCalled();
   });
 });

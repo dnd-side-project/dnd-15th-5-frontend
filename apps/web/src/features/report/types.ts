@@ -12,9 +12,10 @@ export type WeeklyRecord = {
   isToday?: boolean;
 };
 
-export type SpendingMonth = {
-  month: number;
-  year: number;
+export type MonthlyStickerRecordGroup = {
+  dateLabel: string;
+  dateValue: string;
+  stickerImages: readonly string[];
 };
 
 export type SpendingRecord = {

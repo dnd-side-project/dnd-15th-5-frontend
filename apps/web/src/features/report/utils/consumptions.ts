@@ -1,5 +1,6 @@
 import type { ConsumptionResponse } from '@/features/report/apis/dto';
-import type { SpendingMonth, SpendingRecordGroup } from '@/features/report/types';
+import type { SpendingRecordGroup } from '@/features/report/types';
+import type { YearMonth } from '@/shared/types/yearMonth';
 
 const KOREAN_WEEKDAYS = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 
@@ -63,11 +64,11 @@ export const groupConsumptionsByDate = (
   });
 };
 
-export const formatSpendingYearMonth = ({ year, month }: SpendingMonth) =>
+export const formatSpendingYearMonth = ({ year, month }: YearMonth) =>
   `${year}-${String(month).padStart(2, '0')}`;
 
 /** 현재 월부터 지정한 개수만큼 과거 월 목록을 최신순으로 만듭니다. */
-export const createRecentSpendingMonths = (count: number, today = new Date()): SpendingMonth[] =>
+export const createRecentSpendingMonths = (count: number, today = new Date()): YearMonth[] =>
   Array.from({ length: count }, (_, index) => {
     const date = new Date(today.getFullYear(), today.getMonth() - index, 1);
     return { year: date.getFullYear(), month: date.getMonth() + 1 };

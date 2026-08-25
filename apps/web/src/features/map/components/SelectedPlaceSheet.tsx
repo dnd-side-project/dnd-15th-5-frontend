@@ -3,8 +3,7 @@ import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { LinkButton } from '@/shared/ui/button';
 import { Chip } from '@/shared/ui/chip';
 import { RegularShopBadge } from '@/shared/ui/regular-shop-badge';
-
-import StickerCollection from './StickerCollection';
+import { StickerCollection } from '@/shared/ui/sticker-collection';
 
 import type { MapPlaceDetail } from '../types';
 

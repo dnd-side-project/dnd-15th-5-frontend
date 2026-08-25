@@ -1,7 +1,17 @@
-import { isBridgeRequest, isBridgeResponse } from './guards';
+import { isBridgeEvent, isBridgeRequest, isBridgeResponse } from './guards';
 import { BRIDGE_MESSAGE_KIND } from './types';
 
 describe('auth bridge guards', () => {
+  it('영수증 기록 종료 이벤트를 허용한다', () => {
+    expect(
+      isBridgeEvent({
+        kind: BRIDGE_MESSAGE_KIND.EVENT,
+        type: 'receiptRecordCloseRequested',
+        payload: {},
+      })
+    ).toBe(true);
+  });
+
   it('지원하는 제공자와 PKCE challenge를 가진 로그인 요청만 허용한다', () => {
     const request = {
       kind: BRIDGE_MESSAGE_KIND.REQUEST,

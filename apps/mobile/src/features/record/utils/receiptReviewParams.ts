@@ -1,6 +1,7 @@
 import { RECORD_CATEGORIES, VISIT_PERIODS } from '@chapchap/shared/record';
 
-import type { ReceiptReviewRouteParams, ReceiptReviewState } from '../types';
+import type { ReceiptReviewRouteParams, ReceiptReviewState } from '@/features/record/types';
+
 import type { RecordCategory, VisitDateTimeValue, VisitPeriod } from '@chapchap/shared/record';
 
 /** 라우트에서 받은 문자열이 지원하는 기록 카테고리인지 확인한다. */
@@ -36,10 +37,13 @@ export const createReceiptReviewRouteParams = (
   state: ReceiptReviewState
 ): ReceiptReviewRouteParams => ({
   uri: state.receiptUri,
+  ...(state.receiptImageId !== null ? { receiptImageId: String(state.receiptImageId) } : {}),
   ...(state.shopId ? { shopId: state.shopId } : {}),
   shopName: state.shopName,
   shopAddress: state.shopAddress,
   ...(state.shopPhotoUrl ? { shopPhotoUrl: state.shopPhotoUrl } : {}),
+  ...(state.latitude !== null ? { latitude: String(state.latitude) } : {}),
+  ...(state.longitude !== null ? { longitude: String(state.longitude) } : {}),
   amount: state.amount,
   visitedAt: String(state.visitDateTime.date.getTime()),
   visitPeriod: state.visitDateTime.period,

@@ -4,4 +4,6 @@ export type ShopSearchResult = {
   name: string;
   address: string;
   photoUrl: string | null;
+  latitude: number;
+  longitude: number;
 };
