@@ -11,7 +11,7 @@ export default function SpendingHistoryPage() {
   return (
     <main className="min-h-screen-safe-bottom flex flex-col pb-8">
       <SpendingHistory
-        headerContent={<BackButton onClick={() => navigate(-1)} className="mt-0" />}
+        headerContent={<BackButton onClick={() => navigate(-1)} className="mt-3" />}
         initialDate={searchParams.get('date') ?? undefined}
       />
     </main>

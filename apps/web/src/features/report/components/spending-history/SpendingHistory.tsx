@@ -1,14 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
+import { useConsumptionsInfiniteQuery } from '@/features/report/apis/hooks/useConsumptionsInfiniteQuery';
 import MonthSelector from '@/features/report/components/common/MonthSelector';
-import { MOCK_SPENDING_MONTHS, MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
 import type { SpendingMonth } from '@/features/report/types';
+import {
+  createRecentSpendingMonths,
+  formatSpendingYearMonth,
+  groupConsumptionsByDate,
+} from '@/features/report/utils/consumptions';
 import { parseSpendingMonthFromDate } from '@/features/report/utils/parseSpendingMonthFromDate';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
 import { StateView } from '@/shared/ui/state-view';
 
 import MonthPickerSheet from './MonthPickerSheet';
+import SpendingHistorySkeleton from './SpendingHistorySkeleton';
 import SpendingRecordList from './SpendingRecordList';
 
 import type { ReactNode } from 'react';
@@ -20,20 +26,22 @@ type SpendingHistoryProps = {
   initialDate?: string;
 };
 
+const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
+  month.year === target.year && month.month === target.month;
+
+const SPENDING_MONTHS = createRecentSpendingMonths(10);
+
 type MonthSelection = {
   dateValue?: string;
   month: SpendingMonth;
 };
 
-const isSameMonth = (month: SpendingMonth, target: SpendingMonth) =>
-  month.year === target.year && month.month === target.month;
-
-const getSupportedMonthFromDate = (dateValue?: string) => {
+const getSupportedMonthFromDate = (dateValue?: string): SpendingMonth | null => {
   const parsedMonth = parseSpendingMonthFromDate(dateValue);
 
   if (!parsedMonth) return null;
 
-  return MOCK_SPENDING_MONTHS.find((month) => isSameMonth(month, parsedMonth)) ?? null;
+  return SPENDING_MONTHS.find((month) => isSameMonth(month, parsedMonth)) ?? null;
 };
 
 /**
@@ -52,7 +60,7 @@ export default function SpendingHistory({
   initialDate,
 }: SpendingHistoryProps) {
   const initialMonth = parseSpendingMonthFromDate(initialDate);
-  const initialSelectedMonth = getSupportedMonthFromDate(initialDate) ?? MOCK_SPENDING_MONTHS[0];
+  const initialSelectedMonth = getSupportedMonthFromDate(initialDate) ?? SPENDING_MONTHS[0];
   const [monthSelection, setMonthSelection] = useState<MonthSelection>(() => ({
     dateValue: initialDate,
     month: initialSelectedMonth,
@@ -61,16 +69,38 @@ export default function SpendingHistory({
   const selectedMonth =
     monthSelection.dateValue === initialDate ? monthSelection.month : initialSelectedMonth;
 
-  const selectedMonthIndex = MOCK_SPENDING_MONTHS.findIndex((month) =>
+  const selectedMonthIndex = SPENDING_MONTHS.findIndex((month) =>
     isSameMonth(month, selectedMonth)
   );
   const hasNewerMonth = selectedMonthIndex > 0;
-  const hasOlderMonth = selectedMonthIndex < MOCK_SPENDING_MONTHS.length - 1;
-  const recordGroups = selectedMonthIndex === 0 ? MOCK_SPENDING_RECORD_GROUPS : [];
-  const visibleRecordGroups =
+  const hasOlderMonth = selectedMonthIndex < SPENDING_MONTHS.length - 1;
+  const consumptionsQuery = useConsumptionsInfiniteQuery(formatSpendingYearMonth(selectedMonth));
+  const consumptions = useMemo(
+    () => consumptionsQuery.data?.pages.flatMap((page) => page.data?.consumptions ?? []) ?? [],
+    [consumptionsQuery.data]
+  );
+  const recordGroups = useMemo(() => groupConsumptionsByDate(consumptions), [consumptions]);
+  const filteredDate =
     initialDate && initialMonth && isSameMonth(selectedMonth, initialMonth)
-      ? recordGroups.filter(({ dateValue }) => dateValue === initialDate)
-      : recordGroups;
+      ? initialDate
+      : undefined;
+  const isFilteringInitialDate = filteredDate !== undefined;
+  const visibleRecordGroups = isFilteringInitialDate
+    ? recordGroups.filter(({ dateValue }) => dateValue === filteredDate)
+    : recordGroups;
+  const lastLoadedDate = consumptions.at(-1)?.purchaseDate;
+  const shouldFetchMoreForDate = Boolean(
+    filteredDate &&
+    consumptionsQuery.hasNextPage &&
+    (!lastLoadedDate || lastLoadedDate >= filteredDate)
+  );
+  const { fetchNextPage, isFetchingNextPage } = consumptionsQuery;
+
+  useEffect(() => {
+    if (shouldFetchMoreForDate && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, isFetchingNextPage, shouldFetchMoreForDate]);
 
   const setSelectedMonth = (month: SpendingMonth) => {
     setMonthSelection({ dateValue: initialDate, month });
@@ -99,8 +129,8 @@ export default function SpendingHistory({
             headingLabel={`${selectedMonth.month}월 소비 내역`}
             isMonthPickerOpen={isMonthPickerOpen}
             onMonthClick={() => setIsMonthPickerOpen(true)}
-            onNewerMonth={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex - 1])}
-            onOlderMonth={() => setSelectedMonth(MOCK_SPENDING_MONTHS[selectedMonthIndex + 1])}
+            onNewerMonth={() => setSelectedMonth(SPENDING_MONTHS[selectedMonthIndex - 1])}
+            onOlderMonth={() => setSelectedMonth(SPENDING_MONTHS[selectedMonthIndex + 1])}
             selectedMonth={selectedMonth}
           />
         )}
@@ -121,24 +151,52 @@ export default function SpendingHistory({
       )}
 
       <div className="flex flex-1 flex-col mb-28">
-        {visibleRecordGroups.length > 0 ? (
-          <SpendingRecordList groups={visibleRecordGroups} />
-        ) : (
-          <StateView
-            variant="empty"
-            title="아직 기록이 없어요"
-            description={'소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'}
-            actionLabel="소비 기록 작성하기"
-            headingAs="h2"
-            to={ROUTE_PATHS.record}
-            className="my-auto"
+        {consumptionsQuery.isPending && <SpendingHistorySkeleton />}
+
+        {!consumptionsQuery.isPending &&
+          consumptionsQuery.isError &&
+          visibleRecordGroups.length === 0 && (
+            <StateView
+              variant="error"
+              title="소비내역을 불러오지 못했어요"
+              description={'잠시 후 다시 시도해주세요.'}
+              actionLabel="다시 불러오기"
+              headingAs="h2"
+              onAction={() => void consumptionsQuery.refetch()}
+              className="my-auto"
+            />
+          )}
+
+        {!consumptionsQuery.isPending &&
+          !consumptionsQuery.isError &&
+          !shouldFetchMoreForDate &&
+          visibleRecordGroups.length === 0 && (
+            <StateView
+              variant="empty"
+              title="아직 기록이 없어요"
+              description={'소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'}
+              actionLabel="소비 기록 작성하기"
+              headingAs="h2"
+              to={ROUTE_PATHS.record}
+              className="my-auto"
+            />
+          )}
+
+        {!consumptionsQuery.isPending && visibleRecordGroups.length > 0 && (
+          <SpendingRecordList
+            groups={visibleRecordGroups}
+            hasNextPage={!isFilteringInitialDate && consumptionsQuery.hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            isLoadMoreError={consumptionsQuery.isError}
+            onLoadMore={() => void fetchNextPage()}
+            onRetry={() => void fetchNextPage()}
           />
         )}
       </div>
 
       {!headerDescription && isMonthPickerOpen && (
         <MonthPickerSheet
-          months={MOCK_SPENDING_MONTHS}
+          months={SPENDING_MONTHS}
           selectedMonth={selectedMonth}
           onClose={() => setIsMonthPickerOpen(false)}
           onSelect={handleMonthSelect}

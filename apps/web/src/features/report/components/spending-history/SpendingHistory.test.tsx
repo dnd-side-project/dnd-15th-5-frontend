@@ -1,13 +1,44 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
+import { useConsumptionsInfiniteQuery } from '@/features/report/apis/hooks/useConsumptionsInfiniteQuery';
+import { MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
+
 import SpendingHistory from './SpendingHistory';
+
+jest.mock('@/features/report/apis/hooks/useConsumptionsInfiniteQuery');
 
 jest.mock('@/shared/assets/images/state', () => ({
   EmptyStateImage: 'img-empty.png',
   ErrorStateImage: 'img-error.png',
 }));
+
+const mockedUseConsumptionsInfiniteQuery = jest.mocked(useConsumptionsInfiniteQuery);
+const fetchNextPage = jest.fn();
+const refetch = jest.fn();
+
+const consumptions = MOCK_SPENDING_RECORD_GROUPS.flatMap((group) =>
+  group.records.map((record, index) => ({
+    id: Number(record.id.replace('record-', '')),
+    placeName: record.shopName,
+    amount: record.amount,
+    category: record.category,
+    purchaseDate: group.dateValue,
+    purchaseTime: index === 0 ? '09:00:00' : '10:00:00',
+  }))
+);
+
+const createQueryResult = (yearMonth: string) =>
+  ({
+    data: { pages: [{ data: { consumptions: yearMonth === '2026-08' ? consumptions : [] } }] },
+    fetchNextPage,
+    refetch,
+    hasNextPage: false,
+    isPending: false,
+    isError: false,
+    isFetchingNextPage: false,
+  }) as unknown as ReturnType<typeof useConsumptionsInfiniteQuery>;
 
 const firePointerEvent = (element: Element, type: string, clientY: number) => {
   const event = new Event(type, { bubbles: true, cancelable: true });
@@ -24,12 +55,18 @@ const renderSpendingHistory = (initialDate?: string) =>
   );
 
 describe('SpendingHistory', () => {
+  beforeEach(() => {
+    fetchNextPage.mockReset();
+    refetch.mockReset();
+    mockedUseConsumptionsInfiniteQuery.mockImplementation(createQueryResult);
+  });
+
   it('날짜별 소비 기록과 금액을 보여준다', () => {
     renderSpendingHistory();
 
     expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('8월');
-    expect(screen.getByRole('heading', { name: '22일 목요일' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '22일 토요일' })).toBeInTheDocument();
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(7);
     expect(screen.getAllByText('5,500 원')).toHaveLength(7);
     expect(screen.getAllByText('2026.08.22 · 오전 · 카페')).toHaveLength(3);
@@ -50,20 +87,106 @@ describe('SpendingHistory', () => {
     expect(screen.queryByRole('button', { name: '다음 달 보기' })).not.toBeInTheDocument();
   });
 
+  it('최초 조회 중에는 소비내역 스켈레톤을 보여준다', () => {
+    mockedUseConsumptionsInfiniteQuery.mockReturnValue({
+      ...createQueryResult('2026-07'),
+      data: undefined,
+      isPending: true,
+    } as unknown as ReturnType<typeof useConsumptionsInfiniteQuery>);
+
+    renderSpendingHistory();
+
+    expect(screen.getByRole('status', { name: '소비내역 불러오는 중' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '아직 기록이 없어요' })).not.toBeInTheDocument();
+  });
+
+  it('소비내역 조회에 실패하면 다시 불러올 수 있다', async () => {
+    const user = userEvent.setup();
+    mockedUseConsumptionsInfiniteQuery.mockReturnValue({
+      ...createQueryResult('2026-07'),
+      isError: true,
+    } as unknown as ReturnType<typeof useConsumptionsInfiniteQuery>);
+
+    renderSpendingHistory();
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: '소비내역을 불러오지 못했어요' })
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '다시 불러오기' }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
   it('초기 날짜가 있으면 해당 날짜의 소비 기록만 보여준다', () => {
     renderSpendingHistory('2026-08-21');
 
     expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '21일 수요일' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: '22일 목요일' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '21일 금요일' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '22일 토요일' })).not.toBeInTheDocument();
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(1);
+  });
+
+  it('날짜 링크로 진입한 뒤 다른 월을 선택하면 다음 페이지를 불러온다', async () => {
+    const user = userEvent.setup();
+    let intersectionCallback: IntersectionObserverCallback = jest.fn();
+    Object.defineProperty(globalThis, 'IntersectionObserver', {
+      configurable: true,
+      writable: true,
+      value: jest.fn((callback: IntersectionObserverCallback) => {
+        intersectionCallback = callback;
+        return {
+          observe: jest.fn(),
+          disconnect: jest.fn(),
+          unobserve: jest.fn(),
+          takeRecords: jest.fn(),
+        };
+      }),
+    });
+    mockedUseConsumptionsInfiniteQuery.mockImplementation((yearMonth) => {
+      if (yearMonth !== '2026-07') return createQueryResult(yearMonth);
+
+      return {
+        ...createQueryResult(yearMonth),
+        data: {
+          pages: [
+            {
+              data: {
+                consumptions: [
+                  {
+                    id: 8,
+                    placeName: '칠월 카페',
+                    amount: 7_000,
+                    category: '카페',
+                    purchaseDate: '2026-07-31',
+                    purchaseTime: '10:00:00',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        hasNextPage: true,
+      } as unknown as ReturnType<typeof useConsumptionsInfiniteQuery>;
+    });
+    renderSpendingHistory('2026-08-21');
+
+    await user.click(screen.getByRole('button', { name: '이전 달 보기' }));
+    expect(screen.getByText('칠월 카페')).toBeInTheDocument();
+
+    act(() => {
+      intersectionCallback(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        {} as IntersectionObserver
+      );
+    });
+
+    expect(fetchNextPage).toHaveBeenCalledTimes(1);
   });
 
   it('초기 날짜가 변경되면 선택 월과 기록 목록을 동기화한다', () => {
     const { rerender } = renderSpendingHistory('2026-08-21');
 
     expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '21일 수요일' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '21일 금요일' })).toBeInTheDocument();
 
     rerender(
       <MemoryRouter>
@@ -72,7 +195,7 @@ describe('SpendingHistory', () => {
     );
 
     expect(screen.getByRole('heading', { level: 1, name: '7월 소비 내역' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: '21일 수요일' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '21일 금요일' })).not.toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 2, name: '아직 기록이 없어요' })
     ).toBeInTheDocument();
