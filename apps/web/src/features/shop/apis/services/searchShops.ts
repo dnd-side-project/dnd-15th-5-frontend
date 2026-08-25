@@ -24,16 +24,39 @@ export const searchShops = async (
 ): Promise<ShopSearchResult[]> => {
   const { places } = await placesLibrary.Place.searchByText({
     textQuery: keyword,
-    fields: ['id', 'displayName', 'formattedAddress', 'photos'],
+    fields: ['id', 'displayName', 'formattedAddress', 'photos', 'location'],
     language: SHOP_SEARCH_LANGUAGE,
     region: SHOP_SEARCH_REGION,
     maxResultCount: SHOP_SEARCH_MAX_RESULT_COUNT,
   });
 
-  return places.map((place) => ({
-    id: place.id,
-    name: place.displayName ?? '',
-    address: place.formattedAddress ?? '',
-    photoUrl: place.photos?.[0]?.getURI({ maxWidth: SHOP_SEARCH_PHOTO_MAX_WIDTH }) ?? null,
-  }));
+  return places.flatMap((place) => {
+    const name = place.displayName?.trim();
+    const address = place.formattedAddress?.trim();
+    const latitude = place.location?.lat();
+    const longitude = place.location?.lng();
+
+    if (
+      !place.id ||
+      !name ||
+      !address ||
+      typeof latitude !== 'number' ||
+      !Number.isFinite(latitude) ||
+      typeof longitude !== 'number' ||
+      !Number.isFinite(longitude)
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        id: place.id,
+        name,
+        address,
+        photoUrl: place.photos?.[0]?.getURI({ maxWidth: SHOP_SEARCH_PHOTO_MAX_WIDTH }) ?? null,
+        latitude,
+        longitude,
+      },
+    ];
+  });
 };
