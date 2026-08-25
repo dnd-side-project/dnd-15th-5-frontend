@@ -1,22 +1,51 @@
-import { useNavigate } from 'react-router-dom';
+import { RECEIPT_SHOP_SEARCH_SOURCE } from '@chapchap/shared/bridge';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
+import type { ShopSearchLocationState } from '@/features/record';
 import { ShopSearch } from '@/features/shop';
 import type { ShopSearchResult } from '@/features/shop';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { notifyNative } from '@/shared/lib/bridge';
 import { BackButton } from '@/shared/ui/back-button';
 
 export default function ShopSearchPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const isReceiptNativeSearch = searchParams.get('source') === RECEIPT_SHOP_SEARCH_SOURCE;
 
-  // TODO: 수기 입력 플로우 구현 시 선택한 장소를 전달하는 방식(router state vs 전역 상태) 확정 필요
-  const handleSelectShop = (_shop: ShopSearchResult) => {
+  const handleSelectShop = (shop: ShopSearchResult) => {
+    if (isReceiptNativeSearch && notifyNative('receiptShopSelected', { shop })) {
+      return;
+    }
+
+    navigate(ROUTE_PATHS.manualRecord, { state: { shop } });
+  };
+
+  const handleBack = () => {
+    if (isReceiptNativeSearch && notifyNative('receiptShopSearchCancelled', {})) {
+      return;
+    }
+
+    const state = location.state as ShopSearchLocationState | null;
+
+    // 가게 미선택 상태의 수기 입력 화면에서 교체 이동(replace)해온 경우에만 돌아갈
+    // 히스토리가 없다. 그 외에는 전부 일반 이동이라 navigate(-1)이 항상 맞는 위치로 돌아간다.
+    if (state?.replacedManualRecord) {
+      navigate(ROUTE_PATHS.record, { replace: true });
+      return;
+    }
+
     navigate(-1);
   };
 
   return (
-    <main>
-      {/* TODO: 공통 헤더 컴포넌트 나오면 교체 */}
-      <BackButton onClick={() => navigate(-1)} />
-      <ShopSearch onSelectShop={handleSelectShop} />
+    <main className="flex min-h-full flex-col">
+      <BackButton onClick={handleBack} />
+
+      <div className="mt-4">
+        <ShopSearch onSelectShop={handleSelectShop} />
+      </div>
     </main>
   );
 }

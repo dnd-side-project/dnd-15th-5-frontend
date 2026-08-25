@@ -1,0 +1,44 @@
+{
+  "specUrl": "https://chapchap.kr/api/v3/api-docs",
+  "features": {
+    "auth": {
+      "tags": ["Authentication", "Social OAuth"],
+      "operationIds": [
+        "refreshApp",
+        "refreshWeb",
+        "exchangeSocialLoginCode",
+        "agree",
+        "logoutApp",
+        "logoutWeb",
+        "start",
+        "callback"
+      ]
+    },
+    "map": {
+      "tags": ["Consumption", "Recommendation"],
+      "operationIds": ["getVisitedPlaceMarkers", "getNearbyPlaces"]
+    },
+    "myPage": {
+      "directory": "my-page",
+      "tags": ["Account"],
+      "operationIds": ["getMyAccount", "updateMyAccount", "withdrawMyAccount"]
+    },
+    "record": {
+      "tags": ["Consumption"],
+      "operationIds": ["createConsumption", "recognizeReceipt"]
+    },
+    "report": {
+      "tags": ["Consumption", "Report"],
+      "operationIds": [
+        "getMonthlyReport",
+        "getCurrentStatus",
+        "getConsumptions",
+        "getFrequentPlaces"
+      ]
+    },
+    "shop": {
+      "tags": ["Consumption", "Place"],
+      "operationIds": ["getPlaceDetail", "getPlaceVisits", "toggleLike", "searchVisitedPlaces"]
+    }
+  }
+}

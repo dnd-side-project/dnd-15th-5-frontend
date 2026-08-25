@@ -26,7 +26,46 @@
   --color-primary-300: #a6b6ff;
   --color-primary-200: #cbd5ff;
   --color-primary-100: #e5eaff;
-  --color-primary-50: #f9ffff;
+  --color-primary-50: #f4f6ff;
+
+  /* Report */
+  --color-report-card-night-front: #2b4689;
+  --color-report-card-night-back: #2c478b;
+  --color-report-card-night-spot: #182b54;
+  --color-report-card-nomad-front: #cccdff;
+  --color-report-card-nomad-back: #cdceff;
+  --color-report-card-nomad-spot: #adaaff;
+  --color-report-card-regular-front: #a8b7ff;
+  --color-report-card-regular-back: #a9b8ff;
+  --color-report-card-regular-spot: #4a6bff;
+  --color-report-card-explorer-front: #c9d6ff;
+  --color-report-card-explorer-back: #cad7ff;
+  --color-report-card-explorer-spot: #fff8f9;
+  --color-report-question-panel: rgb(0 0 0 / 50%);
+  --color-report-category-cafe: #7a93ff;
+  --color-report-category-restaurant: #f8bb52;
+  --color-report-category-exercise: #4ca49d;
+  --color-report-category-market: #ff6243;
+  --color-report-category-entertainment: #98d7f0;
+  --color-report-category-beauty: #e5eaff;
+
+  /* Gradient */
+  --background-image-report-hero: linear-gradient(
+    to bottom,
+    var(--color-neutral-00) 0%,
+    var(--color-primary-100) 100%
+  );
+  --background-image-monthly-report-hero: linear-gradient(
+    to bottom,
+    var(--color-primary-200) 0%,
+    var(--color-neutral-00) 100%
+  );
+  --background-image-report-button-stroke: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary-600) 93%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary-300) 93%, transparent) 46%,
+    color-mix(in srgb, var(--color-primary-600) 93%, transparent) 100%
+  );
 
   /* Semantic */
   --color-notification: #ff5252;

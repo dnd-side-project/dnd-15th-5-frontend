@@ -2,11 +2,18 @@ import { CameraView } from 'expo-camera';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { normalizeReceiptImage } from '@/native/normalizeReceiptImage';
+import {
+  getReceiptProcessingErrorMessage,
+  processReceiptImage,
+  RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET,
+  ReceiptScanLoading,
+} from '@/features/record';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
 import { GalleryIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
+import { useToast } from '@/shared/ui/toast';
 
 /**
  * 영수증을 촬영하는 화면.
@@ -16,55 +23,101 @@ import { BackButton } from '@/shared/ui/back-button';
  * 393x852는 상단바·하단바가 노치·홈 인디케이터를 감안해 그려진 크기라 안전영역을 더하지 않는다.
  */
 export default function ReceiptCameraScreen() {
+  const insets = useSafeAreaInsets();
+  const { showToast } = useToast();
   const cameraRef = useRef<CameraView>(null);
+  const isProcessingRef = useRef(false);
+  const isScanVisibleRef = useRef(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
   // NOTE: 촬영과 갤러리 선택 중 하나만 동시에 진행될 수 있어 상태 하나로 함께 관리한다.
   const [isProcessing, setIsProcessing] = useState(false);
+  const [scanImageUri, setScanImageUri] = useState<string | null>(null);
 
-  const handleCapture = async () => {
-    if (!cameraRef.current || !isCameraReady || isProcessing) {
-      return;
+  const resetProcessing = () => {
+    isProcessingRef.current = false;
+    if (isScanVisibleRef.current) {
+      setIsCameraReady(false);
+    }
+    isScanVisibleRef.current = false;
+    setIsProcessing(false);
+    setScanImageUri(null);
+  };
+
+  const showScanLoading = (imageUri: string) => {
+    isScanVisibleRef.current = true;
+    setScanImageUri(imageUri);
+  };
+
+  const startProcessing = () => {
+    if (isProcessingRef.current) {
+      return false;
     }
 
+    isProcessingRef.current = true;
     setIsProcessing(true);
+    return true;
+  };
+
+  const handleCapture = async () => {
+    if (!cameraRef.current || !isCameraReady || !startProcessing()) {
+      return;
+    }
 
     try {
       // NOTE: 압축은 normalizeReceiptImage가 백엔드 제약에 맞춰 처리하므로 최대 화질로 촬영한다.
       const picture = await cameraRef.current.takePictureAsync();
-      const normalized = await normalizeReceiptImage(picture);
+      showScanLoading(picture.uri);
+      const normalized = await processReceiptImage(picture);
 
       router.replace({ pathname: '/receipt-confirm', params: { uri: normalized.uri } });
     } catch (error) {
       // NOTE: 촬영에 실패해도 화면을 유지해 다시 시도할 수 있게 한다.
-      setIsProcessing(false);
+      resetProcessing();
+      const serverErrorMessage = getReceiptProcessingErrorMessage(error);
+
+      if (serverErrorMessage) {
+        showToast({ message: serverErrorMessage, type: 'info' });
+        return;
+      }
+
       Alert.alert('사진을 처리하지 못했습니다', error instanceof Error ? error.message : undefined);
     }
   };
 
   const handlePickFromLibrary = async () => {
-    if (isProcessing) {
+    if (!startProcessing()) {
       return;
     }
-
-    setIsProcessing(true);
 
     try {
       const picked = await pickReceiptImageFromLibrary();
 
       if (picked.status === 'cancelled') {
-        setIsProcessing(false);
+        resetProcessing();
         return;
       }
 
-      const normalized = await normalizeReceiptImage(picked);
+      showScanLoading(picked.uri);
+      const normalized = await processReceiptImage(picked);
 
       router.replace({ pathname: '/receipt-confirm', params: { uri: normalized.uri } });
     } catch (error) {
-      setIsProcessing(false);
+      resetProcessing();
+      const serverErrorMessage = getReceiptProcessingErrorMessage(error);
+
+      if (serverErrorMessage) {
+        showToast({ message: serverErrorMessage, type: 'info' });
+        return;
+      }
+
       // NOTE: 권한 거부는 다시 시도해도 바뀌지 않아 원인을 알려준다.
       Alert.alert('사진을 가져오지 못했습니다', error instanceof Error ? error.message : undefined);
     }
   };
+
+  if (scanImageUri) {
+    return <ReceiptScanLoading imageUri={scanImageUri} />;
+  }
 
   return (
     <View className="flex-1 bg-neutral-900">
@@ -81,8 +134,10 @@ export default function ReceiptCameraScreen() {
 
       <BackButton
         onPress={() => router.back()}
+        disabled={isProcessing}
         variant="light"
-        className="absolute left-5 top-19.25"
+        className={`absolute left-4 ${isProcessing ? 'opacity-40' : ''}`}
+        style={{ top: insets.top + RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET }}
       />
 
       <Pressable

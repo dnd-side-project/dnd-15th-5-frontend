@@ -1,21 +1,29 @@
-import CafeCoffeeImage from './img-cafe-coffee.png';
-import CafeDonutImage from './img-cafe-donut.png';
-import CafeIceCreamImage from './img-cafe-ice-cream.png';
-import EntertainmentDartImage from './img-entertainment-dart.png';
-import EntertainmentLpImage from './img-entertainment-lp.png';
-import EntertainmentMicrophoneImage from './img-entertainment-microphone.png';
-import RestaurantFriesImage from './img-restaurant-fries.png';
-import RestaurantPizzaImage from './img-restaurant-pizza.png';
-import RestaurantSpatulaImage from './img-restaurant-spatula.png';
+import StickerBravoImage from './img-sticker-bravo.png';
+import StickerCoffeeImage from './img-sticker-coffee.png';
+import StickerDartImage from './img-sticker-dart.png';
+import StickerDonutImage from './img-sticker-donut.png';
+import StickerEyesImage from './img-sticker-eyes.png';
+import StickerFlipperImage from './img-sticker-flipper.png';
+import StickerFriesImage from './img-sticker-fries.png';
+import StickerIceCreamImage from './img-sticker-ice-cream.png';
+import StickerLpImage from './img-sticker-lp.png';
+import StickerMicrophoneImage from './img-sticker-microphone.png';
+import StickerPizzaImage from './img-sticker-pizza.png';
+import StickerSpecialImage from './img-sticker-special.png';
+
+export { getStickerImageByName } from './stickerImageByName';
 
 export {
-  CafeCoffeeImage,
-  CafeDonutImage,
-  CafeIceCreamImage,
-  EntertainmentDartImage,
-  EntertainmentLpImage,
-  EntertainmentMicrophoneImage,
-  RestaurantFriesImage,
-  RestaurantPizzaImage,
-  RestaurantSpatulaImage,
+  StickerBravoImage,
+  StickerCoffeeImage,
+  StickerDartImage,
+  StickerDonutImage,
+  StickerEyesImage,
+  StickerFlipperImage,
+  StickerFriesImage,
+  StickerIceCreamImage,
+  StickerLpImage,
+  StickerMicrophoneImage,
+  StickerPizzaImage,
+  StickerSpecialImage,
 };

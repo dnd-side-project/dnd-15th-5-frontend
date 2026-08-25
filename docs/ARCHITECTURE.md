@@ -43,7 +43,7 @@
 | WebView 연동     | 적용 완료                      |
 | 웹·네이티브 브릿지 | 적용 완료 (요청·응답 규약은 `packages/shared`) |
 | 알림·푸시        | 추후 네이티브 구현             |
-| 영수증 촬영·기록 | 추후 네이티브 구현 (브릿지 위에 얹는다) |
+| 영수증 촬영·검토 | RN 네이티브 플로우 적용 (OCR·기록 저장 API 연동 예정) |
 
 > 실기기 테스트는 개발 빌드로 진행한다. Expo Go는 지원 SDK가 낮아 이 프로젝트를 실행할 수 없다.
 
@@ -157,11 +157,10 @@ pages/
 │   │   └── search/
 │   │       └── ShopSearchPage.tsx
 │   ├── receipt/
-│   │   ├── ReceiptCameraPage.tsx
-│   │   └── ReceiptRecordPage.tsx
+│   │   └── ReceiptCameraPage.tsx
 ├── report/
 │   ├── ReportPage.tsx
-│   ├── ReportDetailPage.tsx
+│   ├── MonthlyReportPage.tsx
 │   ├── history/
 │   │   └── SpendingHistoryPage.tsx
 │   ├── frequent-shops/
@@ -201,24 +200,16 @@ features/
 
 ```text
 features/record/
-├── api/
-│   ├── services/
-│   │   ├── getRecords.ts
-│   │   ├── postRecord.ts
-│   │   └── index.ts
-│   ├── queries/
-│   │   ├── useRecordListQuery.ts
-│   │   ├── useRecordDetailQuery.ts
-│   │   └── index.ts
-│   ├── mutations/
-│   │   ├── useCreateRecordMutation.ts
-│   │   ├── useDeleteRecordMutation.ts
-│   │   └── index.ts
-│   ├── queryKeys.ts
-│   ├── dto.ts          # DTO 타입만
-│   └── index.ts
+├── apis/
+│   ├── clients.ts      # 순수 API 요청 함수
+│   ├── queryKeys.ts    # TanStack Query key
+│   ├── queries.ts      # Query, Suspense Query
+│   ├── mutations.ts    # Mutation
+│   ├── dto.ts          # 요청·응답 타입
+│   └── hooks/          # 화면별 Query·Mutation 옵션이 필요할 때만 생성
+│       └── useRecordListQuery.ts
 ├── components/
-├── hooks/
+├── hooks/          # API와 무관한 feature 훅
 ├── stores/         # 해당 도메인 전용 전역 상태
 ├── schemas.ts
 ├── types.ts        # DTO가 아닌 feature 공통 타입
@@ -227,30 +218,25 @@ features/record/
 └── index.ts
 ```
 
-- API 호출, 쿼리, 뮤테이션, 쿼리 키, DTO 타입은 전부 `api/` 아래에 모아서 관리
-- `services`, `queries`, `mutations`는 함수·훅 하나당 파일 하나
-- 파일명은 함수·훅 이름과 동일하게 (`useRecordListQuery.ts` → `useRecordListQuery`, `getRecords.ts` → `getRecords`)
-- 폴더 안 `index.ts`에서 모아서 export
-- 쿼리 키는 `api/queryKeys.ts`에서 한 곳으로 관리
-- `types.ts`는 DTO가 아닌 feature 공통 타입(여러 컴포넌트/훅이 공유하는 도메인 타입 등)을 관리. DTO와 화면에서 쓰는 모양이 갈라지면 그때 `api/dto.ts`와 `types.ts`를 구분해서 쓴다
-- 폴더명·파일명 앞에 feature 이름을 다시 붙이지 않는다 (`features/record/api/dto.ts`, `features/record/api/services/getRecords.ts`처럼 경로와 함수명이 이미 역할을 드러내므로 `record.dto.ts` 같은 접두어는 중복)
+- `apis/`의 `clients.ts`, `queryKeys.ts`, `queries.ts`, `mutations.ts`, `dto.ts`는 OpenAPI에서 자동 생성하며 직접 수정하지 않는다
+- 페이지와 feature 코드는 역할에 맞는 파일에서 필요한 항목만 직접 import한다
+- 화면별 `enabled`, `select`, `staleTime` 등의 옵션이나 응답 가공이 필요하면 생성 훅을 감싼 파일을 `apis/hooks/`에 Query·Mutation 훅 하나당 하나씩 작성한다
+- API와 무관한 feature 공통 훅만 feature 루트의 `hooks/`에서 관리한다
+- `types.ts`는 Swagger DTO가 아닌 feature 공통 타입을 관리한다
 
 ### Feature 내부 구조 (화면이 여러 개인 경우)
 
 ```text
 features/report/
-├── api/
-│   ├── services/
-│   │   ├── getReportStreak.ts
-│   │   ├── getReportMonthly.ts
-│   │   └── index.ts
-│   ├── queries/
-│   │   ├── useReportStreakQuery.ts
-│   │   ├── useReportMonthlyQuery.ts
-│   │   └── index.ts
+├── apis/
+│   ├── clients.ts
 │   ├── queryKeys.ts
+│   ├── queries.ts
+│   ├── mutations.ts
 │   ├── dto.ts
-│   └── index.ts
+│   └── hooks/
+│       ├── useMonthlyReportQuery.ts
+│       └── useConsumptionListQuery.ts
 ├── components/
 │   ├── common/     # feature 안에서 2곳 이상 쓰는 것
 │   ├── streak/
@@ -269,7 +255,8 @@ features/report/
 
 - 화면 단위로 나눌지는 컴포넌트 개수 보고 판단하고, 필요한 폴더만 만든다 (`mutations/`처럼 안 쓰면 비워두지 말고 아예 생략)
 - 파일이 적으면 파일 하나로 관리, 많아지면 화면·역할 단위 폴더로 확장
-- `api/` 내부 구조(`services`, `queries`, `mutations`, `queryKeys.ts`, `dto.ts`)는 기본형과 동일한 규칙을 따른다
+- `apis/` 생성 파일 사용 규칙은 기본형과 동일하다
+- `apis/hooks/` 파일은 자동 생성 대상이 아니므로 화면 요구사항에 맞게 직접 작성하고 테스트한다
 
 ### Mobile
 
@@ -294,6 +281,8 @@ apps/mobile/src/
 - `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 관리한다. 웹의 `app/routes`와 `pages` 관계와 같다.
 - 화면 컴포넌트는 `화면명 + Screen`으로 작성한다 (`HomeScreen`).
 - 웹과 모바일이 함께 쓰는 코드는 `apps/mobile/src/shared`가 아니라 `packages/shared`에 둔다.
+- WebView 화면은 `shared/layout/WebViewScreen`을 사용해 Safe Area·로딩·오류 복구 동작을 통일한다. 지도 홈(`/home`)은 전체 화면을 시스템 영역까지 표시하고, 나머지 웹 화면은 하단 배경만 확장한 뒤 웹의 `MobileLayout` 또는 자체 스크롤 영역에서 하단 Safe Area를 확보한다.
+- 수기 입력과 영수증 입력의 공통 규칙은 `packages/shared/record`, 네이티브 영수증 UI와 상태는 `features/record`에서 관리한다.
 - 필요한 폴더만 만든다. 사용처가 생기기 전에는 만들지 않는다.
 
 ---
@@ -365,17 +354,23 @@ app → screens → features → bridge · native → shared
 - 인증 토큰을 포함한 인터셉터(Request/Response Interceptor) 설정
 - 공통 에러 핸들링 로직
 - 여러 Feature에서 공통으로 사용하는 API 함수
+- OpenAPI 생성 코드가 사용하는 공통 Axios mutator
 
-### 기능별 API (`apps/web/src/features/{feature}/api/services`)
+### 기능별 API (`apps/web/src/features/{feature}/apis`)
 
-- 해당 Feature 전용 API 요청 함수
+- 해당 Feature 전용 OpenAPI 생성 파일 (`clients.ts`, `queryKeys.ts`, `queries.ts`, `mutations.ts`, `dto.ts`)
 - `shared/apis`에서 만든 공통 Axios 인스턴스를 가져와서 사용
 - 이 Feature에서만 쓰는 엔드포인트 함수만 위치
+- DTO, 요청 함수, Query, Mutation을 역할별 파일로 분리해 생성
+- 화면별 옵션과 데이터 가공을 담당하는 수기 훅은 `apis/hooks/`에 위치
 
 ### 규칙
 
-- 인증/토큰 처리는 `apps/web/src/shared/apis`에서만 관리하고, 기능별 `api/services`에서 직접 헤더를 설정하지 않는다
-- 기능별 `api/services`는 공통 인스턴스를 import해서 엔드포인트 함수만 작성한다
+- 인증/토큰 처리는 `apps/web/src/shared/apis`에서만 관리하고, 생성된 API 파일에서 직접 헤더를 설정하지 않는다
+- 페이지와 컴포넌트는 필요한 항목을 feature의 역할별 API 파일에서 직접 import한다
+- 생성 훅을 그대로 사용할 수 있으면 `apis/queries.ts` 또는 `apis/mutations.ts`에서 직접 import한다
+- 화면별 옵션이나 응답 가공이 필요하면 생성 파일을 수정하지 않고 `apis/hooks/`에서 감싼 뒤 해당 수기 훅을 사용한다
+- API 생성 방법과 사용 규칙은 [API_GENERATION.md](./API_GENERATION.md)를 따른다
 
 ---
 

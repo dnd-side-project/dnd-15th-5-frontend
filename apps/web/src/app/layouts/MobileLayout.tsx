@@ -1,17 +1,25 @@
 import { useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { matchPath, Outlet, useLocation } from 'react-router-dom';
 
+import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import { notifyNative } from '@/shared/lib/bridge';
+import { cn } from '@/shared/lib/cn';
 
 import type { PropsWithChildren } from 'react';
 
 type MobileLayoutProps = PropsWithChildren;
 
 /**
- * 모바일 기준 공통 레이아웃. 최대 너비 480px 프레임 안에 화면을 렌더링하고, 프레임 바깥은 회색 배경으로 채운다.
+ * 모든 웹 라우트를 최대 480px 모바일 프레임 안에 렌더링하는 최상위 레이아웃입니다.
+ *
+ * 지도 홈과 매장 상세는 각각 바텀시트·내부 스크롤 영역에서 하단 Safe Area를 처리합니다.
+ * 나머지 경로에는 프레임이 `pb-safe-bottom`을 적용합니다. 경로가 바뀌면 모바일 WebView가
+ * edge-to-edge와 뒤로 가기 상태를 동기화할 수 있도록 `routeChanged` 이벤트를 전송합니다.
  */
 export default function MobileLayout({ children }: MobileLayoutProps) {
   const { pathname } = useLocation();
+  const isShopDetail = Boolean(matchPath(ROUTE_PATTERNS.shopDetail, pathname));
+  const usesOwnBottomSafeArea = pathname === ROUTE_PATHS.home || isShopDetail;
 
   useEffect(() => {
     // 모바일은 이 경로를 기준으로 /home에만 edge-to-edge를 적용한다.
@@ -21,8 +29,14 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
 
   return (
     <div className="flex min-h-screen justify-center bg-neutral-100">
-      {/* TODO: 디자인 확정되면 max-w 값 수정 */}
-      <div className="min-h-screen w-full max-w-120 bg-neutral-00">{children ?? <Outlet />}</div>
+      <div
+        className={cn(
+          'mobile-frame min-h-screen bg-neutral-00',
+          !usesOwnBottomSafeArea && 'pb-safe-bottom'
+        )}
+      >
+        {children ?? <Outlet />}
+      </div>
     </div>
   );
 }

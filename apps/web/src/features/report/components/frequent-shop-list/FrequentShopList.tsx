@@ -1,0 +1,106 @@
+import { RECORD_CATEGORIES } from '@chapchap/shared/record';
+import { useState } from 'react';
+
+import { MOCK_FREQUENT_SHOPS } from '@/features/report/mockData';
+import type { FrequentShopPeriod } from '@/features/report/types';
+import { FilterIcon } from '@/shared/assets/icons';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { CategoryChip } from '@/shared/ui/category-chip';
+import { StateView } from '@/shared/ui/state-view';
+
+import FrequentShopItem from './FrequentShopItem';
+import PeriodFilterSheet from './PeriodFilterSheet';
+
+import type { ReactNode } from 'react';
+
+type FrequentShopListProps = {
+  headerContent?: ReactNode;
+};
+
+const CATEGORY_FILTERS = ['모두', ...RECORD_CATEGORIES] as const;
+type CategoryFilter = (typeof CATEGORY_FILTERS)[number];
+
+/** 카테고리와 기간을 기준으로 단골 가게의 방문 순위를 보여줍니다. */
+export default function FrequentShopList({ headerContent }: FrequentShopListProps) {
+  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('모두');
+  const [selectedPeriod, setSelectedPeriod] = useState<FrequentShopPeriod>('currentMonth');
+  const [isPeriodFilterOpen, setIsPeriodFilterOpen] = useState(false);
+
+  const filteredShops = MOCK_FREQUENT_SHOPS.filter(
+    (shop) => selectedCategory === '모두' || shop.category === selectedCategory
+  );
+
+  const handlePeriodSelect = (period: FrequentShopPeriod) => {
+    setSelectedPeriod(period);
+    setIsPeriodFilterOpen(false);
+  };
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <header className="sticky top-0 z-sticky-header bg-neutral-00 pt-4">
+        {headerContent}
+        <div className="relative -mx-4 mt-4 h-15.5 border-b border-neutral-200 bg-neutral-00">
+          <div className="scrollbar-hidden flex h-full items-center gap-1.5 overflow-x-auto px-4 pr-20">
+            {CATEGORY_FILTERS.map((category) => (
+              <CategoryChip
+                key={category}
+                selected={category === selectedCategory}
+                onSelectedChange={(isSelected) => isSelected && setSelectedCategory(category)}
+                className="border-neutral-300 px-3 py-1.5 text-body-02-medium"
+              >
+                {category}
+              </CategoryChip>
+            ))}
+          </div>
+          <div className="absolute top-0 right-0 flex h-full w-16 items-center justify-center bg-neutral-00 shadow-category-filter">
+            <button
+              type="button"
+              aria-label="기간 필터"
+              aria-expanded={isPeriodFilterOpen}
+              onClick={() => setIsPeriodFilterOpen(true)}
+              className="flex h-7.25 w-8.5 items-center justify-center rounded-16 border border-neutral-300 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
+            >
+              <FilterIcon aria-hidden="true" className="size-4" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <h1 className="sr-only">단골 리스트</h1>
+      <div className="flex flex-1 flex-col">
+        {filteredShops.length > 0 ? (
+          <ol className="-mx-4 flex flex-col gap-6 pt-4 pb-8">
+            {filteredShops.map((shop, index) => (
+              <FrequentShopItem
+                key={shop.id}
+                rank={index + 1}
+                shop={shop}
+                visitCount={
+                  selectedPeriod === 'currentMonth' ? shop.monthlyVisitCount : shop.totalVisitCount
+                }
+              />
+            ))}
+          </ol>
+        ) : (
+          <StateView
+            variant="empty"
+            title="아직 기록이 없어요"
+            description={'소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'}
+            actionLabel="소비 기록 작성하기"
+            headingAs="h2"
+            to={ROUTE_PATHS.record}
+            className="my-auto"
+          />
+        )}
+      </div>
+
+      {isPeriodFilterOpen && (
+        <PeriodFilterSheet
+          selectedPeriod={selectedPeriod}
+          onClose={() => setIsPeriodFilterOpen(false)}
+          onSelect={handlePeriodSelect}
+        />
+      )}
+    </div>
+  );
+}

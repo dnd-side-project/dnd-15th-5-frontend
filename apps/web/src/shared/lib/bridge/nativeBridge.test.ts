@@ -112,6 +112,24 @@ describe('nativeBridge', () => {
     jest.useRealTimers();
   });
 
+  it('형식이 잘못된 성공 응답은 무시한다', async () => {
+    jest.useFakeTimers();
+    const resultPromise = requestToNative('ping', { sentAt: 0 });
+    const sentRequest = getSentRequest();
+
+    respondFromNative({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: sentRequest.id,
+      type: 'ping',
+      ok: true,
+      result: { platform: 'ios' },
+    });
+    jest.advanceTimersByTime(BRIDGE_REQUEST_TIMEOUT_MS.ping);
+
+    await expect(resultPromise).rejects.toThrow('만료');
+    jest.useRealTimers();
+  });
+
   it('요청 전송에 실패하면 대기 요청을 남기지 않고 거부한다', async () => {
     jest.useFakeTimers();
     postMessage.mockImplementation(() => {

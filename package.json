@@ -4,12 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "engines": {
-    "node": ">=22.13.0 <23"
+    "node": ">=22.18.0 <23"
   },
   "scripts": {
     "dev": "turbo run dev",
     "dev:mobile": "turbo run dev --filter=@chapchap/mobile",
     "dev:web": "turbo run dev --filter=@chapchap/web",
+    "api:generate": "pnpm --filter @chapchap/web api:generate",
+    "api:validate": "pnpm --filter @chapchap/web api:validate",
+    "api:check": "pnpm api:generate && git diff --exit-code -- ':(glob)apps/web/src/features/*/apis/clients.ts' ':(glob)apps/web/src/features/*/apis/queryKeys.ts' ':(glob)apps/web/src/features/*/apis/queries.ts' ':(glob)apps/web/src/features/*/apis/mutations.ts' ':(glob)apps/web/src/features/*/apis/dto.ts'",
+    "api:watch": "pnpm --filter @chapchap/web api:watch",
     "build": "turbo run build",
     "build:android": "turbo run build:android --filter=@chapchap/mobile",
     "build:ios": "turbo run build:ios --filter=@chapchap/mobile",
@@ -51,8 +55,7 @@
     "prettier": "^3.9.6",
     "svgo": "^4.0.2",
     "turbo": "^2.10.9",
-    "typescript": "~6.0.2",
-    "vercel": "58.9.0"
+    "typescript": "~6.0.2"
   },
   "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }
