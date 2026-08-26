@@ -4,7 +4,7 @@ import { usePlaceVisitsInfiniteQuery } from '@/features/shop/apis/hooks/usePlace
 import { useGetPlaceDetail } from '@/features/shop/apis/queries';
 import type { MockShopDetailData } from '@/features/shop/mockData';
 import { LocationPinIcon } from '@/shared/assets/icons';
-import { getStickerImageByName } from '@/shared/assets/images/stickers';
+import { getStickerImages } from '@/shared/assets/images/stickers';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { Chip } from '@/shared/ui/chip';
 import { RegularShopBadge } from '@/shared/ui/regular-shop-badge';
@@ -89,13 +89,7 @@ export default function ShopDetail({
 
   const visits = placeVisitsQuery.data?.pages.flatMap((page) => page.data?.visits ?? []) ?? [];
   const totalVisitCount = place.stats?.totalVisitCount ?? visits.length;
-  const stickerImages =
-    mockData?.stickerImages ??
-    (place.recentStickers ?? []).flatMap((sticker) => {
-      const stickerImage = getStickerImageByName(sticker.itemName);
-
-      return stickerImage ? [stickerImage] : [];
-    });
+  const stickerImages = mockData?.stickerImages ?? getStickerImages(place.recentStickers ?? []);
 
   return (
     <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">

@@ -95,4 +95,32 @@ describe('MonthlyStickerRecordList', () => {
     expect(screen.getByRole('heading', { name: '기록을 불러오지 못했어요' })).toBeInTheDocument();
     expect(mockRefetch).toHaveBeenCalledTimes(1);
   });
+
+  it('지원하는 스티커만 날짜별 목록에 표시한다', () => {
+    mockUseMonthlyStickerRecordsQuery.mockReturnValue({
+      data: [
+        {
+          acquiredDate: '2026-08-23',
+          monthlyStickers: [
+            { acquiredDate: '2026-08-23', itemName: '피자' },
+            { acquiredDate: '2026-08-23', itemName: '미지원' },
+          ],
+        },
+        {
+          acquiredDate: '2026-08-21',
+          monthlyStickers: [{ acquiredDate: '2026-08-21', itemName: '미지원' }],
+        },
+      ],
+      isError: false,
+      isPending: false,
+      refetch: mockRefetch,
+    });
+
+    const { container } = renderMonthlyStickerRecordList();
+
+    expect(screen.getByRole('heading', { name: '23일 일요일' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: '23일 일요일에 받은 스티커' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '21일 금요일' })).not.toBeInTheDocument();
+    expect(container.querySelectorAll('img')).toHaveLength(1);
+  });
 });

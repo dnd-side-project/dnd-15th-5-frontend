@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-
 import type { SpendingRecordGroup } from '@/features/report/types';
+import { formatPurchaseDateLabel } from '@/features/report/utils/consumptions';
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 
@@ -24,37 +24,28 @@ export default function SpendingRecordList({
   onLoadMore,
   onRetry,
 }: SpendingRecordListProps) {
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const loadMoreElement = loadMoreRef.current;
-    if (!loadMoreElement || !hasNextPage || isFetchingNextPage || isLoadMoreError) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) onLoadMore();
-      },
-      { rootMargin: '120px 0px' }
-    );
-
-    observer.observe(loadMoreElement);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, isLoadMoreError, onLoadMore]);
+  const loadMoreRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    isLoadMoreError,
+    onLoadMore,
+  });
 
   return (
     <div>
       <div className="space-y-5">
         {groups.map((group) => {
-          const headingId = `date-${group.dateValue}`;
+          const headingId = `date-${group.purchaseDate}`;
+          const purchaseDateLabel = formatPurchaseDateLabel(group.purchaseDate);
 
           return (
-            <section key={group.dateValue} aria-labelledby={headingId}>
+            <section key={group.purchaseDate} aria-labelledby={headingId}>
               <h2 id={headingId} className="mb-3 text-body-01-semibold text-neutral-900">
-                {group.dateLabel}
+                {purchaseDateLabel}
               </h2>
               <ul className="space-y-3">
-                {group.records.map((record) => (
-                  <SpendingRecordItem key={record.id} record={record} />
+                {group.consumptions.map((consumption) => (
+                  <SpendingRecordItem key={consumption.id} consumption={consumption} />
                 ))}
               </ul>
             </section>

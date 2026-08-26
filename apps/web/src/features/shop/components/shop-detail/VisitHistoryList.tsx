@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react';
-
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 
@@ -29,26 +28,13 @@ export default function VisitHistoryList({
   scrollRootRef,
   visits,
 }: VisitHistoryListProps) {
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const loadMoreElement = loadMoreRef.current;
-    if (!loadMoreElement || isError || !hasNextPage || isFetchingNextPage) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          onLoadMore();
-        }
-      },
-      { root: scrollRootRef.current, rootMargin: '120px 0px' }
-    );
-
-    observer.observe(loadMoreElement);
-    return () => observer.disconnect();
-  }, [hasNextPage, isError, isFetchingNextPage, onLoadMore, scrollRootRef]);
+  const loadMoreRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    isLoadMoreError: isError,
+    onLoadMore,
+    rootRef: scrollRootRef,
+  });
 
   return (
     <section aria-labelledby="visit-history-title" className="mt-8 pb-8">

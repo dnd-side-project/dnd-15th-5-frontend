@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
 import { useConsumptionsInfiniteQuery } from '@/features/report/apis/hooks/useConsumptionsInfiniteQuery';
-import { MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
 
 import SpendingHistory from './SpendingHistory';
 
@@ -22,16 +21,32 @@ const mockedUseConsumptionsInfiniteQuery = jest.mocked(useConsumptionsInfiniteQu
 const fetchNextPage = jest.fn();
 const refetch = jest.fn();
 
-const consumptions = MOCK_SPENDING_RECORD_GROUPS.flatMap((group) =>
-  group.records.map((record, index) => ({
-    id: Number(record.id.replace('record-', '')),
-    placeName: record.shopName,
-    amount: record.amount,
-    category: record.category,
-    purchaseDate: group.dateValue,
+const consumptions = [
+  ...Array.from({ length: 3 }, (_, index) => ({
+    id: index + 1,
+    placeName: '투썸플레이스',
+    amount: 5_500,
+    category: '카페',
+    purchaseDate: '2026-08-22',
     purchaseTime: index === 0 ? '09:00:00' : '10:00:00',
-  }))
-);
+  })),
+  {
+    id: 4,
+    placeName: '투썸플레이스',
+    amount: 5_500,
+    category: '카페',
+    purchaseDate: '2026-08-21',
+    purchaseTime: '09:00:00',
+  },
+  ...Array.from({ length: 3 }, (_, index) => ({
+    id: index + 5,
+    placeName: '투썸플레이스',
+    amount: 5_500,
+    category: '카페',
+    purchaseDate: '2026-08-20',
+    purchaseTime: index === 0 ? '09:00:00' : '10:00:00',
+  })),
+];
 
 const createQueryResult = (yearMonth: string) =>
   ({
