@@ -63,6 +63,17 @@ jest.mock('@/bridge', () => ({
   },
   getUrlOrigin: (url: string) => new URL(url).origin,
   isTrustedBridgeUrl: (url: string, trustedOrigin: string) => new URL(url).origin === trustedOrigin,
+  respondToBridgeRequest: async (
+    message: { kind?: string },
+    trustedOrigin: string,
+    responseTarget: { injectJavaScript: (script: string) => void } | null
+  ) => {
+    if (message.kind !== 'request') return false;
+
+    const response = await mockCreateBridgeResponse(message);
+    responseTarget?.injectJavaScript(mockCreateResponseScript(response, trustedOrigin));
+    return true;
+  },
 }));
 
 describe('<HomeScreen />', () => {

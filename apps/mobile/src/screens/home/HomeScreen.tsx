@@ -1,15 +1,14 @@
-import { isBridgeEvent, isBridgeRequest, parseBridgeMessage } from '@chapchap/shared/bridge';
+import { isBridgeEvent, parseBridgeMessage } from '@chapchap/shared/bridge';
 import { useEffect, useRef } from 'react';
 import { AppState, BackHandler, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import {
   createAppActiveScript,
-  createBridgeResponse,
-  createResponseScript,
   getTrustedInternalUrl,
   getUrlOrigin,
   isTrustedBridgeUrl,
+  respondToBridgeRequest,
 } from '@/bridge';
 import { subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
@@ -94,14 +93,8 @@ export default function HomeScreen() {
       return;
     }
 
-    if (!isBridgeRequest(message)) {
-      return;
-    }
-
-    const response = await createBridgeResponse(message);
-
     // NOTE: 처리 중 외부 페이지로 이동해도 위치 등 네이티브 응답을 전달하지 않는다.
-    webViewRef.current?.injectJavaScript(createResponseScript(response, trustedWebOrigin));
+    await respondToBridgeRequest(message, trustedWebOrigin, webViewRef.current);
   };
 
   const handleShouldStartLoadWithRequest: NonNullable<
