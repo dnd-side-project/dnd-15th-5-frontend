@@ -32,8 +32,9 @@ function QueryProvider({ children }: QueryProviderProps) {
 
   useEffect(() => {
     const handleNativeAppActive = () => {
-      void queryClient.invalidateQueries({
-        predicate: isConsumptionRelatedQuery,
+      void queryClient.refetchQueries({
+        type: 'active',
+        predicate: (query) => isConsumptionRelatedQuery(query) && query.isStale(),
       });
     };
 
