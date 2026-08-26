@@ -1,7 +1,8 @@
 import { useMap } from '@vis.gl/react-google-maps';
 import { useEffect, useRef } from 'react';
 
-import type { MapPosition } from '../../types';
+import type { MapPosition } from '@/features/map/types';
+import { focusMapOnPosition } from '@/features/map/utils/focusMapOnPosition';
 
 type CurrentLocationCameraControllerProps = {
   isAutomaticPanEnabled: boolean;
@@ -32,8 +33,9 @@ export default function CurrentLocationCameraController({
       return;
     }
 
-    map.panTo(position);
+    const cancelPendingOffset = focusMapOnPosition(map, position);
     hasMovedToCurrentPosition.current = true;
+    return cancelPendingOffset;
   }, [isAutomaticPanEnabled, map, position]);
 
   return null;
