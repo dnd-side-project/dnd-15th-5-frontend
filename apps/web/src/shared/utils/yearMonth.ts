@@ -27,6 +27,15 @@ export const isBeforeMonth = (month: YearMonth, target: YearMonth) =>
 export const getMonthDifference = (newerMonth: YearMonth, olderMonth: YearMonth) =>
   (newerMonth.year - olderMonth.year) * 12 + newerMonth.month - olderMonth.month;
 
+/** 최신 연월부터 최초 조회 가능 연월까지 내림차순의 연속된 월 목록을 만듭니다. */
+export const createYearMonthRange = (newestMonth: YearMonth, oldestMonth: YearMonth) => {
+  const monthDifference = getMonthDifference(newestMonth, oldestMonth);
+
+  if (monthDifference < 0) return [newestMonth];
+
+  return Array.from({ length: monthDifference + 1 }, (_, index) => addMonth(newestMonth, -index));
+};
+
 /** 연월을 API와 쿼리 파라미터에서 사용하는 `YYYY-MM` 형식으로 변환합니다. */
 export const formatYearMonth = ({ month, year }: YearMonth) =>
   `${year}-${String(month).padStart(2, '0')}`;

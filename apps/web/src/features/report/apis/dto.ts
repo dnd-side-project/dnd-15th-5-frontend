@@ -3,6 +3,16 @@
  * Do not edit manually.
  */
 
+export type ShareLinkResponse = {
+  shareToken?: string;
+};
+
+export type ApiResponseShareLinkResponse = {
+  code?: string;
+  message?: string;
+  data?: ShareLinkResponse;
+};
+
 export type ConsumptionResponse = {
   id?: number;
   placeId?: number;
@@ -32,6 +42,21 @@ export type ScoresResponse = {
   scoreTownExpansion?: number;
   scoreDaytime?: number;
   scoreImpulsive?: number;
+};
+
+export type PersonaCardResponse = {
+  nickname?: string;
+  type?: string;
+  typeName?: string;
+  description?: string;
+  keywords?: string[];
+  scores?: ScoresResponse;
+};
+
+export type ApiResponsePersonaCardResponse = {
+  code?: string;
+  message?: string;
+  data?: PersonaCardResponse;
 };
 
 export type PersonaResponse = {
@@ -87,6 +112,7 @@ export type MonthlyReportResponse = {
   summary?: SummaryResponse;
   categoryStats?: CategoryStatResponse[];
   timePattern?: TimePatternResponse;
+  firstAvailableYearMonth?: string;
 };
 
 export type ApiResponseMonthlyReportResponse = {
@@ -109,6 +135,7 @@ export type CurrentStatusResponse = {
   monthlyCategoryCounts?: CurrentStatusResponseMonthlyCategoryCounts;
   recentDiscoveryMessage?: string;
   monthlyStickers?: StickerResponse[];
+  firstAvailableYearMonth?: string;
 };
 
 export type ApiResponseCurrentStatusResponse = {
@@ -138,6 +165,13 @@ export type ApiResponseFrequentPlaceResponse = {
   code?: string;
   message?: string;
   data?: FrequentPlaceResponse;
+};
+
+export type IssueShareLinkParams = {
+  /**
+   * 조회할 연월, 예: 2026-07
+   */
+  yearMonth: string;
 };
 
 export type GetConsumptionsParams = {

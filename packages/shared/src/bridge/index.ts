@@ -1,4 +1,4 @@
-export { BRIDGE_MESSAGE_KIND, RECEIPT_SHOP_SEARCH_SOURCE } from './types';
+export { BRIDGE_MESSAGE_KIND, NATIVE_APP_ACTIVE_EVENT, RECEIPT_SHOP_SEARCH_SOURCE } from './types';
 export { isBridgeEvent, isBridgeRequest, isBridgeResponse, parseBridgeMessage } from './guards';
 export { isOAuthCancellationError } from './oauth';
 

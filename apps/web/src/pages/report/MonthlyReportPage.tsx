@@ -11,6 +11,8 @@ import {
   WeekdaySpendingChart,
   useMonthlyReport,
 } from '@/features/report';
+import MonthlyRecordEmptyState from '@/features/report/components/common/MonthlyRecordEmptyState';
+import { getCurrentMonth, isBeforeMonth } from '@/shared/utils/yearMonth';
 
 /** 선택한 월의 상세 리포트를 보여주는 페이지입니다. */
 export default function MonthlyReportPage() {
@@ -58,41 +60,54 @@ export default function MonthlyReportPage() {
           selectableMonths={selectableMonths}
           selectedMonth={selectedMonth}
         />
-        <ReportPreferenceSection
-          cards={reportCards}
-          captureRef={captureRef}
-          isFlipped={isCardFlipped}
-          onCardSelect={handleReportCardSelect}
-          onFlip={handlePreferenceCardFlip}
-          onShare={handleShareSheetOpen}
-          selectedCardIndex={selectedCardIndex}
-        />
+        {report && (
+          <ReportPreferenceSection
+            cards={reportCards}
+            captureRef={captureRef}
+            isFlipped={isCardFlipped}
+            onCardSelect={handleReportCardSelect}
+            onFlip={handlePreferenceCardFlip}
+            onShare={handleShareSheetOpen}
+            selectedCardIndex={selectedCardIndex}
+          />
+        )}
       </div>
 
-      <div className="relative mt-5.75 h-3 bg-neutral-200" />
+      {report ? (
+        <>
+          <div className="relative mt-5.75 h-3 bg-neutral-200" />
 
-      <div className="relative flex flex-col gap-13.75 px-4.25 pt-10">
-        <ReportActivitySummary items={report.summary} />
-        <ReportTopShops shops={report.shops} />
-        <ReportMyPlace districts={report.districts} />
-        <CategoryChart categories={report.categories} />
-        <WeekdaySpendingChart insight={report.weekdayInsight} items={report.weekdaySpending} />
+          <div className="relative flex flex-col gap-13.75 px-4.25 pt-10">
+            <ReportActivitySummary items={report.summary} />
+            <ReportTopShops shops={report.shops} />
+            <ReportMyPlace districts={report.districts} />
+            <CategoryChart categories={report.categories} />
+            <WeekdaySpendingChart insight={report.weekdayInsight} items={report.weekdaySpending} />
 
-        <button
-          className="mx-auto flex items-center gap-1 text-body-02-medium text-neutral-500"
-          onClick={() => window.scrollTo({ behavior: 'smooth', top: 0 })}
-          type="button"
-        >
-          <span aria-hidden>⌃</span> 맨위로
-        </button>
-      </div>
+            <button
+              className="mx-auto flex items-center gap-1 text-body-02-medium text-neutral-500"
+              onClick={() => window.scrollTo({ behavior: 'smooth', top: 0 })}
+              type="button"
+            >
+              <span aria-hidden>⌃</span> 맨위로
+            </button>
+          </div>
 
-      <ReportShareSheet
-        isDownloading={isDownloading}
-        isOpen={isShareSheetOpen}
-        onClose={handleShareSheetClose}
-        onDownload={downloadImage}
-      />
+          <ReportShareSheet
+            isDownloading={isDownloading}
+            isOpen={isShareSheetOpen}
+            onClose={handleShareSheetClose}
+            onDownload={downloadImage}
+          />
+        </>
+      ) : (
+        <div className="relative flex min-h-[70dvh] flex-col px-4">
+          <MonthlyRecordEmptyState
+            isPastMonth={isBeforeMonth(selectedMonth, getCurrentMonth())}
+            selectedMonth={selectedMonth}
+          />
+        </div>
+      )}
     </main>
   );
 }

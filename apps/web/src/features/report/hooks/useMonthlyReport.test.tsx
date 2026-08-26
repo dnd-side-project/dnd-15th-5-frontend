@@ -8,6 +8,10 @@ jest.mock('@/shared/ui/toast', () => ({
   useToast: () => ({ showToast: jest.fn() }),
 }));
 
+jest.mock('@/features/report/apis/hooks/useFirstAvailableYearMonthQuery', () => ({
+  useFirstAvailableYearMonthQuery: () => ({ data: { year: 2026, month: 4 } }),
+}));
+
 jest.mock('./useReportImageDownload', () => ({
   useReportImageDownload: () => ({
     captureRef: { current: null },

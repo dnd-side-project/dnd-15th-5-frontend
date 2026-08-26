@@ -9,6 +9,9 @@ const mockRefetch = jest.fn();
 jest.mock('@/features/report/apis/hooks/useMonthlyStickerRecordsQuery', () => ({
   useMonthlyStickerRecordsQuery: (month: unknown) => mockUseMonthlyStickerRecordsQuery(month),
 }));
+jest.mock('@/features/report/apis/hooks/useFirstAvailableYearMonthQuery', () => ({
+  useFirstAvailableYearMonthQuery: () => ({ data: { year: 2026, month: 7 } }),
+}));
 
 describe('MonthlyStickerRecordList', () => {
   beforeAll(() => {
@@ -37,19 +40,14 @@ describe('MonthlyStickerRecordList', () => {
       </MemoryRouter>
     );
 
-  it('기록이 없는 이전 달로 이동하면 빈 상태를 표시한다', () => {
+  it('이전 달로 이동하면 해당 월을 조회한다', () => {
     renderMonthlyStickerRecordList();
 
     fireEvent.click(screen.getByRole('button', { name: '이전 달 보기' }));
 
     expect(screen.getByRole('heading', { name: '7월에 쌓인 기록' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: '7월에는 기록이 없어요' })).toBeInTheDocument();
-    expect(screen.getByText('지난 소비를 기록하면 빈 공간이 채워질 거예요.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '7월 기록 추가하기' })).toHaveAttribute(
-      'href',
-      '/record?yearMonth=2026-07'
-    );
     expect(mockUseMonthlyStickerRecordsQuery).toHaveBeenLastCalledWith({ month: 7, year: 2026 });
+    expect(screen.getByRole('button', { name: '이전 달 보기' })).toBeDisabled();
   });
 
   it('월을 누르면 월 선택 시트를 열고 선택한 월을 조회한다', () => {
