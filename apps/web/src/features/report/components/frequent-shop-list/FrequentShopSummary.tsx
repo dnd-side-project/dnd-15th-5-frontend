@@ -29,8 +29,11 @@ export default function FrequentShopSummary({ headerContent }: FrequentShopSumma
         {frequentShops.map((shop, index) => (
           <FrequentShopItem
             key={shop.id}
+            category={shop.category}
+            dongname={shop.district}
+            placeName={shop.name}
             rank={index + 1}
-            shop={shop}
+            thumbnailSrc={shop.thumbnailSrc}
             visitCount={shop.monthlyVisitCount}
           />
         ))}
