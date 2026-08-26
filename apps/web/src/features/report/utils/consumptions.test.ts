@@ -27,22 +27,23 @@ describe('consumptions', () => {
 
     expect(groups).toEqual([
       {
-        dateValue: '2026-08-22',
-        dateLabel: '22일 토요일',
-        records: [
+        purchaseDate: '2026-08-22',
+        consumptions: [
           {
-            id: '1',
-            shopName: '아오이 카페',
+            id: 1,
+            placeName: '아오이 카페',
             category: '카페',
             amount: 5_500,
-            paidAtLabel: '2026.08.22 · 오전',
+            purchaseDate: '2026-08-22',
+            purchaseTime: '09:30:00',
           },
           {
-            id: '2',
-            shopName: '장승마라탕',
+            id: 2,
+            placeName: '장승마라탕',
             category: '음식점',
             amount: 12_000,
-            paidAtLabel: '2026.08.22 · 오후',
+            purchaseDate: '2026-08-22',
+            purchaseTime: '18:10:00',
           },
         ],
       },

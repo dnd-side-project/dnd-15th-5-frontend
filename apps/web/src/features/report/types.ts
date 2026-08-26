@@ -1,3 +1,5 @@
+import type { ConsumptionResponse, StickerResponse } from '@/features/report/apis/dto';
+
 import type { SpendingCategory } from '@chapchap/shared/common/types';
 
 export type ReportPreferenceCardVariant =
@@ -13,23 +15,13 @@ export type WeeklyRecord = {
 };
 
 export type MonthlyStickerRecordGroup = {
-  dateLabel: string;
-  dateValue: string;
-  stickerImages: readonly string[];
-};
-
-export type SpendingRecord = {
-  amount: number;
-  category: string;
-  id: string;
-  paidAtLabel: string;
-  shopName: string;
+  acquiredDate: string;
+  monthlyStickers: readonly (StickerResponse & { acquiredDate: string })[];
 };
 
 export type SpendingRecordGroup = {
-  dateLabel: string;
-  dateValue: string;
-  records: readonly SpendingRecord[];
+  consumptions: readonly (ConsumptionResponse & { id: number; purchaseDate: string })[];
+  purchaseDate: string;
 };
 
 export type FrequentShop = {

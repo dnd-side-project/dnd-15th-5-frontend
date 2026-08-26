@@ -22,7 +22,7 @@ const parsePurchaseDate = (purchaseDate?: string) => {
   return { date, day, year, month };
 };
 
-const formatPaidAtLabel = (purchaseDate?: string, purchaseTime?: string) => {
+export const formatPurchaseDateTimeLabel = (purchaseDate?: string, purchaseTime?: string) => {
   const parsedDate = parsePurchaseDate(purchaseDate);
   if (!parsedDate) return '';
 
@@ -33,35 +33,38 @@ const formatPaidAtLabel = (purchaseDate?: string, purchaseTime?: string) => {
   return period ? `${dateLabel} · ${period}` : dateLabel;
 };
 
-/** 소비내역 API 응답을 날짜별 화면 모델로 변환합니다. 유효하지 않은 항목은 제외합니다. */
+export const formatPurchaseDateLabel = (purchaseDate: string) => {
+  const parsedDate = parsePurchaseDate(purchaseDate);
+
+  return parsedDate
+    ? `${parsedDate.day}일 ${KOREAN_WEEKDAYS[parsedDate.date.getDay()]}`
+    : purchaseDate;
+};
+
+/** API 소비내역의 필드명을 유지한 채 구매일별로 묶습니다. 유효하지 않은 항목은 제외합니다. */
 export const groupConsumptionsByDate = (
   consumptions: readonly ConsumptionResponse[]
 ): SpendingRecordGroup[] => {
-  const groups = new Map<string, SpendingRecordGroup['records'][number][]>();
+  const groups = new Map<string, SpendingRecordGroup['consumptions'][number][]>();
 
   consumptions.forEach((consumption) => {
-    const parsedDate = parsePurchaseDate(consumption.purchaseDate);
-    if (!parsedDate || consumption.id === undefined) return;
+    const purchaseDate = consumption.purchaseDate;
+    if (!purchaseDate || consumption.id === undefined) return;
 
-    const records = groups.get(consumption.purchaseDate!) ?? [];
-    records.push({
-      id: String(consumption.id),
-      shopName: consumption.placeName?.trim() || '알 수 없는 장소',
-      amount: consumption.amount ?? 0,
-      paidAtLabel: formatPaidAtLabel(consumption.purchaseDate, consumption.purchaseTime),
-      category: consumption.category?.trim() || '기타',
-    });
-    groups.set(consumption.purchaseDate!, records);
+    const parsedDate = parsePurchaseDate(purchaseDate);
+    if (!parsedDate) return;
+
+    const consumptionsForDate = groups.get(purchaseDate) ?? [];
+    consumptionsForDate.push(
+      consumption as ConsumptionResponse & { id: number; purchaseDate: string }
+    );
+    groups.set(purchaseDate, consumptionsForDate);
   });
 
-  return [...groups.entries()].map(([dateValue, records]) => {
-    const parsedDate = parsePurchaseDate(dateValue)!;
-    return {
-      dateValue,
-      dateLabel: `${parsedDate.day}일 ${KOREAN_WEEKDAYS[parsedDate.date.getDay()]}`,
-      records,
-    };
-  });
+  return [...groups.entries()].map(([purchaseDate, consumptionsForDate]) => ({
+    consumptions: consumptionsForDate,
+    purchaseDate,
+  }));
 };
 
 export const formatSpendingYearMonth = ({ year, month }: YearMonth) =>

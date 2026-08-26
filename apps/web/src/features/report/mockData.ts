@@ -1,6 +1,6 @@
 import type { YearMonth } from '@/shared/types/yearMonth';
 
-import type { FrequentShop, SpendingRecordGroup } from './types';
+import type { FrequentShop } from './types';
 
 const MOCK_REPORT_PERSONAS = {
   nightWatch: {
@@ -128,76 +128,6 @@ export const MOCK_SPENDING_MONTHS = [
   { year: 2025, month: 12 },
   { year: 2025, month: 11 },
 ] as const satisfies readonly YearMonth[];
-
-export const MOCK_SPENDING_RECORD_GROUPS = [
-  {
-    dateLabel: '22일 목요일',
-    dateValue: '2026-08-22',
-    records: [
-      {
-        id: 'record-01',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.22 · 오전',
-        category: '카페',
-      },
-      {
-        id: 'record-02',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.22 · 오전',
-        category: '카페',
-      },
-      {
-        id: 'record-03',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.22 · 오전',
-        category: '카페',
-      },
-    ],
-  },
-  {
-    dateLabel: '21일 수요일',
-    dateValue: '2026-08-21',
-    records: [
-      {
-        id: 'record-04',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.21 · 오전',
-        category: '카페',
-      },
-    ],
-  },
-  {
-    dateLabel: '20일 화요일',
-    dateValue: '2026-08-20',
-    records: [
-      {
-        id: 'record-05',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.20 · 오전',
-        category: '카페',
-      },
-      {
-        id: 'record-06',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.20 · 오전',
-        category: '카페',
-      },
-      {
-        id: 'record-07',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.20 · 오전',
-        category: '카페',
-      },
-    ],
-  },
-] as const satisfies readonly SpendingRecordGroup[];
 
 export const MOCK_FREQUENT_SHOPS = [
   {

@@ -30,6 +30,6 @@ describe('useCurrentReportQuery', () => {
     const { result } = renderHook(() => useCurrentReportQuery(), { wrapper });
 
     await waitFor(() => expect(result.current.hasReportError).toBe(true));
-    expect(result.current.data.monthlyRecordCount).toBe(0);
+    expect(result.current.data.monthlyCount).toBe(0);
   });
 });
