@@ -115,7 +115,7 @@ describe('ShopDetailPage', () => {
     expect(useMapFocusStore.getState().focusPosition).toBeNull();
   });
 
-  it('직접 진입한 상세 화면에서 뒤로가기를 누르면 지도 홈으로 이동한다', async () => {
+  it('직접 진입한 상세 화면에서 뒤로가기를 누르면 이 가게로 지도 포커스를 맞추고 지도 홈으로 이동한다', async () => {
     const user = userEvent.setup();
     const sticker = TEST_MAP_STICKERS[0]!;
     render(
@@ -129,6 +129,11 @@ describe('ShopDetailPage', () => {
 
     await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
 
-    expect(screen.getByText('지도 홈')).toBeInTheDocument();
+    expect(await screen.findByText('지도 홈')).toBeInTheDocument();
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+      type: 'selectedPlace',
+      stickerId: sticker.id,
+    });
+    expect(useMapFocusStore.getState().focusPosition).toEqual(sticker.position);
   });
 });
