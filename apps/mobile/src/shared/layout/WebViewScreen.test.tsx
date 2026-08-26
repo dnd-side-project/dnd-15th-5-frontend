@@ -38,6 +38,11 @@ describe('<WebViewScreen />', () => {
     expect(getByTestId('test-webview')).toHaveStyle({ height: '100%', width: '100%' });
     expect(getByTestId('test-webview')).toHaveProp('nestedScrollEnabled', true);
     expect(getByTestId('test-webview')).toHaveProp('setSupportMultipleWindows', false);
+    expect(getByTestId('test-webview')).toHaveProp('scalesPageToFit', false);
+    expect(getByTestId('test-webview')).toHaveProp('setBuiltInZoomControls', false);
+    expect(getByTestId('test-webview').props.injectedJavaScriptBeforeContentLoaded).toContain(
+      'user-scalable=no'
+    );
     expect(getByTestId('test-webview').props.onShouldStartLoadWithRequest).toBe(
       onShouldStartLoadWithRequest
     );

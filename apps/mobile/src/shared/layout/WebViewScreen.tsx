@@ -17,6 +17,39 @@ const WEB_VIEW_SAFE_AREA_EDGES_BY_MODE = {
   none: [],
 } satisfies Record<WebViewSafeAreaMode, Edge[]>;
 const IOS_WEB_VIEW_RELOAD_WORKAROUND_HEIGHT = '99.9%';
+const DISABLE_WEB_VIEW_ZOOM_SCRIPT = `
+  (function () {
+    function disableZoom() {
+      var viewports = document.querySelectorAll('meta[name="viewport"]');
+      var viewport = viewports[0];
+
+      if (!viewport) {
+        var container = document.head || document.documentElement;
+
+        if (!container) {
+          return;
+        }
+
+        viewport = document.createElement('meta');
+        viewport.setAttribute('name', 'viewport');
+        container.appendChild(viewport);
+      }
+
+      viewport.setAttribute(
+        'content',
+        'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover'
+      );
+
+      for (var index = 1; index < viewports.length; index += 1) {
+        viewports[index].remove();
+      }
+    }
+
+    disableZoom();
+    document.addEventListener('DOMContentLoaded', disableZoom, { once: true });
+  })();
+  true;
+`;
 
 type GuideContent = {
   title: string;
@@ -120,6 +153,9 @@ export function WebViewScreen({
           source={source}
           automaticallyAdjustContentInsets={false}
           contentInsetAdjustmentBehavior="never"
+          scalesPageToFit={false}
+          setBuiltInZoomControls={false}
+          injectedJavaScriptBeforeContentLoaded={DISABLE_WEB_VIEW_ZOOM_SCRIPT}
           allowsBackForwardNavigationGestures={allowsBackForwardNavigationGestures}
           nestedScrollEnabled
           setSupportMultipleWindows={false}
