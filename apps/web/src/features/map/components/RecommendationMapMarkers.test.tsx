@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useNearbyPlaceRecommendationsQuery } from '../apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { mockGoogleMapsIdleEvent } from '../googleMapsEventMock';
 import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
 import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
 import { TEST_SHOP_RECOMMENDATIONS } from '../testFixtures';
@@ -34,6 +35,7 @@ describe('RecommendationMapMarkers', () => {
   beforeEach(() => {
     moveCamera.mockReset();
     panBy.mockReset();
+    mockGoogleMapsIdleEvent();
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
     useShopRecommendationStore.setState({
       activeRecommendationId: null,

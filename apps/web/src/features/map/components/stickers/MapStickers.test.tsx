@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { useNearbyPlaceRecommendationsQuery } from '../../apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useTogglePlaceLikeMutation } from '../../apis/hooks/useTogglePlaceLikeMutation';
 import { useVisitedPlaceStickersQuery } from '../../apis/hooks/useVisitedPlaceStickersQuery';
+import { mockGoogleMapsIdleEvent } from '../../googleMapsEventMock';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 import { useShopRecommendationStore } from '../../stores/shopRecommendationStore';
@@ -44,6 +45,7 @@ describe('MapStickers', () => {
   beforeEach(() => {
     moveCamera.mockReset();
     panBy.mockReset();
+    mockGoogleMapsIdleEvent();
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
     useMapCategoryFilterStore.setState({ selectedCategory: null });
     useShopRecommendationStore.setState({
