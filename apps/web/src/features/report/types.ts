@@ -1,9 +1,45 @@
 import type { ConsumptionResponse, StickerResponse } from '@/features/report/apis/dto';
+import type { YearMonth } from '@/shared/types/yearMonth';
 
 import type { SpendingCategory } from '@chapchap/shared/common/types';
 
 export type ReportPreferenceCardVariant =
   'alley-explorer' | 'food-nomad' | 'local-regular' | 'night-watch';
+
+export type ReportPreferenceMetric = {
+  leftLabel: string;
+  rightLabel: string;
+  value: number;
+};
+
+export type MonthlyReportPersona = {
+  description: string;
+  metrics: readonly ReportPreferenceMetric[];
+  tags: readonly string[];
+  title: string;
+  variant: ReportPreferenceCardVariant;
+};
+
+export type MonthlyReport = {
+  categories: readonly { category: SpendingCategory; percentage: number }[];
+  districts: readonly { name: string; visits: number }[];
+  month: YearMonth;
+  persona: MonthlyReportPersona;
+  shops: readonly {
+    id: string;
+    months: number;
+    name: string;
+    rank: 1 | 2 | 3;
+    stickerImages: readonly string[];
+    visits: number;
+  }[];
+  summary: readonly { label: string; value: number }[];
+  weekdayInsight: string;
+  weekdaySpending: readonly {
+    count: number;
+    day: '월' | '화' | '수' | '목' | '금' | '토' | '일';
+  }[];
+};
 
 export type WeeklyRecord = {
   count?: number;
