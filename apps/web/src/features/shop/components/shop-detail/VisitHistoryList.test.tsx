@@ -70,6 +70,8 @@ describe('VisitHistoryList', () => {
   });
 
   it('첫 페이지가 이미 있으면 다음 페이지 요청이 실패해도 기존 목록은 유지하고 하단에서 재시도할 수 있다', () => {
+    jest.useFakeTimers().setSystemTime(new Date(2026, 7, 27));
+
     const onLoadMore = jest.fn();
     render(
       <VisitHistoryList
@@ -91,5 +93,29 @@ describe('VisitHistoryList', () => {
     fireEvent.click(screen.getByRole('button', { name: '다시 불러오기' }));
 
     expect(onLoadMore).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  it('올해가 아닌 방문 기록에는 연도를 함께 표시한다', () => {
+    jest.useFakeTimers().setSystemTime(new Date(2026, 7, 27));
+
+    render(
+      <VisitHistoryList
+        visits={[{ visitedAt: '2025-08-23', amount: 23_000 }]}
+        isLoading={false}
+        isError={false}
+        isFetchNextPageError={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onLoadMore={jest.fn()}
+        onRetry={jest.fn()}
+        scrollRootRef={{ current: document.createElement('div') }}
+      />
+    );
+
+    expect(screen.getByText('2025년 8월 23일')).toBeInTheDocument();
+
+    jest.useRealTimers();
   });
 });
