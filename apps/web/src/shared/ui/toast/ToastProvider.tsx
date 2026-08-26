@@ -7,8 +7,10 @@ import {
 
 import { StatusErrorIcon, StatusSuccessIcon } from '@/shared/assets/icons';
 
+import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from './constants';
 import { toastVariants } from './toastVariants';
 
+import type { WebToastData } from './types';
 import type { ToastType } from '@chapchap/shared/toast';
 import type { PropsWithChildren } from 'react';
 
@@ -29,9 +31,11 @@ function ToastIcon({ type }: { type: ToastType }) {
   return Icon ? <Icon className="size-5 shrink-0" aria-hidden="true" /> : null;
 }
 
-function ToastList() {
-  const { toasts } = BaseToast.useToastManager();
-
+function ToastList({
+  toasts,
+}: {
+  toasts: ReturnType<typeof BaseToast.useToastManager<WebToastData>>['toasts'];
+}) {
   return toasts
     .filter((toast) => !toast.limited)
     .map((toast) => {
@@ -46,6 +50,28 @@ function ToastList() {
         </BaseToast.Root>
       );
     });
+}
+
+function ToastViewport({ placement }: { placement: WebToastData['placement'] }) {
+  const { toasts } = BaseToast.useToastManager<WebToastData>();
+  const visibleToasts = toasts.filter(
+    (toast) => !toast.limited && (toast.data?.placement ?? 'default') === (placement ?? 'default')
+  );
+  const isAboveBottomSheet = placement === 'above-bottom-sheet';
+
+  return (
+    <BaseToast.Viewport
+      className="toast-list mobile-frame z-toast pointer-events-none fixed right-0 left-0 box-border flex flex-col-reverse px-4 outline-none"
+      style={{
+        bottom: isAboveBottomSheet
+          ? `calc(var(${TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE}, 0px) + 0.75rem)`
+          : 'calc(1.25rem + env(safe-area-inset-bottom))',
+      }}
+      data-testid={isAboveBottomSheet ? 'toast-viewport-above-bottom-sheet' : 'toast-viewport'}
+    >
+      <ToastList toasts={visibleToasts} />
+    </BaseToast.Viewport>
+  );
 }
 
 /**
@@ -71,13 +97,8 @@ export function ToastProvider({ children, duration = DEFAULT_TOAST_DURATION }: T
     <BaseToast.Provider timeout={duration} limit={MAX_VISIBLE_TOASTS}>
       {children}
       <BaseToast.Portal>
-        <BaseToast.Viewport
-          className="toast-list mobile-frame z-toast pointer-events-none fixed right-0 left-0 box-border flex flex-col-reverse px-4 outline-none"
-          style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
-          data-testid="toast-viewport"
-        >
-          <ToastList />
-        </BaseToast.Viewport>
+        <ToastViewport placement="default" />
+        <ToastViewport placement="above-bottom-sheet" />
       </BaseToast.Portal>
     </BaseToast.Provider>
   );
