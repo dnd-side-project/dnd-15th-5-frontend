@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { ApiResponse, ConsumptionCreateRequest } from '@/features/record/apis/dto';
 import { useCreateConsumption } from '@/features/record/apis/mutations';
+import { isConsumptionRelatedQuery } from '@/shared/apis/isConsumptionRelatedQuery';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { useToast } from '@/shared/ui/toast';
 
@@ -21,14 +22,7 @@ export const useCreateConsumptionMutation = () => {
     mutation: {
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-          predicate: (query) => {
-            const [key] = query.queryKey;
-
-            return (
-              typeof key === 'string' &&
-              (key.startsWith('/consumptions') || key.startsWith('/reports'))
-            );
-          },
+          predicate: isConsumptionRelatedQuery,
         });
         showToast({ type: 'success', message: CREATE_CONSUMPTION_SUCCESS_MESSAGE });
         navigate(ROUTE_PATHS.home, { replace: true });

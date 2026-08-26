@@ -1,38 +1,33 @@
-import { render, screen } from '@testing-library/react';
-
-import { isNativeApp } from '@/shared/lib/bridge';
+import { NATIVE_APP_ACTIVE_EVENT } from '@chapchap/shared/bridge';
+import { QueryClient } from '@tanstack/react-query';
+import { act, render } from '@testing-library/react';
 
 import QueryProvider from './QueryProvider';
 
-jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn() }));
-jest.mock('@tanstack/react-query-devtools', () => ({
-  ReactQueryDevtools: () => <div data-testid="query-devtools" />,
-}));
+jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: () => true }));
+jest.mock('@/shared/lib/env', () => ({ IS_DEVELOPMENT: false }));
 
-const mockIsNativeApp = jest.mocked(isNativeApp);
-
-describe('<QueryProvider />', () => {
-  it('일반 브라우저 개발 환경에서는 Query Devtools를 표시한다', () => {
-    mockIsNativeApp.mockReturnValue(false);
-
-    render(
+describe('QueryProvider', () => {
+  it('네이티브 앱이 활성화되면 소비와 리포트 캐시를 무효화한다', () => {
+    const invalidateQueries = jest
+      .spyOn(QueryClient.prototype, 'invalidateQueries')
+      .mockResolvedValue(undefined);
+    const { unmount } = render(
       <QueryProvider>
-        <div>콘텐츠</div>
+        <div />
       </QueryProvider>
     );
 
-    expect(screen.getByTestId('query-devtools')).toBeInTheDocument();
-  });
+    act(() => window.dispatchEvent(new Event(NATIVE_APP_ACTIVE_EVENT)));
 
-  it('앱 WebView에서는 Query Devtools를 표시하지 않는다', () => {
-    mockIsNativeApp.mockReturnValue(true);
+    expect(invalidateQueries).toHaveBeenCalledTimes(1);
+    const { predicate } = invalidateQueries.mock.calls[0][0] ?? {};
 
-    render(
-      <QueryProvider>
-        <div>콘텐츠</div>
-      </QueryProvider>
-    );
+    expect(predicate?.({ queryKey: ['/consumptions', 'infinite'] } as never)).toBe(true);
+    expect(predicate?.({ queryKey: ['/reports/current'] } as never)).toBe(true);
+    expect(predicate?.({ queryKey: ['/accounts/me'] } as never)).toBe(false);
 
-    expect(screen.queryByTestId('query-devtools')).not.toBeInTheDocument();
+    unmount();
+    invalidateQueries.mockRestore();
   });
 });

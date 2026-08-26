@@ -1,5 +1,5 @@
 import { act, render } from '@testing-library/react-native';
-import { BackHandler, Linking } from 'react-native';
+import { AppState, BackHandler, Linking } from 'react-native';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 
@@ -7,9 +7,13 @@ import HomeScreen from './HomeScreen';
 
 const mockCreateBridgeResponse = jest.fn();
 const mockCreateResponseScript = jest.fn((_response: unknown, _trustedOrigin: string) => 'true;');
+const mockCreateAppActiveScript = jest.fn((_trustedOrigin: string) => 'app-active;');
 const removeBackHandler = jest.fn();
+const removeAppStateHandler = jest.fn();
 type HardwareBackHandler = Parameters<typeof BackHandler.addEventListener>[1];
+type AppStateChangeHandler = Parameters<typeof AppState.addEventListener>[1];
 let hardwareBackHandler: HardwareBackHandler | undefined;
+let appStateChangeHandler: AppStateChangeHandler | undefined;
 const hardwareBackPressEvent = { type: 'hardwareBackPress', timeStamp: 0 };
 const edgeToEdgeEdges = {
   top: 'off',
@@ -49,6 +53,7 @@ const { __mockGoBack: mockGoBack, __mockInjectJavaScript: mockInjectJavaScript }
 ) as { __mockGoBack: jest.Mock; __mockInjectJavaScript: jest.Mock };
 
 jest.mock('@/bridge', () => ({
+  createAppActiveScript: (trustedOrigin: string) => mockCreateAppActiveScript(trustedOrigin),
   createBridgeResponse: (message: unknown) => mockCreateBridgeResponse(message),
   createResponseScript: (response: unknown, trustedOrigin: string) =>
     mockCreateResponseScript(response, trustedOrigin),
@@ -65,15 +70,22 @@ describe('<HomeScreen />', () => {
 
   beforeEach(() => {
     hardwareBackHandler = undefined;
+    appStateChangeHandler = undefined;
     mockGoBack.mockReset();
     mockInjectJavaScript.mockReset();
     removeBackHandler.mockReset();
+    removeAppStateHandler.mockReset();
+    mockCreateAppActiveScript.mockClear();
     mockCreateBridgeResponse.mockReset();
     mockCreateBridgeResponse.mockResolvedValue({});
     mockCreateResponseScript.mockClear();
     jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_eventName, handler) => {
       hardwareBackHandler = handler;
       return { remove: removeBackHandler };
+    });
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_eventName, handler) => {
+      appStateChangeHandler = handler;
+      return { remove: removeAppStateHandler };
     });
     jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
   });
@@ -104,6 +116,19 @@ describe('<HomeScreen />', () => {
     expect(getByTestId('home-webview')).toHaveProp('contentInsetAdjustmentBehavior', 'never');
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
     expect(getByTestId('home-webview')).toHaveProp('setSupportMultipleWindows', false);
+  });
+
+  it('백그라운드에서 앱으로 돌아오면 WebView에 활성화 이벤트를 전달한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    await render(<HomeScreen />);
+
+    await act(async () => {
+      appStateChangeHandler?.('background');
+      appStateChangeHandler?.('active');
+    });
+
+    expect(mockCreateAppActiveScript).toHaveBeenCalledWith('https://chapchap.example.com');
+    expect(mockInjectJavaScript).toHaveBeenCalledWith('app-active;');
   });
 
   it('지도 홈은 전체 화면, 다른 웹 경로는 하단 배경만 edge-to-edge로 표시한다', async () => {

@@ -1,9 +1,10 @@
 import { isBridgeEvent, isBridgeRequest, parseBridgeMessage } from '@chapchap/shared/bridge';
 import { useEffect, useRef } from 'react';
-import { BackHandler, Linking } from 'react-native';
+import { AppState, BackHandler, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import {
+  createAppActiveScript,
   createBridgeResponse,
   createResponseScript,
   getTrustedInternalUrl,
@@ -32,6 +33,21 @@ export default function HomeScreen() {
   const webViewRef = useRef<WebView>(null);
   const { canGoBack, handleNavigationStateChange, handleRouteChange, isMapHome } =
     useWebViewNavigationState(initialWebUrl ?? undefined);
+
+  useEffect(() => {
+    let previousAppState = AppState.currentState;
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      const didBecomeActive = previousAppState !== 'active' && nextAppState === 'active';
+
+      previousAppState = nextAppState;
+
+      if (didBecomeActive && trustedWebOrigin) {
+        webViewRef.current?.injectJavaScript(createAppActiveScript(trustedWebOrigin));
+      }
+    });
+
+    return () => subscription.remove();
+  }, [trustedWebOrigin]);
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {

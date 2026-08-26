@@ -44,6 +44,14 @@ describe('useConsumptionsInfiniteQuery', () => {
     const { result } = renderHook(() => useConsumptionsInfiniteQuery('2026-08'), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const consumptionQuery = queryClient.getQueryCache().find({
+      queryKey: ['/consumptions', 'infinite', { yearMonth: '2026-08' }],
+    });
+    const cacheOptions = consumptionQuery?.options as
+      { gcTime?: number; staleTime?: number } | undefined;
+
+    expect(cacheOptions?.staleTime).toBe(5 * 60 * 1000);
+    expect(cacheOptions?.gcTime).toBe(30 * 60 * 1000);
     expect(mockedGetConsumptions).toHaveBeenNthCalledWith(
       1,
       { yearMonth: '2026-08', size: 15 },

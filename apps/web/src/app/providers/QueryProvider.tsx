@@ -1,6 +1,9 @@
+import { NATIVE_APP_ACTIVE_EVENT } from '@chapchap/shared/bridge';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { useEffect } from 'react';
 
+import { isConsumptionRelatedQuery } from '@/shared/apis/isConsumptionRelatedQuery';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { IS_DEVELOPMENT } from '@/shared/lib/env';
 
@@ -26,6 +29,18 @@ type QueryProviderProps = PropsWithChildren;
  */
 function QueryProvider({ children }: QueryProviderProps) {
   const shouldShowDevtools = IS_DEVELOPMENT && !isNativeApp();
+
+  useEffect(() => {
+    const handleNativeAppActive = () => {
+      void queryClient.invalidateQueries({
+        predicate: isConsumptionRelatedQuery,
+      });
+    };
+
+    window.addEventListener(NATIVE_APP_ACTIVE_EVENT, handleNativeAppActive);
+
+    return () => window.removeEventListener(NATIVE_APP_ACTIVE_EVENT, handleNativeAppActive);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
