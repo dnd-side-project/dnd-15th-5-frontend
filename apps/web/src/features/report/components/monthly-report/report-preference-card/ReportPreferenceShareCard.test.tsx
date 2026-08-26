@@ -23,6 +23,7 @@ describe('ReportPreferenceShareCard', () => {
     const titleGroup = screen.getByRole('heading', { name: '동네 터줏대감' }).parentElement;
 
     expect(card).toHaveClass('h-129', 'w-61');
+    expect(card).toHaveClass('shadow-report-preference-save-card');
     expect(titleGroup).toHaveClass('text-primary-50');
     expect(screen.queryByText(/익숙한 동네/)).not.toBeInTheDocument();
   });
@@ -35,6 +36,9 @@ describe('ReportPreferenceShareCard', () => {
       />
     );
 
+    expect(screen.getByRole('article', { name: '동네 터줏대감 공유 카드' })).toHaveClass(
+      'shadow-report-preference-share-card'
+    );
     expect(screen.getByText('익숙한 동네와 단골 가게를 자주 찾아요.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '동네 터줏대감' }).parentElement).toHaveClass(
       'text-neutral-00'

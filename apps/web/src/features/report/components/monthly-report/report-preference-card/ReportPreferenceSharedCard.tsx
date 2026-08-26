@@ -37,7 +37,7 @@ export default function ReportPreferenceSharedCard({
     <article
       aria-label={`${title} 공유 카드`}
       className={cn(
-        'relative w-61 overflow-hidden rounded-15 shadow-report-preference-save-card',
+        'relative w-61 overflow-hidden rounded-15 shadow-report-preference-share-card',
         variantConfig.frontClassName
       )}
     >
