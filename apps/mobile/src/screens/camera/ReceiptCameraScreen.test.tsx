@@ -80,6 +80,14 @@ describe('<ReceiptCameraScreen />', () => {
       purchaseDate: '2026-07-25',
       purchaseTime: '11:20:00',
       amount: 33000,
+      googlePlaceSearchResult: {
+        googlePlaceId: 'ChIJ-two-some',
+        placeName: '투썸플레이스 신논현점',
+        roadAddress: '서울특별시 강남구 봉은사로 125 1층',
+        latitude: 37.506481,
+        longitude: 127.024551,
+        thumbnailUrl: 'https://example.com/twosome.jpg',
+      },
     });
     const { getByRole } = await render(<ReceiptCameraScreen />);
 
@@ -101,8 +109,12 @@ describe('<ReceiptCameraScreen />', () => {
       params: {
         uri: 'file://normalized.jpg',
         receiptImageId: '15',
+        shopId: 'ChIJ-two-some',
         shopName: '투썸플레이스 신논현점',
         shopAddress: '서울특별시 강남구 봉은사로 125 1층',
+        shopPhotoUrl: 'https://example.com/twosome.jpg',
+        latitude: '37.506481',
+        longitude: '127.024551',
         amount: '33000',
         visitedAt: String(new Date(2026, 6, 25, 11, 20).getTime()),
         visitPeriod: 'afternoon',
