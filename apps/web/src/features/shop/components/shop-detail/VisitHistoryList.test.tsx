@@ -1,4 +1,4 @@
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 
 import VisitHistoryList from './VisitHistoryList';
 
@@ -31,6 +31,7 @@ describe('VisitHistoryList', () => {
         visits={[{ visitedAt: '2026-08-23', amount: 23_000 }]}
         isLoading={false}
         isError={false}
+        isFetchNextPageError={false}
         hasNextPage
         isFetchingNextPage={false}
         onLoadMore={onLoadMore}
@@ -55,7 +56,8 @@ describe('VisitHistoryList', () => {
       <VisitHistoryList
         visits={[{ visitedAt: '2026-08-23', amount: 23_000 }]}
         isLoading={false}
-        isError
+        isError={false}
+        isFetchNextPageError
         hasNextPage
         isFetchingNextPage={false}
         onLoadMore={jest.fn()}
@@ -65,5 +67,29 @@ describe('VisitHistoryList', () => {
     );
 
     expect(globalThis.IntersectionObserver).not.toHaveBeenCalled();
+  });
+
+  it('첫 페이지가 이미 있으면 다음 페이지 요청이 실패해도 기존 목록은 유지하고 하단에서 재시도할 수 있다', () => {
+    const onLoadMore = jest.fn();
+    render(
+      <VisitHistoryList
+        visits={[{ visitedAt: '2026-08-23', amount: 23_000 }]}
+        isLoading={false}
+        isError={false}
+        isFetchNextPageError
+        hasNextPage
+        isFetchingNextPage={false}
+        onLoadMore={onLoadMore}
+        onRetry={jest.fn()}
+        scrollRootRef={{ current: document.createElement('div') }}
+      />
+    );
+
+    expect(screen.getByText('8월 23일')).toBeInTheDocument();
+    expect(screen.queryByText('방문 기록을 불러오지 못했어요.')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '다시 불러오기' }));
+
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
   });
 });

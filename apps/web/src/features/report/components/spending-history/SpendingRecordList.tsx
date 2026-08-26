@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react';
-
 import type { SpendingRecordGroup } from '@/features/report/types';
+import { useInfiniteScrollTrigger } from '@/shared/hooks/useInfiniteScrollTrigger';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 
@@ -24,22 +23,10 @@ export default function SpendingRecordList({
   onLoadMore,
   onRetry,
 }: SpendingRecordListProps) {
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const loadMoreElement = loadMoreRef.current;
-    if (!loadMoreElement || !hasNextPage || isFetchingNextPage || isLoadMoreError) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) onLoadMore();
-      },
-      { rootMargin: '120px 0px' }
-    );
-
-    observer.observe(loadMoreElement);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, isLoadMoreError, onLoadMore]);
+  const loadMoreRef = useInfiniteScrollTrigger({
+    enabled: hasNextPage && !isFetchingNextPage && !isLoadMoreError,
+    onIntersect: onLoadMore,
+  });
 
   return (
     <div>

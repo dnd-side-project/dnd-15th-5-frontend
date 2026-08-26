@@ -1,11 +1,15 @@
 import { RECORD_CATEGORIES } from '@chapchap/shared/record';
 import { useState } from 'react';
 
-import { MOCK_FREQUENT_SHOPS } from '@/features/report/mockData';
+import { GetFrequentPlacesPeriod } from '@/features/report/apis/dto';
+import { useFrequentPlacesInfiniteQuery } from '@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery';
 import type { FrequentShopPeriod } from '@/features/report/types';
+import { toFrequentShops } from '@/features/report/utils/frequentPlaces';
 import { FilterIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { useInfiniteScrollTrigger } from '@/shared/hooks/useInfiniteScrollTrigger';
 import { CategoryChip } from '@/shared/ui/category-chip';
+import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
 
 import FrequentShopItem from './FrequentShopItem';
@@ -25,10 +29,21 @@ export default function FrequentShopList({ headerContent }: FrequentShopListProp
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('모두');
   const [selectedPeriod, setSelectedPeriod] = useState<FrequentShopPeriod>('currentMonth');
   const [isPeriodFilterOpen, setIsPeriodFilterOpen] = useState(false);
-
-  const filteredShops = MOCK_FREQUENT_SHOPS.filter(
-    (shop) => selectedCategory === '모두' || shop.category === selectedCategory
+  const query = useFrequentPlacesInfiniteQuery({
+    period:
+      selectedPeriod === 'currentMonth'
+        ? GetFrequentPlacesPeriod.THIS_MONTH
+        : GetFrequentPlacesPeriod.ALL_TIME,
+    category: selectedCategory === '모두' ? undefined : [selectedCategory],
+  });
+  const frequentShops = toFrequentShops(
+    query.data?.pages.flatMap((page) => page.data?.places ?? []) ?? []
   );
+  const { fetchNextPage, hasNextPage, isFetchNextPageError, isFetchingNextPage } = query;
+  const loadMoreRef = useInfiniteScrollTrigger({
+    enabled: Boolean(hasNextPage) && !isFetchingNextPage && !isFetchNextPageError,
+    onIntersect: fetchNextPage,
+  });
 
   const handlePeriodSelect = (period: FrequentShopPeriod) => {
     setSelectedPeriod(period);
@@ -68,18 +83,52 @@ export default function FrequentShopList({ headerContent }: FrequentShopListProp
 
       <h1 className="sr-only">단골 리스트</h1>
       <div className="flex flex-1 flex-col">
-        {filteredShops.length > 0 ? (
+        {query.isPending ? (
+          <div
+            role="status"
+            aria-label="단골 리스트 불러오는 중"
+            className="flex flex-1 items-center justify-center"
+          >
+            <Spinner className="size-6 text-primary-500" />
+          </div>
+        ) : query.isError && !query.data ? (
+          <StateView
+            variant="error"
+            title="단골 리스트를 불러오지 못했어요"
+            description="잠시 후 다시 시도해주세요."
+            actionLabel="다시 불러오기"
+            headingAs="h2"
+            onAction={() => void query.refetch()}
+            className="my-auto"
+          />
+        ) : frequentShops.length > 0 ? (
           <ol className="-mx-4 flex flex-col gap-6 pt-4 pb-8">
-            {filteredShops.map((shop, index) => (
-              <FrequentShopItem
-                key={shop.id}
-                rank={index + 1}
-                shop={shop}
-                visitCount={
-                  selectedPeriod === 'currentMonth' ? shop.monthlyVisitCount : shop.totalVisitCount
-                }
-              />
+            {frequentShops.map((shop) => (
+              <FrequentShopItem key={shop.id} shop={shop} />
             ))}
+            <li aria-hidden="true">
+              <div ref={loadMoreRef} className="h-1" />
+            </li>
+            {query.isFetchingNextPage && (
+              <li
+                role="status"
+                aria-label="단골 리스트 더 불러오는 중"
+                className="flex justify-center py-4"
+              >
+                <Spinner className="size-5 text-primary-500" />
+              </li>
+            )}
+            {query.isFetchNextPageError && (
+              <li className="flex justify-center py-2">
+                <button
+                  type="button"
+                  onClick={() => void query.fetchNextPage()}
+                  className="text-body-02-medium text-primary-500"
+                >
+                  다시 불러오기
+                </button>
+              </li>
+            )}
           </ol>
         ) : (
           <StateView

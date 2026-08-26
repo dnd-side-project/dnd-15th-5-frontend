@@ -1,13 +1,21 @@
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
+import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 
 import HomeMapOverlay from './HomeMapOverlay';
 
+jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
+
+const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
+
 describe('HomeMapOverlay', () => {
   beforeEach(() => {
     useHomeBottomSheetStore.setState({ topActionBottomPx: 0 });
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      monthlyPlaceCount: 7,
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
   });
 
   it('지도는 가리지 않으면서 상단 UI를 Safe Area 아래에 배치한다', () => {

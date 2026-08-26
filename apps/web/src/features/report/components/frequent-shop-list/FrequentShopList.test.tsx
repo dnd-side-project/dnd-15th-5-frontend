@@ -2,12 +2,28 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
+import { GetFrequentPlacesPeriod } from '@/features/report/apis/dto';
+import { useFrequentPlacesInfiniteQuery } from '@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery';
+
 import FrequentShopList from './FrequentShopList';
+
+jest.mock('@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery');
 
 jest.mock('@/shared/assets/images/state', () => ({
   EmptyStateImage: 'img-empty.png',
   ErrorStateImage: 'img-error.png',
 }));
+
+const mockedUseFrequentPlacesInfiniteQuery = jest.mocked(useFrequentPlacesInfiniteQuery);
+const createPlaces = (visitCount: number) =>
+  Array.from({ length: 8 }, (_, index) => ({
+    rank: index + 1,
+    placeId: index + 1,
+    placeName: `투썸플레이스 ${index + 1}`,
+    category: '카페',
+    dongname: '용산구',
+    visitCount: index === 0 ? visitCount : 7,
+  }));
 
 const firePointerEvent = (element: Element, type: string, clientY: number) => {
   const event = new Event(type, { bubbles: true, cancelable: true });
@@ -24,6 +40,33 @@ const renderFrequentShopList = () =>
   );
 
 describe('FrequentShopList', () => {
+  beforeEach(() => {
+    mockedUseFrequentPlacesInfiniteQuery.mockImplementation(
+      ({ category, period }) =>
+        ({
+          data: {
+            pages: [
+              {
+                data: {
+                  places: category?.includes('편의점/마트')
+                    ? []
+                    : createPlaces(period === GetFrequentPlacesPeriod.ALL_TIME ? 28 : 12),
+                  hasNext: false,
+                },
+              },
+            ],
+          },
+          isPending: false,
+          isError: false,
+          hasNextPage: false,
+          isFetchingNextPage: false,
+          isFetchNextPageError: false,
+          fetchNextPage: jest.fn(),
+          refetch: jest.fn(),
+        }) as unknown as ReturnType<typeof useFrequentPlacesInfiniteQuery>
+    );
+  });
+
   it('단골 가게의 순위와 이번 달 방문 횟수를 보여준다', () => {
     renderFrequentShopList();
 

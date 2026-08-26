@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { MOCK_SHOP_RECOMMENDATIONS } from '../mockData';
+import { useNearbyPlaceRecommendationsQuery } from '../apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
 import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
+import { TEST_SHOP_RECOMMENDATIONS } from '../testFixtures';
 
 import RecommendationMapMarkers from './RecommendationMapMarkers';
 
@@ -11,6 +12,10 @@ import type { PropsWithChildren } from 'react';
 
 const moveCamera = jest.fn();
 const panBy = jest.fn();
+
+jest.mock('../apis/hooks/useNearbyPlaceRecommendationsQuery');
+
+const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
 
 jest.mock('@vis.gl/react-google-maps', () => ({
   AdvancedMarker: ({
@@ -32,12 +37,14 @@ describe('RecommendationMapMarkers', () => {
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
     useShopRecommendationStore.setState({
       activeRecommendationId: null,
-      likedRecommendationIds: [],
     });
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: TEST_SHOP_RECOMMENDATIONS,
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
   });
 
   it('캐러셀에서 선택했더라도 좋아요하지 않은 가게는 마커를 표시하지 않는다', () => {
-    const recommendation = MOCK_SHOP_RECOMMENDATIONS[0];
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
     useHomeBottomSheetStore.getState().showRecommendation();
     useShopRecommendationStore.setState({ activeRecommendationId: recommendation.id });
 
@@ -52,8 +59,7 @@ describe('RecommendationMapMarkers', () => {
 
   it('좋아요 마커를 누르면 active 아이콘으로 바꾸고 선택한 가게를 공유한다', async () => {
     const user = userEvent.setup();
-    const recommendation = MOCK_SHOP_RECOMMENDATIONS[1];
-    useShopRecommendationStore.setState({ likedRecommendationIds: [recommendation.id] });
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[1]!;
 
     render(<RecommendationMapMarkers />);
 

@@ -1,16 +1,15 @@
-import { useEffect, useRef } from 'react';
-
+import type { PlaceVisitResponse } from '@/features/shop/apis/dto';
+import { formatVisitAmount, formatVisitDate } from '@/features/shop/utils/formatVisit';
+import { useInfiniteScrollTrigger } from '@/shared/hooks/useInfiniteScrollTrigger';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 
-import { formatVisitAmount, formatVisitDate } from '../../utils/formatVisit';
-
-import type { PlaceVisitResponse } from '../../apis/dto';
 import type { RefObject } from 'react';
 
 type VisitHistoryListProps = {
   hasNextPage: boolean;
   isError: boolean;
+  isFetchNextPageError: boolean;
   isFetchingNextPage: boolean;
   isLoading: boolean;
   onLoadMore: () => void;
@@ -22,6 +21,7 @@ type VisitHistoryListProps = {
 export default function VisitHistoryList({
   hasNextPage,
   isError,
+  isFetchNextPageError,
   isFetchingNextPage,
   isLoading,
   onLoadMore,
@@ -29,26 +29,11 @@ export default function VisitHistoryList({
   scrollRootRef,
   visits,
 }: VisitHistoryListProps) {
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const loadMoreElement = loadMoreRef.current;
-    if (!loadMoreElement || isError || !hasNextPage || isFetchingNextPage) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          onLoadMore();
-        }
-      },
-      { root: scrollRootRef.current, rootMargin: '120px 0px' }
-    );
-
-    observer.observe(loadMoreElement);
-    return () => observer.disconnect();
-  }, [hasNextPage, isError, isFetchingNextPage, onLoadMore, scrollRootRef]);
+  const loadMoreRef = useInfiniteScrollTrigger({
+    enabled: hasNextPage && !isError && !isFetchNextPageError && !isFetchingNextPage,
+    onIntersect: onLoadMore,
+    rootRef: scrollRootRef,
+  });
 
   return (
     <section aria-labelledby="visit-history-title" className="mt-8 pb-8">
@@ -102,6 +87,15 @@ export default function VisitHistoryList({
           className="flex justify-center py-5"
         >
           <Spinner className="text-primary-500" />
+        </div>
+      )}
+
+      {!isFetchingNextPage && isFetchNextPageError && (
+        <div className="flex flex-col items-center py-5 text-body-02-regular text-neutral-500">
+          다음 방문 기록을 불러오지 못했어요.
+          <Button variant="primary" size="small" className="mt-3" onClick={onLoadMore}>
+            다시 불러오기
+          </Button>
         </div>
       )}
     </section>
