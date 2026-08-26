@@ -52,6 +52,7 @@ export type ConsumptionCreateRequest = {
    * 소비 카테고리
    * @minLength 0
    * @maxLength 40
+   * @pattern ^(카페|운동|편의점/마트|취미/놀거리|음식점|미용/뷰티|기타)$
    */
   category: string;
 };
@@ -62,6 +63,10 @@ export type ConsumptionCreateRequest = {
 export type ConsumptionCreateResponse = {
   /** 생성된 소비 기록 ID */
   consumptionId?: number;
+  /** 획득한 스티커 카테고리 */
+  stickerCategory?: string;
+  /** 획득한 스티커 이름 */
+  stickerName?: string;
 };
 
 export type ApiResponseConsumptionCreateResponse = {
@@ -82,6 +87,27 @@ export type ApiResponse = {
 export type ReceiptOcrRequest = {
   /** OCR 처리할 영수증 이미지 (JPEG, PNG, 최대 5MB, 최대 4096x4096) */
   receiptImage: Blob;
+};
+
+/**
+ * Google Place 검색 결과
+ */
+export type GooglePlaceSearchResultResponse = {
+  /** Google Place ID */
+  googlePlaceId?: string;
+  /** 장소명 */
+  placeName?: string;
+  /** 도로명주소 */
+  roadAddress?: string;
+  /** 위도 */
+  latitude?: number;
+  /** 경도 */
+  longitude?: number;
+  /**
+   * 장소 썸네일 URL
+   * @nullable
+   */
+  thumbnailUrl?: string | null;
 };
 
 /**
@@ -115,6 +141,11 @@ export type ReceiptOcrResponse = {
    * @nullable
    */
   amount?: number | null;
+  /**
+   * OCR 결과로 조회한 Google Place 검색 결과
+   * @nullable
+   */
+  googlePlaceSearchResult?: GooglePlaceSearchResultResponse;
 };
 
 export type ApiResponseReceiptOcrResponse = {
