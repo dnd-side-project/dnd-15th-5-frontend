@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { useFirstAvailableYearMonthQuery } from '@/features/report/apis/hooks/useFirstAvailableYearMonthQuery';
 import { useMonthlyStickerRecordsQuery } from '@/features/report/apis/hooks/useMonthlyStickerRecordsQuery';
 import MonthlyRecordEmptyState from '@/features/report/components/common/MonthlyRecordEmptyState';
 import MonthPickerSheet from '@/features/report/components/common/MonthPickerSheet';
@@ -9,10 +10,10 @@ import type { YearMonth } from '@/shared/types/yearMonth';
 import { StateView } from '@/shared/ui/state-view';
 import { StickerCollection } from '@/shared/ui/sticker-collection';
 import {
-  addMonth,
+  createYearMonthRange,
   getCurrentMonth,
-  getMonthDifference,
   isBeforeMonth,
+  isSameMonth,
 } from '@/shared/utils/yearMonth';
 
 import type { ReactNode } from 'react';
@@ -21,25 +22,24 @@ type MonthlyStickerRecordListProps = {
   headerContent?: ReactNode;
 };
 
-const DEFAULT_MONTH_PICKER_ITEM_COUNT = 12;
-
 /** 선택한 월에 획득한 스티커를 날짜별 5열 슬롯으로 보여줍니다. */
 export default function MonthlyStickerRecordList({ headerContent }: MonthlyStickerRecordListProps) {
   const currentMonth = getCurrentMonth();
   const [selectedMonth, setSelectedMonth] = useState<YearMonth>(currentMonth);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const stickerRecordsQuery = useMonthlyStickerRecordsQuery(selectedMonth);
+  const firstAvailableYearMonthQuery = useFirstAvailableYearMonthQuery();
   const isPastMonth = isBeforeMonth(selectedMonth, currentMonth);
-  const hasNewerMonth = isPastMonth;
   const recordGroups = stickerRecordsQuery.data ?? [];
-  // TODO: 백엔드에서 최초 조회 가능 연월을 제공하면 월 목록과 이전 달 이동 범위를 API 기준으로 제한한다.
-  const monthPickerItemCount = Math.max(
-    DEFAULT_MONTH_PICKER_ITEM_COUNT,
-    getMonthDifference(currentMonth, selectedMonth) + 1
+  const selectableMonths = createYearMonthRange(
+    currentMonth,
+    firstAvailableYearMonthQuery.data ?? currentMonth
   );
-  const selectableMonths = Array.from({ length: monthPickerItemCount }, (_, index) =>
-    addMonth(currentMonth, -index)
+  const selectedMonthIndex = selectableMonths.findIndex((month) =>
+    isSameMonth(month, selectedMonth)
   );
+  const hasNewerMonth = selectedMonthIndex > 0;
+  const hasOlderMonth = selectedMonthIndex >= 0 && selectedMonthIndex < selectableMonths.length - 1;
 
   const handleMonthSelect = (month: YearMonth) => {
     setSelectedMonth(month);
@@ -53,12 +53,12 @@ export default function MonthlyStickerRecordList({ headerContent }: MonthlyStick
         <MonthSelector
           className="mt-5"
           hasNewerMonth={hasNewerMonth}
-          hasOlderMonth
+          hasOlderMonth={hasOlderMonth}
           headingLabel={`${selectedMonth.month}월에 쌓인 기록`}
           isMonthPickerOpen={isMonthPickerOpen}
           onMonthClick={() => setIsMonthPickerOpen(true)}
-          onNewerMonth={() => setSelectedMonth((month) => addMonth(month, 1))}
-          onOlderMonth={() => setSelectedMonth((month) => addMonth(month, -1))}
+          onNewerMonth={() => setSelectedMonth(selectableMonths[selectedMonthIndex - 1])}
+          onOlderMonth={() => setSelectedMonth(selectableMonths[selectedMonthIndex + 1])}
           selectedMonth={selectedMonth}
           variant="prominent"
         />

@@ -8,6 +8,10 @@ import { MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
 import SpendingHistory from './SpendingHistory';
 
 jest.mock('@/features/report/apis/hooks/useConsumptionsInfiniteQuery');
+const mockUseFirstAvailableYearMonthQuery = jest.fn();
+jest.mock('@/features/report/apis/hooks/useFirstAvailableYearMonthQuery', () => ({
+  useFirstAvailableYearMonthQuery: () => mockUseFirstAvailableYearMonthQuery(),
+}));
 
 jest.mock('@/shared/assets/images/state', () => ({
   EmptyStateImage: 'img-empty.png',
@@ -56,10 +60,20 @@ const renderSpendingHistory = (initialDate?: string) =>
   );
 
 describe('SpendingHistory', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-08-25T12:00:00+09:00'));
+  });
+
   beforeEach(() => {
     fetchNextPage.mockReset();
     refetch.mockReset();
+    mockUseFirstAvailableYearMonthQuery.mockReturnValue({ data: { year: 2025, month: 11 } });
     mockedUseConsumptionsInfiniteQuery.mockImplementation(createQueryResult);
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
   });
 
   it('날짜별 소비 기록과 금액을 보여준다', () => {
@@ -102,7 +116,7 @@ describe('SpendingHistory', () => {
   });
 
   it('소비내역 조회에 실패하면 다시 불러올 수 있다', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     mockedUseConsumptionsInfiniteQuery.mockReturnValue({
       ...createQueryResult('2026-07'),
       isError: true,
@@ -118,7 +132,7 @@ describe('SpendingHistory', () => {
   });
 
   it('다음 페이지 조회에 실패하면 기존 목록을 유지하고 하단에서 재시도한다', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     mockedUseConsumptionsInfiniteQuery.mockReturnValue({
       ...createQueryResult('2026-08'),
       hasNextPage: true,
@@ -139,7 +153,7 @@ describe('SpendingHistory', () => {
   });
 
   it('특정 날짜를 찾던 중 다음 페이지 조회에 실패하면 자동 재요청을 멈춘다', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     mockedUseConsumptionsInfiniteQuery.mockReturnValue({
       ...createQueryResult('2026-08'),
       hasNextPage: true,
@@ -165,7 +179,7 @@ describe('SpendingHistory', () => {
   });
 
   it('날짜 링크로 진입한 뒤 다른 월을 선택하면 다음 페이지를 불러온다', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     let intersectionCallback: IntersectionObserverCallback = jest.fn();
     Object.defineProperty(globalThis, 'IntersectionObserver', {
       configurable: true,
@@ -237,8 +251,26 @@ describe('SpendingHistory', () => {
     expect(screen.queryByRole('heading', { name: '21일 금요일' })).not.toBeInTheDocument();
   });
 
+  it('최초 조회 가능 월이 갱신되어 선택 월이 범위 밖이면 최초 월로 이동한다', () => {
+    mockUseFirstAvailableYearMonthQuery.mockReturnValue({ data: undefined });
+    const { rerender } = renderSpendingHistory('2026-04-01');
+
+    expect(screen.getByRole('heading', { level: 1, name: '4월 소비 내역' })).toBeInTheDocument();
+
+    mockUseFirstAvailableYearMonthQuery.mockReturnValue({ data: { year: 2026, month: 5 } });
+    rerender(
+      <MemoryRouter>
+        <SpendingHistory initialDate="2026-04-01" />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { level: 1, name: '5월 소비 내역' })).toBeInTheDocument();
+    expect(mockedUseConsumptionsInfiniteQuery).toHaveBeenLastCalledWith('2026-05');
+    expect(screen.getByRole('button', { name: '이전 달 보기' })).toBeDisabled();
+  });
+
   it('월 선택 바텀시트에서 월을 바꾸고 시트를 닫는다', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     renderSpendingHistory();
 
     await user.click(screen.getByRole('button', { name: '월 선택' }));
@@ -259,7 +291,7 @@ describe('SpendingHistory', () => {
   });
 
   it('월 선택 바텀시트 바깥을 누르면 시트를 닫고 스크롤 잠금을 해제한다', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     const { container } = renderSpendingHistory();
 
     await user.click(screen.getByRole('button', { name: '월 선택' }));
@@ -275,7 +307,7 @@ describe('SpendingHistory', () => {
   });
 
   it('월 선택 바텀시트를 위로 드래그하면 확장하고 아래로 드래그하면 닫는다', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     renderSpendingHistory();
 
     await user.click(screen.getByRole('button', { name: '월 선택' }));
@@ -299,7 +331,7 @@ describe('SpendingHistory', () => {
   });
 
   it('월 목록 내부를 스크롤하면 바텀시트를 전체 높이로 확장한다', async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     renderSpendingHistory();
 
     await user.click(screen.getByRole('button', { name: '월 선택' }));

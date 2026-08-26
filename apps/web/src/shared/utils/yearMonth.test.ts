@@ -1,5 +1,6 @@
 import {
   addMonth,
+  createYearMonthRange,
   formatMonthLabel,
   formatYearMonth,
   getCurrentMonth,
@@ -28,6 +29,21 @@ describe('yearMonth utils', () => {
 
   it('연월 사이의 개월 수 차이를 계산한다', () => {
     expect(getMonthDifference({ year: 2026, month: 8 }, { year: 2025, month: 12 })).toBe(8);
+  });
+
+  it('최신 월부터 최초 조회 가능 월까지 빈 월을 포함한 연속 목록을 만든다', () => {
+    expect(createYearMonthRange({ year: 2026, month: 2 }, { year: 2025, month: 11 })).toEqual([
+      { year: 2026, month: 2 },
+      { year: 2026, month: 1 },
+      { year: 2025, month: 12 },
+      { year: 2025, month: 11 },
+    ]);
+  });
+
+  it('최초 조회 가능 월이 최신 월보다 미래면 최신 월만 반환한다', () => {
+    expect(createYearMonthRange({ year: 2026, month: 8 }, { year: 2026, month: 9 })).toEqual([
+      { year: 2026, month: 8 },
+    ]);
   });
 
   it('연월을 API 및 화면 표시 형식으로 변환한다', () => {

@@ -9,6 +9,9 @@ const mockRefetch = jest.fn();
 jest.mock('@/features/report/apis/hooks/useMonthlyStickerRecordsQuery', () => ({
   useMonthlyStickerRecordsQuery: (month: unknown) => mockUseMonthlyStickerRecordsQuery(month),
 }));
+jest.mock('@/features/report/apis/hooks/useFirstAvailableYearMonthQuery', () => ({
+  useFirstAvailableYearMonthQuery: () => ({ data: { year: 2026, month: 7 } }),
+}));
 
 describe('MonthlyStickerRecordList', () => {
   beforeAll(() => {
@@ -44,6 +47,7 @@ describe('MonthlyStickerRecordList', () => {
 
     expect(screen.getByRole('heading', { name: '7월에 쌓인 기록' })).toBeInTheDocument();
     expect(mockUseMonthlyStickerRecordsQuery).toHaveBeenLastCalledWith({ month: 7, year: 2026 });
+    expect(screen.getByRole('button', { name: '이전 달 보기' })).toBeDisabled();
   });
 
   it('월을 누르면 월 선택 시트를 열고 선택한 월을 조회한다', () => {

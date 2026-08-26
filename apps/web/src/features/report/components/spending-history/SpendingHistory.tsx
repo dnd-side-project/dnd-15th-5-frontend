@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { useConsumptionsInfiniteQuery } from '@/features/report/apis/hooks/useConsumptionsInfiniteQuery';
+import { useFirstAvailableYearMonthQuery } from '@/features/report/apis/hooks/useFirstAvailableYearMonthQuery';
 import MonthlyRecordEmptyState from '@/features/report/components/common/MonthlyRecordEmptyState';
 import MonthPickerSheet from '@/features/report/components/common/MonthPickerSheet';
 import MonthSelector from '@/features/report/components/common/MonthSelector';
 import {
-  createRecentSpendingMonths,
   formatSpendingYearMonth,
   groupConsumptionsByDate,
 } from '@/features/report/utils/consumptions';
@@ -13,7 +13,12 @@ import { parseSpendingMonthFromDate } from '@/features/report/utils/parseSpendin
 import { cn } from '@/shared/lib/cn';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { StateView } from '@/shared/ui/state-view';
-import { isSameMonth } from '@/shared/utils/yearMonth';
+import {
+  createYearMonthRange,
+  getCurrentMonth,
+  isBeforeMonth,
+  isSameMonth,
+} from '@/shared/utils/yearMonth';
 
 import SpendingHistorySkeleton from './SpendingHistorySkeleton';
 import SpendingRecordList from './SpendingRecordList';
@@ -27,19 +32,20 @@ type SpendingHistoryProps = {
   initialDate?: string;
 };
 
-const SPENDING_MONTHS = createRecentSpendingMonths(10);
-
 type MonthSelection = {
   dateValue?: string;
   month: YearMonth;
 };
 
-const getSupportedMonthFromDate = (dateValue?: string): YearMonth | null => {
+const getSupportedMonthFromDate = (
+  dateValue: string | undefined,
+  currentMonth: YearMonth
+): YearMonth | null => {
   const parsedMonth = parseSpendingMonthFromDate(dateValue);
 
-  if (!parsedMonth) return null;
+  if (!parsedMonth || isBeforeMonth(currentMonth, parsedMonth)) return null;
 
-  return SPENDING_MONTHS.find((month) => isSameMonth(month, parsedMonth)) ?? null;
+  return parsedMonth;
 };
 
 /**
@@ -57,22 +63,35 @@ export default function SpendingHistory({
   headerContentGapClassName = 'mt-5',
   initialDate,
 }: SpendingHistoryProps) {
+  const currentMonth = getCurrentMonth();
   const initialMonth = parseSpendingMonthFromDate(initialDate);
-  const initialSelectedMonth = getSupportedMonthFromDate(initialDate) ?? SPENDING_MONTHS[0];
+  const initialSelectedMonth = getSupportedMonthFromDate(initialDate, currentMonth) ?? currentMonth;
   const [monthSelection, setMonthSelection] = useState<MonthSelection>(() => ({
     dateValue: initialDate,
     month: initialSelectedMonth,
   }));
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
-  const selectedMonth =
+  const requestedMonth =
     monthSelection.dateValue === initialDate ? monthSelection.month : initialSelectedMonth;
-
-  const selectedMonthIndex = SPENDING_MONTHS.findIndex((month) =>
+  const firstAvailableYearMonthQuery = useFirstAvailableYearMonthQuery();
+  const selectableMonths = createYearMonthRange(
+    currentMonth,
+    firstAvailableYearMonthQuery.data ?? initialSelectedMonth
+  );
+  const oldestSelectableMonth = selectableMonths.at(-1) ?? currentMonth;
+  const isRequestedMonthSelectable = selectableMonths.some((month) =>
+    isSameMonth(month, requestedMonth)
+  );
+  const selectedMonth =
+    firstAvailableYearMonthQuery.data && !isRequestedMonthSelectable
+      ? oldestSelectableMonth
+      : requestedMonth;
+  const selectedMonthIndex = selectableMonths.findIndex((month) =>
     isSameMonth(month, selectedMonth)
   );
   const isPastMonth = selectedMonthIndex > 0;
   const hasNewerMonth = isPastMonth;
-  const hasOlderMonth = selectedMonthIndex < SPENDING_MONTHS.length - 1;
+  const hasOlderMonth = selectedMonthIndex >= 0 && selectedMonthIndex < selectableMonths.length - 1;
   const consumptionsQuery = useConsumptionsInfiniteQuery(formatSpendingYearMonth(selectedMonth));
   const consumptions = useMemo(
     () => consumptionsQuery.data?.pages.flatMap((page) => page.data?.consumptions ?? []) ?? [],
@@ -133,8 +152,8 @@ export default function SpendingHistory({
             headingLabel={`${selectedMonth.month}월 소비 내역`}
             isMonthPickerOpen={isMonthPickerOpen}
             onMonthClick={() => setIsMonthPickerOpen(true)}
-            onNewerMonth={() => setSelectedMonth(SPENDING_MONTHS[selectedMonthIndex - 1])}
-            onOlderMonth={() => setSelectedMonth(SPENDING_MONTHS[selectedMonthIndex + 1])}
+            onNewerMonth={() => setSelectedMonth(selectableMonths[selectedMonthIndex - 1])}
+            onOlderMonth={() => setSelectedMonth(selectableMonths[selectedMonthIndex + 1])}
             selectedMonth={selectedMonth}
           />
         )}
@@ -196,7 +215,7 @@ export default function SpendingHistory({
 
       {!headerDescription && isMonthPickerOpen && (
         <MonthPickerSheet
-          months={SPENDING_MONTHS}
+          months={selectableMonths}
           selectedMonth={selectedMonth}
           onClose={() => setIsMonthPickerOpen(false)}
           onSelect={handleMonthSelect}
