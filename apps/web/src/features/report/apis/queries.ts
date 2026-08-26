@@ -36,6 +36,7 @@ import {
   getCurrentStatus,
   getFrequentPlaces,
   getMonthlyReport,
+  getSharedPersonaCard,
 } from '@/features/report/apis/clients';
 
 import {
@@ -43,6 +44,7 @@ import {
   getGetCurrentStatusQueryKey,
   getGetFrequentPlacesQueryKey,
   getGetMonthlyReportQueryKey,
+  getGetSharedPersonaCardQueryKey,
 } from '@/features/report/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
@@ -256,6 +258,226 @@ export function useGetConsumptionsSuspense<
   queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetConsumptionsSuspenseQueryOptions(params, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetSharedPersonaCardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSharedPersonaCardQueryKey(shareToken);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSharedPersonaCard>>> = ({ signal }) =>
+    getSharedPersonaCard(shareToken, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: shareToken !== null && shareToken !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+};
+
+export type GetSharedPersonaCardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSharedPersonaCard>>
+>;
+
+export type GetSharedPersonaCardQueryError = ErrorType<unknown>;
+
+export function useGetSharedPersonaCard<
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSharedPersonaCard>>,
+          TError,
+          Awaited<ReturnType<typeof getSharedPersonaCard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetSharedPersonaCard<
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSharedPersonaCard>>,
+          TError,
+          Awaited<ReturnType<typeof getSharedPersonaCard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetSharedPersonaCard<
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 공유받은 취향카드 조회
+ */
+
+export function useGetSharedPersonaCard<
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetSharedPersonaCardQueryOptions(shareToken, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetSharedPersonaCardSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSharedPersonaCardQueryKey(shareToken);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSharedPersonaCard>>> = ({ signal }) =>
+    getSharedPersonaCard(shareToken, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getSharedPersonaCard>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetSharedPersonaCardSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSharedPersonaCard>>
+>;
+
+export type GetSharedPersonaCardSuspenseQueryError = ErrorType<unknown>;
+
+export function useGetSharedPersonaCardSuspense<
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetSharedPersonaCardSuspense<
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetSharedPersonaCardSuspense<
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 공유받은 취향카드 조회
+ */
+
+export function useGetSharedPersonaCardSuspense<
+  TData = Awaited<ReturnType<typeof getSharedPersonaCard>>,
+  TError = ErrorType<unknown>,
+>(
+  shareToken: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetSharedPersonaCardSuspenseQueryOptions(shareToken, options);
 
   const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
     TData,

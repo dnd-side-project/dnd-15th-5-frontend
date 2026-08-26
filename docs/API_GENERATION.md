@@ -142,7 +142,7 @@ import { getStartQueryKey } from '@/features/auth/apis/queryKeys';
 | map       | getVisitedPlaceMarkers, getNearbyPlaces                                                       |
 | my-page   | getMyAccount, updateMyAccount, withdrawMyAccount                                               |
 | record    | createConsumption, recognizeReceipt                                                            |
-| report    | getMonthlyReport, getCurrentStatus, getConsumptions, getFrequentPlaces                          |
+| report    | getMonthlyReport, getCurrentStatus, getConsumptions, getFrequentPlaces, issueShareLink, getSharedPersonaCard |
 | shop      | getPlaceDetail, getPlaceVisits, toggleLike, searchVisitedPlaces                                |
 
 명세에 등록된 operationId가 사라지거나 변경되면 생성 단계가 실패한다. 새로운 API는

@@ -33,7 +33,9 @@
         "getMonthlyReport",
         "getCurrentStatus",
         "getConsumptions",
-        "getFrequentPlaces"
+        "getFrequentPlaces",
+        "issueShareLink",
+        "getSharedPersonaCard"
       ]
     },
     "shop": {

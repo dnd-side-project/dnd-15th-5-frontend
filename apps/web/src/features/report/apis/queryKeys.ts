@@ -14,6 +14,10 @@ export const getGetConsumptionsQueryKey = (params?: GetConsumptionsParams) => {
   return [`/consumptions`, ...(params ? [params] : [])] as const;
 };
 
+export const getGetSharedPersonaCardQueryKey = (shareToken: string) => {
+  return [`/reports/share/${shareToken}`] as const;
+};
+
 export const getGetMonthlyReportQueryKey = (params?: GetMonthlyReportParams) => {
   return [`/reports/monthly`, ...(params ? [params] : [])] as const;
 };
