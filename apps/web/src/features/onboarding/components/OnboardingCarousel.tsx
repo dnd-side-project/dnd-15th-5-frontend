@@ -14,34 +14,19 @@ type OnboardingCarouselProps = {
 
 const ONBOARDING_STEPS = [
   {
+    id: 'receipt',
     image: OnboardingReceiptImage,
-    title: (
-      <>
-        영수증으로
-        <br />
-        간편하게 기록해요
-      </>
-    ),
+    title: '영수증으로\n간편하게 기록해요',
   },
   {
+    id: 'map',
     image: OnboardingMapImage,
-    title: (
-      <>
-        기록이 쌓이며
-        <br />
-        나만의 소비 지도를 만들어요
-      </>
-    ),
+    title: '기록이 쌓이며\n나만의 소비 지도를 만들어요',
   },
   {
+    id: 'report',
     image: OnboardingReportImage,
-    title: (
-      <>
-        매달 새로운 소비 취향
-        <br />
-        리포트를 받아보세요
-      </>
-    ),
+    title: '매달 새로운 소비 취향\n리포트를 받아보세요',
   },
 ] as const;
 
@@ -79,12 +64,12 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
           aria-label={`온보딩 진행 상태: ${ONBOARDING_STEPS.length}단계 중 ${currentStepIndex + 1}단계`}
           className="flex gap-1"
         >
-          {ONBOARDING_STEPS.map((_, stepIndex) => {
+          {ONBOARDING_STEPS.map((step, stepIndex) => {
             const isCurrentStep = stepIndex === currentStepIndex;
 
             return (
               <li
-                key={stepIndex}
+                key={step.id}
                 aria-current={isCurrentStep ? 'step' : undefined}
                 className={cn(
                   'flex size-5 items-center justify-center rounded-full text-body-02-medium text-neutral-00',
@@ -106,11 +91,11 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
           >
             {ONBOARDING_STEPS.map((step, stepIndex) => (
               <article
-                key={stepIndex}
+                key={step.id}
                 aria-hidden={stepIndex !== currentStepIndex}
                 className="flex h-full min-w-full flex-col items-center"
               >
-                <h1 className="text-center text-heading-02-semibold text-neutral-700">
+                <h1 className="whitespace-pre-line text-center text-heading-02-semibold text-neutral-700">
                   {step.title}
                 </h1>
 
@@ -131,7 +116,7 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
             <button
               type="button"
               onClick={onComplete}
-              className="text-body-02-semibold text-neutral-500"
+              className="rounded-05 px-2 text-body-02-semibold text-neutral-500 outline-none transition-colors hover:text-neutral-600 active:text-neutral-700 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
             >
               건너뛰기
             </button>

@@ -56,7 +56,7 @@ export const router = createBrowserRouter([
         element: <AuthenticatedRoute />,
         children: [
           {
-            // 온보딩 이미지는 전체 너비를 사용하고 조작 영역만 자체 여백을 적용한다.
+            // INFO: 온보딩 이미지는 전체 너비를 사용하고 조작 영역만 자체 여백을 적용한다.
             path: ROUTE_PATHS.onboarding,
             element: <OnboardingPage />,
           },
