@@ -7,7 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useRef } from 'react';
 import { WebView } from 'react-native-webview';
 
-import { getUrlOrigin, isTrustedBridgeUrl } from '@/bridge';
+import { getUrlOrigin, isTrustedBridgeUrl, respondToBridgeRequest } from '@/bridge';
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import type { ReceiptReviewRouteParams } from '@/features/record';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
@@ -24,7 +24,7 @@ export default function PlaceSearchScreen() {
   const webViewRef = useRef<WebView>(null);
   const searchUrl = trustedWebOrigin ? `${trustedWebOrigin}${SHOP_SEARCH_PATH}` : null;
 
-  const handleBridgeMessage = (event: WebViewMessageEvent) => {
+  const handleBridgeMessage = async (event: WebViewMessageEvent) => {
     if (!trustedWebOrigin || !isTrustedBridgeUrl(event.nativeEvent.url, trustedWebOrigin)) {
       return;
     }
@@ -32,6 +32,7 @@ export default function PlaceSearchScreen() {
     const message = parseBridgeMessage(event.nativeEvent.data);
 
     if (!isBridgeEvent(message)) {
+      await respondToBridgeRequest(message, trustedWebOrigin, webViewRef.current);
       return;
     }
 
