@@ -21,6 +21,7 @@ export type ConsumptionResponse = {
   amount?: number;
   purchaseDate?: string;
   purchaseTime?: string;
+  thumbnailUrl?: string;
 };
 
 export type ConsumptionScrollResponse = {
@@ -151,6 +152,7 @@ export type FrequentPlaceItem = {
   category?: string;
   dongname?: string;
   visitCount?: number;
+  thumbnailUrl?: string;
 };
 
 export type FrequentPlaceResponse = {

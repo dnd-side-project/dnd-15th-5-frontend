@@ -1,6 +1,5 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { MOCK_MAP_STICKERS, MOCK_SHOP_RECOMMENDATIONS } from '@/features/map/mockData';
 import {
   getHomeBottomSheetSnapPoint,
   useHomeBottomSheetStore,
@@ -9,9 +8,9 @@ import { cn } from '@/shared/lib/cn';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 import { SegmentedToggle } from '@/shared/ui/segmented-toggle';
+import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from '@/shared/ui/toast';
 
 import LikedRecommendationSheet from './LikedRecommendationSheet';
-import SelectedPlaceSheet from './SelectedPlaceSheet';
 import ShopRecommendationSheet from './ShopRecommendationSheet';
 
 import type { ReactNode } from 'react';
@@ -20,6 +19,7 @@ type TabValue = 'frequentShops' | 'history';
 
 type HomeBottomSheetProps = {
   renderFrequentShops: (headerContent: ReactNode) => ReactNode;
+  renderSelectedPlace: (placeId: string) => ReactNode;
   renderSpendingHistory: (headerContent: ReactNode) => ReactNode;
 };
 
@@ -44,10 +44,12 @@ const TOP_ACTION_TO_SHEET_GAP_PX = 12;
  *
  * @param props - 홈 바텀시트 속성입니다.
  * @param props.renderFrequentShops - 세그먼트 토글과 자주 소비한 곳을 하나의 sticky 헤더로 조립합니다.
+ * @param props.renderSelectedPlace - 선택한 장소 ID로 상세 요약을 조립합니다.
  * @param props.renderSpendingHistory - 세그먼트 토글과 소비내역을 하나의 sticky 헤더로 조립합니다.
  */
 export default function HomeBottomSheet({
   renderFrequentShops,
+  renderSelectedPlace,
   renderSpendingHistory,
 }: HomeBottomSheetProps) {
   const stepIndex = useHomeBottomSheetStore((state) => state.stepIndex);
@@ -57,14 +59,6 @@ export default function HomeBottomSheet({
   const topActionBottomPx = useHomeBottomSheetStore((state) => state.topActionBottomPx);
   const setVisibleHeight = useHomeBottomSheetStore((state) => state.setVisibleHeight);
   const snapPoint = getHomeBottomSheetSnapPoint(stepIndex);
-  const selectedSticker =
-    activeSheet.type === 'selectedPlace'
-      ? MOCK_MAP_STICKERS.find(({ id }) => id === activeSheet.stickerId)
-      : undefined;
-  const selectedLikedRecommendation =
-    activeSheet.type === 'likedRecommendation'
-      ? MOCK_SHOP_RECOMMENDATIONS.find(({ id }) => id === activeSheet.recommendationId)
-      : undefined;
   const [tab, setTab] = useState<TabValue>('frequentShops');
   const contentRootRef = useRef<HTMLDivElement>(null);
   const scrollPositionsRef = useRef<Record<TabValue, number>>({
@@ -72,6 +66,25 @@ export default function HomeBottomSheet({
     history: 0,
   });
   const shouldRestoreFocusRef = useRef(false);
+
+  const handleVisibleHeightChange = useCallback(
+    (heightPx: number) => {
+      setVisibleHeight(heightPx);
+      document.documentElement.style.setProperty(
+        TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE,
+        `${heightPx}px`
+      );
+    },
+    [setVisibleHeight]
+  );
+
+  useEffect(
+    () => () => {
+      document.documentElement.style.removeProperty(TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE);
+      setVisibleHeight(0);
+    },
+    [setVisibleHeight]
+  );
 
   useLayoutEffect(() => {
     const scrollContainer = contentRootRef.current?.parentElement;
@@ -141,12 +154,12 @@ export default function HomeBottomSheet({
     key: 'home',
   };
 
-  if (selectedLikedRecommendation) {
+  if (activeSheet.type === 'likedRecommendation') {
     sheetPresentation = {
-      content: <LikedRecommendationSheet recommendation={selectedLikedRecommendation} />,
+      content: <LikedRecommendationSheet recommendationId={activeSheet.recommendationId} />,
       contentClassName: 'pb-6',
       isModal: true,
-      key: `likedRecommendation:${selectedLikedRecommendation.id}`,
+      key: `likedRecommendation:${activeSheet.recommendationId}`,
     };
   } else if (activeSheet.type === 'recommendation') {
     sheetPresentation = {
@@ -155,12 +168,12 @@ export default function HomeBottomSheet({
       isModal: true,
       key: 'recommendation',
     };
-  } else if (selectedSticker) {
+  } else if (activeSheet.type === 'selectedPlace') {
     sheetPresentation = {
-      content: <SelectedPlaceSheet place={selectedSticker.place} />,
+      content: renderSelectedPlace(activeSheet.stickerId),
       contentClassName: 'pb-6',
       isModal: true,
-      key: `selectedPlace:${selectedSticker.id}`,
+      key: `selectedPlace:${activeSheet.stickerId}`,
     };
   }
 
@@ -179,7 +192,7 @@ export default function HomeBottomSheet({
       fitContent={!isHomeSheet}
       contentClassName={sheetPresentation.contentClassName}
       fullTopBoundaryPx={fullTopBoundaryPx}
-      onVisibleHeightChange={setVisibleHeight}
+      onVisibleHeightChange={handleVisibleHeightChange}
     >
       {sheetPresentation.content}
     </BottomSheet>

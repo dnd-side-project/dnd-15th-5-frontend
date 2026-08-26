@@ -22,9 +22,9 @@ const STICKER_IMAGE_BY_NAME = new Map<string, string>([
   ['감자튀김', StickerFriesImage],
   ['피자', StickerPizzaImage],
   ['뒤집개', StickerFlipperImage],
+  ['따봉', StickerBravoImage],
   ['눈', StickerEyesImage],
   ['왕관', StickerSpecialImage],
-  ['따봉', StickerBravoImage],
 ]);
 
 /** 백엔드에서 지원하는 스티커 이름에 해당하는 이미지를 반환합니다. */

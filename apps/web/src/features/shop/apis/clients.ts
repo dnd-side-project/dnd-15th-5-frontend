@@ -7,28 +7,12 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type {
   ApiResponsePlaceDetailResponse,
-  ApiResponsePlaceLikeResponse,
   ApiResponsePlaceVisitScrollResponse,
   ApiResponseVisitedPlaceSearchResponse,
   GetPlaceVisitsParams,
   SearchVisitedPlacesParams,
   SecondParameter,
 } from '@/features/shop/apis/dto';
-
-/**
- * 좋아요 상태를 등록하고 취소한다
- * @summary 가게 좋아요 토글
- */
-export const toggleLike = (
-  placeId: number,
-  options?: SecondParameter<typeof apiClient>,
-  signal?: AbortSignal
-) => {
-  return apiClient<ApiResponsePlaceLikeResponse>(
-    { url: `/places/${placeId}/likes`, method: 'PUT', signal },
-    options
-  );
-};
 
 /**
  * 인증된 사용자의 소비 기록에 존재하는 장소를 이름 또는 도로명주소로 검색합니다.

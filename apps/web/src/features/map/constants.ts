@@ -8,4 +8,6 @@ export const HOME_CATEGORIES = [
   '기타',
 ] as const;
 
+export const MAP_DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 } as const;
+export const MAP_DEFAULT_ZOOM = 13;
 export const SELECTED_PLACE_MAP_ZOOM = 16;

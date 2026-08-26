@@ -28,10 +28,10 @@ export type FrequentShop = {
   category: SpendingCategory;
   district: string;
   id: string;
-  monthlyVisitCount: number;
   name: string;
+  rank: number;
   thumbnailSrc: string | null;
-  totalVisitCount: number;
+  visitCount: number;
 };
 
 export type FrequentShopPeriod = 'currentMonth' | 'all';

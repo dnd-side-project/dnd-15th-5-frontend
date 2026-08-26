@@ -3,4 +3,82 @@
  * Do not edit manually.
  */
 
-export {};
+import { useMutation } from '@tanstack/react-query';
+
+import type {
+  MutationFunction,
+  QueryClient,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
+
+import { apiClient } from '@/shared/apis/orvalMutator';
+
+import type { ErrorType } from '@/shared/apis/orvalMutator';
+
+import type { SecondParameter } from '@/features/map/apis/dto';
+
+import { toggleLike } from '@/features/map/apis/clients';
+
+export const getToggleLikeMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof toggleLike>>,
+    TError,
+    { placeId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof toggleLike>>,
+  TError,
+  { placeId: number },
+  TContext
+> => {
+  const mutationKey = ['toggleLike'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof toggleLike>>,
+    { placeId: number }
+  > = (props) => {
+    const { placeId } = props ?? {};
+
+    return toggleLike(placeId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ToggleLikeMutationResult = NonNullable<Awaited<ReturnType<typeof toggleLike>>>;
+
+export type ToggleLikeMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 가게 좋아요 토글
+ */
+export const useToggleLike = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof toggleLike>>,
+      TError,
+      { placeId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof toggleLike>>,
+  TError,
+  { placeId: number },
+  TContext
+> => {
+  return useMutation(getToggleLikeMutationOptions(options), queryClient);
+};
