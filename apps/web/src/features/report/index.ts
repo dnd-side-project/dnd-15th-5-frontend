@@ -23,3 +23,4 @@ export { default as MonthlyStickerRecordList } from './components/monthly-record
 export { useReportImageDownload } from './hooks/useReportImageDownload';
 export { useMonthlyReport } from './hooks/useMonthlyReport';
 export { useCurrentReportQuery } from './apis/hooks/useCurrentReportQuery';
+export { useMonthlyReportQuery } from './apis/hooks/useMonthlyReportQuery';

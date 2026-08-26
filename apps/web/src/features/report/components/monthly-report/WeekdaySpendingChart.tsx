@@ -1,11 +1,11 @@
 import { WEEKDAY_FULL_LABELS } from '@/features/report/constants';
-import { formatWon, getRelativeBarHeightPercentage } from '@/features/report/utils/reportChart';
+import { getRelativeBarHeightPercentage } from '@/features/report/utils/reportChart';
 
 import ReportChartTooltip from './ReportChartTooltip';
 import ReportSectionTitle from './ReportSectionTitle';
 
 type WeekdaySpending = {
-  amount: number;
+  count: number;
   day: keyof typeof WEEKDAY_FULL_LABELS;
 };
 
@@ -16,21 +16,21 @@ type WeekdaySpendingChartProps = {
 
 /** 요일별 소비 금액을 상대 높이의 막대 차트로 표시합니다. */
 export default function WeekdaySpendingChart({ insight, items }: WeekdaySpendingChartProps) {
-  const maximumAmount = Math.max(...items.map((item) => item.amount), 0);
+  const maximumCount = Math.max(...items.map((item) => item.count), 0);
 
   return (
     <section>
       <ReportSectionTitle title="요일별 소비" />
       <ul aria-label="요일별 소비 금액" className="mt-3 grid h-29.25 grid-cols-7 gap-1">
         {items.map((item, index) => {
-          const isHighlighted = maximumAmount > 0 && item.amount === maximumAmount;
-          const barHeightPercentage = getRelativeBarHeightPercentage(item.amount, maximumAmount);
-          const formattedAmount = formatWon(item.amount);
+          const isHighlighted = maximumCount > 0 && item.count === maximumCount;
+          const barHeightPercentage = getRelativeBarHeightPercentage(item.count, maximumCount);
+          const formattedCount = `${item.count}회`;
 
           return (
             <li className="flex min-w-0 flex-col items-center gap-1" key={item.day}>
               <button
-                aria-label={`${WEEKDAY_FULL_LABELS[item.day]} 소비 ${formattedAmount}`}
+                aria-label={`${WEEKDAY_FULL_LABELS[item.day]} 소비 ${formattedCount}`}
                 className="group relative flex min-h-0 w-full flex-1 items-end justify-center focus-visible:outline-none"
                 type="button"
               >
@@ -42,7 +42,7 @@ export default function WeekdaySpendingChart({ insight, items }: WeekdaySpending
                 <ReportChartTooltip
                   alignment={index === 0 ? 'start' : index === items.length - 1 ? 'end' : 'center'}
                 >
-                  {formattedAmount}
+                  {formattedCount}
                 </ReportChartTooltip>
               </button>
               <span

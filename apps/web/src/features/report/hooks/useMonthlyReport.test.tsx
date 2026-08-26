@@ -12,6 +12,21 @@ jest.mock('@/features/report/apis/hooks/useFirstAvailableYearMonthQuery', () => 
   useFirstAvailableYearMonthQuery: () => ({ data: { year: 2026, month: 4 } }),
 }));
 
+jest.mock('@/features/report/apis/hooks/useMonthlyReportQuery', () => ({
+  useMonthlyReportQuery: () => ({
+    data: undefined,
+    error: null,
+    isError: false,
+    isPending: false,
+    refetch: jest.fn(),
+  }),
+}));
+
+jest.mock('@/shared/utils/yearMonth', () => ({
+  ...jest.requireActual('@/shared/utils/yearMonth'),
+  getCurrentMonth: () => ({ month: 8, year: 2026 }),
+}));
+
 jest.mock('./useReportImageDownload', () => ({
   useReportImageDownload: () => ({
     captureRef: { current: null },
