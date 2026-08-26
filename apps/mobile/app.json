@@ -8,7 +8,7 @@
     "scheme": "chapchap",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./src/shared/assets/images/ic-app.png",
       "bundleIdentifier": "kr.chapchap.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "주변 매장과 현재 위치를 지도에 표시하기 위해 위치 정보가 필요합니다.",
@@ -60,7 +60,12 @@
         {
           "backgroundColor": "#208AEF",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 76,
+          "ios": {
+            "backgroundColor": "#4A6BFF",
+            "image": "./src/shared/assets/images/logo-splash.png",
+            "imageWidth": 148
+          }
         }
       ],
       [
