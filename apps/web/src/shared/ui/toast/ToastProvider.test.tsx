@@ -1,5 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 
+import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from './constants';
+
 import { ToastProvider, useToast } from '.';
 
 import type { ToastType } from '@chapchap/shared/toast';
@@ -15,6 +17,17 @@ function ToastFixture() {
         열기
       </button>
       <button onClick={() => closeToast()}>닫기</button>
+      <button
+        onClick={() =>
+          showToast({
+            message: '방문기록이 등록되었어요',
+            type: 'success',
+            placement: 'above-bottom-sheet',
+          })
+        }
+      >
+        바텀시트 위 열기
+      </button>
       <button
         onClick={() => {
           for (let index = 1; index <= 4; index += 1) {
@@ -50,8 +63,9 @@ describe('Toast', () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
+    act(() => jest.runOnlyPendingTimers());
     jest.useRealTimers();
+    document.documentElement.style.removeProperty(TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE);
   });
 
   it('Viewport를 앱 프레임과 같은 최대 너비로 제한한다', () => {
@@ -79,6 +93,25 @@ describe('Toast', () => {
 
     act(() => jest.advanceTimersByTime(1200));
     expect(screen.queryByText('저장되었어요')).not.toBeInTheDocument();
+  });
+
+  it('바텀시트 위 배치를 요청한 Toast만 현재 바텀시트 높이 위에 표시한다', () => {
+    document.documentElement.style.setProperty(TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE, '280px');
+    render(
+      <ToastProvider duration={0}>
+        <ToastFixture />
+      </ToastProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '열기' }));
+    fireEvent.click(screen.getByRole('button', { name: '바텀시트 위 열기' }));
+
+    expect(screen.getByTestId('toast-viewport').style.bottom).toBe(
+      'calc(1.25rem + env(safe-area-inset-bottom))'
+    );
+    expect(screen.getByTestId('toast-viewport-above-bottom-sheet').style.bottom).toBe(
+      'calc(var(--toast-bottom-sheet-height, 0px) + 0.75rem)'
+    );
   });
 
   it('closeToast로 열린 Toast를 닫는다', () => {
