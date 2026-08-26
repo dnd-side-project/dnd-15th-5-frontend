@@ -4,7 +4,7 @@ import { getConsumptions } from '@/features/report/apis/clients';
 import type { GetConsumptionsParams } from '@/features/report/apis/dto';
 
 const CONSUMPTION_PAGE_SIZE = 15;
-const CONSUMPTION_STALE_TIME_MS = 5 * 60 * 1000;
+const CONSUMPTION_STALE_TIME_MS = 10 * 60 * 1000;
 const CONSUMPTION_GC_TIME_MS = 30 * 60 * 1000;
 
 type ConsumptionCursor = Pick<
@@ -36,4 +36,5 @@ export const useConsumptionsInfiniteQuery = (yearMonth: string) =>
     getNextPageParam: getNextCursor,
     staleTime: CONSUMPTION_STALE_TIME_MS,
     gcTime: CONSUMPTION_GC_TIME_MS,
+    refetchOnWindowFocus: true,
   });

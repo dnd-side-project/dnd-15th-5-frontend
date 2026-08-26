@@ -48,10 +48,11 @@ describe('useConsumptionsInfiniteQuery', () => {
       queryKey: ['/consumptions', 'infinite', { yearMonth: '2026-08' }],
     });
     const cacheOptions = consumptionQuery?.options as
-      { gcTime?: number; staleTime?: number } | undefined;
+      { gcTime?: number; refetchOnWindowFocus?: boolean; staleTime?: number } | undefined;
 
-    expect(cacheOptions?.staleTime).toBe(5 * 60 * 1000);
+    expect(cacheOptions?.staleTime).toBe(10 * 60 * 1000);
     expect(cacheOptions?.gcTime).toBe(30 * 60 * 1000);
+    expect(cacheOptions?.refetchOnWindowFocus).toBe(true);
     expect(mockedGetConsumptions).toHaveBeenNthCalledWith(
       1,
       { yearMonth: '2026-08', size: 15 },
