@@ -25,3 +25,30 @@
     transition: none;
   }
 }
+
+.report-preference-share {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 6%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 6%) 1px, transparent 1px),
+    var(--report-preference-share-background);
+  background-size:
+    24px 24px,
+    24px 24px,
+    100% 100%;
+}
+
+.report-preference-share--local-regular {
+  --report-preference-share-background: linear-gradient(135deg, #28467f, #263f72);
+}
+
+.report-preference-share--alley-explorer {
+  --report-preference-share-background: linear-gradient(135deg, #6f9be5, #5f86ce);
+}
+
+.report-preference-share--food-nomad {
+  --report-preference-share-background: linear-gradient(135deg, #8b8ee5, #7479cf);
+}
+
+.report-preference-share--night-watch {
+  --report-preference-share-background: linear-gradient(135deg, #183154, #122640);
+}

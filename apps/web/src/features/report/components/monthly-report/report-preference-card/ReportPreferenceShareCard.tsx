@@ -7,14 +7,14 @@ import ReportPreferenceMetricScale from './ReportPreferenceMetricScale';
 
 import type { ReportPreferenceCardMetric } from './ReportPreferenceMetricScale';
 
-type ReportPreferenceShareCardProps = {
+export type ReportPreferenceShareCardProps = {
   metrics: readonly ReportPreferenceCardMetric[];
   tags: readonly string[];
   title: string;
   variant: ReportPreferenceCardVariant;
 };
 
-/** PNG 저장 결과에 사용하는 앞면과 지표가 결합된 소비 성향 카드입니다. */
+/** PNG 저장 결과에 사용하는 설명 없는 소비 성향 카드입니다. */
 export default function ReportPreferenceShareCard({
   metrics,
   tags,
@@ -76,7 +76,6 @@ export default function ReportPreferenceShareCard({
           </span>
         ))}
       </div>
-
       <div className="absolute inset-x-0 top-79.5 h-49.5 rounded-15 bg-neutral-00" />
       <div className="absolute top-84.75 left-6.5 flex w-48.25 flex-col gap-1.25">
         {metrics.map((metric) => (
