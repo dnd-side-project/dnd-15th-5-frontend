@@ -131,7 +131,7 @@ describe('<ManualRecordPage />', () => {
 
     expect(screen.queryByRole('dialog', { name: '방문 일시 선택' })).not.toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /방문 일시 변경, 7월 15일.*밤/ })
+      screen.getByRole('button', { name: /방문 일시 변경, 2025년 7월 15일.*밤/ })
     ).toBeInTheDocument();
   });
 

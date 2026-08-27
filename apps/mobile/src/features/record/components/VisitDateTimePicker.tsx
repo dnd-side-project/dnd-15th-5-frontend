@@ -1,7 +1,8 @@
 import {
   createMonthDate,
+  formatVisitDateTimeConfirmLabel,
   getCalendarDays,
-  getVisitPeriodLabel,
+  getCalendarWeekCount,
   isSameDate,
   isSameOrAfterMonth,
   VISIT_PERIODS,
@@ -21,6 +22,8 @@ const SATURDAY_INDEX = 6;
 const SHEET_OFFSET = 640;
 const TRANSITION_DURATION = 300;
 const DRAG_CLOSE_DISTANCE = 80;
+const FULL_CALENDAR_WEEK_COUNT = 6;
+const CALENDAR_WEEK_HEIGHT = 40;
 
 type VisitDateTimePickerProps = {
   value: VisitDateTimeValue;
@@ -80,6 +83,9 @@ export default function VisitDateTimePicker({
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const isNextMonthDisabled = isSameOrAfterMonth(visibleMonth, today);
   const calendarDays = getCalendarDays(visibleMonth);
+  const calendarHeightSpacer =
+    Math.max(FULL_CALENDAR_WEEK_COUNT - getCalendarWeekCount(visibleMonth), 0) *
+    CALENDAR_WEEK_HEIGHT;
   const calendarWeeks = Array.from(
     { length: calendarDays.length / WEEKDAY_LABELS.length },
     (_, weekIndex) => {
@@ -88,9 +94,10 @@ export default function VisitDateTimePicker({
       return calendarDays.slice(startIndex, startIndex + WEEKDAY_LABELS.length);
     }
   );
-  const confirmLabel = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 ${getVisitPeriodLabel(
-    selectedPeriod
-  )}`;
+  const confirmLabel = formatVisitDateTimeConfirmLabel({
+    date: selectedDate,
+    period: selectedPeriod,
+  });
 
   useEffect(() => {
     Animated.parallel([
@@ -365,6 +372,10 @@ export default function VisitDateTimePicker({
                 );
               })}
             </View>
+
+            {calendarHeightSpacer > 0 && (
+              <View testID="calendar-height-spacer" style={{ height: calendarHeightSpacer }} />
+            )}
 
             <Pressable
               onPress={handleConfirm}

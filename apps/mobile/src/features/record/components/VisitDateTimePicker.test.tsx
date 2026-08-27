@@ -89,6 +89,28 @@ describe('<VisitDateTimePicker />', () => {
     });
   });
 
+  it('시간대 선택 버튼 아래 여백으로 4주와 5주 달을 6주 높이에 맞춘다', async () => {
+    const user = userEvent.setup();
+    const { getByTestId, queryByTestId, getByRole } = await render(
+      <VisitDateTimePicker
+        value={{ date: new Date(2015, 1, 15), period: 'afternoon' }}
+        onClose={jest.fn()}
+        onConfirm={jest.fn()}
+      />
+    );
+
+    expect(getByTestId('calendar-height-spacer')).toHaveStyle({ height: 80 });
+
+    await user.press(getByRole('button', { name: '다음 달' }));
+
+    expect(getByTestId('calendar-height-spacer')).toHaveStyle({ height: 40 });
+
+    await user.press(getByRole('button', { name: '다음 달' }));
+    await user.press(getByRole('button', { name: '다음 달' }));
+
+    expect(queryByTestId('calendar-height-spacer')).toBeNull();
+  });
+
   it('핸들을 아래로 드래그하면 바텀시트를 닫는다', async () => {
     const onClose = jest.fn();
     const { getByTestId } = await render(

@@ -1,4 +1,4 @@
-import { getVisitPeriodLabel } from '@chapchap/shared/record';
+import { formatVisitDateTimeConfirmLabel, getCalendarWeekCount } from '@chapchap/shared/record';
 import { useState } from 'react';
 
 import { Button } from '@/shared/ui/button';
@@ -10,6 +10,8 @@ import VisitPeriodSelector from './VisitPeriodSelector';
 import type { VisitDateTimeValue } from '@chapchap/shared/record';
 
 const DATE_TIME_SHEET_SNAP_POINTS = ['hidden', 'medium'] as const;
+const FULL_CALENDAR_WEEK_COUNT = 6;
+const CALENDAR_WEEK_HEIGHT = 40;
 
 type VisitDateTimeSheetProps = {
   onClose: () => void;
@@ -23,10 +25,14 @@ const normalizeDate = (date: Date) => new Date(date.getFullYear(), date.getMonth
 export default function VisitDateTimeSheet({ onClose, onConfirm, value }: VisitDateTimeSheetProps) {
   const [selectedDate, setSelectedDate] = useState(() => normalizeDate(value.date));
   const [selectedPeriod, setSelectedPeriod] = useState(value.period);
-  const confirmLabel = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 ${getVisitPeriodLabel(
-    selectedPeriod
-  )}`;
+  const [visibleMonth, setVisibleMonth] = useState(
+    () => new Date(value.date.getFullYear(), value.date.getMonth(), 1)
+  );
   const confirmedValue = { date: selectedDate, period: selectedPeriod };
+  const confirmLabel = formatVisitDateTimeConfirmLabel(confirmedValue);
+  const calendarHeightSpacer =
+    Math.max(FULL_CALENDAR_WEEK_COUNT - getCalendarWeekCount(visibleMonth), 0) *
+    CALENDAR_WEEK_HEIGHT;
 
   return (
     <PickerSheet
@@ -40,8 +46,20 @@ export default function VisitDateTimeSheet({ onClose, onConfirm, value }: VisitD
     >
       {({ close }) => (
         <>
-          <VisitDateCalendar onSelect={setSelectedDate} selectedDate={selectedDate} />
+          <VisitDateCalendar
+            onSelect={setSelectedDate}
+            onVisibleMonthChange={setVisibleMonth}
+            selectedDate={selectedDate}
+            visibleMonth={visibleMonth}
+          />
           <VisitPeriodSelector onSelect={setSelectedPeriod} selectedPeriod={selectedPeriod} />
+          {calendarHeightSpacer > 0 && (
+            <div
+              aria-hidden="true"
+              data-testid="calendar-height-spacer"
+              style={{ height: calendarHeightSpacer }}
+            />
+          )}
 
           <div className="mt-12 px-1">
             <Button onClick={() => close(() => onConfirm(confirmedValue))}>{confirmLabel}</Button>
