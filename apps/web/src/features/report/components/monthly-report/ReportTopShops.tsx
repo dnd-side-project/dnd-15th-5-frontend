@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 
+import type { MonthlyReportShop } from '@/features/report/types';
 import {
   ChevronRightIcon,
   RankFirstIcon,
@@ -21,17 +22,8 @@ const MAX_VISIBLE_SHOP_STICKERS = 5;
 const SHOP_STICKER_SIZE = 60;
 const SHOP_STICKER_MORE_BADGE_SIZE = 30;
 
-type TopShop = {
-  id: string | null;
-  months: number;
-  name: string;
-  rank: 1 | 2 | 3;
-  stickerImages: readonly string[];
-  visits: number;
-};
-
 type ReportTopShopsProps = {
-  shops: readonly TopShop[];
+  shops: readonly MonthlyReportShop[];
 };
 
 /** 월간 방문 횟수가 많은 가게를 최대 3위까지 표시합니다. */

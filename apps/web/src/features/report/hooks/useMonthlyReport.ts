@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useAdjacentMonthlyReportPrefetch } from '@/features/report/apis/hooks/useAdjacentMonthlyReportPrefetch';
 import { useFirstAvailableYearMonthQuery } from '@/features/report/apis/hooks/useFirstAvailableYearMonthQuery';
 import { useMonthlyReportQuery } from '@/features/report/apis/hooks/useMonthlyReportQuery';
-import type { MonthlyReportAdjacentCard } from '@/features/report/types';
+import { createMonthlyReportCarouselCards } from '@/features/report/utils/monthlyReportCarousel';
 import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { useToast } from '@/shared/ui/toast';
@@ -55,27 +55,7 @@ export const useMonthlyReport = () => {
 
   const hasNewerMonth = selectedMonthIndex > 0;
   const hasOlderMonth = selectedMonthIndex < selectableMonths.length - 1;
-  const currentReportCards = report
-    ? [
-        ...report.adjacentCards,
-        { ...report.persona, isUnavailable: false as const, month: report.month },
-      ]
-    : [];
-  const reportCardMap = new Map<string, MonthlyReportAdjacentCard>();
-
-  currentReportCards.forEach((card) => {
-    reportCardMap.set(formatYearMonth(card.month), card);
-  });
-
-  if (report && !reportCardMap.has(selectedYearMonth)) {
-    reportCardMap.set(selectedYearMonth, { isUnavailable: true, month: selectedMonth });
-  }
-
-  const reportCards = Array.from(reportCardMap, ([id, card]) => ({ ...card, id }))
-    .filter((card) =>
-      selectableMonths.some((selectableMonth) => isSameMonth(selectableMonth, card.month))
-    )
-    .sort((left, right) => left.id.localeCompare(right.id));
+  const reportCards = createMonthlyReportCarouselCards({ report, selectableMonths, selectedMonth });
   const selectedCardIndex = reportCards.findIndex((card) => card.id === selectedYearMonth);
   const hasReportError =
     monthlyReportQuery.isError &&
@@ -107,11 +87,15 @@ export const useMonthlyReport = () => {
     if (!month || isSameMonth(month, selectedMonth)) return;
 
     setIsCardFlipped(false);
-    setSearchParams((currentSearchParams) => {
-      const nextSearchParams = new URLSearchParams(currentSearchParams);
-      nextSearchParams.set(YEAR_MONTH_SEARCH_PARAM, formatYearMonth(month));
-      return nextSearchParams;
-    });
+
+    setSearchParams(
+      (currentSearchParams) => {
+        const nextSearchParams = new URLSearchParams(currentSearchParams);
+        nextSearchParams.set(YEAR_MONTH_SEARCH_PARAM, formatYearMonth(month));
+        return nextSearchParams;
+      },
+      { replace: true }
+    );
   };
 
   const handleNewerMonth = () => handleMonthChange(selectableMonths[selectedMonthIndex - 1]);
@@ -132,18 +116,21 @@ export const useMonthlyReport = () => {
   };
 
   const handlePreferenceCardFlip = () => setIsCardFlipped((isFlipped) => !isFlipped);
-  const handleCardTransitionEnd = useCallback(() => setIsCardTransitioning(false), []);
-  const handleCardTransitionStart = useCallback(() => setIsCardTransitioning(true), []);
+  const handleCardTransitionChange = useCallback(
+    (isTransitioning: boolean) => setIsCardTransitioning(isTransitioning),
+    []
+  );
   const handleMonthPickerClose = () => setIsMonthPickerOpen(false);
   const handleMonthPickerOpen = () => setIsMonthPickerOpen(true);
   const handleShareSheetClose = () => setIsShareSheetOpen(false);
   const handleShareSheetOpen = () => setIsShareSheetOpen(true);
 
+  const isPending = monthlyReportQuery.isPending || monthlyReportQuery.isPlaceholderData;
+
   return {
     captureRef,
     downloadImage,
-    handleCardTransitionEnd,
-    handleCardTransitionStart,
+    handleCardTransitionChange,
     handleNewerMonth,
     handleOlderMonth,
     handleMonthPickerClose,
@@ -160,7 +147,8 @@ export const useMonthlyReport = () => {
     isCardTransitioning,
     isDownloading,
     isMonthPickerOpen,
-    isPending: monthlyReportQuery.isPending || monthlyReportQuery.isPlaceholderData,
+    isPending,
+    isReportContentLoading: isPending || isCardTransitioning,
     isShareSheetOpen,
     refetch: monthlyReportQuery.refetch,
     report,

@@ -1,17 +1,13 @@
 import { WEEKDAY_FULL_LABELS } from '@/features/report/constants';
+import type { MonthlyReportWeekdaySpending } from '@/features/report/types';
 import { getRelativeBarHeightPercentage } from '@/features/report/utils/reportChart';
 
 import ReportChartTooltip from './ReportChartTooltip';
 import ReportSectionTitle from './ReportSectionTitle';
 
-type WeekdaySpending = {
-  count: number;
-  day: keyof typeof WEEKDAY_FULL_LABELS;
-};
-
 type WeekdaySpendingChartProps = {
   insight: string;
-  items: readonly WeekdaySpending[];
+  items: readonly MonthlyReportWeekdaySpending[];
 };
 
 /** 요일별 소비 금액을 상대 높이의 막대 차트로 표시합니다. */

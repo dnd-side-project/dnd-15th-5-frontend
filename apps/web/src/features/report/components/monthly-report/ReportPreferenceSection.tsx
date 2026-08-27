@@ -1,11 +1,9 @@
 import ReportPreferenceCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
-import type { ReportPreferenceCardMetric } from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
 import ReportPreferenceShareCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceShareCard';
 import { useReportPreferenceCarousel } from '@/features/report/hooks/useReportPreferenceCarousel';
-import type { ReportPreferenceCardVariant } from '@/features/report/types';
+import type { MonthlyReportPreferenceCard } from '@/features/report/types';
 import { ReportCardFlipIcon, ShareIcon } from '@/shared/assets/icons';
 import { cn } from '@/shared/lib/cn';
-import type { YearMonth } from '@/shared/types/yearMonth';
 
 import MonthlyReportUnavailableCard from './MonthlyReportUnavailableCard';
 
@@ -14,32 +12,15 @@ import type { Ref } from 'react';
 import './reportPreferenceSection.css';
 
 type ReportPreferenceSectionProps = {
-  cards: readonly ReportPreferenceCarouselCard[];
+  cards: readonly MonthlyReportPreferenceCard[];
   captureRef: Ref<HTMLDivElement>;
   isFlipped: boolean;
   onCardSelect: (index: number) => void;
-  onCardTransitionEnd: () => void;
-  onCardTransitionStart: () => void;
+  onCardTransitionChange: (isTransitioning: boolean) => void;
   onFlip: () => void;
   onShare: () => void;
   selectedCardIndex: number;
 };
-
-type ReportPreferenceCarouselCard =
-  | {
-      description: string;
-      id: string;
-      isUnavailable?: false;
-      metrics: readonly ReportPreferenceCardMetric[];
-      tags: readonly string[];
-      title: string;
-      variant: ReportPreferenceCardVariant;
-    }
-  | {
-      id: string;
-      isUnavailable: true;
-      month: YearMonth;
-    };
 
 /** 소비 취향 카드를 탐색하고 뒤집거나 공유할 수 있는 영역입니다. */
 export default function ReportPreferenceSection({
@@ -47,8 +28,7 @@ export default function ReportPreferenceSection({
   captureRef,
   isFlipped,
   onCardSelect,
-  onCardTransitionEnd,
-  onCardTransitionStart,
+  onCardTransitionChange,
   onFlip,
   onShare,
   selectedCardIndex,
@@ -64,11 +44,11 @@ export default function ReportPreferenceSection({
     handleCarouselPointerDown,
     handleCarouselPointerMove,
     handleCarouselPointerUp,
+    handleCarouselTransitionEnd,
   } = useReportPreferenceCarousel({
     cardIds: cards.map((card) => card.id),
     onCardSelect,
-    onTransitionEnd: onCardTransitionEnd,
-    onTransitionStart: onCardTransitionStart,
+    onTransitionChange: onCardTransitionChange,
     selectedCardIndex,
   });
 
@@ -86,6 +66,7 @@ export default function ReportPreferenceSection({
         onPointerDown={handleCarouselPointerDown}
         onPointerMove={handleCarouselPointerMove}
         onPointerUp={handleCarouselPointerUp}
+        onTransitionEnd={handleCarouselTransitionEnd}
         ref={carouselRef}
         role="region"
         style={carouselStyle}

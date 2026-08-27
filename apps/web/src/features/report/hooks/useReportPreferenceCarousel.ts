@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
-import type { CSSProperties, KeyboardEvent, MouseEvent, PointerEvent } from 'react';
+import type {
+  CSSProperties,
+  KeyboardEvent,
+  MouseEvent,
+  PointerEvent,
+  TransitionEvent,
+} from 'react';
 
 type UseReportPreferenceCarouselOptions = {
   cardIds: readonly string[];
   onCardSelect: (index: number) => void;
-  onTransitionEnd?: () => void;
-  onTransitionStart?: () => void;
+  onTransitionChange?: (isTransitioning: boolean) => void;
   selectedCardIndex: number;
 };
 
@@ -18,14 +23,13 @@ type CarouselDragState = {
 
 const CARD_CHANGE_DRAG_THRESHOLD = 56;
 const CLICK_SUPPRESSION_DRAG_THRESHOLD = 6;
-const CARD_SETTLE_DURATION = 460;
+const CARD_SETTLE_FALLBACK_DURATION = 700;
 
 /** 월간 취향 카드의 한 장 단위 드래그와 안착 동작을 관리합니다. */
 export const useReportPreferenceCarousel = ({
   cardIds,
   onCardSelect,
-  onTransitionEnd,
-  onTransitionStart,
+  onTransitionChange,
   selectedCardIndex,
 }: UseReportPreferenceCarouselOptions) => {
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -34,25 +38,38 @@ export const useReportPreferenceCarousel = ({
   const dragDistanceRef = useRef(0);
   const displayedCardIdRef = useRef(cardIds[selectedCardIndex]);
   const isTransitioningRef = useRef(false);
-  const selectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const settleFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressClickUntilRef = useRef(0);
 
   const endTransition = useCallback(() => {
     if (!isTransitioningRef.current) return;
 
     isTransitioningRef.current = false;
-    onTransitionEnd?.();
-  }, [onTransitionEnd]);
+    onTransitionChange?.(false);
+  }, [onTransitionChange]);
 
-  const stopCardAnimation = useCallback(() => {
-    if (selectionTimeoutRef.current !== null) {
-      clearTimeout(selectionTimeoutRef.current);
-      selectionTimeoutRef.current = null;
+  const completeCardSettle = useCallback(() => {
+    if (settleFallbackTimeoutRef.current !== null) {
+      clearTimeout(settleFallbackTimeoutRef.current);
+      settleFallbackTimeoutRef.current = null;
     }
 
     carouselRef.current?.removeAttribute('data-settling');
     endTransition();
   }, [endTransition]);
+
+  const scheduleSettleFallback = useCallback(() => {
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    settleFallbackTimeoutRef.current = setTimeout(
+      completeCardSettle,
+      prefersReducedMotion ? 0 : CARD_SETTLE_FALLBACK_DURATION
+    );
+  }, [completeCardSettle]);
+
+  const stopCardAnimation = useCallback(() => {
+    completeCardSettle();
+  }, [completeCardSettle]);
 
   const displayCard = useCallback((index: number) => {
     const carousel = carouselRef.current;
@@ -93,17 +110,13 @@ export const useReportPreferenceCarousel = ({
 
       if (shouldSelect) {
         isTransitioningRef.current = true;
-        onTransitionStart?.();
+        onTransitionChange?.(true);
         onCardSelect(index);
       }
 
-      selectionTimeoutRef.current = setTimeout(() => {
-        selectionTimeoutRef.current = null;
-        carousel.removeAttribute('data-settling');
-        endTransition();
-      }, CARD_SETTLE_DURATION);
+      scheduleSettleFallback();
     },
-    [displayCard, endTransition, onCardSelect, onTransitionStart, stopCardAnimation]
+    [displayCard, onCardSelect, onTransitionChange, scheduleSettleFallback, stopCardAnimation]
   );
 
   const cardIdSignature = cardIds.join('|');
@@ -111,6 +124,9 @@ export const useReportPreferenceCarousel = ({
 
   useLayoutEffect(() => {
     cardIdsRef.current = cardIds;
+  });
+
+  useLayoutEffect(() => {
     if (!selectedCardId) return;
 
     const isSameDisplayedCard = displayedCardIdRef.current === selectedCardId;
@@ -121,16 +137,20 @@ export const useReportPreferenceCarousel = ({
       resetDragOffset();
       carousel?.setAttribute('data-settling', 'true');
 
-      const timeout = setTimeout(() => {
-        carousel?.removeAttribute('data-settling');
-      }, CARD_SETTLE_DURATION);
+      scheduleSettleFallback();
 
       return () => {
-        clearTimeout(timeout);
-        carousel?.removeAttribute('data-settling');
+        completeCardSettle();
       };
     }
-  }, [cardIdSignature, cardIds, displayCard, selectedCardId, selectedCardIndex]);
+  }, [
+    cardIdSignature,
+    completeCardSettle,
+    displayCard,
+    scheduleSettleFallback,
+    selectedCardId,
+    selectedCardIndex,
+  ]);
 
   useEffect(() => stopCardAnimation, [stopCardAnimation]);
 
@@ -226,6 +246,18 @@ export const useReportPreferenceCarousel = ({
     event.stopPropagation();
   };
 
+  const handleCarouselTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+    if (
+      event.propertyName !== 'transform' ||
+      !(event.target instanceof HTMLElement) ||
+      !event.target.classList.contains('report-preference-carousel-card--current')
+    ) {
+      return;
+    }
+
+    completeCardSettle();
+  };
+
   const handleCarouselKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
 
@@ -251,5 +283,6 @@ export const useReportPreferenceCarousel = ({
     handleCarouselPointerDown,
     handleCarouselPointerMove,
     handleCarouselPointerUp,
+    handleCarouselTransitionEnd,
   };
 };

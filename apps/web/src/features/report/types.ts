@@ -30,26 +30,47 @@ export type MonthlyReportAdjacentCard =
       month: YearMonth;
     };
 
+export type MonthlyReportPreferenceCard = MonthlyReportAdjacentCard & { id: string };
+
+export type MonthlyReportCategory = {
+  category: SpendingCategory;
+  percentage: number;
+};
+
+export type MonthlyReportDistrict = {
+  name: string;
+  visits: number;
+};
+
+export type MonthlyReportShop = {
+  id: string | null;
+  months: number;
+  name: string;
+  rank: 1 | 2 | 3;
+  stickerImages: readonly string[];
+  visits: number;
+};
+
+export type MonthlyReportSummaryItem = {
+  label: string;
+  value: number;
+};
+
+export type MonthlyReportWeekdaySpending = {
+  count: number;
+  day: '월' | '화' | '수' | '목' | '금' | '토' | '일';
+};
+
 export type MonthlyReport = {
   adjacentCards: readonly MonthlyReportAdjacentCard[];
-  categories: readonly { category: SpendingCategory; percentage: number }[];
-  districts: readonly { name: string; visits: number }[];
+  categories: readonly MonthlyReportCategory[];
+  districts: readonly MonthlyReportDistrict[];
   month: YearMonth;
   persona: MonthlyReportPersona;
-  shops: readonly {
-    id: string | null;
-    months: number;
-    name: string;
-    rank: 1 | 2 | 3;
-    stickerImages: readonly string[];
-    visits: number;
-  }[];
-  summary: readonly { label: string; value: number }[];
+  shops: readonly MonthlyReportShop[];
+  summary: readonly MonthlyReportSummaryItem[];
   weekdayInsight: string;
-  weekdaySpending: readonly {
-    count: number;
-    day: '월' | '화' | '수' | '목' | '금' | '토' | '일';
-  }[];
+  weekdaySpending: readonly MonthlyReportWeekdaySpending[];
 };
 
 export type WeeklyRecord = {

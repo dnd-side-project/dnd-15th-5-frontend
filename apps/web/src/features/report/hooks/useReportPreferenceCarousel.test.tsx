@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import { useReportPreferenceCarousel } from './useReportPreferenceCarousel';
 
@@ -49,15 +49,22 @@ function CarouselHarness({
   );
 }
 
-function CarouselSettleHarness({ onCardSelect }: Pick<CarouselHarnessProps, 'onCardSelect'>) {
+function CarouselSettleHarness({
+  onCardSelect,
+  onTransitionChange,
+}: Pick<CarouselHarnessProps, 'onCardSelect'> & {
+  onTransitionChange: (isTransitioning: boolean) => void;
+}) {
   const {
     carouselRef,
     handleCarouselPointerDown,
     handleCarouselPointerMove,
     handleCarouselPointerUp,
+    handleCarouselTransitionEnd,
   } = useReportPreferenceCarousel({
     cardIds: ['0', '1'],
     onCardSelect,
+    onTransitionChange,
     selectedCardIndex: 0,
   });
 
@@ -67,6 +74,7 @@ function CarouselSettleHarness({ onCardSelect }: Pick<CarouselHarnessProps, 'onC
       onPointerDown={handleCarouselPointerDown}
       onPointerMove={handleCarouselPointerMove}
       onPointerUp={handleCarouselPointerUp}
+      onTransitionEnd={handleCarouselTransitionEnd}
       ref={carouselRef}
     >
       <div data-testid="card-slot-0">
@@ -168,8 +176,11 @@ describe('useReportPreferenceCarousel', () => {
   it('드래그를 놓으면 선택을 변경하고 카드가 안착할 때까지 전환 상태를 유지한다', () => {
     jest.useFakeTimers();
     const onCardSelect = jest.fn();
+    const onTransitionChange = jest.fn();
 
-    render(<CarouselSettleHarness onCardSelect={onCardSelect} />);
+    render(
+      <CarouselSettleHarness onCardSelect={onCardSelect} onTransitionChange={onTransitionChange} />
+    );
     const carousel = screen.getByTestId('settle-carousel');
     const firstSlot = screen.getByTestId('card-slot-0');
     const secondSlot = screen.getByTestId('card-slot-1');
@@ -186,12 +197,13 @@ describe('useReportPreferenceCarousel', () => {
     expect(secondSlot).toHaveClass('report-preference-carousel-card--current');
     expect(firstSlot).toHaveClass('report-preference-carousel-card--left');
     expect(onCardSelect).toHaveBeenCalledWith(1);
+    expect(onTransitionChange).toHaveBeenLastCalledWith(true);
 
-    act(() => jest.advanceTimersByTime(459));
-    expect(onCardSelect).toHaveBeenCalledTimes(1);
-
-    act(() => jest.advanceTimersByTime(1));
-    expect(onCardSelect).toHaveBeenCalledTimes(1);
+    const transitionEndEvent = new Event('transitionend', { bubbles: true });
+    Object.defineProperty(transitionEndEvent, 'propertyName', { value: 'transform' });
+    fireEvent(secondSlot, transitionEndEvent);
+    expect(onTransitionChange).toHaveBeenLastCalledWith(false);
+    expect(carousel).not.toHaveAttribute('data-settling');
 
     dispatchPointerEvent(carousel, 'pointerdown', 50);
     expect(secondSlot).toHaveClass('report-preference-carousel-card--current');

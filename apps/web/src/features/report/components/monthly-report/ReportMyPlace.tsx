@@ -1,12 +1,9 @@
+import type { MonthlyReportDistrict } from '@/features/report/types';
+
 import ReportSectionTitle from './ReportSectionTitle';
 
-type District = {
-  name: string;
-  visits: number;
-};
-
 type ReportMyPlaceProps = {
-  districts: readonly District[];
+  districts: readonly MonthlyReportDistrict[];
 };
 
 /** 월간 방문이 많았던 동네를 순위별로 표시합니다. */
