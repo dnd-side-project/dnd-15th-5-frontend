@@ -52,6 +52,7 @@ describe('useSubmitReceiptConsumption', () => {
       category: '카페',
     });
     expect(mockShowToast).not.toHaveBeenCalled();
+    expect(onSuccess).toHaveBeenCalledTimes(1);
     expect(onSuccess).toHaveBeenCalledWith({
       placeName: '카페 차차',
       latitude: 37.5,
