@@ -7,7 +7,6 @@ import './reportPreferenceCard.css';
 import type { ReportPreferenceSharedCardProps } from './ReportPreferenceSharedCard';
 
 type ReportPreferenceShareScreenProps = ReportPreferenceSharedCardProps & {
-  month?: number;
   nickname: string;
 };
 
@@ -15,7 +14,6 @@ type ReportPreferenceShareScreenProps = ReportPreferenceSharedCardProps & {
 export default function ReportPreferenceShareScreen({
   description,
   metrics,
-  month,
   nickname,
   tags,
   title,
@@ -34,7 +32,6 @@ export default function ReportPreferenceShareScreen({
       <div className="flex w-full flex-col items-center">
         <h1 className="flex items-center justify-center gap-2.5 text-body-02-medium text-neutral-00">
           <span aria-hidden>✦</span>
-          {month ? `${month}월 ` : ''}
           {nickname}님의 취향 카드
           <span aria-hidden>✦</span>
         </h1>

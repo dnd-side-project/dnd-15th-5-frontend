@@ -49,7 +49,7 @@ describe('useKakaoReportShare', () => {
     mockedUseToast.mockReturnValue({ showToast } as never);
   });
 
-  it('발급한 토큰과 선택 월로 공유 페이지 URL을 만들어 Kakao에 전달한다', async () => {
+  it('선택 월로 공유 토큰을 발급하고 토큰 기반 URL을 Kakao에 전달한다', async () => {
     mutateAsync.mockResolvedValue({ data: { shareToken: 'share-token' } });
     sendDefault.mockResolvedValue(undefined);
     const onShared = jest.fn();
@@ -76,8 +76,8 @@ describe('useKakaoReportShare', () => {
         imageWidth: 540,
         imageHeight: 750,
         link: {
-          mobileWebUrl: 'http://localhost/share/share-token?yearMonth=2026-08',
-          webUrl: 'http://localhost/share/share-token?yearMonth=2026-08',
+          mobileWebUrl: 'http://localhost/share/share-token',
+          webUrl: 'http://localhost/share/share-token',
         },
       },
       buttonTitle: '취향 카드 보기',

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { useIssueShareLink } from '@/features/report/apis/mutations';
 import { captureReportImageBlob, createImageFileList } from '@/features/report/utils/reportImage';
-import { createYearMonthPath, ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { getKakaoSdk, isKakaoShareCancelled } from '@/shared/lib/kakao';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { useToast } from '@/shared/ui/toast';
@@ -43,7 +43,7 @@ export const useKakaoReportShare = ({
 
       if (!shareToken) throw new Error('공유 링크를 발급하지 못했습니다');
 
-      const sharePath = createYearMonthPath(ROUTE_PATHS.sharedReport(shareToken), yearMonth);
+      const sharePath = ROUTE_PATHS.sharedReport(shareToken);
       const shareUrl = new URL(sharePath, window.location.origin).href;
       const kakao = getKakaoSdk();
       const captureTarget = captureRef.current;

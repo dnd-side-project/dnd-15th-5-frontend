@@ -15,7 +15,6 @@ const meta = {
       { leftLabel: '낮소비형', rightLabel: '밤소비형', value: 19 },
       { leftLabel: '즉흥형', rightLabel: '규칙형', value: 79 },
     ],
-    month: 8,
     nickname: '이앤더',
     tags: ['낮 활동파', '단골형', '규칙적'],
     title: '동네 터줏대감',

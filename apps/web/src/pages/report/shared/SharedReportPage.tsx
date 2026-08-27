@@ -1,17 +1,14 @@
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { useGetSharedPersonaCard } from '@/features/report/apis/queries';
 import ReportPreferenceShareScreen from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceShareScreen';
 import { mapSharedPersonaCard } from '@/features/report/utils/sharedPersona';
-import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
-import { parseYearMonth } from '@/shared/utils/yearMonth';
 
 /** 공유 토큰으로 로그인 없이 다른 사용자의 월간 취향 카드를 보여줍니다. */
 export default function SharedReportPage() {
   const { shareToken = '' } = useParams();
-  const [searchParams] = useSearchParams();
   const sharedCardQuery = useGetSharedPersonaCard(shareToken, {
     query: {
       enabled: Boolean(shareToken),
@@ -19,7 +16,6 @@ export default function SharedReportPage() {
       retry: 1,
     },
   });
-  const selectedMonth = parseYearMonth(searchParams.get(YEAR_MONTH_SEARCH_PARAM));
 
   if (sharedCardQuery.isPending) {
     return (
@@ -50,7 +46,7 @@ export default function SharedReportPage() {
 
   return (
     <main className="flex min-h-dvh items-start justify-center overflow-x-hidden bg-neutral-100">
-      <ReportPreferenceShareScreen {...sharedCardQuery.data} month={selectedMonth?.month} />
+      <ReportPreferenceShareScreen {...sharedCardQuery.data} />
     </main>
   );
 }
