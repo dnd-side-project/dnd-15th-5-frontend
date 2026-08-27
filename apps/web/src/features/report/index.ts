@@ -8,6 +8,7 @@ export { default as ReportPreferenceSection } from './components/monthly-report/
 export { default as ReportShareSheet } from './components/monthly-report/ReportShareSheet';
 export { default as ReportTopShops } from './components/monthly-report/ReportTopShops';
 export { default as WeekdaySpendingChart } from './components/monthly-report/WeekdaySpendingChart';
+export { useKakaoReportShare } from './hooks/useKakaoReportShare';
 export { default as ReportHeroCard } from './components/report-page/report-hero-card/ReportHeroCard';
 export { default as MonthlyStickerSummary } from './components/report-page/MonthlyStickerSummary';
 export { default as RecentDiscoveryPanel } from './components/report-page/RecentDiscoveryPanel';
