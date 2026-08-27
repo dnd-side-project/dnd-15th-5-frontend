@@ -191,8 +191,8 @@ describe('useReportPreferenceCarousel', () => {
     });
 
     dispatchPointerEvent(carousel, 'pointerdown', 100);
-    dispatchPointerEvent(carousel, 'pointermove', 0);
-    dispatchPointerEvent(carousel, 'pointerup', 0);
+    dispatchPointerEvent(carousel, 'pointermove', 60);
+    dispatchPointerEvent(carousel, 'pointerup', 60);
 
     expect(secondSlot).toHaveClass('report-preference-carousel-card--current');
     expect(firstSlot).toHaveClass('report-preference-carousel-card--left');

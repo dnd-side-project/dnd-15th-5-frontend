@@ -1,5 +1,7 @@
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { useGetMyAccount } from '@/features/my-page';
 import {
   CategoryChart,
   MonthlyReportEmptyState,
@@ -12,6 +14,7 @@ import {
   ReportShareSheet,
   ReportTopShops,
   WeekdaySpendingChart,
+  useKakaoReportShare,
   useMonthlyReport,
 } from '@/features/report';
 import { StateView } from '@/shared/ui/state-view';
@@ -19,6 +22,8 @@ import { StateView } from '@/shared/ui/state-view';
 /** 선택한 월의 상세 리포트를 보여주는 페이지입니다. */
 export default function MonthlyReportPage() {
   const navigate = useNavigate();
+  const kakaoThumbnailRef = useRef<HTMLDivElement>(null);
+  const accountQuery = useGetMyAccount();
   const {
     captureRef,
     downloadImage,
@@ -48,6 +53,13 @@ export default function MonthlyReportPage() {
     selectedCardIndex,
     selectedMonth,
   } = useMonthlyReport();
+  const nickname = accountQuery.data?.data?.nickname?.trim() || '챱챱 사용자';
+  const { isSharing, shareToKakao } = useKakaoReportShare({
+    captureRef: kakaoThumbnailRef,
+    nickname,
+    onShared: handleShareSheetClose,
+    selectedMonth,
+  });
 
   if (hasReportError) {
     return (
@@ -100,6 +112,7 @@ export default function MonthlyReportPage() {
             onFlip={handlePreferenceCardFlip}
             onShare={handleShareSheetOpen}
             selectedCardIndex={selectedCardIndex}
+            thumbnailCaptureRef={kakaoThumbnailRef}
           />
         )}
         {!isPending && !report && (
@@ -141,9 +154,11 @@ export default function MonthlyReportPage() {
 
               <ReportShareSheet
                 isDownloading={isDownloading}
+                isSharing={isSharing}
                 isOpen={isShareSheetOpen}
                 onClose={handleShareSheetClose}
                 onDownload={downloadImage}
+                onKakaoShare={shareToKakao}
               />
             </>
           )}

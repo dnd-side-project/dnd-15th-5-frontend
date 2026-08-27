@@ -22,6 +22,7 @@ import SpendingHistoryPage from '@/pages/report/history/SpendingHistoryPage';
 import MonthlyRecordListPage from '@/pages/report/monthly-records/MonthlyRecordListPage';
 import MonthlyReportPage from '@/pages/report/MonthlyReportPage';
 import ReportPage from '@/pages/report/ReportPage';
+import SharedReportPage from '@/pages/report/shared/SharedReportPage';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import PaddedLayout from '@/shared/layout/PaddedLayout';
 
@@ -51,6 +52,10 @@ export const router = createBrowserRouter([
             children: [{ path: ROUTE_PATHS.agreement, element: <AgreementPage /> }],
           },
         ],
+      },
+      {
+        path: ROUTE_PATTERNS.sharedReport,
+        element: <SharedReportPage />,
       },
       {
         element: <AuthenticatedRoute />,

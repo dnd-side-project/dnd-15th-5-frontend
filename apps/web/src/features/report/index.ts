@@ -1,3 +1,4 @@
+export { default as ReportPreferenceSharedCard } from './components/monthly-report/report-preference-card/ReportPreferenceSharedCard';
 export { default as CategoryChart } from './components/monthly-report/CategoryChart';
 export { default as ReportMyPlace } from './components/monthly-report/ReportMyPlace';
 export { default as MonthlyReportHeader } from './components/monthly-report/MonthlyReportHeader';
@@ -9,6 +10,7 @@ export { default as ReportPreferenceSection } from './components/monthly-report/
 export { default as ReportShareSheet } from './components/monthly-report/ReportShareSheet';
 export { default as ReportTopShops } from './components/monthly-report/ReportTopShops';
 export { default as WeekdaySpendingChart } from './components/monthly-report/WeekdaySpendingChart';
+export { useKakaoReportShare } from './hooks/useKakaoReportShare';
 export { default as MonthlyStickerSummary } from './components/report-page/MonthlyStickerSummary';
 export { default as RecentDiscoveryPanel } from './components/report-page/RecentDiscoveryPanel';
 export { default as ReportContentSkeleton } from './components/report-page/ReportContentSkeleton';

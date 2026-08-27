@@ -260,6 +260,42 @@ describe('<HomeScreen />', () => {
     expect(Linking.openURL).toHaveBeenCalledWith(googleMapsUrl);
   });
 
+  it('카카오톡 공유 스킴은 WebView에서 막고 카카오톡 앱으로 전달한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { getByTestId } = await render(<HomeScreen />);
+    const shouldStartLoad = getByTestId('home-webview').props.onShouldStartLoadWithRequest;
+    const kakaoLinkUrl = 'kakaolink://send?appkey=javascript-key';
+
+    expect(shouldStartLoad({ url: kakaoLinkUrl })).toBe(false);
+    expect(Linking.openURL).toHaveBeenCalledWith(kakaoLinkUrl);
+  });
+
+  it('Android 카카오 Intent는 카카오링크 스킴으로 변환해 실행한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { getByTestId } = await render(<HomeScreen />);
+    const shouldStartLoad = getByTestId('home-webview').props.onShouldStartLoadWithRequest;
+    const kakaoIntentUrl =
+      'intent://send?appkey=javascript-key#Intent;scheme=kakaolink;package=com.kakao.talk;end';
+
+    expect(shouldStartLoad({ url: kakaoIntentUrl })).toBe(false);
+    expect(Linking.openURL).toHaveBeenCalledWith('kakaolink://send?appkey=javascript-key');
+  });
+
+  it('카카오톡을 실행할 수 없으면 Android Intent의 fallback URL을 연다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    jest.spyOn(Linking, 'openURL').mockRejectedValueOnce(new Error('카카오톡 미설치'));
+    const { getByTestId } = await render(<HomeScreen />);
+    const shouldStartLoad = getByTestId('home-webview').props.onShouldStartLoadWithRequest;
+    const fallbackUrl = 'https://play.google.com/store/apps/details?id=com.kakao.talk';
+    const kakaoIntentUrl = `intent://send#Intent;scheme=kakaolink;package=com.kakao.talk;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+
+    await act(async () => {
+      expect(shouldStartLoad({ url: kakaoIntentUrl })).toBe(false);
+    });
+
+    expect(Linking.openURL).toHaveBeenLastCalledWith(fallbackUrl);
+  });
+
   it('네이티브 기록 완료 요청을 받으면 메인 WebView를 지도 홈으로 새로 이동한다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
     await render(<HomeScreen />);

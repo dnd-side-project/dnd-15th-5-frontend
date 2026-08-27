@@ -12,7 +12,8 @@
       "bundleIdentifier": "kr.chapchap.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "주변 매장과 현재 위치를 지도에 표시하기 위해 위치 정보가 필요합니다.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": ["kakaolink"]
       }
     },
     "android": {
@@ -37,6 +38,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "./plugins/withKakaoTalkPackageVisibility.cjs",
       "expo-router",
       [
         "expo-location",
