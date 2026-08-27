@@ -58,7 +58,6 @@ export default function MonthlyReportPage() {
     captureRef: kakaoThumbnailRef,
     nickname,
     onShared: handleShareSheetClose,
-    preferenceTitle: report?.persona.title ?? '나만의 동네',
     selectedMonth,
   });
 

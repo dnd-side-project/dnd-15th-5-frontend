@@ -58,7 +58,6 @@ describe('useKakaoReportShare', () => {
         captureRef,
         nickname: '이앤더',
         onShared,
-        preferenceTitle: '동네 터줏대감',
         selectedMonth: { year: 2026, month: 8 },
       })
     );
@@ -72,8 +71,7 @@ describe('useKakaoReportShare', () => {
       objectType: 'feed',
       content: {
         title: '자주 가는 곳들이 이앤더님을 설명한다면? 👀',
-        description:
-          '8월에 자주 찾은 장소에서 발견한 ‘동네 터줏대감’ 취향. 얼마나 닮았는지 구경해보세요.',
+        description: '8월의 방문 기록이 찾아낸 결과를 확인해보세요.',
         imageUrl: 'https://kakao.example.com/card.png',
         imageWidth: 540,
         imageHeight: 750,
@@ -94,7 +92,6 @@ describe('useKakaoReportShare', () => {
       useKakaoReportShare({
         captureRef,
         nickname: '이앤더',
-        preferenceTitle: '동네 터줏대감',
         selectedMonth: { year: 2026, month: 8 },
       })
     );
@@ -110,7 +107,6 @@ describe('useKakaoReportShare', () => {
       useKakaoReportShare({
         captureRef,
         nickname: '이앤더',
-        preferenceTitle: '동네 터줏대감',
         selectedMonth: { year: 2026, month: 8 },
       })
     );

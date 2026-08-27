@@ -17,7 +17,6 @@ type UseKakaoReportShareOptions = {
   captureRef: RefObject<HTMLDivElement | null>;
   nickname: string;
   onShared?: () => void;
-  preferenceTitle: string;
   selectedMonth: YearMonth;
 };
 
@@ -26,7 +25,6 @@ export const useKakaoReportShare = ({
   captureRef,
   nickname,
   onShared,
-  preferenceTitle,
   selectedMonth,
 }: UseKakaoReportShareOptions) => {
   const { showToast } = useToast();
@@ -65,7 +63,7 @@ export const useKakaoReportShare = ({
         objectType: 'feed',
         content: {
           title: `자주 가는 곳들이 ${nickname}님을 설명한다면? 👀`,
-          description: `${selectedMonth.month}월에 자주 찾은 장소에서 발견한 ‘${preferenceTitle}’ 취향. 얼마나 닮았는지 구경해보세요.`,
+          description: `${selectedMonth.month}월의 방문 기록이 찾아낸 결과를 확인해보세요.`,
           imageUrl: uploadedImage.url,
           imageWidth: uploadedImage.width ?? REPORT_SHARE_THUMBNAIL_WIDTH,
           imageHeight: uploadedImage.height ?? REPORT_SHARE_THUMBNAIL_HEIGHT,
