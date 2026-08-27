@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   CategoryChart,
+  MonthlyReportEmptyState,
   MonthlyReportHeader,
   ReportActivitySummary,
   ReportMyPlace,
@@ -11,9 +12,7 @@ import {
   WeekdaySpendingChart,
   useMonthlyReport,
 } from '@/features/report';
-import MonthlyRecordEmptyState from '@/features/report/components/common/MonthlyRecordEmptyState';
 import { StateView } from '@/shared/ui/state-view';
-import { getCurrentMonth, isBeforeMonth } from '@/shared/utils/yearMonth';
 
 /** 선택한 월의 상세 리포트를 보여주는 페이지입니다. */
 export default function MonthlyReportPage() {
@@ -128,10 +127,7 @@ export default function MonthlyReportPage() {
         </>
       ) : (
         <div className="relative flex min-h-[70dvh] flex-col px-4">
-          <MonthlyRecordEmptyState
-            isPastMonth={isBeforeMonth(selectedMonth, getCurrentMonth())}
-            selectedMonth={selectedMonth}
-          />
+          <MonthlyReportEmptyState selectedMonth={selectedMonth} />
         </div>
       )}
     </main>
