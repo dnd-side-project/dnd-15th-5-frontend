@@ -69,4 +69,19 @@ describe('StateView', () => {
 
     expect(screen.getByRole('link', { name: '홈으로 가기' })).toHaveAttribute('href', '/home');
   });
+
+  it('액션 없이 안내만 표시할 수 있다', () => {
+    render(
+      <StateView
+        variant="empty"
+        title="리포트가 생성되지 않았어요"
+        description="월간 리포트는 매월 1일에 생성돼요."
+        headingAs="h2"
+      />
+    );
+
+    expect(screen.getByRole('heading', { name: '리포트가 생성되지 않았어요' })).toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
 });

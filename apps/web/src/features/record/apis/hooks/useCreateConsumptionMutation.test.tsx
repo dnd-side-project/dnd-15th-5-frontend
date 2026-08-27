@@ -88,7 +88,8 @@ describe('useCreateConsumptionMutation', () => {
 
     expect(predicate({ queryKey: ['/consumptions/visited-places'] })).toBe(true);
     expect(predicate({ queryKey: ['/consumptions/places/rank'] })).toBe(true);
-    expect(predicate({ queryKey: ['/reports/monthly'] })).toBe(true);
+    expect(predicate({ queryKey: ['/reports/current'] })).toBe(true);
+    expect(predicate({ queryKey: ['/reports/monthly'] })).toBe(false);
     expect(predicate({ queryKey: ['/accounts/me'] })).toBe(false);
     expect(predicate({ queryKey: ['/oauth/kakao/callback'] })).toBe(false);
   });

@@ -47,6 +47,7 @@ export type VisitedPlaceMarkerItem = {
   liked?: boolean;
   stickerCategory?: string;
   stickerName?: string;
+  googlePlaceId?: string;
 };
 
 export type VisitedPlaceMarkerResponse = {

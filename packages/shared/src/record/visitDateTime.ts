@@ -1,3 +1,5 @@
+import { SUNDAY_FIRST_WEEKDAY_LABELS } from '../common/constants';
+
 const DAYS_PER_WEEK = 7;
 const MORNING_START_HOUR = 5;
 const AFTERNOON_START_HOUR = 11;
@@ -14,7 +16,7 @@ const VISIT_PERIOD_START_TIME: Record<VisitPeriod, string> = {
 const padDatePart = (value: number) => String(value).padStart(2, '0');
 
 /** 일요일부터 시작하는 한국어 요일 라벨. */
-export const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
+export const WEEKDAY_LABELS = SUNDAY_FIRST_WEEKDAY_LABELS;
 
 /** 기록 UI에서 사용하는 시간대와 표시 범위. */
 export const VISIT_PERIODS = [
