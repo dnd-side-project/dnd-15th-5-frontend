@@ -13,6 +13,20 @@ export type ApiResponseShareLinkResponse = {
   data?: ShareLinkResponse;
 };
 
+export type MonthlyReportAggregationResultInfo = {
+  yearMonth?: string;
+  lockAcquired?: boolean;
+  targetUserCount?: number;
+  succeededCount?: number;
+  failedUserIds?: number[];
+};
+
+export type ApiResponseMonthlyReportAggregationResultInfo = {
+  code?: string;
+  message?: string;
+  data?: MonthlyReportAggregationResultInfo;
+};
+
 export type ConsumptionResponse = {
   id?: number;
   placeId?: number;
@@ -63,12 +77,14 @@ export type ApiResponsePersonaCardResponse = {
 export type PersonaResponse = {
   type?: string;
   typeName?: string;
+  description?: string;
   keywords?: string[];
   scores?: ScoresResponse;
 };
 
 export type PlaceRankResponse = {
   rank?: number;
+  placeId?: number;
   placeName?: string;
   visitCount?: number;
   firstVisitedDate?: string;
@@ -104,6 +120,11 @@ export type TimePatternResponse = {
   dayOfWeekPattern?: DayOfWeekCountResponse[];
 };
 
+export type AdjacentPersonaResponse = {
+  yearMonth?: string;
+  type?: string;
+};
+
 export type MonthlyReportResponse = {
   reportId?: number;
   yearMonth?: string;
@@ -114,6 +135,8 @@ export type MonthlyReportResponse = {
   categoryStats?: CategoryStatResponse[];
   timePattern?: TimePatternResponse;
   firstAvailableYearMonth?: string;
+  previous?: AdjacentPersonaResponse;
+  next?: AdjacentPersonaResponse;
 };
 
 export type ApiResponseMonthlyReportResponse = {
@@ -172,6 +195,13 @@ export type ApiResponseFrequentPlaceResponse = {
 export type IssueShareLinkParams = {
   /**
    * 조회할 연월, 예: 2026-07
+   */
+  yearMonth: string;
+};
+
+export type AggregateMonthlyReportParams = {
+  /**
+   * 집계할 연월, 예: 2026-06
    */
   yearMonth: string;
 };

@@ -6,9 +6,11 @@
 import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type {
+  AggregateMonthlyReportParams,
   ApiResponseConsumptionScrollResponse,
   ApiResponseCurrentStatusResponse,
   ApiResponseFrequentPlaceResponse,
+  ApiResponseMonthlyReportAggregationResultInfo,
   ApiResponseMonthlyReportResponse,
   ApiResponsePersonaCardResponse,
   ApiResponseShareLinkResponse,
@@ -31,6 +33,21 @@ export const issueShareLink = (
 ) => {
   return apiClient<ApiResponseShareLinkResponse>(
     { url: `/reports/monthly/share`, method: 'POST', params, signal },
+    options
+  );
+};
+
+/**
+ * 연월(yyyy-MM)을 지정해 전체 활성 유저의 리포트를 즉시 집계한다. 스케줄러 대기 없이 임의의 달을 바로 만들 때 사용.
+ * @summary 월간 리포트 강제 집계 (테스트/백필용)
+ */
+export const aggregateMonthlyReport = (
+  params: AggregateMonthlyReportParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseMonthlyReportAggregationResultInfo>(
+    { url: `/reports/batch`, method: 'POST', params, signal },
     options
   );
 };
