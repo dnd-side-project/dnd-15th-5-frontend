@@ -1,4 +1,4 @@
-import { fireEvent, render, userEvent } from '@testing-library/react-native';
+import { act, fireEvent, render, userEvent } from '@testing-library/react-native';
 import { Animated } from 'react-native';
 
 import ReceiptReviewForm from './ReceiptReviewForm';
@@ -100,6 +100,29 @@ describe('<ReceiptReviewForm />', () => {
     );
   });
 
+  it('가게 사진을 불러오지 못하면 기본 썸네일로 대체한다', async () => {
+    const { getByLabelText, queryByLabelText } = await render(
+      <ReceiptReviewForm
+        receiptUri="file://receipt.jpg"
+        initialShopName="투썸플레이스 신논현점"
+        initialShopAddress="서울특별시 강남구 봉은사로 125"
+        initialShopPhotoUrl="https://places.example.com/broken.jpg"
+        onBack={jest.fn()}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(getByLabelText('가게 사진')).toBeOnTheScreen();
+    expect(queryByLabelText('가게 사진 없음')).toBeNull();
+
+    await act(async () => {
+      fireEvent(getByLabelText('가게 사진'), 'error');
+    });
+
+    expect(queryByLabelText('가게 사진')).toBeNull();
+    expect(getByLabelText('가게 사진 없음')).toBeOnTheScreen();
+  });
+
   it('방문 일시 영역을 누르면 날짜 선택 바텀시트를 연다', async () => {
     const user = userEvent.setup();
     const visitDateTime = { date: new Date(2026, 7, 20), period: 'afternoon' as const };
@@ -179,6 +202,7 @@ describe('<ReceiptReviewForm />', () => {
         initialReceiptImageId={15}
         initialShopId="place-01"
         initialShopName="카페 차차"
+        initialShopAddress="서울특별시 마포구 월드컵북로 1"
         initialLatitude={37.5}
         initialLongitude={127.02}
         onBack={jest.fn()}
@@ -231,6 +255,13 @@ describe('<ReceiptReviewForm />', () => {
       />
     );
 
+    expect(getByText('가게를 찾지 못했습니다')).toBeOnTheScreen();
+    expect(getByText('가게 정보를 변경해주세요')).toBeOnTheScreen();
+    expect(getByTestId('shop-field')).toHaveProp(
+      'className',
+      expect.stringContaining('border-notification')
+    );
+
     await user.press(getByRole('button', { name: '기록하기' }));
 
     expect(getByTestId('shop-field')).toHaveProp(
@@ -261,6 +292,7 @@ describe('<ReceiptReviewForm />', () => {
         initialReceiptImageId={15}
         initialShopId="place-01"
         initialShopName="카페 차차"
+        initialShopAddress="서울특별시 마포구 월드컵북로 1"
         initialLatitude={37.5}
         initialLongitude={127.02}
         initialAmount="12000"
