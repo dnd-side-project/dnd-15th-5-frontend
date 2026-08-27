@@ -43,7 +43,7 @@ describe('useKakaoReportShare', () => {
     mockedCaptureReportImageBlob.mockResolvedValue(imageBlob);
     mockedCreateImageFileList.mockReturnValue(imageFiles);
     uploadImage.mockResolvedValue({
-      infos: { original: { height: 1_032, url: 'https://kakao.example.com/card.png', width: 488 } },
+      infos: { original: { height: 750, url: 'https://kakao.example.com/card.png', width: 540 } },
     });
     mockedGetKakaoSdk.mockReturnValue({ Share: { sendDefault, uploadImage } } as never);
     mockedUseToast.mockReturnValue({ showToast } as never);
@@ -58,6 +58,7 @@ describe('useKakaoReportShare', () => {
         captureRef,
         nickname: '이앤더',
         onShared,
+        preferenceTitle: '동네 터줏대감',
         selectedMonth: { year: 2026, month: 8 },
       })
     );
@@ -70,17 +71,18 @@ describe('useKakaoReportShare', () => {
     expect(sendDefault).toHaveBeenCalledWith({
       objectType: 'feed',
       content: {
-        title: '💌 이앤더님의 8월 취향 카드가 도착했어요',
-        description: '자주 찾는 장소에 담긴 이앤더님의 동네 취향을 구경해보세요!',
+        title: '자주 가는 곳들이 이앤더님을 설명한다면? 👀',
+        description:
+          '8월에 자주 찾은 장소에서 발견한 ‘동네 터줏대감’ 취향. 얼마나 닮았는지 구경해보세요.',
         imageUrl: 'https://kakao.example.com/card.png',
-        imageWidth: 488,
-        imageHeight: 1_032,
+        imageWidth: 540,
+        imageHeight: 750,
         link: {
           mobileWebUrl: 'http://localhost/share/share-token?yearMonth=2026-08',
           webUrl: 'http://localhost/share/share-token?yearMonth=2026-08',
         },
       },
-      buttonTitle: '취향 카드 구경하기',
+      buttonTitle: '취향 해설 보기',
     });
     expect(onShared).toHaveBeenCalledTimes(1);
   });
@@ -92,6 +94,7 @@ describe('useKakaoReportShare', () => {
       useKakaoReportShare({
         captureRef,
         nickname: '이앤더',
+        preferenceTitle: '동네 터줏대감',
         selectedMonth: { year: 2026, month: 8 },
       })
     );
@@ -107,6 +110,7 @@ describe('useKakaoReportShare', () => {
       useKakaoReportShare({
         captureRef,
         nickname: '이앤더',
+        preferenceTitle: '동네 터줏대감',
         selectedMonth: { year: 2026, month: 8 },
       })
     );

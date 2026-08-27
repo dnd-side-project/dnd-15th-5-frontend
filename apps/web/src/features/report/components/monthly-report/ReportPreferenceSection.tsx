@@ -1,4 +1,5 @@
 import ReportPreferenceCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
+import ReportPreferenceCardFront from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCardFront';
 import ReportPreferenceSharedCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceSharedCard';
 import { useReportPreferenceCarousel } from '@/features/report/hooks/useReportPreferenceCarousel';
 import type { MonthlyReportPreferenceCard } from '@/features/report/types';
@@ -20,6 +21,7 @@ type ReportPreferenceSectionProps = {
   onFlip: () => void;
   onShare: () => void;
   selectedCardIndex: number;
+  thumbnailCaptureRef: Ref<HTMLDivElement>;
 };
 
 /** 소비 취향 카드를 탐색하고 뒤집거나 공유할 수 있는 영역입니다. */
@@ -32,6 +34,7 @@ export default function ReportPreferenceSection({
   onFlip,
   onShare,
   selectedCardIndex,
+  thumbnailCaptureRef,
 }: ReportPreferenceSectionProps) {
   const selectedCard = cards[selectedCardIndex] ?? cards[0];
   const {
@@ -115,6 +118,14 @@ export default function ReportPreferenceSection({
                 description={selectedCard.description}
                 hasShadow={false}
                 metrics={selectedCard.metrics}
+                tags={selectedCard.tags}
+                title={selectedCard.title}
+                variant={selectedCard.variant}
+              />
+            </div>
+            <div ref={thumbnailCaptureRef}>
+              <ReportPreferenceCardFront
+                isStandalone
                 tags={selectedCard.tags}
                 title={selectedCard.title}
                 variant={selectedCard.variant}

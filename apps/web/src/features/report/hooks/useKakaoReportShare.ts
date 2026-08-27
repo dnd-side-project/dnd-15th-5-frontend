@@ -10,13 +10,14 @@ import { formatYearMonth } from '@/shared/utils/yearMonth';
 
 import type { RefObject } from 'react';
 
-const REPORT_SHARE_IMAGE_WIDTH = 488;
-const REPORT_SHARE_IMAGE_HEIGHT = 1_032;
+const REPORT_SHARE_THUMBNAIL_WIDTH = 540;
+const REPORT_SHARE_THUMBNAIL_HEIGHT = 750;
 
 type UseKakaoReportShareOptions = {
   captureRef: RefObject<HTMLDivElement | null>;
   nickname: string;
   onShared?: () => void;
+  preferenceTitle: string;
   selectedMonth: YearMonth;
 };
 
@@ -25,6 +26,7 @@ export const useKakaoReportShare = ({
   captureRef,
   nickname,
   onShared,
+  preferenceTitle,
   selectedMonth,
 }: UseKakaoReportShareOptions) => {
   const { showToast } = useToast();
@@ -62,14 +64,14 @@ export const useKakaoReportShare = ({
       await kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
-          title: `💌 ${nickname}님의 ${selectedMonth.month}월 취향 카드가 도착했어요`,
-          description: `자주 찾는 장소에 담긴 ${nickname}님의 동네 취향을 구경해보세요!`,
+          title: `자주 가는 곳들이 ${nickname}님을 설명한다면? 👀`,
+          description: `${selectedMonth.month}월에 자주 찾은 장소에서 발견한 ‘${preferenceTitle}’ 취향. 얼마나 닮았는지 구경해보세요.`,
           imageUrl: uploadedImage.url,
-          imageWidth: uploadedImage.width ?? REPORT_SHARE_IMAGE_WIDTH,
-          imageHeight: uploadedImage.height ?? REPORT_SHARE_IMAGE_HEIGHT,
+          imageWidth: uploadedImage.width ?? REPORT_SHARE_THUMBNAIL_WIDTH,
+          imageHeight: uploadedImage.height ?? REPORT_SHARE_THUMBNAIL_HEIGHT,
           link,
         },
-        buttonTitle: '취향 카드 구경하기',
+        buttonTitle: '취향 해설 보기',
       });
       onShared?.();
     } catch (error) {
