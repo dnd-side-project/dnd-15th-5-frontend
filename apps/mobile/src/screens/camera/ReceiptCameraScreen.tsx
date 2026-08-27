@@ -6,23 +6,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import {
+  createReceiptConfirmParams,
   getRecordErrorMessage,
-  parseReceiptVisitDateTime,
   processReceiptImage,
   RecordExitConfirmDialog,
   RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET,
   ReceiptScanLoading,
-  stripCountryPrefix,
 } from '@/features/record';
-import type { ReceiptReviewRouteParams } from '@/features/record';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
 import { CloseIcon, GalleryIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
 import { useToast } from '@/shared/ui/toast';
 
 import type { GestureResponderEvent } from 'react-native';
-
-type ProcessedReceipt = Awaited<ReturnType<typeof processReceiptImage>>;
 
 // NOTE: 손가락 이동 거리 대비 줌 변화량. 실제 기기에서 체감 속도를 보고 조정이 필요할 수 있다.
 const PINCH_ZOOM_SENSITIVITY = 0.5;
@@ -36,63 +32,6 @@ const getTouchDistance = (touches: GestureResponderEvent['nativeEvent']['touches
   }
 
   return Math.hypot(first.pageX - second.pageX, first.pageY - second.pageY);
-};
-
-const createMatchedShopParams = (
-  googlePlaceSearchResult: ProcessedReceipt['googlePlaceSearchResult']
-): ReceiptReviewRouteParams => {
-  const shopId = googlePlaceSearchResult?.googlePlaceId?.trim();
-  const shopName = googlePlaceSearchResult?.placeName?.trim();
-  const rawShopAddress = googlePlaceSearchResult?.roadAddress?.trim();
-  const latitude = googlePlaceSearchResult?.latitude;
-  const longitude = googlePlaceSearchResult?.longitude;
-
-  if (
-    !shopId ||
-    !shopName ||
-    !rawShopAddress ||
-    typeof latitude !== 'number' ||
-    !Number.isFinite(latitude) ||
-    typeof longitude !== 'number' ||
-    !Number.isFinite(longitude)
-  ) {
-    return {};
-  }
-
-  return {
-    shopId,
-    shopName,
-    shopAddress: stripCountryPrefix(rawShopAddress),
-    ...(googlePlaceSearchResult?.thumbnailUrl
-      ? { shopPhotoUrl: googlePlaceSearchResult.thumbnailUrl }
-      : {}),
-    latitude: String(latitude),
-    longitude: String(longitude),
-  };
-};
-
-const createReceiptConfirmParams = ({
-  uri,
-  receiptImageId,
-  purchaseDate,
-  purchaseTime,
-  amount,
-  googlePlaceSearchResult,
-}: ProcessedReceipt): ReceiptReviewRouteParams => {
-  const visitDateTime = parseReceiptVisitDateTime(purchaseDate, purchaseTime);
-
-  return {
-    uri,
-    ...(receiptImageId !== undefined ? { receiptImageId: String(receiptImageId) } : {}),
-    ...createMatchedShopParams(googlePlaceSearchResult),
-    ...(amount !== null && amount !== undefined ? { amount: String(amount) } : {}),
-    ...(visitDateTime
-      ? {
-          visitedAt: String(visitDateTime.date.getTime()),
-          visitPeriod: visitDateTime.period,
-        }
-      : {}),
-  };
 };
 
 /**

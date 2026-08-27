@@ -16,4 +16,8 @@ describe('stripCountryPrefix', () => {
   it('빈 문자열은 그대로 반환한다', () => {
     expect(stripCountryPrefix('')).toBe('');
   });
+
+  it('국가명만 있으면 빈 주소로 변환한다', () => {
+    expect(stripCountryPrefix('대한민국')).toBe('');
+  });
 });
