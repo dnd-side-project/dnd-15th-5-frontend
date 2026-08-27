@@ -20,9 +20,15 @@ export type MonthlyReportPersona = {
   variant: ReportPreferenceCardVariant;
 };
 
-export type MonthlyReportAdjacentCard = MonthlyReportPersona & {
-  month: YearMonth;
-};
+export type MonthlyReportAdjacentCard =
+  | (MonthlyReportPersona & {
+      isUnavailable: false;
+      month: YearMonth;
+    })
+  | {
+      isUnavailable: true;
+      month: YearMonth;
+    };
 
 export type MonthlyReport = {
   adjacentCards: readonly MonthlyReportAdjacentCard[];

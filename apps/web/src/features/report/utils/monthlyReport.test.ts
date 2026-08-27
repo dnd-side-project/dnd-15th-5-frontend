@@ -106,6 +106,23 @@ describe('mapMonthlyReportResponse', () => {
     expect(report?.weekdayInsight).toBe(`당신의 소비는 금요일 ${label}에 깨어나요 ${emoji}`);
   });
 
+  it('인접 리포트가 null이면 해당 월의 빈 카드로 변환한다', () => {
+    const report = mapMonthlyReportResponse(
+      {
+        reportId: 1,
+        yearMonth: '2026-07',
+        previous: null as never,
+        next: { yearMonth: '2026-08' },
+      },
+      { month: 7, year: 2026 }
+    );
+
+    expect(report?.adjacentCards).toEqual([
+      { isUnavailable: true, month: { month: 6, year: 2026 } },
+      { isUnavailable: true, month: { month: 8, year: 2026 } },
+    ]);
+  });
+
   it.each([
     ['RHMP', 'night-watch', '골목 야간반장', ['야행성', '단골형', '규칙적']],
     ['NWMF', 'food-nomad', '미식 유목민', ['야행성', '신규 탐색형', '즉흥적']],

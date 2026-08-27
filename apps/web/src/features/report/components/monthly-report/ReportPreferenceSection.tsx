@@ -5,6 +5,9 @@ import { useReportPreferenceCarousel } from '@/features/report/hooks/useReportPr
 import type { ReportPreferenceCardVariant } from '@/features/report/types';
 import { ReportCardFlipIcon, ShareIcon } from '@/shared/assets/icons';
 import { cn } from '@/shared/lib/cn';
+import type { YearMonth } from '@/shared/types/yearMonth';
+
+import MonthlyReportUnavailableCard from './MonthlyReportUnavailableCard';
 
 import type { Ref } from 'react';
 
@@ -20,14 +23,21 @@ type ReportPreferenceSectionProps = {
   selectedCardIndex: number;
 };
 
-type ReportPreferenceCarouselCard = {
-  description: string;
-  id: string;
-  metrics: readonly ReportPreferenceCardMetric[];
-  tags: readonly string[];
-  title: string;
-  variant: ReportPreferenceCardVariant;
-};
+type ReportPreferenceCarouselCard =
+  | {
+      description: string;
+      id: string;
+      isUnavailable?: false;
+      metrics: readonly ReportPreferenceCardMetric[];
+      tags: readonly string[];
+      title: string;
+      variant: ReportPreferenceCardVariant;
+    }
+  | {
+      id: string;
+      isUnavailable: true;
+      month: YearMonth;
+    };
 
 /** 소비 취향 카드를 탐색하고 뒤집거나 공유할 수 있는 영역입니다. */
 export default function ReportPreferenceSection({
@@ -54,7 +64,7 @@ export default function ReportPreferenceSection({
     selectedCardIndex,
   });
 
-  if (!selectedCard) return null;
+  if (!selectedCard || selectedCard.isUnavailable) return null;
 
   return (
     <section className="report-preference-section mt-4.5 flex flex-col items-center">
@@ -87,15 +97,19 @@ export default function ReportPreferenceSection({
               )}
               key={card.id}
             >
-              <ReportPreferenceCard
-                description={card.description}
-                isFlipped={isSelected && isFlipped}
-                metrics={card.metrics}
-                onFlip={isSelected ? onFlip : undefined}
-                tags={card.tags}
-                title={card.title}
-                variant={card.variant}
-              />
+              {card.isUnavailable ? (
+                <MonthlyReportUnavailableCard selectedMonth={card.month} />
+              ) : (
+                <ReportPreferenceCard
+                  description={card.description}
+                  isFlipped={isSelected && isFlipped}
+                  metrics={card.metrics}
+                  onFlip={isSelected ? onFlip : undefined}
+                  tags={card.tags}
+                  title={card.title}
+                  variant={card.variant}
+                />
+              )}
             </div>
           );
         })}

@@ -1,4 +1,4 @@
-import type { MonthlyReportResponse } from '@/features/report/apis/dto';
+import type { AdjacentPersonaResponse, MonthlyReportResponse } from '@/features/report/apis/dto';
 import {
   REPORT_PERSONA_COPY,
   REPORT_PERSONA_TAGS,
@@ -14,7 +14,7 @@ import type {
 } from '@/features/report/types';
 import { getStickerImageByName } from '@/shared/assets/images/stickers';
 import type { YearMonth } from '@/shared/types/yearMonth';
-import { getMonthDifference, parseYearMonth } from '@/shared/utils/yearMonth';
+import { addMonth, getMonthDifference, parseYearMonth } from '@/shared/utils/yearMonth';
 
 import type { SpendingCategory } from '@chapchap/shared/common/types';
 
@@ -77,18 +77,21 @@ const createPersonaTags = (axes: PersonaAxes | null, fallbackTags?: readonly str
 };
 
 const mapAdjacentPersona = (
-  yearMonth: string | undefined,
-  type: string | undefined
+  adjacent: AdjacentPersonaResponse | null | undefined,
+  fallbackMonth: YearMonth
 ): MonthlyReportAdjacentCard | undefined => {
-  const month = parseYearMonth(yearMonth);
-  const axes = parsePersonaAxes(type);
-  if (!month || !axes) return undefined;
+  if (adjacent === undefined) return undefined;
 
-  const variant = resolvePersonaVariant(type);
+  const month = parseYearMonth(adjacent?.yearMonth) ?? fallbackMonth;
+  const axes = parsePersonaAxes(adjacent?.type);
+  if (!axes) return { isUnavailable: true, month };
+
+  const variant = resolvePersonaVariant(adjacent?.type);
   const copy = REPORT_PERSONA_COPY[variant];
 
   return {
     description: copy.description,
+    isUnavailable: false,
     metrics: [],
     month,
     tags: createPersonaTags(axes, copy.tags),
@@ -141,8 +144,8 @@ export const mapMonthlyReportResponse = (
 
   return {
     adjacentCards: [
-      mapAdjacentPersona(response.previous?.yearMonth, response.previous?.type),
-      mapAdjacentPersona(response.next?.yearMonth, response.next?.type),
+      mapAdjacentPersona(response.previous, addMonth(reportMonth, -1)),
+      mapAdjacentPersona(response.next, addMonth(reportMonth, 1)),
     ].filter((card): card is MonthlyReportAdjacentCard => Boolean(card)),
     month: reportMonth,
     persona: {
