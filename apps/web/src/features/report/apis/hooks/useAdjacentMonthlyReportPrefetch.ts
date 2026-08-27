@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
-import { MONTHLY_REPORT_CACHE_TIME } from '@/features/report/apis/hooks/useMonthlyReportQuery';
+import { MONTHLY_REPORT_QUERY_CACHE_OPTIONS } from '@/features/report/apis/cacheOptions';
 import { getGetMonthlyReportQueryOptions } from '@/features/report/apis/queries';
 import type { MonthlyReportAdjacentCard } from '@/features/report/types';
 import { formatYearMonth } from '@/shared/utils/yearMonth';
@@ -20,10 +20,7 @@ export const useAdjacentMonthlyReportPrefetch = (
         getGetMonthlyReportQueryOptions(
           { yearMonth: formatYearMonth(card.month) },
           {
-            query: {
-              gcTime: MONTHLY_REPORT_CACHE_TIME,
-              staleTime: MONTHLY_REPORT_CACHE_TIME,
-            },
+            query: MONTHLY_REPORT_QUERY_CACHE_OPTIONS,
           }
         )
       );

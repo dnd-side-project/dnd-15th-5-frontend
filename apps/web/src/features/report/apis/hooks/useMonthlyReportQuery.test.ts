@@ -1,7 +1,9 @@
 import { keepPreviousData } from '@tanstack/react-query';
 import { renderHook } from '@testing-library/react';
 
-import { MONTHLY_REPORT_CACHE_TIME, useMonthlyReportQuery } from './useMonthlyReportQuery';
+import { MONTHLY_REPORT_QUERY_CACHE_OPTIONS } from '@/features/report/apis/cacheOptions';
+
+import { useMonthlyReportQuery } from './useMonthlyReportQuery';
 
 const mockUseGetMonthlyReport = jest.fn();
 
@@ -19,10 +21,9 @@ describe('useMonthlyReportQuery', () => {
       { yearMonth: '2026-07' },
       {
         query: {
-          gcTime: MONTHLY_REPORT_CACHE_TIME,
+          ...MONTHLY_REPORT_QUERY_CACHE_OPTIONS,
           placeholderData: keepPreviousData,
           select: expect.any(Function),
-          staleTime: MONTHLY_REPORT_CACHE_TIME,
         },
       }
     );

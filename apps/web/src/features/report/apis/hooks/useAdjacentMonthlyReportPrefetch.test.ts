@@ -1,9 +1,9 @@
 import { renderHook } from '@testing-library/react';
 
+import { MONTHLY_REPORT_QUERY_CACHE_OPTIONS } from '@/features/report/apis/cacheOptions';
 import { getGetMonthlyReportQueryOptions } from '@/features/report/apis/queries';
 
 import { useAdjacentMonthlyReportPrefetch } from './useAdjacentMonthlyReportPrefetch';
-import { MONTHLY_REPORT_CACHE_TIME } from './useMonthlyReportQuery';
 
 const mockPrefetchQuery = jest.fn();
 
@@ -40,10 +40,7 @@ describe('useAdjacentMonthlyReportPrefetch', () => {
     expect(getGetMonthlyReportQueryOptions).toHaveBeenCalledWith(
       { yearMonth: '2026-06' },
       {
-        query: {
-          gcTime: MONTHLY_REPORT_CACHE_TIME,
-          staleTime: MONTHLY_REPORT_CACHE_TIME,
-        },
+        query: MONTHLY_REPORT_QUERY_CACHE_OPTIONS,
       }
     );
     expect(mockPrefetchQuery).toHaveBeenCalledTimes(1);
