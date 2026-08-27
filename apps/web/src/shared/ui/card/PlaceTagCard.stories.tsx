@@ -22,7 +22,8 @@ const meta = {
   argTypes: {
     thumbnailSrc: {
       control: 'text',
-      description: '썸네일 이미지 URL. `null`이면 회색 배경으로 대체한다.',
+      description:
+        '썸네일 이미지 URL. `null`이거나 로드에 실패하면 기본 썸네일 아이콘으로 대체한다.',
     },
     title: {
       control: 'text',
@@ -41,7 +42,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** 썸네일이 없어 회색 배경으로 대체되는 기본 상태입니다. */
+/** 썸네일이 없어 기본 썸네일 아이콘으로 대체되는 기본 상태입니다. */
 export const Default: Story = {};
 
 /** 썸네일 이미지가 있는 상태입니다. */

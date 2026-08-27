@@ -19,7 +19,8 @@ const meta = {
   argTypes: {
     thumbnailSrc: {
       control: 'text',
-      description: '썸네일 이미지 URL. `null`이면 회색 배경으로 대체한다.',
+      description:
+        '썸네일 이미지 URL. `null`이거나 로드에 실패하면 기본 썸네일 아이콘으로 대체한다.',
     },
     title: { control: 'text' },
     location: { control: 'text' },
