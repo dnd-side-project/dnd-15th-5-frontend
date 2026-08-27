@@ -31,10 +31,12 @@ const STICKER_IMAGE_BY_NAME = new Map<string, string>([
 export const getStickerImageByName = (stickerName?: string) =>
   stickerName ? STICKER_IMAGE_BY_NAME.get(stickerName) : undefined;
 
-/** 스티커 응답 목록에서 웹에서 지원하는 이미지 경로만 반환합니다. */
-export const getStickerImages = (stickers: readonly { itemName?: string }[]) =>
-  stickers.flatMap(({ itemName }) => {
+/** 스티커 응답 목록에서 웹이 지원하는 이미지를 각 항목의 개수만큼 펼쳐 반환합니다. */
+export const getStickerImages = (stickers: readonly { count?: number; itemName?: string }[]) =>
+  stickers.flatMap(({ count, itemName }) => {
     const stickerImage = getStickerImageByName(itemName);
+    const stickerCount =
+      count === undefined ? 1 : Number.isSafeInteger(count) && count > 0 ? count : 0;
 
-    return stickerImage ? [stickerImage] : [];
+    return stickerImage ? Array.from({ length: stickerCount }, () => stickerImage) : [];
   });

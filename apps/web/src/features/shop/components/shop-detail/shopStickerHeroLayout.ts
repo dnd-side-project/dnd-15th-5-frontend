@@ -16,13 +16,32 @@ const NEWEST_STAMP_DURATION_MS = 657;
 const STAMP_STAGGER_MS = 79;
 const NEWEST_STAMP_BASE_DELAY_MS = 457;
 
-export const MAX_HERO_STICKER_COUNT = 6;
-
 type StickerPlacement = {
   left: number;
   rotate: number;
   size: number;
   top: number;
+};
+
+/** 같은 종류가 연달아 찍히지 않도록 종류별 스티커를 한 장씩 번갈아 배치합니다. */
+export const mixShopStickerImages = (stickerImages: readonly string[]) => {
+  const remainingCountByImage = new Map<string, number>();
+
+  stickerImages.forEach((stickerImage) => {
+    remainingCountByImage.set(stickerImage, (remainingCountByImage.get(stickerImage) ?? 0) + 1);
+  });
+
+  const mixedStickerImages: string[] = [];
+  while (mixedStickerImages.length < stickerImages.length) {
+    remainingCountByImage.forEach((remainingCount, stickerImage) => {
+      if (remainingCount <= 0) return;
+
+      mixedStickerImages.push(stickerImage);
+      remainingCountByImage.set(stickerImage, remainingCount - 1);
+    });
+  }
+
+  return mixedStickerImages;
 };
 
 const getPlacementClearance = (

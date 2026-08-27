@@ -80,7 +80,7 @@ export default function ShopDetail({ headerContent, onViewOnMap, placeId }: Shop
 
   const visits = placeVisitsQuery.data?.pages.flatMap((page) => page.data?.visits ?? []) ?? [];
   const totalVisitCount = place.stats?.totalVisitCount ?? visits.length;
-  const stickerImages = getStickerImages(place.recentStickers ?? []);
+  const stickerImages = getStickerImages(place.stickerSummary ?? place.recentStickers ?? []);
 
   return (
     <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">

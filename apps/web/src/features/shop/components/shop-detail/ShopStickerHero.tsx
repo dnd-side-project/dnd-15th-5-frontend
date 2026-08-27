@@ -7,7 +7,7 @@ import {
   createShopStickerStampDelays,
   getShopStickerSlotStyle,
   getShopStickerStampDuration,
-  MAX_HERO_STICKER_COUNT,
+  mixShopStickerImages,
 } from './shopStickerHeroLayout';
 
 import './shopStickerHero.css';
@@ -33,16 +33,16 @@ export default function ShopStickerHero({
   placeId,
   stickerImages,
 }: ShopStickerHeroProps) {
-  const visibleStickerImages = stickerImages.slice(0, MAX_HERO_STICKER_COUNT);
+  const mixedStickerImages = mixShopStickerImages(stickerImages);
   const placements = useMemo(
-    () => createShopStickerPlacements(placeId, visibleStickerImages.length),
-    [placeId, visibleStickerImages.length]
+    () => createShopStickerPlacements(placeId, mixedStickerImages.length),
+    [placeId, mixedStickerImages.length]
   );
   const stampDelays = useMemo(
-    () => createShopStickerStampDelays(visibleStickerImages.length, newestStickerIndex),
-    [newestStickerIndex, visibleStickerImages.length]
+    () => createShopStickerStampDelays(mixedStickerImages.length, newestStickerIndex),
+    [newestStickerIndex, mixedStickerImages.length]
   );
-  const stickerSetKey = JSON.stringify([placeId, newestStickerIndex, visibleStickerImages]);
+  const stickerSetKey = JSON.stringify([placeId, newestStickerIndex, mixedStickerImages]);
 
   return (
     <div className="relative h-75.25 shrink-0 overflow-hidden bg-[linear-gradient(to_bottom,transparent_25%,var(--color-primary-100)_100%)]">
@@ -53,7 +53,7 @@ export default function ShopStickerHero({
         newestStickerIndex={newestStickerIndex}
         placements={placements}
         stampDelays={stampDelays}
-        stickerImages={visibleStickerImages}
+        stickerImages={mixedStickerImages}
       />
     </div>
   );
@@ -101,7 +101,7 @@ function ShopStickerCanvas({
   };
 
   return (
-    <div aria-label="최근 획득한 스티커" className="absolute inset-0">
+    <div aria-label="획득한 스티커" className="absolute inset-0">
       {stickerImages.map((stickerImage, index) => {
         const placement = placements[index];
         if (!placement) return null;
