@@ -2,24 +2,14 @@ import { useLayoutEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
-import { NotificationDefaultIcon, SearchIcon } from '@/shared/assets/icons';
+import { NotificationDefaultIcon, NotificationUnreadIcon, SearchIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { DefaultProfile } from '@/shared/ui/default-profile';
 
 import HomePreferenceBanner from './HomePreferenceBanner';
 
-import type { ComponentType, SVGProps } from 'react';
-
-const QUICK_LINKS: ReadonlyArray<{
-  to: string;
-  label: string;
-  Icon: ComponentType<SVGProps<SVGSVGElement>>;
-}> = [
-  { to: ROUTE_PATHS.homeSearch, label: '장소 검색', Icon: SearchIcon },
-  { to: ROUTE_PATHS.notifications, label: '알림', Icon: NotificationDefaultIcon },
-];
-
 type HomeTopBarProps = {
+  hasUnreadNotification: boolean;
   recordedShopCount: number | undefined;
 };
 
@@ -29,9 +19,10 @@ type HomeTopBarProps = {
  * 마이페이지 버튼의 화면상 아래 좌표를 최초 렌더·요소 크기 변경·창 크기 변경 때 측정해
  * `useHomeBottomSheetStore`에 전달하고, 최대 바텀시트가 상단 UI를 덮지 않도록 합니다.
  */
-export default function HomeTopBar({ recordedShopCount }: HomeTopBarProps) {
+export default function HomeTopBar({ hasUnreadNotification, recordedShopCount }: HomeTopBarProps) {
   const myPageButtonRef = useRef<HTMLAnchorElement>(null);
   const setTopActionBottom = useHomeBottomSheetStore((state) => state.setTopActionBottom);
+  const NotificationIcon = hasUnreadNotification ? NotificationUnreadIcon : NotificationDefaultIcon;
 
   useLayoutEffect(() => {
     const myPageButton = myPageButtonRef.current;
@@ -63,17 +54,23 @@ export default function HomeTopBar({ recordedShopCount }: HomeTopBarProps) {
       <HomePreferenceBanner recordedShopCount={recordedShopCount} />
 
       <div className="ml-auto flex shrink-0 items-center gap-2.5">
-        {QUICK_LINKS.map(({ to, label, Icon }) => (
-          <Link
-            key={to}
-            to={to}
-            aria-label={label}
-            title={label}
-            className="flex size-8 items-center justify-center rounded-full bg-neutral-00 text-neutral-600 shadow-current-location-button transition-[background-color,transform] hover:bg-neutral-50 active:scale-95"
-          >
-            <Icon aria-hidden="true" className="size-6" />
-          </Link>
-        ))}
+        <Link
+          to={ROUTE_PATHS.homeSearch}
+          aria-label="장소 검색"
+          title="장소 검색"
+          className="flex size-8 items-center justify-center rounded-full bg-neutral-00 text-neutral-600 shadow-current-location-button transition-[background-color,transform] hover:bg-neutral-50 active:scale-95"
+        >
+          <SearchIcon aria-hidden="true" className="size-6" />
+        </Link>
+
+        <Link
+          to={ROUTE_PATHS.notifications}
+          aria-label={hasUnreadNotification ? '읽지 않은 알림 있음' : '알림'}
+          title="알림"
+          className="flex size-8 items-center justify-center rounded-full bg-neutral-00 text-neutral-600 shadow-current-location-button transition-[background-color,transform] hover:bg-neutral-50 active:scale-95"
+        >
+          <NotificationIcon aria-hidden="true" className="size-6" />
+        </Link>
 
         <Link
           ref={myPageButtonRef}
