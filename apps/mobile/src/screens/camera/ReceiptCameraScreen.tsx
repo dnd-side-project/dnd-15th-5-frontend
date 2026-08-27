@@ -12,6 +12,7 @@ import {
   RecordExitConfirmDialog,
   RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET,
   ReceiptScanLoading,
+  stripCountryPrefix,
 } from '@/features/record';
 import type { ReceiptReviewRouteParams } from '@/features/record';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
@@ -37,37 +38,53 @@ const getTouchDistance = (touches: GestureResponderEvent['nativeEvent']['touches
   return Math.hypot(first.pageX - second.pageX, first.pageY - second.pageY);
 };
 
+const createMatchedShopParams = (
+  googlePlaceSearchResult: ProcessedReceipt['googlePlaceSearchResult']
+): ReceiptReviewRouteParams => {
+  const shopId = googlePlaceSearchResult?.googlePlaceId?.trim();
+  const shopName = googlePlaceSearchResult?.placeName?.trim();
+  const rawShopAddress = googlePlaceSearchResult?.roadAddress?.trim();
+  const latitude = googlePlaceSearchResult?.latitude;
+  const longitude = googlePlaceSearchResult?.longitude;
+
+  if (
+    !shopId ||
+    !shopName ||
+    !rawShopAddress ||
+    typeof latitude !== 'number' ||
+    !Number.isFinite(latitude) ||
+    typeof longitude !== 'number' ||
+    !Number.isFinite(longitude)
+  ) {
+    return {};
+  }
+
+  return {
+    shopId,
+    shopName,
+    shopAddress: stripCountryPrefix(rawShopAddress),
+    ...(googlePlaceSearchResult?.thumbnailUrl
+      ? { shopPhotoUrl: googlePlaceSearchResult.thumbnailUrl }
+      : {}),
+    latitude: String(latitude),
+    longitude: String(longitude),
+  };
+};
+
 const createReceiptConfirmParams = ({
   uri,
   receiptImageId,
-  storeName,
-  address,
   purchaseDate,
   purchaseTime,
   amount,
   googlePlaceSearchResult,
 }: ProcessedReceipt): ReceiptReviewRouteParams => {
   const visitDateTime = parseReceiptVisitDateTime(purchaseDate, purchaseTime);
-  const recognizedShopName = googlePlaceSearchResult?.placeName || storeName;
-  const recognizedShopAddress = googlePlaceSearchResult?.roadAddress || address;
 
   return {
     uri,
-    receiptImageId: String(receiptImageId),
-    ...(googlePlaceSearchResult?.googlePlaceId
-      ? { shopId: googlePlaceSearchResult.googlePlaceId }
-      : {}),
-    ...(recognizedShopName ? { shopName: recognizedShopName } : {}),
-    ...(recognizedShopAddress ? { shopAddress: recognizedShopAddress } : {}),
-    ...(googlePlaceSearchResult?.thumbnailUrl
-      ? { shopPhotoUrl: googlePlaceSearchResult.thumbnailUrl }
-      : {}),
-    ...(googlePlaceSearchResult?.latitude !== undefined
-      ? { latitude: String(googlePlaceSearchResult.latitude) }
-      : {}),
-    ...(googlePlaceSearchResult?.longitude !== undefined
-      ? { longitude: String(googlePlaceSearchResult.longitude) }
-      : {}),
+    ...(receiptImageId !== undefined ? { receiptImageId: String(receiptImageId) } : {}),
+    ...createMatchedShopParams(googlePlaceSearchResult),
     ...(amount !== null && amount !== undefined ? { amount: String(amount) } : {}),
     ...(visitDateTime
       ? {

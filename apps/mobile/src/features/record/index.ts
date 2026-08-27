@@ -15,5 +15,6 @@ export {
 } from './utils/receiptReviewParams';
 export { parseReceiptVisitDateTime } from './utils/parseReceiptVisitDateTime';
 export { createRecordCreatedHomePath } from './utils/createRecordCreatedHomePath';
+export { stripCountryPrefix } from './utils/stripCountryPrefix';
 
 export type { ReceiptDraft, ReceiptReviewRouteParams, ReceiptReviewState } from './types';
