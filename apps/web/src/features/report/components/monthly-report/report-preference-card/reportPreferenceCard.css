@@ -34,3 +34,30 @@
     24px 24px,
     24px 24px;
 }
+
+.report-preference-share-card-enter {
+  animation: report-preference-share-card-enter 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes report-preference-share-card-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-preference-share-card-enter {
+    animation: none;
+  }
+}

@@ -39,7 +39,7 @@ export default function ReportPreferenceShareScreen({
           <span aria-hidden>✦</span>
         </h1>
 
-        <div className="mt-4.75">
+        <div className="report-preference-share-card-enter mt-4.75">
           <ReportPreferenceSharedCard
             description={description}
             metrics={metrics}
