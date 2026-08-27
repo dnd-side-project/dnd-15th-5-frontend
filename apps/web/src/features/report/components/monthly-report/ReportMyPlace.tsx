@@ -38,7 +38,7 @@ export default function ReportMyPlace({ districts }: ReportMyPlaceProps) {
         <div className="flex flex-col gap-3.75">
           {otherDistricts.length === 0 ? (
             <article className="flex h-41.25 items-center justify-center rounded-16 bg-neutral-50 px-4 text-center text-body-02-medium text-neutral-400">
-              한 동네에 진심이었던 달
+              한 동네에 푹 빠진 달
             </article>
           ) : (
             <>
@@ -57,7 +57,7 @@ export default function ReportMyPlace({ districts }: ReportMyPlaceProps) {
               ))}
               {otherDistricts.length === 1 && (
                 <article className="flex h-18.75 items-center justify-center rounded-16 bg-neutral-50 px-4 text-center text-body-02-medium text-neutral-400">
-                  두 동네에 진심이었던 달
+                  두 동네에 푹 빠진 달
                 </article>
               )}
             </>
