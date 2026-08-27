@@ -1,6 +1,6 @@
 import type { PlaceVisitResponse } from '@/features/shop/apis/dto';
 import { formatVisitAmount, formatVisitDate } from '@/features/shop/utils/formatVisit';
-import { useInfiniteScrollTrigger } from '@/shared/hooks/useInfiniteScrollTrigger';
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 
@@ -29,9 +29,11 @@ export default function VisitHistoryList({
   scrollRootRef,
   visits,
 }: VisitHistoryListProps) {
-  const loadMoreRef = useInfiniteScrollTrigger({
-    enabled: hasNextPage && !isError && !isFetchNextPageError && !isFetchingNextPage,
-    onIntersect: onLoadMore,
+  const loadMoreRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    isLoadMoreError: isError || isFetchNextPageError,
+    onLoadMore,
     rootRef: scrollRootRef,
   });
 

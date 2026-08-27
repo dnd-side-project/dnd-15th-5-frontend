@@ -104,7 +104,7 @@ export default function SpendingHistory({
       : undefined;
   const isFilteringInitialDate = filteredDate !== undefined;
   const visibleRecordGroups = isFilteringInitialDate
-    ? recordGroups.filter(({ dateValue }) => dateValue === filteredDate)
+    ? recordGroups.filter(({ purchaseDate }) => purchaseDate === filteredDate)
     : recordGroups;
   const lastLoadedDate = consumptions.at(-1)?.purchaseDate;
   const shouldFetchMoreForDate = Boolean(

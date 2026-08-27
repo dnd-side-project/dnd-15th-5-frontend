@@ -7,7 +7,9 @@ import { useFrequentPlacesInfiniteQuery } from '@/features/report/apis/hooks/use
 
 import FrequentShopList from './FrequentShopList';
 
-jest.mock('@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery');
+jest.mock('@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery', () => ({
+  useFrequentPlacesInfiniteQuery: jest.fn(),
+}));
 
 jest.mock('@/shared/assets/images/state', () => ({
   EmptyStateImage: 'img-empty.png',
@@ -15,15 +17,49 @@ jest.mock('@/shared/assets/images/state', () => ({
 }));
 
 const mockedUseFrequentPlacesInfiniteQuery = jest.mocked(useFrequentPlacesInfiniteQuery);
-const createPlaces = (visitCount: number) =>
-  Array.from({ length: 8 }, (_, index) => ({
-    rank: index + 1,
-    placeId: index + 1,
-    placeName: `투썸플레이스 ${index + 1}`,
+const fetchNextPage = jest.fn();
+const refetch = jest.fn();
+
+const THIS_MONTH_PLACES = [
+  {
+    rank: 1,
+    placeId: 11,
+    placeName: '투썸플레이스',
     category: '카페',
-    dongname: '용산구',
-    visitCount: index === 0 ? visitCount : 7,
-  }));
+    dongname: '한강로동',
+    thumbnailUrl: 'https://example.com/place-11.jpg',
+    visitCount: 12,
+  },
+  {
+    rank: 2,
+    placeId: 12,
+    placeName: '아오이 카페',
+    category: '카페',
+    dongname: '연남동',
+    visitCount: 8,
+  },
+  {
+    rank: 3,
+    placeId: 13,
+    placeName: '차곡 커피',
+    category: '카페',
+    dongname: '망원동',
+    visitCount: 7,
+  },
+];
+
+const createQueryResult = (places = THIS_MONTH_PLACES, overrides: Record<string, unknown> = {}) =>
+  ({
+    data: { pages: [{ data: { places, hasNext: false } }], pageParams: [{}] },
+    fetchNextPage,
+    hasNextPage: false,
+    isError: false,
+    isFetchNextPageError: false,
+    isFetchingNextPage: false,
+    isPending: false,
+    refetch,
+    ...overrides,
+  }) as unknown as ReturnType<typeof useFrequentPlacesInfiniteQuery>;
 
 const firePointerEvent = (element: Element, type: string, clientY: number) => {
   const event = new Event(type, { bubbles: true, cancelable: true });
@@ -41,49 +77,58 @@ const renderFrequentShopList = () =>
 
 describe('FrequentShopList', () => {
   beforeEach(() => {
-    mockedUseFrequentPlacesInfiniteQuery.mockImplementation(
-      ({ category, period }) =>
-        ({
-          data: {
-            pages: [
-              {
-                data: {
-                  places: category?.includes('편의점/마트')
-                    ? []
-                    : createPlaces(period === GetFrequentPlacesPeriod.ALL_TIME ? 28 : 12),
-                  hasNext: false,
-                },
-              },
-            ],
-          },
-          isPending: false,
-          isError: false,
-          hasNextPage: false,
-          isFetchingNextPage: false,
-          isFetchNextPageError: false,
-          fetchNextPage: jest.fn(),
-          refetch: jest.fn(),
-        }) as unknown as ReturnType<typeof useFrequentPlacesInfiniteQuery>
-    );
+    fetchNextPage.mockReset();
+    refetch.mockReset();
+    mockedUseFrequentPlacesInfiniteQuery.mockImplementation(({ category, period }) => {
+      if (category?.includes('편의점/마트')) return createQueryResult([]);
+      if (period === GetFrequentPlacesPeriod.ALL_TIME) {
+        return createQueryResult([{ ...THIS_MONTH_PLACES[0], visitCount: 28 }]);
+      }
+
+      return createQueryResult();
+    });
   });
 
-  it('단골 가게의 순위와 이번 달 방문 횟수를 보여준다', () => {
-    renderFrequentShopList();
+  it('API 응답의 단골 가게 순위와 이번 달 방문 횟수를 보여준다', () => {
+    const { container } = renderFrequentShopList();
 
     expect(screen.getByRole('heading', { name: '단골 리스트' })).toBeInTheDocument();
     expect(screen.getByLabelText('1위')).toBeInTheDocument();
     expect(screen.getByLabelText('2위')).toBeInTheDocument();
     expect(screen.getByLabelText('3위')).toBeInTheDocument();
     expect(screen.getByLabelText('12회 방문')).toBeInTheDocument();
-    expect(screen.getAllByText('용산구')).toHaveLength(8);
+    expect(screen.getByText('한강로동')).toBeInTheDocument();
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      'https://example.com/place-11.jpg'
+    );
+    expect(mockedUseFrequentPlacesInfiniteQuery).toHaveBeenCalledWith({
+      category: undefined,
+      period: GetFrequentPlacesPeriod.THIS_MONTH,
+    });
   });
 
-  it('카테고리 칩으로 목록을 필터링한다', async () => {
+  it('첫 조회 중에는 목록 스켈레톤을 보여준다', () => {
+    mockedUseFrequentPlacesInfiniteQuery.mockReturnValue(
+      createQueryResult([], { data: undefined, isPending: true })
+    );
+
+    renderFrequentShopList();
+
+    expect(screen.getByRole('status', { name: '단골 리스트 불러오는 중' })).toBeInTheDocument();
+    expect(screen.queryByText('투썸플레이스')).not.toBeInTheDocument();
+  });
+
+  it('카테고리 칩을 선택하면 해당 카테고리로 다시 조회한다', async () => {
     const user = userEvent.setup();
     renderFrequentShopList();
 
     await user.click(screen.getByRole('button', { name: '편의점/마트' }));
 
+    expect(mockedUseFrequentPlacesInfiniteQuery).toHaveBeenLastCalledWith({
+      category: ['편의점/마트'],
+      period: GetFrequentPlacesPeriod.THIS_MONTH,
+    });
     expect(screen.getByRole('button', { name: '편의점/마트' })).toHaveAttribute(
       'aria-pressed',
       'true'
@@ -92,30 +137,23 @@ describe('FrequentShopList', () => {
     expect(
       screen.getByRole('heading', { level: 2, name: '아직 기록이 없어요' })
     ).toBeInTheDocument();
-    expect(screen.getByText(/소비 기록을 작성해보세요/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '소비 기록 작성하기' })).toHaveAttribute(
       'href',
       '/record'
     );
-
-    await user.click(screen.getByRole('button', { name: '카페' }));
-    expect(screen.getByLabelText('1위')).toBeInTheDocument();
-    expect(
-      screen.queryByRole('heading', { level: 2, name: '아직 기록이 없어요' })
-    ).not.toBeInTheDocument();
   });
 
-  it('기간 필터에서 전체 기간을 선택하면 누적 방문 횟수로 바꾼다', async () => {
+  it('기간 필터에서 전체를 선택하면 전체 기간으로 다시 조회한다', async () => {
     const user = userEvent.setup();
     renderFrequentShopList();
 
     await user.click(screen.getByRole('button', { name: '기간 필터' }));
-
-    expect(screen.getByRole('dialog', { name: '기간' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '이번달' })).toHaveAttribute('aria-pressed', 'true');
-
     await user.click(screen.getByRole('button', { name: '전체' }));
 
+    expect(mockedUseFrequentPlacesInfiniteQuery).toHaveBeenLastCalledWith({
+      category: undefined,
+      period: GetFrequentPlacesPeriod.ALL_TIME,
+    });
     expect(screen.queryByRole('dialog', { name: '기간' })).not.toBeInTheDocument();
     expect(screen.getByLabelText('28회 방문')).toBeInTheDocument();
   });

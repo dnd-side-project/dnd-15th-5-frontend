@@ -37,9 +37,9 @@ export default function ReportPage() {
   const {
     monthLabel,
     monthlyAdditionalStickerCount,
-    monthlyRecordCount,
+    monthlyCount,
     monthlyStickerImages,
-    recentDiscovery,
+    recentDiscoveryMessage,
     weeklyPeriodLabel,
     weeklyRecords,
   } = report;
@@ -91,7 +91,7 @@ export default function ReportPage() {
                     className="inline-block h-5 w-8 rounded-05 bg-primary-100 align-text-bottom"
                   />
                 ) : (
-                  <span className="text-primary-500">{monthlyRecordCount}개</span>
+                  <span className="text-primary-500">{monthlyCount}개</span>
                 )}
                 의 기록이 쌓이고 있어요 !
               </>
@@ -112,7 +112,7 @@ export default function ReportPage() {
             {isPending ? (
               <ReportContentSkeleton variant="discovery" />
             ) : (
-              <RecentDiscoveryPanel messages={recentDiscovery} />
+              <RecentDiscoveryPanel messages={recentDiscoveryMessage} />
             )}
           </ReportSection>
 

@@ -3,7 +3,7 @@ import { useCallback, useRef } from 'react';
 import { usePlaceVisitsInfiniteQuery } from '@/features/shop/apis/hooks/usePlaceVisitsInfiniteQuery';
 import { useGetPlaceDetail } from '@/features/shop/apis/queries';
 import { LocationPinIcon } from '@/shared/assets/icons';
-import { getStickerImageByName } from '@/shared/assets/images/stickers';
+import { getStickerImages } from '@/shared/assets/images/stickers';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { Chip } from '@/shared/ui/chip';
 import { RegularShopBadge } from '@/shared/ui/regular-shop-badge';
@@ -80,11 +80,7 @@ export default function ShopDetail({ headerContent, onViewOnMap, placeId }: Shop
 
   const visits = placeVisitsQuery.data?.pages.flatMap((page) => page.data?.visits ?? []) ?? [];
   const totalVisitCount = place.stats?.totalVisitCount ?? visits.length;
-  const stickerImages = (place.recentStickers ?? []).flatMap((sticker) => {
-    const stickerImage = getStickerImageByName(sticker.itemName);
-
-    return stickerImage ? [stickerImage] : [];
-  });
+  const stickerImages = getStickerImages(place.recentStickers ?? []);
 
   return (
     <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">

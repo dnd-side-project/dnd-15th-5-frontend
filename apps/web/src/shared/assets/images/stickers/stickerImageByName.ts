@@ -30,3 +30,11 @@ const STICKER_IMAGE_BY_NAME = new Map<string, string>([
 /** 백엔드에서 지원하는 스티커 이름에 해당하는 이미지를 반환합니다. */
 export const getStickerImageByName = (stickerName?: string) =>
   stickerName ? STICKER_IMAGE_BY_NAME.get(stickerName) : undefined;
+
+/** 스티커 응답 목록에서 웹에서 지원하는 이미지 경로만 반환합니다. */
+export const getStickerImages = (stickers: readonly { itemName?: string }[]) =>
+  stickers.flatMap(({ itemName }) => {
+    const stickerImage = getStickerImageByName(itemName);
+
+    return stickerImage ? [stickerImage] : [];
+  });

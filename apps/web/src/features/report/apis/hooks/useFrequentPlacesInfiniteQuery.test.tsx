@@ -15,32 +15,52 @@ jest.mock('@/features/report/apis/clients', () => ({
 const mockedGetFrequentPlaces = jest.mocked(getFrequentPlaces);
 
 describe('useFrequentPlacesInfiniteQuery', () => {
-  it('기간·카테고리와 다음 순위 커서를 함께 전달한다', async () => {
+  beforeEach(() => {
+    mockedGetFrequentPlaces.mockReset();
+  });
+
+  it('필터와 응답의 다음 커서를 요청에 전달하고 소비내역과 같은 캐시 정책을 사용한다', async () => {
     mockedGetFrequentPlaces
       .mockResolvedValueOnce({
         data: {
-          places: [],
+          places: [{ rank: 1, placeId: 31, placeName: '차곡 카페', visitCount: 5 }],
           hasNext: true,
-          nextCursorVisitCount: 7,
-          nextCursorPlaceId: 101,
-          nextCursorRank: 8,
+          nextCursorVisitCount: 5,
+          nextCursorPlaceId: 31,
+          nextCursorRank: 1,
         },
       })
-      .mockResolvedValueOnce({ data: { places: [], hasNext: false } });
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+      .mockResolvedValueOnce({
+        data: {
+          places: [{ rank: 2, placeId: 18, placeName: '차곡 식당', visitCount: 4 }],
+          hasNext: false,
+        },
+      });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
     const wrapper = ({ children }: PropsWithChildren) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
-    const filter = {
-      period: GetFrequentPlacesPeriod.THIS_MONTH,
+    const queryParams = {
       category: ['카페'],
+      period: GetFrequentPlacesPeriod.ALL_TIME,
     };
-    const { result } = renderHook(() => useFrequentPlacesInfiniteQuery(filter), { wrapper });
+    const { result } = renderHook(() => useFrequentPlacesInfiniteQuery(queryParams), { wrapper });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    const frequentPlacesQuery = queryClient.getQueryCache().find({
+      queryKey: ['/consumptions/places/rank', 'infinite', { ...queryParams, size: 15 }],
+    });
+    const cacheOptions = frequentPlacesQuery?.options as
+      { gcTime?: number; refetchOnWindowFocus?: boolean; staleTime?: number } | undefined;
+
+    expect(cacheOptions?.staleTime).toBe(10 * 60 * 1000);
+    expect(cacheOptions?.gcTime).toBe(30 * 60 * 1000);
+    expect(cacheOptions?.refetchOnWindowFocus).toBe(true);
     expect(mockedGetFrequentPlaces).toHaveBeenNthCalledWith(
       1,
-      { ...filter, size: 20 },
+      { category: ['카페'], period: GetFrequentPlacesPeriod.ALL_TIME, size: 15 },
       undefined,
       expect.any(AbortSignal)
     );
@@ -52,14 +72,42 @@ describe('useFrequentPlacesInfiniteQuery', () => {
     expect(mockedGetFrequentPlaces).toHaveBeenNthCalledWith(
       2,
       {
-        ...filter,
-        size: 20,
-        cursorVisitCount: 7,
-        cursorPlaceId: 101,
-        cursorRank: 8,
+        category: ['카페'],
+        period: GetFrequentPlacesPeriod.ALL_TIME,
+        size: 15,
+        cursorVisitCount: 5,
+        cursorPlaceId: 31,
+        cursorRank: 1,
       },
       undefined,
       expect.any(AbortSignal)
     );
+  });
+
+  it('size를 지정하면 요청과 캐시 키에 해당 값을 사용한다', async () => {
+    mockedGetFrequentPlaces.mockResolvedValueOnce({
+      data: { places: [], hasNext: false },
+    });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const queryParams = { period: GetFrequentPlacesPeriod.THIS_MONTH, size: 7 };
+    const { result } = renderHook(() => useFrequentPlacesInfiniteQuery(queryParams), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedGetFrequentPlaces).toHaveBeenCalledWith(
+      { period: GetFrequentPlacesPeriod.THIS_MONTH, size: 7 },
+      undefined,
+      expect.any(AbortSignal)
+    );
+    expect(
+      queryClient.getQueryCache().find({
+        queryKey: ['/consumptions/places/rank', 'infinite', queryParams],
+      })
+    ).toBeDefined();
   });
 });

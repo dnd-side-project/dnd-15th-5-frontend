@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 
 import { GetFrequentPlacesPeriod } from '@/features/report/apis/dto';
 import { useFrequentPlacesInfiniteQuery } from '@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery';
-import { toFrequentShops } from '@/features/report/utils/frequentPlaces';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
@@ -23,9 +22,10 @@ export default function FrequentShopSummary({ headerContent }: FrequentShopSumma
     period: GetFrequentPlacesPeriod.THIS_MONTH,
     size: SUMMARY_SHOP_COUNT,
   });
-  const frequentShops = toFrequentShops(
-    query.data?.pages.flatMap((page) => page.data?.places ?? []) ?? []
-  ).slice(0, SUMMARY_SHOP_COUNT);
+  const frequentPlaces = (query.data?.pages.flatMap((page) => page.data?.places ?? []) ?? []).slice(
+    0,
+    SUMMARY_SHOP_COUNT
+  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -53,10 +53,18 @@ export default function FrequentShopSummary({ headerContent }: FrequentShopSumma
           onAction={() => void query.refetch()}
           className="py-8"
         />
-      ) : frequentShops.length > 0 ? (
+      ) : frequentPlaces.length > 0 ? (
         <ol className="-mx-4 flex flex-col gap-6 pt-4">
-          {frequentShops.map((shop) => (
-            <FrequentShopItem key={shop.id} shop={shop} />
+          {frequentPlaces.map((place, index) => (
+            <FrequentShopItem
+              key={place.placeId ?? `${place.placeName ?? 'place'}-${index}`}
+              category={place.category}
+              dongname={place.dongname}
+              placeName={place.placeName}
+              rank={place.rank ?? index + 1}
+              thumbnailSrc={place.thumbnailUrl}
+              visitCount={place.visitCount}
+            />
           ))}
         </ol>
       ) : (

@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
 import { useConsumptionsInfiniteQuery } from '@/features/report/apis/hooks/useConsumptionsInfiniteQuery';
-import { MOCK_SPENDING_RECORD_GROUPS } from '@/features/report/mockData';
 
 import SpendingHistory from './SpendingHistory';
 
@@ -22,16 +21,33 @@ const mockedUseConsumptionsInfiniteQuery = jest.mocked(useConsumptionsInfiniteQu
 const fetchNextPage = jest.fn();
 const refetch = jest.fn();
 
-const consumptions = MOCK_SPENDING_RECORD_GROUPS.flatMap((group) =>
-  group.records.map((record, index) => ({
-    id: Number(record.id.replace('record-', '')),
-    placeName: record.shopName,
-    amount: record.amount,
-    category: record.category,
-    purchaseDate: group.dateValue,
+const consumptions = [
+  ...Array.from({ length: 3 }, (_, index) => ({
+    id: index + 1,
+    placeName: '투썸플레이스',
+    amount: 5_500,
+    category: '카페',
+    purchaseDate: '2026-08-22',
     purchaseTime: index === 0 ? '09:00:00' : '10:00:00',
-  }))
-);
+    thumbnailUrl: index === 0 ? 'https://example.com/consumption-01.jpg' : undefined,
+  })),
+  {
+    id: 4,
+    placeName: '투썸플레이스',
+    amount: 5_500,
+    category: '카페',
+    purchaseDate: '2026-08-21',
+    purchaseTime: '09:00:00',
+  },
+  ...Array.from({ length: 3 }, (_, index) => ({
+    id: index + 5,
+    placeName: '투썸플레이스',
+    amount: 5_500,
+    category: '카페',
+    purchaseDate: '2026-08-20',
+    purchaseTime: index === 0 ? '09:00:00' : '10:00:00',
+  })),
+];
 
 const createQueryResult = (yearMonth: string) =>
   ({
@@ -77,7 +93,7 @@ describe('SpendingHistory', () => {
   });
 
   it('날짜별 소비 기록과 금액을 보여준다', () => {
-    renderSpendingHistory();
+    const { container } = renderSpendingHistory();
 
     expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('8월');
@@ -85,6 +101,10 @@ describe('SpendingHistory', () => {
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(7);
     expect(screen.getAllByText('5,500 원')).toHaveLength(7);
     expect(screen.getAllByText('2026.08.22 · 오전 · 카페')).toHaveLength(3);
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      'https://example.com/consumption-01.jpg'
+    );
   });
 
   it('상단 안내 문구를 전달하면 월 선택 대신 안내를 보여준다', () => {
