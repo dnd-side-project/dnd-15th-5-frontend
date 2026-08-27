@@ -36,6 +36,7 @@ describe('monthly report charts', () => {
       />
     );
 
+    expect(screen.getByRole('list', { name: '요일별 소비 횟수' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '월요일 소비 2회' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '금요일 소비 5회' })).toBeInTheDocument();
   });

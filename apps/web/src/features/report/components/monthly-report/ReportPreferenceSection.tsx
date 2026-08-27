@@ -70,6 +70,7 @@ export default function ReportPreferenceSection({
         ref={carouselRef}
         role="region"
         style={carouselStyle}
+        tabIndex={0}
       >
         {cards.map((card, index) => {
           const isSelected = index === selectedCardIndex;

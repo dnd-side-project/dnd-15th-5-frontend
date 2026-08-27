@@ -10,14 +10,14 @@ type WeekdaySpendingChartProps = {
   items: readonly MonthlyReportWeekdaySpending[];
 };
 
-/** 요일별 소비 금액을 상대 높이의 막대 차트로 표시합니다. */
+/** 요일별 소비 횟수를 상대 높이의 막대 차트로 표시합니다. */
 export default function WeekdaySpendingChart({ insight, items }: WeekdaySpendingChartProps) {
   const maximumCount = Math.max(...items.map((item) => item.count), 0);
 
   return (
     <section>
       <ReportSectionTitle title="요일별 소비" />
-      <ul aria-label="요일별 소비 금액" className="mt-3 grid h-29.25 grid-cols-7 gap-1">
+      <ul aria-label="요일별 소비 횟수" className="mt-3 grid h-29.25 grid-cols-7 gap-1">
         {items.map((item, index) => {
           const isHighlighted = maximumCount > 0 && item.count === maximumCount;
           const barHeightPercentage = getRelativeBarHeightPercentage(item.count, maximumCount);
