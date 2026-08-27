@@ -4,6 +4,7 @@ import {
   CategoryChart,
   MonthlyReportEmptyState,
   MonthlyReportHeader,
+  MonthlyReportUnavailableCard,
   ReportActivitySummary,
   ReportMyPlace,
   ReportPreferenceSection,
@@ -94,6 +95,12 @@ export default function MonthlyReportPage() {
             selectedCardIndex={selectedCardIndex}
           />
         )}
+        {!isPending && !report && (
+          <div className="mt-4.5 flex flex-col items-center">
+            <MonthlyReportUnavailableCard selectedMonth={selectedMonth} />
+            <MonthlyReportEmptyState selectedMonth={selectedMonth} />
+          </div>
+        )}
       </div>
 
       {isPending ? (
@@ -125,11 +132,7 @@ export default function MonthlyReportPage() {
             onDownload={downloadImage}
           />
         </>
-      ) : (
-        <div className="relative flex min-h-[70dvh] flex-col px-4">
-          <MonthlyReportEmptyState selectedMonth={selectedMonth} />
-        </div>
-      )}
+      ) : null}
     </main>
   );
 }

@@ -4,6 +4,7 @@ export { default as CategoryChart } from './components/monthly-report/CategoryCh
 export { default as ReportMyPlace } from './components/monthly-report/ReportMyPlace';
 export { default as MonthlyReportHeader } from './components/monthly-report/MonthlyReportHeader';
 export { default as MonthlyReportEmptyState } from './components/monthly-report/MonthlyReportEmptyState';
+export { default as MonthlyReportUnavailableCard } from './components/monthly-report/MonthlyReportUnavailableCard';
 export { default as ReportActivitySummary } from './components/monthly-report/ReportActivitySummary';
 export { default as ReportPreferenceSection } from './components/monthly-report/ReportPreferenceSection';
 export { default as ReportShareSheet } from './components/monthly-report/ReportShareSheet';
