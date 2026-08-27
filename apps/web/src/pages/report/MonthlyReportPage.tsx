@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   CategoryChart,
   MonthlyReportEmptyState,
+  MonthlyReportDetailsSkeleton,
   MonthlyReportHeader,
   MonthlyReportUnavailableCard,
   ReportActivitySummary,
@@ -111,34 +112,41 @@ export default function MonthlyReportPage() {
         )}
       </div>
 
-      {isPending || isCardTransitioning ? (
-        <div className="relative min-h-[70dvh]" />
-      ) : report ? (
+      {report ? (
         <>
           <div className="relative mt-5.75 h-3 bg-neutral-200" />
 
-          <div className="relative flex flex-col gap-13.75 px-4.25 pt-10">
-            <ReportActivitySummary items={report.summary} />
-            <ReportTopShops shops={report.shops} />
-            <ReportMyPlace districts={report.districts} />
-            <CategoryChart categories={report.categories} />
-            <WeekdaySpendingChart insight={report.weekdayInsight} items={report.weekdaySpending} />
+          {isPending || isCardTransitioning ? (
+            <MonthlyReportDetailsSkeleton />
+          ) : (
+            <>
+              <div className="relative flex flex-col gap-13.75 px-4.25 pt-10">
+                <ReportActivitySummary items={report.summary} />
+                <ReportTopShops shops={report.shops} />
+                <ReportMyPlace districts={report.districts} />
+                <CategoryChart categories={report.categories} />
+                <WeekdaySpendingChart
+                  insight={report.weekdayInsight}
+                  items={report.weekdaySpending}
+                />
 
-            <button
-              className="mx-auto flex items-center gap-1 text-body-02-medium text-neutral-500"
-              onClick={() => window.scrollTo({ behavior: 'smooth', top: 0 })}
-              type="button"
-            >
-              <span aria-hidden>⌃</span> 맨위로
-            </button>
-          </div>
+                <button
+                  className="mx-auto flex items-center gap-1 text-body-02-medium text-neutral-500"
+                  onClick={() => window.scrollTo({ behavior: 'smooth', top: 0 })}
+                  type="button"
+                >
+                  <span aria-hidden>⌃</span> 맨위로
+                </button>
+              </div>
 
-          <ReportShareSheet
-            isDownloading={isDownloading}
-            isOpen={isShareSheetOpen}
-            onClose={handleShareSheetClose}
-            onDownload={downloadImage}
-          />
+              <ReportShareSheet
+                isDownloading={isDownloading}
+                isOpen={isShareSheetOpen}
+                onClose={handleShareSheetClose}
+                onDownload={downloadImage}
+              />
+            </>
+          )}
         </>
       ) : null}
     </main>
