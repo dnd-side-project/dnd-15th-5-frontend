@@ -1,7 +1,5 @@
 import type { ConsumptionResponse, StickerResponse } from '@/features/report/apis/dto';
 
-import type { SpendingCategory } from '@chapchap/shared/common/types';
-
 export type ReportPreferenceCardVariant =
   'alley-explorer' | 'food-nomad' | 'local-regular' | 'night-watch';
 
@@ -22,16 +20,6 @@ export type MonthlyStickerRecordGroup = {
 export type SpendingRecordGroup = {
   consumptions: readonly (ConsumptionResponse & { id: number; purchaseDate: string })[];
   purchaseDate: string;
-};
-
-export type FrequentShop = {
-  category: SpendingCategory;
-  district: string;
-  id: string;
-  name: string;
-  rank: number;
-  thumbnailSrc: string | null;
-  visitCount: number;
 };
 
 export type FrequentShopPeriod = 'currentMonth' | 'all';

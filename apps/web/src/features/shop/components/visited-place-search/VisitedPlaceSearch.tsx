@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { useVisitedPlaceSearchInfiniteQuery } from '@/features/shop/apis/hooks/useVisitedPlaceSearchInfiniteQuery';
-import { useInfiniteScrollTrigger } from '@/shared/hooks/useInfiniteScrollTrigger';
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { Button } from '@/shared/ui/button';
 import { PlaceSearchInput, PlaceSearchResultList } from '@/shared/ui/place-search';
 import type { PlaceSearchItem } from '@/shared/ui/place-search';
@@ -39,9 +39,11 @@ export default function VisitedPlaceSearch({ onSelectPlace }: VisitedPlaceSearch
     [searchQuery.data?.pages]
   );
 
-  const loadMoreRef = useInfiniteScrollTrigger({
-    enabled: Boolean(hasNextPage) && !isFetchingNextPage && !isFetchNextPageError,
-    onIntersect: fetchNextPage,
+  const loadMoreRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    isLoadMoreError: isFetchNextPageError,
+    onLoadMore: fetchNextPage,
   });
 
   return (
