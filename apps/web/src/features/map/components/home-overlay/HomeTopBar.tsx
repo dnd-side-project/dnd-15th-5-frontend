@@ -71,7 +71,7 @@ export default function HomeTopBar({ recordedShopCount }: HomeTopBarProps) {
             title={label}
             className="flex size-8 items-center justify-center rounded-full bg-neutral-00 text-neutral-600 shadow-current-location-button transition-[background-color,transform] hover:bg-neutral-50 active:scale-95"
           >
-            <Icon aria-hidden="true" className="size-4" />
+            <Icon aria-hidden="true" className="size-6" />
           </Link>
         ))}
 

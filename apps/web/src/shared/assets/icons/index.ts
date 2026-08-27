@@ -8,6 +8,7 @@ import StoreIcon from '@chapchap/shared/assets/icons/ic-store.svg?react';
 import AccountRecordIcon from './ic-account-record.svg?react';
 import AccountRemoveIcon from './ic-account-remove.svg?react';
 import AddIcon from './ic-add.svg?react';
+import AnnouncementIcon from './ic-announcement.svg?react';
 import BlueLocationPinIcon from './ic-blue-location-pin.svg?react';
 import CaretLeftIcon from './ic-caret-left.svg?react';
 import CaretRightIcon from './ic-caret-right.svg?react';
@@ -45,6 +46,7 @@ export {
   AccountRecordIcon,
   AccountRemoveIcon,
   AddIcon,
+  AnnouncementIcon,
   BlueLocationPinIcon,
   CalendarIcon,
   CaretLeftIcon,
