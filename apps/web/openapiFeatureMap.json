@@ -15,8 +15,8 @@
       ]
     },
     "map": {
-      "tags": ["Consumption", "Recommendation"],
-      "operationIds": ["getVisitedPlaceMarkers", "getNearbyPlaces"]
+      "tags": ["Consumption", "Recommendation", "Place"],
+      "operationIds": ["getVisitedPlaceMarkers", "getNearbyPlaces", "toggleLike"]
     },
     "myPage": {
       "directory": "my-page",
@@ -24,7 +24,7 @@
       "operationIds": ["getMyAccount", "updateMyAccount", "withdrawMyAccount"]
     },
     "notification": {
-      "tags": ["Account", "notification-controller"],
+      "tags": ["Notification"],
       "operationIds": [
         "unregisterDeviceToken",
         "registerDeviceToken",
@@ -50,7 +50,7 @@
     },
     "shop": {
       "tags": ["Consumption", "Place"],
-      "operationIds": ["getPlaceDetail", "getPlaceVisits", "toggleLike", "searchVisitedPlaces"]
+      "operationIds": ["getPlaceDetail", "getPlaceVisits", "searchVisitedPlaces"]
     }
   }
 }

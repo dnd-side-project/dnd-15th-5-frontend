@@ -4,7 +4,7 @@ import { ChevronRightIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 
 type HomePreferenceBannerProps = {
-  recordedShopCount: number;
+  recordedShopCount: number | undefined;
 };
 
 const CURRENT_MONTH = new Date().getMonth() + 1;
@@ -23,9 +23,11 @@ export default function HomePreferenceBanner({ recordedShopCount }: HomePreferen
       <span className="truncate text-body-02-semibold text-neutral-700">
         {CURRENT_MONTH}월 취향 쌓는 중
       </span>
-      <span className="shrink-0 text-label-01-medium text-neutral-500">
-        {recordedShopCount}곳 기록
-      </span>
+      {recordedShopCount !== undefined && (
+        <span className="shrink-0 text-label-01-medium text-neutral-500">
+          {recordedShopCount}곳 기록
+        </span>
+      )}
       <ChevronRightIcon aria-hidden="true" className="size-4 shrink-0 text-neutral-400" />
     </Link>
   );

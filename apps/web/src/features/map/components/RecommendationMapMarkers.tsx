@@ -1,14 +1,12 @@
 import { AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { useEffect } from 'react';
 
+import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
+import type { ShopRecommendation } from '@/features/map/types';
+import { focusMapOnPosition } from '@/features/map/utils/focusMapOnPosition';
 import { LikePinActiveIcon, LikePinIcon } from '@/shared/assets/icons';
-
-import { MOCK_SHOP_RECOMMENDATIONS } from '../mockData';
-import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
-import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
-import { focusMapOnPosition } from '../utils/focusMapOnPosition';
-
-import type { ShopRecommendation } from '../types';
 
 const ACTIVE_RECOMMENDATION_ZOOM = 15;
 
@@ -20,31 +18,27 @@ export default function RecommendationMapMarkers() {
   const activeRecommendationId = useShopRecommendationStore(
     (state) => state.activeRecommendationId
   );
-  const likedRecommendationIds = useShopRecommendationStore(
-    (state) => state.likedRecommendationIds
-  );
   const setActiveRecommendation = useShopRecommendationStore(
     (state) => state.setActiveRecommendation
   );
   const selectedLikedRecommendationId =
     activeSheet.type === 'likedRecommendation' ? activeSheet.recommendationId : null;
   const isRecommendationOpen = activeSheet.type === 'recommendation';
-  const likedRecommendations = MOCK_SHOP_RECOMMENDATIONS.filter(({ id }) =>
-    likedRecommendationIds.includes(id)
-  );
+  const { recommendations } = useNearbyPlaceRecommendationsQuery();
+  const likedRecommendations = recommendations.filter(({ isLiked }) => isLiked);
 
   useEffect(() => {
     if (!isRecommendationOpen || !map) {
       return;
     }
 
-    const activeRecommendation = MOCK_SHOP_RECOMMENDATIONS.find(
-      ({ id }) => id === activeRecommendationId
-    );
-    if (activeRecommendation) {
-      focusMapOnPosition(map, activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
+    const activeRecommendation = recommendations.find(({ id }) => id === activeRecommendationId);
+    if (!activeRecommendation) {
+      return;
     }
-  }, [activeRecommendationId, isRecommendationOpen, map]);
+
+    return focusMapOnPosition(map, activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
+  }, [activeRecommendationId, isRecommendationOpen, map, recommendations]);
 
   const handleMarkerSelect = (recommendation: ShopRecommendation) => {
     if (map) {

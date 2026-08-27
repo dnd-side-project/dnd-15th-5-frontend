@@ -29,6 +29,7 @@ const consumptions = [
     category: '카페',
     purchaseDate: '2026-08-22',
     purchaseTime: index === 0 ? '09:00:00' : '10:00:00',
+    thumbnailUrl: index === 0 ? 'https://example.com/consumption-01.jpg' : undefined,
   })),
   {
     id: 4,
@@ -92,7 +93,7 @@ describe('SpendingHistory', () => {
   });
 
   it('날짜별 소비 기록과 금액을 보여준다', () => {
-    renderSpendingHistory();
+    const { container } = renderSpendingHistory();
 
     expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('8월');
@@ -100,6 +101,10 @@ describe('SpendingHistory', () => {
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(7);
     expect(screen.getAllByText('5,500 원')).toHaveLength(7);
     expect(screen.getAllByText('2026.08.22 · 오전 · 카페')).toHaveLength(3);
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      'https://example.com/consumption-01.jpg'
+    );
   });
 
   it('상단 안내 문구를 전달하면 월 선택 대신 안내를 보여준다', () => {

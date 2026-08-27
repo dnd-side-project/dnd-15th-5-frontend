@@ -3,6 +3,16 @@
  * Do not edit manually.
  */
 
+export type PlaceLikeResponse = {
+  liked?: boolean;
+};
+
+export type ApiResponsePlaceLikeResponse = {
+  code?: string;
+  message?: string;
+  data?: PlaceLikeResponse;
+};
+
 export type RecommendedPlaceItem = {
   placeId?: number;
   name?: string;

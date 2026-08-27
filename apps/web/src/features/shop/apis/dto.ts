@@ -3,16 +3,6 @@
  * Do not edit manually.
  */
 
-export type PlaceLikeResponse = {
-  liked?: boolean;
-};
-
-export type ApiResponsePlaceLikeResponse = {
-  code?: string;
-  message?: string;
-  data?: PlaceLikeResponse;
-};
-
 /**
  * 방문 장소 검색 항목
  */

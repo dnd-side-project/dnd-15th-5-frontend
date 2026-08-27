@@ -13,4 +13,11 @@ export const RECORD_EXIT_CONFIRM_TEXT = {
   continue: '계속 작성하기',
 } as const;
 
+/** 네이티브 영수증 기록 완료 뒤 웹 지도 홈으로 전달하는 장소 쿼리 키입니다. */
+export const CREATED_CONSUMPTION_QUERY_KEYS = {
+  placeName: 'createdPlaceName',
+  latitude: 'createdPlaceLat',
+  longitude: 'createdPlaceLng',
+} as const;
+
 export type RecordCategory = SpendingCategory;

@@ -3,6 +3,7 @@ import ChevronLeftIcon from '@chapchap/shared/assets/icons/ic-chevron-left.svg?r
 import CloseIcon from '@chapchap/shared/assets/icons/ic-close.svg?react';
 import StatusErrorIcon from '@chapchap/shared/assets/icons/ic-status-error.svg?react';
 import StatusSuccessIcon from '@chapchap/shared/assets/icons/ic-status-success.svg?react';
+import StoreIcon from '@chapchap/shared/assets/icons/ic-store.svg?react';
 
 import AccountRecordIcon from './ic-account-record.svg?react';
 import AccountRemoveIcon from './ic-account-remove.svg?react';
@@ -81,5 +82,6 @@ export {
   ShopRecommendIcon,
   StatusErrorIcon,
   StatusSuccessIcon,
+  StoreIcon,
   TermsIcon,
 };

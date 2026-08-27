@@ -122,11 +122,10 @@ describe('<ReceiptConfirmScreen />', () => {
       amount: 12000,
       category: '카페',
     });
-    expect(requestWebViewNavigation).toHaveBeenCalledWith('/home');
-    expect(mockShowToast).toHaveBeenCalledWith({
-      type: 'success',
-      message: '소비 기록이 저장되었어요.',
-    });
+    expect(requestWebViewNavigation).toHaveBeenCalledWith(
+      '/home?createdPlaceName=%EC%B9%B4%ED%8E%98+%EC%B0%A8%EC%B0%A8&createdPlaceLat=37.506481&createdPlaceLng=127.024551'
+    );
+    expect(mockShowToast).not.toHaveBeenCalled();
     expect(router.dismissTo).toHaveBeenCalledWith('/');
   });
 });

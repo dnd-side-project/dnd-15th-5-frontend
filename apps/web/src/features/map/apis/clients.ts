@@ -7,11 +7,27 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type {
   ApiResponseNearbyPlacesResponse,
+  ApiResponsePlaceLikeResponse,
   ApiResponseVisitedPlaceMarkerResponse,
   GetNearbyPlacesParams,
   GetVisitedPlaceMarkersParams,
   SecondParameter,
 } from '@/features/map/apis/dto';
+
+/**
+ * 좋아요 상태를 등록하고 취소한다
+ * @summary 가게 좋아요 토글
+ */
+export const toggleLike = (
+  placeId: number,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponsePlaceLikeResponse>(
+    { url: `/places/${placeId}/likes`, method: 'PUT', signal },
+    options
+  );
+};
 
 /**
  * 지도 중심 좌표 반경 안의 인기 가게를 조회. myTownPlaces는 전체 인기순, sameCategoryPlaces는 내가 가장 많이 방문한 카테고리로 필터링한 결과로 둘 중 중복된건 1개만 응 답

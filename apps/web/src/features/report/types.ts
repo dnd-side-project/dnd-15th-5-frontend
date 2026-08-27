@@ -116,16 +116,5 @@ export type SpendingRecordGroup = {
   purchaseDate: string;
 };
 
-/** 단골 가게 목록에 표시할 방문 요약 정보입니다. */
-export type FrequentShop = {
-  category: SpendingCategory;
-  district: string;
-  id: string;
-  monthlyVisitCount: number;
-  name: string;
-  thumbnailSrc: string | null;
-  totalVisitCount: number;
-};
-
 /** 단골 가게 집계 기간 필터입니다. */
 export type FrequentShopPeriod = 'currentMonth' | 'all';

@@ -1,7 +1,5 @@
 import type { YearMonth } from '@/shared/types/yearMonth';
 
-import type { FrequentShop } from './types';
-
 const MOCK_REPORT_PERSONAS = {
   nightWatch: {
     title: '골목 야간반장',
@@ -128,78 +126,3 @@ export const MOCK_SPENDING_MONTHS = [
   { year: 2025, month: 12 },
   { year: 2025, month: 11 },
 ] as const satisfies readonly YearMonth[];
-
-export const MOCK_FREQUENT_SHOPS = [
-  {
-    id: 'frequent-shop-01',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 12,
-    totalVisitCount: 28,
-  },
-  {
-    id: 'frequent-shop-02',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 8,
-    totalVisitCount: 20,
-  },
-  {
-    id: 'frequent-shop-03',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 18,
-  },
-  {
-    id: 'frequent-shop-04',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 16,
-  },
-  {
-    id: 'frequent-shop-05',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 14,
-  },
-  {
-    id: 'frequent-shop-06',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 12,
-  },
-  {
-    id: 'frequent-shop-07',
-    name: '투썸플레이스 장기 임시 휴업 안내',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 10,
-  },
-  {
-    id: 'frequent-shop-08',
-    name: '투썸플레이스 장기 임시 휴업 안내',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 9,
-  },
-] as const satisfies readonly FrequentShop[];

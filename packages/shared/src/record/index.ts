@@ -1,5 +1,9 @@
 export { formatAmount, isValidRecordAmount, sanitizeAmount } from './amount';
-export { RECORD_CATEGORIES, RECORD_EXIT_CONFIRM_TEXT } from './constants';
+export {
+  CREATED_CONSUMPTION_QUERY_KEYS,
+  RECORD_CATEGORIES,
+  RECORD_EXIT_CONFIRM_TEXT,
+} from './constants';
 export {
   createInitialVisitDateTime,
   createMonthDate,
@@ -17,5 +21,6 @@ export {
 export { validateRecordRequiredFields } from './validation';
 
 export type { RecordCategory } from './constants';
+export type { CreatedConsumptionPlace } from './types';
 export type { VisitDateTimeValue, VisitPeriod } from './visitDateTime';
 export type { RecordRequiredFields, RecordRequiredFieldValidation } from './validation';

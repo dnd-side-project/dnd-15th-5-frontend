@@ -3,12 +3,15 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import {
   createReceiptReviewRouteParams,
+  createRecordCreatedHomePath,
   isRecordCategory,
   parseVisitDateTime,
   ReceiptReviewForm,
   useSubmitReceiptConsumption,
 } from '@/features/record';
 import type { ReceiptReviewRouteParams } from '@/features/record';
+
+import type { CreatedConsumptionPlace } from '@chapchap/shared/record';
 
 const parseRouteNumber = (value: string | undefined) => {
   if (!value) {
@@ -49,12 +52,16 @@ export default function ReceiptConfirmScreen() {
     router.dismissTo('/');
   };
 
+  const handleSubmitSuccess = (createdPlace: CreatedConsumptionPlace) => {
+    requestWebViewNavigation(createRecordCreatedHomePath(createdPlace));
+    router.dismissTo('/');
+  };
+
   const { isSubmitting, submitReceiptConsumption } = useSubmitReceiptConsumption({
-    onSuccess: handleClose,
+    onSuccess: handleSubmitSuccess,
   });
 
   const handleBack = () => {
-    // TODO: 공통 확인 UI 디자인 확정 후 작성 중 이탈 안내를 거쳐 카메라로 이동한다.
     router.replace('/camera');
   };
 
