@@ -120,23 +120,27 @@ export const isSameOrAfterMonth = (date: Date, referenceDate: Date) => {
   return month.getTime() >= referenceMonth.getTime();
 };
 
-/** 해당 월을 달력에 표시할 때 필요한 주 수를 계산한다. */
-export const getCalendarWeekCount = (date: Date) => {
+/** 달력 셀 배치에 필요한 월 정보를 계산한다. */
+const getCalendarMonthLayout = (date: Date) => {
   const year = date.getFullYear();
   const month = date.getMonth();
   const firstWeekday = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  return Math.ceil((firstWeekday + daysInMonth) / DAYS_PER_WEEK);
+  return {
+    daysInMonth,
+    firstWeekday,
+    weekCount: Math.ceil((firstWeekday + daysInMonth) / DAYS_PER_WEEK),
+  };
 };
+
+/** 해당 월을 달력에 표시할 때 필요한 주 수를 계산한다. */
+export const getCalendarWeekCount = (date: Date) => getCalendarMonthLayout(date).weekCount;
 
 /** 해당 월을 일요일부터 토요일까지 7열로 렌더링할 날짜 셀 목록을 만든다. */
 export const getCalendarDays = (date: Date) => {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const firstWeekday = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cellCount = getCalendarWeekCount(date) * DAYS_PER_WEEK;
+  const { daysInMonth, firstWeekday, weekCount } = getCalendarMonthLayout(date);
+  const cellCount = weekCount * DAYS_PER_WEEK;
 
   return Array.from({ length: cellCount }, (_, index) => {
     const day = index - firstWeekday + 1;

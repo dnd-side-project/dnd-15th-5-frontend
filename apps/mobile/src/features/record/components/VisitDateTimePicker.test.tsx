@@ -99,11 +99,11 @@ describe('<VisitDateTimePicker />', () => {
       />
     );
 
-    expect(getByTestId('calendar-height-spacer')).toHaveStyle({ height: 80 });
+    expect(getByTestId('calendar-height-spacer')).toHaveProp('className', 'h-20');
 
     await user.press(getByRole('button', { name: '다음 달' }));
 
-    expect(getByTestId('calendar-height-spacer')).toHaveStyle({ height: 40 });
+    expect(getByTestId('calendar-height-spacer')).toHaveProp('className', 'h-10');
 
     await user.press(getByRole('button', { name: '다음 달' }));
     await user.press(getByRole('button', { name: '다음 달' }));

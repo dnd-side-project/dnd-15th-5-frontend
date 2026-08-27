@@ -23,7 +23,6 @@ const SHEET_OFFSET = 640;
 const TRANSITION_DURATION = 300;
 const DRAG_CLOSE_DISTANCE = 80;
 const FULL_CALENDAR_WEEK_COUNT = 6;
-const CALENDAR_WEEK_HEIGHT = 40;
 
 type VisitDateTimePickerProps = {
   value: VisitDateTimeValue;
@@ -83,9 +82,12 @@ export default function VisitDateTimePicker({
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const isNextMonthDisabled = isSameOrAfterMonth(visibleMonth, today);
   const calendarDays = getCalendarDays(visibleMonth);
-  const calendarHeightSpacer =
-    Math.max(FULL_CALENDAR_WEEK_COUNT - getCalendarWeekCount(visibleMonth), 0) *
-    CALENDAR_WEEK_HEIGHT;
+  const missingCalendarWeekCount = Math.max(
+    FULL_CALENDAR_WEEK_COUNT - getCalendarWeekCount(visibleMonth),
+    0
+  );
+  const calendarHeightSpacerClassName =
+    missingCalendarWeekCount === 2 ? 'h-20' : missingCalendarWeekCount === 1 ? 'h-10' : null;
   const calendarWeeks = Array.from(
     { length: calendarDays.length / WEEKDAY_LABELS.length },
     (_, weekIndex) => {
@@ -373,8 +375,8 @@ export default function VisitDateTimePicker({
               })}
             </View>
 
-            {calendarHeightSpacer > 0 && (
-              <View testID="calendar-height-spacer" style={{ height: calendarHeightSpacer }} />
+            {calendarHeightSpacerClassName && (
+              <View testID="calendar-height-spacer" className={calendarHeightSpacerClassName} />
             )}
 
             <Pressable

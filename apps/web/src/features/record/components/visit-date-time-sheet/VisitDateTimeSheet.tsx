@@ -11,7 +11,6 @@ import type { VisitDateTimeValue } from '@chapchap/shared/record';
 
 const DATE_TIME_SHEET_SNAP_POINTS = ['hidden', 'medium'] as const;
 const FULL_CALENDAR_WEEK_COUNT = 6;
-const CALENDAR_WEEK_HEIGHT = 40;
 
 type VisitDateTimeSheetProps = {
   onClose: () => void;
@@ -30,9 +29,12 @@ export default function VisitDateTimeSheet({ onClose, onConfirm, value }: VisitD
   );
   const confirmedValue = { date: selectedDate, period: selectedPeriod };
   const confirmLabel = formatVisitDateTimeConfirmLabel(confirmedValue);
-  const calendarHeightSpacer =
-    Math.max(FULL_CALENDAR_WEEK_COUNT - getCalendarWeekCount(visibleMonth), 0) *
-    CALENDAR_WEEK_HEIGHT;
+  const missingCalendarWeekCount = Math.max(
+    FULL_CALENDAR_WEEK_COUNT - getCalendarWeekCount(visibleMonth),
+    0
+  );
+  const calendarHeightSpacerClassName =
+    missingCalendarWeekCount === 2 ? 'h-20' : missingCalendarWeekCount === 1 ? 'h-10' : null;
 
   return (
     <PickerSheet
@@ -53,11 +55,11 @@ export default function VisitDateTimeSheet({ onClose, onConfirm, value }: VisitD
             visibleMonth={visibleMonth}
           />
           <VisitPeriodSelector onSelect={setSelectedPeriod} selectedPeriod={selectedPeriod} />
-          {calendarHeightSpacer > 0 && (
+          {calendarHeightSpacerClassName && (
             <div
               aria-hidden="true"
+              className={calendarHeightSpacerClassName}
               data-testid="calendar-height-spacer"
-              style={{ height: calendarHeightSpacer }}
             />
           )}
 

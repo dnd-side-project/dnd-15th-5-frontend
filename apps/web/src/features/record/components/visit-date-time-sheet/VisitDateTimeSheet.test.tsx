@@ -15,11 +15,11 @@ describe('<VisitDateTimeSheet />', () => {
       />
     );
 
-    expect(screen.getByTestId('calendar-height-spacer')).toHaveStyle({ height: '80px' });
+    expect(screen.getByTestId('calendar-height-spacer')).toHaveClass('h-20');
 
     await user.click(screen.getByRole('button', { name: '다음 달' }));
 
-    expect(screen.getByTestId('calendar-height-spacer')).toHaveStyle({ height: '40px' });
+    expect(screen.getByTestId('calendar-height-spacer')).toHaveClass('h-10');
 
     await user.click(screen.getByRole('button', { name: '다음 달' }));
     await user.click(screen.getByRole('button', { name: '다음 달' }));
