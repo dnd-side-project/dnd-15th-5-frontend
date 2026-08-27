@@ -2,10 +2,14 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
-import { MOCK_MAP_STICKERS } from '../../mockData';
+import { useNearbyPlaceRecommendationsQuery } from '../../apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { useTogglePlaceLikeMutation } from '../../apis/hooks/useTogglePlaceLikeMutation';
+import { useVisitedPlaceStickersQuery } from '../../apis/hooks/useVisitedPlaceStickersQuery';
+import { mockGoogleMapsIdleEvent } from '../../googleMapsEventMock';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 import { useShopRecommendationStore } from '../../stores/shopRecommendationStore';
+import { TEST_MAP_STICKERS, TEST_SHOP_RECOMMENDATIONS } from '../../testFixtures';
 import HomeCategoryFilter from '../home-overlay/HomeCategoryFilter';
 import HomeBottomSheet from '../HomeBottomSheet';
 
@@ -15,6 +19,14 @@ import type { PropsWithChildren } from 'react';
 
 const moveCamera = jest.fn();
 const panBy = jest.fn();
+
+jest.mock('../../apis/hooks/useNearbyPlaceRecommendationsQuery');
+jest.mock('../../apis/hooks/useVisitedPlaceStickersQuery');
+jest.mock('../../apis/hooks/useTogglePlaceLikeMutation');
+
+const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
+const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
+const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation);
 
 jest.mock('@vis.gl/react-google-maps', () => ({
   AdvancedMarker: ({
@@ -33,18 +45,31 @@ describe('MapStickers', () => {
   beforeEach(() => {
     moveCamera.mockReset();
     panBy.mockReset();
+    mockGoogleMapsIdleEvent();
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
     useMapCategoryFilterStore.setState({ selectedCategory: null });
     useShopRecommendationStore.setState({
       activeRecommendationId: null,
-      likedRecommendationIds: [],
     });
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      stickers: TEST_MAP_STICKERS,
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: TEST_SHOP_RECOMMENDATIONS,
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    mockedUseTogglePlaceLikeMutation.mockReturnValue({
+      mutate: jest.fn(),
+      isPending: false,
+    } as unknown as ReturnType<typeof useTogglePlaceLikeMutation>);
   });
 
   it('카테고리를 선택하면 관련된 지도 스티커만 표시한다', async () => {
     const user = userEvent.setup();
-    const cafeSticker = MOCK_MAP_STICKERS.find(({ place }) => place.category === '카페');
-    const hobbySticker = MOCK_MAP_STICKERS.find(({ place }) => place.category === '취미/놀거리');
+    const cafeSticker = TEST_MAP_STICKERS.find(({ place }) => place.category === '카페');
+    const hobbySticker = TEST_MAP_STICKERS.find(({ place }) => place.category === '취미/놀거리');
     expect(cafeSticker).toBeDefined();
     expect(hobbySticker).toBeDefined();
 
@@ -76,7 +101,7 @@ describe('MapStickers', () => {
     const user = userEvent.setup();
     render(<MapStickers />);
 
-    const sticker = MOCK_MAP_STICKERS[0];
+    const sticker = TEST_MAP_STICKERS[0]!;
     const stickerButton = screen.getByRole('button', { name: `${sticker.label} 스티커` });
     const stickerImage = stickerButton.querySelector('img');
 
@@ -99,29 +124,30 @@ describe('MapStickers', () => {
     render(<MapStickers />);
 
     const firstSticker = screen.getByRole('button', {
-      name: `${MOCK_MAP_STICKERS[0].label} 스티커`,
+      name: `${TEST_MAP_STICKERS[0]!.label} 스티커`,
     });
     const secondSticker = screen.getByRole('button', {
-      name: `${MOCK_MAP_STICKERS[1].label} 스티커`,
+      name: `${TEST_MAP_STICKERS[1]!.label} 스티커`,
     });
 
     await user.click(firstSticker);
     await user.click(secondSticker);
 
-    expect(firstSticker).toHaveAccessibleName(`${MOCK_MAP_STICKERS[0].label} 스티커`);
+    expect(firstSticker).toHaveAccessibleName(`${TEST_MAP_STICKERS[0]!.label} 스티커`);
     expect(firstSticker.querySelector('img')).toHaveClass('size-12.5');
-    expect(secondSticker).toHaveAccessibleName(`${MOCK_MAP_STICKERS[1].label} 스티커, 선택됨`);
+    expect(secondSticker).toHaveAccessibleName(`${TEST_MAP_STICKERS[1]!.label} 스티커, 선택됨`);
     expect(secondSticker.querySelector('img')).toHaveClass('size-17.5');
   });
 
   it('스티커 클릭으로 홈 탭 시트를 해당 장소 상세 시트로 교체한다', async () => {
     const user = userEvent.setup();
-    const sticker = MOCK_MAP_STICKERS[0];
+    const sticker = TEST_MAP_STICKERS[0]!;
     render(
       <MemoryRouter>
         <MapStickers />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={() => <h2>{sticker.place.name}</h2>}
           renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
         />
       </MemoryRouter>
@@ -137,13 +163,14 @@ describe('MapStickers', () => {
 
   it('추천 시트가 열려 있어도 스티커를 누르면 추천 칩을 해제하고 장소 상세 시트 하나만 표시한다', async () => {
     const user = userEvent.setup();
-    const sticker = MOCK_MAP_STICKERS[0];
+    const sticker = TEST_MAP_STICKERS[0]!;
     render(
       <MemoryRouter>
         <HomeCategoryFilter />
         <MapStickers />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={() => <h2>{sticker.place.name}</h2>}
           renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
         />
       </MemoryRouter>

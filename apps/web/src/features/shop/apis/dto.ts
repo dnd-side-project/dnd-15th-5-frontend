@@ -3,16 +3,6 @@
  * Do not edit manually.
  */
 
-export type PlaceLikeResponse = {
-  liked?: boolean;
-};
-
-export type ApiResponsePlaceLikeResponse = {
-  code?: string;
-  message?: string;
-  data?: PlaceLikeResponse;
-};
-
 /**
  * 방문 장소 검색 항목
  */
@@ -70,11 +60,13 @@ export type StatsResponse = {
 };
 
 export type RecentStickerResponse = {
+  itemCategory?: string;
   itemName?: string;
   receivedAt?: string;
 };
 
 export type StickerSummaryResponse = {
+  itemCategory?: string;
   itemName?: string;
   count?: number;
 };

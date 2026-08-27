@@ -11,8 +11,14 @@ const mockInvalidateQueries = jest.fn();
 const mockMutate = jest.fn();
 const mockNavigate = jest.fn();
 const mockShowToast = jest.fn();
-let handleSuccess: (() => Promise<void>) | undefined;
-let handleError: ((error: { response?: { data?: { message?: string } } }) => void) | undefined;
+let handleSuccess:
+  | ((
+      response: unknown,
+      variables: { data: { placeName: string; latitude: number; longitude: number } }
+    ) => Promise<void>)
+  | undefined;
+let handleError:
+  ((error: { response?: { status?: number; data?: { message?: string } } }) => void) | undefined;
 
 jest.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
@@ -58,19 +64,23 @@ describe('useCreateConsumptionMutation', () => {
     expect(mockMutate).toHaveBeenCalledWith({ data: request });
   });
 
-  it('등록에 성공하면 서버 상태를 갱신하고 지도 홈으로 이동한다', async () => {
+  it('등록에 성공하면 서버 상태를 갱신하고 등록한 장소 정보와 함께 지도 홈으로 이동한다', async () => {
     renderHook(() => useCreateConsumptionMutation());
 
     await act(async () => {
-      await handleSuccess?.();
+      await handleSuccess?.(undefined, {
+        data: { placeName: '카페 차차', latitude: 37.5, longitude: 127 },
+      });
     });
 
     expect(mockInvalidateQueries).toHaveBeenCalledTimes(1);
-    expect(mockShowToast).toHaveBeenCalledWith({
-      type: 'success',
-      message: '소비 기록이 저장되었어요.',
+    expect(mockShowToast).not.toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith(ROUTE_PATHS.home, {
+      replace: true,
+      state: {
+        createdPlace: { placeName: '카페 차차', latitude: 37.5, longitude: 127 },
+      },
     });
-    expect(mockNavigate).toHaveBeenCalledWith(ROUTE_PATHS.home, { replace: true });
 
     const { predicate } = mockInvalidateQueries.mock.calls[0][0] as {
       predicate: (query: { queryKey: unknown[] }) => boolean;
@@ -87,7 +97,9 @@ describe('useCreateConsumptionMutation', () => {
     renderHook(() => useCreateConsumptionMutation());
 
     act(() => {
-      handleError?.({ response: { data: { message: '도로명주소를 확인해 주세요.' } } });
+      handleError?.({
+        response: { status: 422, data: { message: '도로명주소를 확인해 주세요.' } },
+      });
     });
 
     expect(mockShowToast).toHaveBeenCalledWith({

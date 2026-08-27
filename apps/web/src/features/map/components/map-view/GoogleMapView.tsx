@@ -1,20 +1,18 @@
 import { Map } from '@vis.gl/react-google-maps';
 import { useState } from 'react';
 
+import CurrentLocationButton from '@/features/map/components/current-location/CurrentLocationButton';
+import CurrentLocationCameraController from '@/features/map/components/current-location/CurrentLocationCameraController';
+import CurrentLocationMarker from '@/features/map/components/current-location/CurrentLocationMarker';
+import RecommendationMapMarkers from '@/features/map/components/RecommendationMapMarkers';
+import MapStickers from '@/features/map/components/stickers/MapStickers';
+import { MAP_DEFAULT_ZOOM } from '@/features/map/constants';
+import { useCurrentPosition } from '@/features/map/hooks/useCurrentPosition';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useMapViewportStore } from '@/features/map/stores/mapViewportStore';
 import { GOOGLE_MAPS_MAP_ID } from '@/shared/lib/env';
 
-import { useCurrentPosition } from '../../hooks/useCurrentPosition';
-import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
-import CurrentLocationButton from '../current-location/CurrentLocationButton';
-import CurrentLocationCameraController from '../current-location/CurrentLocationCameraController';
-import CurrentLocationMarker from '../current-location/CurrentLocationMarker';
-import RecommendationMapMarkers from '../RecommendationMapMarkers';
-import MapStickers from '../stickers/MapStickers';
-
 import MapFocusController from './MapFocusController';
-
-const MAP_DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
-const MAP_DEFAULT_ZOOM = 13;
 
 /**
  * 현재 위치를 표시하는 지도 화면.
@@ -27,6 +25,8 @@ export default function GoogleMapView() {
   const [showLocationError, setShowLocationError] = useState(false);
   const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
+  const mapCenter = useMapViewportStore((state) => state.center);
+  const setMapCenter = useMapViewportStore((state) => state.setCenter);
 
   const handleMapClick = () => {
     setShowLocationError(false);
@@ -46,12 +46,16 @@ export default function GoogleMapView() {
     <Map
       className="h-full w-full"
       mapId={GOOGLE_MAPS_MAP_ID}
-      defaultCenter={MAP_DEFAULT_CENTER}
+      defaultCenter={mapCenter}
       defaultZoom={MAP_DEFAULT_ZOOM}
       gestureHandling="greedy"
       disableDefaultUI
       clickableIcons={false}
       onClick={handleMapClick}
+      onIdle={(event) => {
+        const center = event.map.getCenter();
+        if (center) setMapCenter({ lat: center.lat(), lng: center.lng() });
+      }}
     >
       <CurrentLocationCameraController
         isAutomaticPanEnabled={activeSheetType === 'home'}

@@ -12,7 +12,7 @@ const formatAmount = (amount?: number) => `${(amount ?? 0).toLocaleString('ko-KR
 export default function SpendingRecordItem({ consumption }: SpendingRecordItemProps) {
   return (
     <li className="flex items-center gap-3">
-      <CardThumbnail src={null} />
+      <CardThumbnail src={consumption.thumbnailUrl ?? null} />
       <div className="min-w-0 flex-1">
         <CardTitle weight="semibold">
           {consumption.placeName?.trim() || '알 수 없는 장소'}

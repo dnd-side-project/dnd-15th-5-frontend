@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { MOCK_MAP_STICKERS, useHomeBottomSheetStore, useMapFocusStore } from '@/features/map';
-import { createMockShopDetailData, ShopDetail } from '@/features/shop';
+import { useOpenVisitedPlaceOnMap } from '@/features/map';
+import { ShopDetail } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { BackButton } from '@/shared/ui/back-button';
 
@@ -10,29 +9,23 @@ export default function ShopDetailPage() {
   const navigate = useNavigate();
   const { shopId } = useParams();
   const placeId = Number(shopId);
-  const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const showSelectedPlace = useHomeBottomSheetStore((state) => state.showSelectedPlace);
-  const setSelectedPlaceFocus = useMapFocusStore((state) => state.setSelectedPlaceFocus);
-  const selectedMapSticker = useMemo(
-    () => MOCK_MAP_STICKERS.find((item) => item.place.id === shopId),
-    [shopId]
-  );
-  const mockData = useMemo(() => {
-    return selectedMapSticker ? createMockShopDetailData(selectedMapSticker) : undefined;
-  }, [selectedMapSticker]);
+  const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
 
-  const handleViewOnMap = () => {
-    if (selectedMapSticker) {
-      showSelectedPlace(selectedMapSticker.id);
-      setSelectedPlaceFocus(selectedMapSticker.position);
-    } else {
-      showHome();
-    }
+  const focusThisShopOnMap = async () => {
+    if (!shopId) return;
+    await openVisitedPlaceOnMap(shopId);
+  };
 
+  const handleViewOnMap = async () => {
+    await focusThisShopOnMap();
     navigate(ROUTE_PATHS.home);
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    // NOTE: 뒤로 가기로 홈에 돌아왔을 때도 이 매장의 바텀시트가 뜨므로, 지도 포커스도 함께 맞춘다.
+    // 되돌아갈 히스토리가 없어 홈으로 직접 이동하는 경우도 마찬가지다.
+    await focusThisShopOnMap();
+
     const historyIndex = window.history.state?.idx;
     if (typeof historyIndex === 'number' && historyIndex > 0) {
       navigate(-1);
@@ -46,9 +39,8 @@ export default function ShopDetailPage() {
     <main>
       <ShopDetail
         placeId={placeId}
-        mockData={mockData}
-        onViewOnMap={handleViewOnMap}
-        headerContent={<BackButton onClick={handleBack} />}
+        onViewOnMap={() => void handleViewOnMap()}
+        headerContent={<BackButton onClick={() => void handleBack()} />}
       />
     </main>
   );

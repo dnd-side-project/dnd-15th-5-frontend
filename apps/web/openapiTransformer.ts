@@ -10,6 +10,26 @@ const isRecord = (value: unknown): value is MutableRecord => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
 
+const repairNullableReferences = (value: unknown): void => {
+  if (Array.isArray(value)) {
+    value.forEach(repairNullableReferences);
+    return;
+  }
+
+  if (!isRecord(value)) {
+    return;
+  }
+
+  if (value.type === 'null' && typeof value.$ref === 'string') {
+    const reference = value.$ref;
+    delete value.type;
+    delete value.$ref;
+    value.oneOf = [{ $ref: reference }, { type: 'null' }];
+  }
+
+  Object.values(value).forEach(repairNullableReferences);
+};
+
 const repairResponseHeaders = (paths: MutableRecord) => {
   for (const pathItem of Object.values(paths)) {
     if (!isRecord(pathItem)) {
@@ -122,7 +142,9 @@ export const createFeatureOpenApiTransformer = (operationIds: readonly string[])
   const includedOperationIds = new Set(operationIds);
 
   return defineTransformer((document) => {
-    const paths = (document as MutableRecord).paths;
+    const mutableDocument = document as MutableRecord;
+    repairNullableReferences(mutableDocument);
+    const paths = mutableDocument.paths;
 
     if (!isRecord(paths)) {
       return document;

@@ -2,7 +2,7 @@ import { Toast as BaseToast } from '@base-ui/react/toast';
 import { DEFAULT_TOAST_TYPE } from '@chapchap/shared/toast';
 import { useCallback } from 'react';
 
-import type { ShowToastOptions, ToastControls } from '@chapchap/shared/toast';
+import type { WebShowToastOptions, WebToastControls, WebToastData } from './types';
 
 /**
  * 웹과 앱 WebView에서 Toast를 노출하거나 닫습니다.
@@ -22,17 +22,23 @@ import type { ShowToastOptions, ToastControls } from '@chapchap/shared/toast';
  *
  * @returns Toast를 노출하고 닫는 제어 API입니다.
  */
-export const useToast = (): ToastControls => {
-  const { add, close } = BaseToast.useToastManager();
+export const useToast = (): WebToastControls => {
+  const { add, close } = BaseToast.useToastManager<WebToastData>();
 
   const showToast = useCallback(
-    ({ message, type = DEFAULT_TOAST_TYPE, duration }: ShowToastOptions) =>
+    ({
+      message,
+      type = DEFAULT_TOAST_TYPE,
+      duration,
+      placement = 'default',
+    }: WebShowToastOptions) =>
       add({
         description: message,
         // NOTE: 화면 노출 순서가 아닌 스크린 리더 우선순위이다. 오류는 즉시(high), 나머지(low)는 현재 안내가 끝난 뒤 읽는다.
         priority: type === 'error' ? 'high' : 'low',
         timeout: duration,
         type,
+        data: { placement },
       }),
     [add]
   );

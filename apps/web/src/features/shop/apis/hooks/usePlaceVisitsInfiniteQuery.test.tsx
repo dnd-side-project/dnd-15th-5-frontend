@@ -69,33 +69,4 @@ describe('usePlaceVisitsInfiniteQuery', () => {
       expect.any(AbortSignal)
     );
   });
-
-  it('목업 방문 기록을 두 개씩 나눠 다음 페이지로 제공한다', async () => {
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    });
-    const wrapper = ({ children }: PropsWithChildren) => (
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    );
-    const mockVisits = [
-      { visitedAt: '2026-08-23T12:00:00.000Z', amount: 23_000 },
-      { visitedAt: '2026-08-21T12:00:00.000Z', amount: 18_000 },
-      { visitedAt: '2026-08-19T12:00:00.000Z', amount: 15_500 },
-    ];
-    const { result } = renderHook(() => usePlaceVisitsInfiniteQuery(101, { mockVisits }), {
-      wrapper,
-    });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.pages[0]?.data?.visits).toHaveLength(2);
-    expect(result.current.hasNextPage).toBe(true);
-
-    await act(async () => {
-      await result.current.fetchNextPage();
-    });
-
-    await waitFor(() => expect(result.current.data?.pages).toHaveLength(2));
-    expect(result.current.data?.pages[1]?.data?.visits).toHaveLength(1);
-    expect(mockedGetPlaceVisits).not.toHaveBeenCalled();
-  });
 });
