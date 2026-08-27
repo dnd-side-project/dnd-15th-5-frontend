@@ -12,6 +12,8 @@ export type RecommendedPlaceItem = {
   longitude?: number;
   visitCount?: number;
   liked?: boolean;
+  thumbnailUrl?: string;
+  googleMapsUri?: string;
 };
 
 export type NearbyPlacesResponse = {
@@ -33,7 +35,9 @@ export type VisitedPlaceMarkerItem = {
   longitude?: number;
   visitCount?: number;
   liked?: boolean;
+  stickerCategory?: string;
   stickerName?: string;
+  googlePlaceId?: string;
 };
 
 export type VisitedPlaceMarkerResponse = {

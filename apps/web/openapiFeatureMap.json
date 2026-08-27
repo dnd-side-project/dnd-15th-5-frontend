@@ -1,5 +1,5 @@
 {
-  "specUrl": "https://chapchap.kr/api/v3/api-docs",
+  "specUrl": "https://chapchap.kr/dev/api/v3/api-docs",
   "features": {
     "auth": {
       "tags": ["Authentication", "Social OAuth"],
@@ -23,6 +23,15 @@
       "tags": ["Account"],
       "operationIds": ["getMyAccount", "updateMyAccount", "withdrawMyAccount"]
     },
+    "notification": {
+      "tags": ["Account", "notification-controller"],
+      "operationIds": [
+        "unregisterDeviceToken",
+        "registerDeviceToken",
+        "getNotifications",
+        "hasUnread"
+      ]
+    },
     "record": {
       "tags": ["Consumption"],
       "operationIds": ["createConsumption", "recognizeReceipt"]
@@ -35,7 +44,8 @@
         "getConsumptions",
         "getFrequentPlaces",
         "issueShareLink",
-        "getSharedPersonaCard"
+        "getSharedPersonaCard",
+        "aggregateMonthlyReport"
       ]
     },
     "shop": {

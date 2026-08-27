@@ -70,11 +70,13 @@ export type StatsResponse = {
 };
 
 export type RecentStickerResponse = {
+  itemCategory?: string;
   itemName?: string;
   receivedAt?: string;
 };
 
 export type StickerSummaryResponse = {
+  itemCategory?: string;
   itemName?: string;
   count?: number;
 };

@@ -16,9 +16,13 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type { ErrorType } from '@/shared/apis/orvalMutator';
 
-import type { IssueShareLinkParams, SecondParameter } from '@/features/report/apis/dto';
+import type {
+  AggregateMonthlyReportParams,
+  IssueShareLinkParams,
+  SecondParameter,
+} from '@/features/report/apis/dto';
 
-import { issueShareLink } from '@/features/report/apis/clients';
+import { aggregateMonthlyReport, issueShareLink } from '@/features/report/apis/clients';
 
 export const getIssueShareLinkMutationOptions = <
   TError = ErrorType<unknown>,
@@ -81,4 +85,69 @@ export const useIssueShareLink = <TError = ErrorType<unknown>, TContext = unknow
   TContext
 > => {
   return useMutation(getIssueShareLinkMutationOptions(options), queryClient);
+};
+
+export const getAggregateMonthlyReportMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+    TError,
+    { params: AggregateMonthlyReportParams },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+  TError,
+  { params: AggregateMonthlyReportParams },
+  TContext
+> => {
+  const mutationKey = ['aggregateMonthlyReport'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+    { params: AggregateMonthlyReportParams }
+  > = (props) => {
+    const { params } = props ?? {};
+
+    return aggregateMonthlyReport(params, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AggregateMonthlyReportMutationResult = NonNullable<
+  Awaited<ReturnType<typeof aggregateMonthlyReport>>
+>;
+
+export type AggregateMonthlyReportMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 월간 리포트 강제 집계 (테스트/백필용)
+ */
+export const useAggregateMonthlyReport = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+      TError,
+      { params: AggregateMonthlyReportParams },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+  TError,
+  { params: AggregateMonthlyReportParams },
+  TContext
+> => {
+  return useMutation(getAggregateMonthlyReportMutationOptions(options), queryClient);
 };
