@@ -21,6 +21,7 @@ type CarouselDragState = {
   startX: number;
 };
 
+/** 카드 변경, 클릭 차단, transition 누락 보완에 사용하는 드래그 기준값입니다. */
 const CARD_CHANGE_DRAG_THRESHOLD = 56;
 const CLICK_SUPPRESSION_DRAG_THRESHOLD = 6;
 const CARD_SETTLE_FALLBACK_DURATION = 700;

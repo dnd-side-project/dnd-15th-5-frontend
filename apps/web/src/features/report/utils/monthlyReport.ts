@@ -25,6 +25,7 @@ import type { SpendingCategory } from '@chapchap/shared/common/types';
 
 const SPENDING_CATEGORY_SET = new Set<SpendingCategory>(SPENDING_CATEGORIES);
 
+/** 페르소나 코드 네 자리를 구성하는 소비 성향 축입니다. */
 type PersonaAxes = {
   activityRange: 'H' | 'W';
   consumptionRhythm: 'P' | 'F';
@@ -41,6 +42,7 @@ const toSpendingCategory = (category?: string): SpendingCategory =>
     ? (category as SpendingCategory)
     : '기타';
 
+/** 백엔드의 RHDP 형식 코드를 네 가지 소비 성향 축으로 분리합니다. */
 const parsePersonaAxes = (type?: string): PersonaAxes | null => {
   const normalizedType = type?.trim().toUpperCase();
   const match = normalizedType?.match(/^([RN])([HW])([DM])([PF])$/);
@@ -73,6 +75,7 @@ const createPersonaTags = (axes: PersonaAxes | null, fallbackTags?: readonly str
   ];
 };
 
+/** 인접 월의 타입이 없으면 해당 월을 empty 카드로 변환합니다. */
 const mapAdjacentPersona = (
   adjacent: AdjacentPersonaResponse | null | undefined,
   fallbackMonth: YearMonth

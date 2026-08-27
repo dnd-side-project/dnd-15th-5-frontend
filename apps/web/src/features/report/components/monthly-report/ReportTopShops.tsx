@@ -11,6 +11,7 @@ import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 
 import ReportSectionTitle from './ReportSectionTitle';
 
+/** 1~3위 카드의 아이콘과 빈 순위 문구를 순위 기준으로 매칭합니다. */
 const RANK_ICONS = [RankFirstIcon, RankSecondIcon, RankThirdIcon] as const;
 const SHOP_RANKS = [1, 2, 3] as const;
 const EMPTY_RANK_MESSAGES = {
@@ -18,6 +19,8 @@ const EMPTY_RANK_MESSAGES = {
   2: '단골 한 곳에 올인했어요',
   3: '이번달 단골은 여기까지',
 } as const;
+
+/** 1위 카드에서 스티커가 겹치지 않도록 계산하는 표시 기준입니다. */
 const MAX_VISIBLE_SHOP_STICKERS = 5;
 const SHOP_STICKER_SIZE = 60;
 const SHOP_STICKER_MORE_BADGE_SIZE = 30;
@@ -110,13 +113,13 @@ export default function ReportTopShops({ shops }: ReportTopShopsProps) {
                       <img
                         alt=""
                         aria-hidden
-                        className="size-[60px] max-w-none object-contain"
+                        className="size-15 max-w-none object-contain"
                         src={sticker}
                       />
                     </span>
                   ))}
                   {additionalStickerCount > 0 && (
-                    <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-neutral-200 text-label-01-medium text-neutral-600">
+                    <span className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-label-01-medium text-neutral-600">
                       +{additionalStickerCount}
                     </span>
                   )}
