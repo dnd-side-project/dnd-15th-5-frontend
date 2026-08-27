@@ -32,7 +32,7 @@ export default function MonthlyReportUnavailableCard({
           {selectedMonth.month}월 리포트가 없어요
         </h2>
         <p className="mt-2 break-keep text-body-02-semibold text-primary-100">
-          다음 달 1일 기준으로 확정돼요.
+          다음 달 리포트를 위해 기록해 주세요
         </p>
       </div>
     </article>

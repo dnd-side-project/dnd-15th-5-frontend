@@ -8,7 +8,7 @@ describe('MonthlyReportUnavailableCard', () => {
 
     expect(screen.getByRole('article', { name: '6월 리포트 미생성 카드' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '6월 리포트가 없어요' })).toBeInTheDocument();
-    expect(screen.getByText('다음 달 1일 기준으로 확정돼요.')).toBeInTheDocument();
+    expect(screen.getByText('다음 달 리포트를 위해 기록해 주세요')).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });
