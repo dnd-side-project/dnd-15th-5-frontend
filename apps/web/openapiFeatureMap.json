@@ -1,5 +1,5 @@
 {
-  "specUrl": "https://chapchap.kr/dev/api/v3/api-docs",
+  "specUrl": "https://chapchap.kr/api/v3/api-docs",
   "features": {
     "auth": {
       "tags": ["Authentication", "Social OAuth"],
