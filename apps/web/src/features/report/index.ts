@@ -1,5 +1,5 @@
 export { default as ReportPreferenceCard } from './components/monthly-report/report-preference-card/ReportPreferenceCard';
-export { default as ReportPreferenceShareCard } from './components/monthly-report/report-preference-card/ReportPreferenceShareCard';
+export { default as ReportPreferenceSharedCard } from './components/monthly-report/report-preference-card/ReportPreferenceSharedCard';
 export { default as CategoryChart } from './components/monthly-report/CategoryChart';
 export { default as ReportMyPlace } from './components/monthly-report/ReportMyPlace';
 export { default as MonthlyReportHeader } from './components/monthly-report/MonthlyReportHeader';

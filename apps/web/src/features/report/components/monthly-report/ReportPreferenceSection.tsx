@@ -1,6 +1,6 @@
 import ReportPreferenceCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
 import type { ReportPreferenceCardMetric } from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
-import ReportPreferenceShareCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceShareCard';
+import ReportPreferenceSharedCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceSharedCard';
 import { useReportPreferenceCarousel } from '@/features/report/hooks/useReportPreferenceCarousel';
 import type { ReportPreferenceCardVariant } from '@/features/report/types';
 import { ReportCardFlipIcon, ShareIcon } from '@/shared/assets/icons';
@@ -100,10 +100,12 @@ export default function ReportPreferenceSection({
           );
         })}
       </div>
-      {/* INFO: PNG 변환을 위해 저장용 카드를 display: none 없이 화면 밖에 렌더링한다. */}
+      {/* INFO: PNG 변환을 위해 공유용 카드를 display: none 없이 화면 밖에 렌더링한다. */}
       <div aria-hidden className="pointer-events-none fixed top-0 left-[-9999px]">
         <div ref={captureRef}>
-          <ReportPreferenceShareCard
+          <ReportPreferenceSharedCard
+            description={selectedCard.description}
+            hasShadow={false}
             metrics={selectedCard.metrics}
             tags={selectedCard.tags}
             title={selectedCard.title}

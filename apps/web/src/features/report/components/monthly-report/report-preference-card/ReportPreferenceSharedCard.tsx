@@ -9,15 +9,17 @@ import type { ReportPreferenceCardMetric } from './ReportPreferenceMetricScale';
 
 export type ReportPreferenceSharedCardProps = {
   description: string;
+  hasShadow?: boolean;
   metrics: readonly ReportPreferenceCardMetric[];
   tags: readonly string[];
   title: string;
   variant: ReportPreferenceCardVariant;
 };
 
-/** 공유 페이지에서만 설명을 포함해 보여주는 소비 성향 카드입니다. */
+/** 공유 페이지와 이미지 저장에서 함께 사용하는 설명 포함 소비 성향 카드입니다. */
 export default function ReportPreferenceSharedCard({
   description,
+  hasShadow = true,
   metrics,
   tags,
   title,
@@ -37,7 +39,8 @@ export default function ReportPreferenceSharedCard({
     <article
       aria-label={`${title} 공유 카드`}
       className={cn(
-        'relative w-61 overflow-hidden rounded-15 shadow-report-preference-share-card',
+        'relative w-61 overflow-hidden rounded-15',
+        hasShadow && 'shadow-report-preference-share-card',
         variantConfig.frontClassName
       )}
     >
