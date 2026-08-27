@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   CategoryChart,
+  MonthlyReportCardSkeleton,
   MonthlyReportEmptyState,
   MonthlyReportDetailsSkeleton,
   MonthlyReportHeader,
@@ -90,6 +91,7 @@ export default function MonthlyReportPage() {
           selectableMonths={selectableMonths}
           selectedMonth={selectedMonth}
         />
+        {isPending && !report && <MonthlyReportCardSkeleton />}
         {report && (
           <ReportPreferenceSection
             cards={reportCards}
