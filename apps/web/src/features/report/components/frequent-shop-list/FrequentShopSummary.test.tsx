@@ -1,9 +1,40 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
+import { useFrequentPlacesInfiniteQuery } from '@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery';
+
 import FrequentShopSummary from './FrequentShopSummary';
 
+jest.mock('@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery');
+
+const mockedUseFrequentPlacesInfiniteQuery = jest.mocked(useFrequentPlacesInfiniteQuery);
+
 describe('FrequentShopSummary', () => {
+  beforeEach(() => {
+    mockedUseFrequentPlacesInfiniteQuery.mockReturnValue({
+      data: {
+        pages: [
+          {
+            data: {
+              places: Array.from({ length: 8 }, (_, index) => ({
+                rank: index + 1,
+                placeId: index + 1,
+                placeName: `투썸플레이스 ${index + 1}`,
+                category: '카페',
+                dongname: '용산구',
+                visitCount: index === 0 ? 12 : 7,
+              })),
+              hasNext: false,
+            },
+          },
+        ],
+      },
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useFrequentPlacesInfiniteQuery>);
+  });
+
   it('이번 달 방문 횟수 기준 상위 7개 가게를 보여준다', () => {
     render(
       <MemoryRouter>

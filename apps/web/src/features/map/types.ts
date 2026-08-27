@@ -16,6 +16,7 @@ export type CurrentPositionError =
 export type MapSticker = {
   id: string;
   image: string;
+  isLiked: boolean;
   label: string;
   place: MapPlaceDetail;
   position: MapPosition;
@@ -34,9 +35,12 @@ export type MapPlaceDetail = {
 export type ShopRecommendationReason = '나의 관심 카테고리' | '내 동네에서 많이 방문한 곳';
 
 export type ShopRecommendation = {
+  googleMapsUri?: string | null;
   id: string;
+  isLiked: boolean;
   place: MapPlaceDetail;
   position: MapPosition;
   reason: ShopRecommendationReason;
   thumbnailSrc: string | null;
+  visitCount: number;
 };

@@ -1,16 +1,14 @@
-import type { ReportPreferenceCardVariant } from '@/features/report/types';
+import type { ReportPreferenceCardVariant, ReportPreferenceMetric } from '@/features/report/types';
 import { ReportCardTextureImage } from '@/shared/assets/images/preference-card';
 import { cn } from '@/shared/lib/cn';
 
 import { REPORT_PREFERENCE_CARD_VARIANTS } from './reportPreferenceCardVariants';
 import ReportPreferenceMetricScale from './ReportPreferenceMetricScale';
 
-import type { ReportPreferenceCardMetric } from './ReportPreferenceMetricScale';
-
 export type ReportPreferenceSharedCardProps = {
   description: string;
   hasShadow?: boolean;
-  metrics: readonly ReportPreferenceCardMetric[];
+  metrics: readonly ReportPreferenceMetric[];
   tags: readonly string[];
   title: string;
   variant: ReportPreferenceCardVariant;

@@ -22,19 +22,21 @@ const STICKER_IMAGE_BY_NAME = new Map<string, string>([
   ['감자튀김', StickerFriesImage],
   ['피자', StickerPizzaImage],
   ['뒤집개', StickerFlipperImage],
+  ['따봉', StickerBravoImage],
   ['눈', StickerEyesImage],
   ['왕관', StickerSpecialImage],
-  ['따봉', StickerBravoImage],
 ]);
 
 /** 백엔드에서 지원하는 스티커 이름에 해당하는 이미지를 반환합니다. */
 export const getStickerImageByName = (stickerName?: string) =>
   stickerName ? STICKER_IMAGE_BY_NAME.get(stickerName) : undefined;
 
-/** 스티커 응답 목록에서 웹에서 지원하는 이미지 경로만 반환합니다. */
-export const getStickerImages = (stickers: readonly { itemName?: string }[]) =>
-  stickers.flatMap(({ itemName }) => {
+/** 스티커 응답 목록에서 웹이 지원하는 이미지를 각 항목의 개수만큼 펼쳐 반환합니다. */
+export const getStickerImages = (stickers: readonly { count?: number; itemName?: string }[]) =>
+  stickers.flatMap(({ count, itemName }) => {
     const stickerImage = getStickerImageByName(itemName);
+    const stickerCount =
+      count === undefined ? 1 : Number.isSafeInteger(count) && count > 0 ? count : 0;
 
-    return stickerImage ? [stickerImage] : [];
+    return stickerImage ? Array.from({ length: stickerCount }, () => stickerImage) : [];
   });

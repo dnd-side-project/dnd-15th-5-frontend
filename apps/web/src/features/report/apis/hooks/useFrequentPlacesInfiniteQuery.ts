@@ -14,6 +14,7 @@ type FrequentPlaceCursor = Pick<
 type UseFrequentPlacesInfiniteQueryParams = {
   category?: string[];
   period: GetFrequentPlacesPeriod;
+  size?: number;
 };
 
 const getNextCursor = (
@@ -41,15 +42,12 @@ const getNextCursor = (
 export const useFrequentPlacesInfiniteQuery = ({
   category,
   period,
+  size = FREQUENT_PLACE_PAGE_SIZE,
 }: UseFrequentPlacesInfiniteQueryParams) =>
   useInfiniteQuery({
-    queryKey: ['/consumptions/places/rank', 'infinite', { category, period }],
+    queryKey: ['/consumptions/places/rank', 'infinite', { category, period, size }],
     queryFn: ({ pageParam, signal }) =>
-      getFrequentPlaces(
-        { ...pageParam, category, period, size: FREQUENT_PLACE_PAGE_SIZE },
-        undefined,
-        signal
-      ),
+      getFrequentPlaces({ ...pageParam, category, period, size }, undefined, signal),
     initialPageParam: {} as FrequentPlaceCursor,
     getNextPageParam: getNextCursor,
     ...REPORT_LIST_QUERY_CACHE_OPTIONS,

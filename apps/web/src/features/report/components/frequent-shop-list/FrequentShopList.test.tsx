@@ -27,6 +27,7 @@ const THIS_MONTH_PLACES = [
     placeName: '투썸플레이스',
     category: '카페',
     dongname: '한강로동',
+    thumbnailUrl: 'https://example.com/place-11.jpg',
     visitCount: 12,
   },
   {
@@ -89,7 +90,7 @@ describe('FrequentShopList', () => {
   });
 
   it('API 응답의 단골 가게 순위와 이번 달 방문 횟수를 보여준다', () => {
-    renderFrequentShopList();
+    const { container } = renderFrequentShopList();
 
     expect(screen.getByRole('heading', { name: '단골 리스트' })).toBeInTheDocument();
     expect(screen.getByLabelText('1위')).toBeInTheDocument();
@@ -97,6 +98,10 @@ describe('FrequentShopList', () => {
     expect(screen.getByLabelText('3위')).toBeInTheDocument();
     expect(screen.getByLabelText('12회 방문')).toBeInTheDocument();
     expect(screen.getByText('한강로동')).toBeInTheDocument();
+    expect(container.querySelector('img')).toHaveAttribute(
+      'src',
+      'https://example.com/place-11.jpg'
+    );
     expect(mockedUseFrequentPlacesInfiniteQuery).toHaveBeenCalledWith({
       category: undefined,
       period: GetFrequentPlacesPeriod.THIS_MONTH,

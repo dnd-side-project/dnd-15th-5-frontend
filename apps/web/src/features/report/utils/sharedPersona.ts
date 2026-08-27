@@ -1,6 +1,5 @@
 import type { PersonaCardResponse } from '@/features/report/apis/dto';
-import type { ReportPreferenceCardMetric } from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceMetricScale';
-import type { ReportPreferenceCardVariant } from '@/features/report/types';
+import type { ReportPreferenceCardVariant, ReportPreferenceMetric } from '@/features/report/types';
 
 const PERSONA_VARIANT_BY_TITLE: Record<string, ReportPreferenceCardVariant> = {
   '골목 야간반장': 'night-watch',
@@ -21,7 +20,7 @@ const invertScore = (score?: number) => 100 - clampScore(score);
 
 export const createPreferenceMetrics = (
   scores: PersonaCardResponse['scores']
-): readonly ReportPreferenceCardMetric[] => [
+): readonly ReportPreferenceMetric[] => [
   {
     leftLabel: '신규 탐색형',
     rightLabel: '단골 반복형',

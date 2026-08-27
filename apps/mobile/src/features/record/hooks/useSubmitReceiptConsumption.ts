@@ -6,18 +6,20 @@ import { createConsumptionRequest } from '@/features/record/utils/createConsumpt
 import { getRecordErrorMessage } from '@/features/record/utils/getRecordErrorMessage';
 import { useToast } from '@/shared/ui/toast';
 
+import type { CreatedConsumptionPlace } from '@chapchap/shared/record';
+
 const CREATE_CONSUMPTION_ERROR_MESSAGE =
   '소비 기록을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.';
-const CREATE_CONSUMPTION_SUCCESS_MESSAGE = '소비 기록이 저장되었어요.';
 
 type UseSubmitReceiptConsumptionOptions = {
-  onSuccess: () => void;
+  onSuccess: (createdPlace: CreatedConsumptionPlace) => void;
 };
 
 /**
  * 확인한 영수증 기록의 요청 변환·저장·피드백을 담당한다.
  *
- * 성공 뒤 화면 전환은 화면 계층이 결정할 수 있도록 `onSuccess`에 위임한다.
+ * 성공 뒤 화면 전환은 화면 계층이 결정할 수 있도록 `onSuccess`에 위임하며, 지도 홈이
+ * 방문 마커와 대조할 수 있도록 등록한 장소명·좌표를 함께 전달한다.
  */
 export const useSubmitReceiptConsumption = ({ onSuccess }: UseSubmitReceiptConsumptionOptions) => {
   const { showToast } = useToast();
@@ -33,9 +35,13 @@ export const useSubmitReceiptConsumption = ({ onSuccess }: UseSubmitReceiptConsu
     setIsSubmitting(true);
 
     try {
-      await createConsumption(createConsumptionRequest(draft));
-      showToast({ type: 'success', message: CREATE_CONSUMPTION_SUCCESS_MESSAGE });
-      onSuccess();
+      const request = createConsumptionRequest(draft);
+      await createConsumption(request);
+      onSuccess({
+        placeName: request.placeName,
+        latitude: request.latitude,
+        longitude: request.longitude,
+      });
     } catch (error) {
       showToast({
         type: 'error',

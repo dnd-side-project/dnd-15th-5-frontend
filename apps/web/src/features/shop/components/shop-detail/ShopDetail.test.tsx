@@ -36,6 +36,14 @@ describe('ShopDetail', () => {
           recentStickers: [
             { itemName: '감자튀김', receivedAt: '2026-08-23' },
             { itemName: '피자', receivedAt: '2026-08-21' },
+            { itemName: '커피', receivedAt: '2026-08-19' },
+            { itemName: '도넛', receivedAt: '2026-08-17' },
+            { itemName: '다트', receivedAt: '2026-08-15' },
+          ],
+          stickerSummary: [
+            { itemName: '눈', count: 3 },
+            { itemName: '따봉', count: 2 },
+            { itemName: '왕관', count: 1 },
           ],
         },
       },
@@ -67,7 +75,13 @@ describe('ShopDetail', () => {
     } as unknown as ReturnType<typeof usePlaceVisitsInfiniteQuery>);
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('매장 정보는 고정 영역에 두고 주소 아래를 방문 기록 스크롤 영역으로 표시한다', () => {
+    jest.useFakeTimers().setSystemTime(new Date(2026, 7, 27));
+
     render(
       <MemoryRouter>
         <ShopDetail
@@ -93,7 +107,7 @@ describe('ShopDetail', () => {
     const visitCount = visitTitle.querySelector('span');
     expect(visitCount).not.toBeNull();
     expect(visitCount).toHaveClass('text-primary-500');
-    expect(within(scrollRegion).getByText('2026. 8. 1.')).toBeInTheDocument();
+    expect(within(scrollRegion).getByText('3주일 전')).toBeInTheDocument();
     expect(within(scrollRegion).getByText('8월 23일')).toBeInTheDocument();
     expect(within(scrollRegion).getByText('23,000원')).toBeInTheDocument();
   });
@@ -111,5 +125,15 @@ describe('ShopDetail', () => {
     await user.click(screen.getByRole('button', { name: '지도에서 가게 보기' }));
 
     expect(onViewOnMap).toHaveBeenCalledTimes(1);
+  });
+
+  it('최근 5개 대신 summary에 집계된 스티커를 개수만큼 모두 표시한다', () => {
+    render(
+      <MemoryRouter>
+        <ShopDetail placeId={101} headerContent={null} onViewOnMap={jest.fn()} />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByLabelText('획득한 스티커').querySelectorAll('img')).toHaveLength(6);
   });
 });

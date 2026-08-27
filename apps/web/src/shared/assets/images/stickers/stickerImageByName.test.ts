@@ -18,4 +18,21 @@ describe('getStickerImages', () => {
       getStickerImageByName('따봉'),
     ]);
   });
+
+  it('summary의 스티커를 count만큼 모두 펼친다', () => {
+    expect(
+      getStickerImages([
+        { itemName: '눈', count: 3 },
+        { itemName: '따봉', count: 2 },
+        { itemName: '왕관', count: 1 },
+      ])
+    ).toEqual([
+      getStickerImageByName('눈'),
+      getStickerImageByName('눈'),
+      getStickerImageByName('눈'),
+      getStickerImageByName('따봉'),
+      getStickerImageByName('따봉'),
+      getStickerImageByName('왕관'),
+    ]);
+  });
 });

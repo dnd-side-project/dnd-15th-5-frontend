@@ -1,3 +1,12 @@
+export type GooglePlaceSearchResultResponse = {
+  googlePlaceId?: string;
+  placeName?: string;
+  roadAddress?: string;
+  latitude?: number;
+  longitude?: number;
+  thumbnailUrl?: string | null;
+};
+
 export type ReceiptOcrResponse = {
   receiptImageId: number;
   storeName?: string | null;
@@ -5,6 +14,7 @@ export type ReceiptOcrResponse = {
   purchaseDate?: string | null;
   purchaseTime?: string | null;
   amount?: number | null;
+  googlePlaceSearchResult?: GooglePlaceSearchResultResponse;
 };
 
 export type ConsumptionCreateRequest = {
@@ -22,4 +32,6 @@ export type ConsumptionCreateRequest = {
 
 export type ConsumptionCreateResponse = {
   consumptionId?: number;
+  stickerCategory?: string;
+  stickerName?: string;
 };

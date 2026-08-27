@@ -121,6 +121,7 @@ export default function FrequentShopList({ headerContent }: FrequentShopListProp
                   dongname={place.dongname}
                   placeName={place.placeName}
                   rank={place.rank ?? index + 1}
+                  thumbnailSrc={place.thumbnailUrl}
                   visitCount={place.visitCount}
                 />
               ))}

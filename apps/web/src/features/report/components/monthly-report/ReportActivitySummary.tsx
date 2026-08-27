@@ -1,12 +1,9 @@
+import type { MonthlyReportSummaryItem } from '@/features/report/types';
+
 import ReportSectionTitle from './ReportSectionTitle';
 
-type SummaryItem = {
-  label: string;
-  value: number;
-};
-
 type ReportActivitySummaryProps = {
-  items: readonly SummaryItem[];
+  items: readonly MonthlyReportSummaryItem[];
 };
 
 /** 방문 횟수 등 월간 활동의 핵심 수치를 요약해 표시합니다. */

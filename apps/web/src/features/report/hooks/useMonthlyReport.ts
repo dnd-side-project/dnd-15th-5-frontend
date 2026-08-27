@@ -1,14 +1,20 @@
-import { useEffect, useState } from 'react';
+import { isAxiosError } from 'axios';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { useAdjacentMonthlyReportPrefetch } from '@/features/report/apis/hooks/useAdjacentMonthlyReportPrefetch';
 import { useFirstAvailableYearMonthQuery } from '@/features/report/apis/hooks/useFirstAvailableYearMonthQuery';
-import { MOCK_MONTHLY_REPORTS } from '@/features/report/mockData';
+import { useMonthlyReportQuery } from '@/features/report/apis/hooks/useMonthlyReportQuery';
+import { createMonthlyReportCarouselCards } from '@/features/report/utils/monthlyReportCarousel';
 import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { useToast } from '@/shared/ui/toast';
 import {
+  addMonth,
   createYearMonthRange,
   formatYearMonth,
+  getCurrentMonth,
+  isBeforeMonth,
   isSameMonth,
   parseYearMonth,
 } from '@/shared/utils/yearMonth';
@@ -20,13 +26,16 @@ export const useMonthlyReport = () => {
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [isCardTransitioning, setIsCardTransitioning] = useState(false);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
   const firstAvailableYearMonthQuery = useFirstAvailableYearMonthQuery();
   const requestedYearMonth = searchParams.get(YEAR_MONTH_SEARCH_PARAM);
   const requestedMonth = parseYearMonth(requestedYearMonth);
-  const latestMonth = MOCK_MONTHLY_REPORTS[0].month;
-  const fallbackOldestMonth = MOCK_MONTHLY_REPORTS.at(-1)?.month ?? latestMonth;
+  const latestMonth = addMonth(getCurrentMonth(), -1);
+  const isRequestedMonthInRange =
+    requestedMonth !== null && !isBeforeMonth(latestMonth, requestedMonth);
+  const fallbackOldestMonth = isRequestedMonthInRange ? requestedMonth : latestMonth;
   const selectableMonths = createYearMonthRange(
     latestMonth,
     firstAvailableYearMonthQuery.data ?? fallbackOldestMonth
@@ -36,7 +45,10 @@ export const useMonthlyReport = () => {
     : -1;
   const selectedMonthIndex = requestedMonthIndex >= 0 ? requestedMonthIndex : 0;
   const selectedMonth = selectableMonths[selectedMonthIndex] ?? latestMonth;
-  const report = MOCK_MONTHLY_REPORTS.find(({ month }) => isSameMonth(month, selectedMonth));
+  const monthlyReportQuery = useMonthlyReportQuery(selectedMonth);
+  const reportData = monthlyReportQuery.data;
+  const report = reportData && !('isUnavailable' in reportData) ? reportData : undefined;
+  useAdjacentMonthlyReportPrefetch(reportData?.adjacentCards);
   const selectedYearMonth = formatYearMonth(selectedMonth);
   const { captureRef, downloadImage, hasDownloadError, isDownloading } = useReportImageDownload(
     `${selectedMonth.month}월-취향카드.png`
@@ -44,16 +56,15 @@ export const useMonthlyReport = () => {
 
   const hasNewerMonth = selectedMonthIndex > 0;
   const hasOlderMonth = selectedMonthIndex < selectableMonths.length - 1;
-  const reportCards = [...MOCK_MONTHLY_REPORTS].reverse().map(({ month, persona }) => ({
-    ...persona,
-    id: `${month.year}-${month.month}`,
-    month,
-  }));
-  const selectedReportIndex = MOCK_MONTHLY_REPORTS.findIndex(({ month }) =>
-    isSameMonth(month, selectedMonth)
-  );
-  const selectedCardIndex =
-    selectedReportIndex >= 0 ? reportCards.length - 1 - selectedReportIndex : -1;
+  const reportCards = createMonthlyReportCarouselCards({
+    reportData,
+    selectableMonths,
+    selectedMonth,
+  });
+  const selectedCardIndex = reportCards.findIndex((card) => card.id === selectedYearMonth);
+  const hasReportError =
+    monthlyReportQuery.isError &&
+    !(isAxiosError(monthlyReportQuery.error) && monthlyReportQuery.error.response?.status === 404);
 
   useEffect(() => {
     if (requestedYearMonth === selectedYearMonth) return;
@@ -81,11 +92,15 @@ export const useMonthlyReport = () => {
     if (!month || isSameMonth(month, selectedMonth)) return;
 
     setIsCardFlipped(false);
-    setSearchParams((currentSearchParams) => {
-      const nextSearchParams = new URLSearchParams(currentSearchParams);
-      nextSearchParams.set(YEAR_MONTH_SEARCH_PARAM, formatYearMonth(month));
-      return nextSearchParams;
-    });
+
+    setSearchParams(
+      (currentSearchParams) => {
+        const nextSearchParams = new URLSearchParams(currentSearchParams);
+        nextSearchParams.set(YEAR_MONTH_SEARCH_PARAM, formatYearMonth(month));
+        return nextSearchParams;
+      },
+      { replace: true }
+    );
   };
 
   const handleNewerMonth = () => handleMonthChange(selectableMonths[selectedMonthIndex - 1]);
@@ -106,14 +121,21 @@ export const useMonthlyReport = () => {
   };
 
   const handlePreferenceCardFlip = () => setIsCardFlipped((isFlipped) => !isFlipped);
+  const handleCardTransitionChange = useCallback(
+    (isTransitioning: boolean) => setIsCardTransitioning(isTransitioning),
+    []
+  );
   const handleMonthPickerClose = () => setIsMonthPickerOpen(false);
   const handleMonthPickerOpen = () => setIsMonthPickerOpen(true);
   const handleShareSheetClose = () => setIsShareSheetOpen(false);
   const handleShareSheetOpen = () => setIsShareSheetOpen(true);
 
+  const isPending = monthlyReportQuery.isPending || monthlyReportQuery.isPlaceholderData;
+
   return {
     captureRef,
     downloadImage,
+    handleCardTransitionChange,
     handleNewerMonth,
     handleOlderMonth,
     handleMonthPickerClose,
@@ -125,10 +147,15 @@ export const useMonthlyReport = () => {
     handleShareSheetOpen,
     hasNewerMonth,
     hasOlderMonth,
+    hasReportError,
     isCardFlipped,
+    isCardTransitioning,
     isDownloading,
     isMonthPickerOpen,
+    isPending,
+    isReportContentLoading: isPending || isCardTransitioning,
     isShareSheetOpen,
+    refetch: monthlyReportQuery.refetch,
     report,
     reportCards,
     selectableMonths,

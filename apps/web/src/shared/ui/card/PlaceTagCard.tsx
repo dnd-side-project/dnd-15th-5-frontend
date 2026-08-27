@@ -43,7 +43,7 @@ type PlaceTagCardProps = {
  *
  * @param props - 카드 속성입니다.
  * @param props.footer - 태그 아래 오른쪽 정보 열에 표시할 선택 콘텐츠입니다.
- * @param props.thumbnailSrc - 썸네일 이미지 URL입니다. `null`이면 회색 배경으로 대체합니다.
+ * @param props.thumbnailSrc - 썸네일 이미지 URL입니다. `null`이거나 로드에 실패하면 기본 썸네일 아이콘으로 대체합니다.
  * @param props.thumbnailSize - 썸네일 크기입니다. 기본값은 60px이고 `large`는 90px입니다.
  * @param props.title - 장소 이름입니다.
  * @param props.tags - 표시할 태그 목록입니다. 각 태그의 `icon`은 선택 사항입니다.

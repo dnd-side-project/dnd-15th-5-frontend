@@ -1,17 +1,11 @@
 import { REPORT_CATEGORY_COLOR_CLASS_NAMES } from '@/features/report/constants';
+import type { MonthlyReportCategory } from '@/features/report/types';
 
 import ReportChartTooltip from './ReportChartTooltip';
 import ReportSectionTitle from './ReportSectionTitle';
 
-import type { SpendingCategory } from '@chapchap/shared/common/types';
-
-type Category = {
-  category: SpendingCategory;
-  percentage: number;
-};
-
 type CategoryChartProps = {
-  categories: readonly Category[];
+  categories: readonly MonthlyReportCategory[];
 };
 
 /** 월간 소비 기록의 카테고리별 비율을 막대와 범례로 표시합니다. */

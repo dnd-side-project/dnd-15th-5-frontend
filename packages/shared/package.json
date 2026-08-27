@@ -6,6 +6,7 @@
   "exports": {
     "./assets/icons/*.svg": "./assets/icons/*.svg",
     "./bridge": "./src/bridge/index.ts",
+    "./common/constants": "./src/common/constants.ts",
     "./common/types": "./src/common/types.ts",
     "./design/*.css": "./design/*.css",
     "./location": "./src/location/types.ts",

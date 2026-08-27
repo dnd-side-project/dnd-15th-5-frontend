@@ -51,11 +51,13 @@ describe('useSubmitReceiptConsumption', () => {
       amount: 12000,
       category: '카페',
     });
-    expect(mockShowToast).toHaveBeenCalledWith({
-      type: 'success',
-      message: '소비 기록이 저장되었어요.',
-    });
+    expect(mockShowToast).not.toHaveBeenCalled();
     expect(onSuccess).toHaveBeenCalledTimes(1);
+    expect(onSuccess).toHaveBeenCalledWith({
+      placeName: '카페 차차',
+      latitude: 37.5,
+      longitude: 127,
+    });
   });
 
   it('저장 실패 시 서버 메시지를 보여주고 성공 콜백은 호출하지 않는다', async () => {

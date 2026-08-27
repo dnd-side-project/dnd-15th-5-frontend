@@ -50,7 +50,7 @@ describe('useFrequentPlacesInfiniteQuery', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     const frequentPlacesQuery = queryClient.getQueryCache().find({
-      queryKey: ['/consumptions/places/rank', 'infinite', queryParams],
+      queryKey: ['/consumptions/places/rank', 'infinite', { ...queryParams, size: 15 }],
     });
     const cacheOptions = frequentPlacesQuery?.options as
       { gcTime?: number; refetchOnWindowFocus?: boolean; staleTime?: number } | undefined;
@@ -82,5 +82,32 @@ describe('useFrequentPlacesInfiniteQuery', () => {
       undefined,
       expect.any(AbortSignal)
     );
+  });
+
+  it('size를 지정하면 요청과 캐시 키에 해당 값을 사용한다', async () => {
+    mockedGetFrequentPlaces.mockResolvedValueOnce({
+      data: { places: [], hasNext: false },
+    });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const wrapper = ({ children }: PropsWithChildren) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+    const queryParams = { period: GetFrequentPlacesPeriod.THIS_MONTH, size: 7 };
+    const { result } = renderHook(() => useFrequentPlacesInfiniteQuery(queryParams), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(mockedGetFrequentPlaces).toHaveBeenCalledWith(
+      { period: GetFrequentPlacesPeriod.THIS_MONTH, size: 7 },
+      undefined,
+      expect.any(AbortSignal)
+    );
+    expect(
+      queryClient.getQueryCache().find({
+        queryKey: ['/consumptions/places/rank', 'infinite', queryParams],
+      })
+    ).toBeDefined();
   });
 });

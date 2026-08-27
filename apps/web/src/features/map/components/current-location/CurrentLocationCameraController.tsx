@@ -1,7 +1,8 @@
 import { useMap } from '@vis.gl/react-google-maps';
 import { useEffect, useRef } from 'react';
 
-import type { MapPosition } from '../../types';
+import type { MapPosition } from '@/features/map/types';
+import { focusMapOnPosition } from '@/features/map/utils/focusMapOnPosition';
 
 type CurrentLocationCameraControllerProps = {
   isAutomaticPanEnabled: boolean;
@@ -15,6 +16,18 @@ export default function CurrentLocationCameraController({
 }: CurrentLocationCameraControllerProps) {
   const map = useMap();
   const hasMovedToCurrentPosition = useRef(false);
+  const cancelPendingOffsetRef = useRef<(() => void) | null>(null);
+
+  useEffect(
+    () => () => {
+      cancelPendingOffsetRef.current?.();
+      cancelPendingOffsetRef.current = null;
+      // React StrictMode의 effect 사전 점검 cleanup 뒤 두 번째 setup이 카메라 이동을 다시
+      // 등록할 수 있게 한다. 실제 unmount에서는 ref 자체가 함께 폐기된다.
+      hasMovedToCurrentPosition.current = false;
+    },
+    []
+  );
 
   useEffect(() => {
     if (hasMovedToCurrentPosition.current) {
@@ -32,7 +45,7 @@ export default function CurrentLocationCameraController({
       return;
     }
 
-    map.panTo(position);
+    cancelPendingOffsetRef.current = focusMapOnPosition(map, position);
     hasMovedToCurrentPosition.current = true;
   }, [isAutomaticPanEnabled, map, position]);
 
