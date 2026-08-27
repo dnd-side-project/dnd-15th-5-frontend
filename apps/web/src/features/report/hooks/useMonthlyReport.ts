@@ -1,9 +1,11 @@
 import { isAxiosError } from 'axios';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { useAdjacentMonthlyReportPrefetch } from '@/features/report/apis/hooks/useAdjacentMonthlyReportPrefetch';
 import { useFirstAvailableYearMonthQuery } from '@/features/report/apis/hooks/useFirstAvailableYearMonthQuery';
 import { useMonthlyReportQuery } from '@/features/report/apis/hooks/useMonthlyReportQuery';
+import type { MonthlyReportAdjacentCard } from '@/features/report/types';
 import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { useToast } from '@/shared/ui/toast';
@@ -24,6 +26,7 @@ export const useMonthlyReport = () => {
   const { showToast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isCardFlipped, setIsCardFlipped] = useState(false);
+  const [isCardTransitioning, setIsCardTransitioning] = useState(false);
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
   const firstAvailableYearMonthQuery = useFirstAvailableYearMonthQuery();
@@ -44,6 +47,7 @@ export const useMonthlyReport = () => {
   const selectedMonth = selectableMonths[selectedMonthIndex] ?? latestMonth;
   const monthlyReportQuery = useMonthlyReportQuery(selectedMonth);
   const report = monthlyReportQuery.data;
+  useAdjacentMonthlyReportPrefetch(report?.adjacentCards);
   const selectedYearMonth = formatYearMonth(selectedMonth);
   const { captureRef, downloadImage, hasDownloadError, isDownloading } = useReportImageDownload(
     `${selectedMonth.month}월-취향카드.png`
@@ -51,17 +55,27 @@ export const useMonthlyReport = () => {
 
   const hasNewerMonth = selectedMonthIndex > 0;
   const hasOlderMonth = selectedMonthIndex < selectableMonths.length - 1;
-  const reportCards = report
+  const currentReportCards = report
     ? [
         ...report.adjacentCards,
-        { ...report.persona, isUnavailable: false as const, month: selectedMonth },
+        { ...report.persona, isUnavailable: false as const, month: report.month },
       ]
-        .filter((card) =>
-          selectableMonths.some((selectableMonth) => isSameMonth(selectableMonth, card.month))
-        )
-        .map((card) => ({ ...card, id: formatYearMonth(card.month) }))
-        .sort((left, right) => left.id.localeCompare(right.id))
     : [];
+  const reportCardMap = new Map<string, MonthlyReportAdjacentCard>();
+
+  currentReportCards.forEach((card) => {
+    reportCardMap.set(formatYearMonth(card.month), card);
+  });
+
+  if (report && !reportCardMap.has(selectedYearMonth)) {
+    reportCardMap.set(selectedYearMonth, { isUnavailable: true, month: selectedMonth });
+  }
+
+  const reportCards = Array.from(reportCardMap, ([id, card]) => ({ ...card, id }))
+    .filter((card) =>
+      selectableMonths.some((selectableMonth) => isSameMonth(selectableMonth, card.month))
+    )
+    .sort((left, right) => left.id.localeCompare(right.id));
   const selectedCardIndex = reportCards.findIndex((card) => card.id === selectedYearMonth);
   const hasReportError =
     monthlyReportQuery.isError &&
@@ -118,6 +132,8 @@ export const useMonthlyReport = () => {
   };
 
   const handlePreferenceCardFlip = () => setIsCardFlipped((isFlipped) => !isFlipped);
+  const handleCardTransitionEnd = useCallback(() => setIsCardTransitioning(false), []);
+  const handleCardTransitionStart = useCallback(() => setIsCardTransitioning(true), []);
   const handleMonthPickerClose = () => setIsMonthPickerOpen(false);
   const handleMonthPickerOpen = () => setIsMonthPickerOpen(true);
   const handleShareSheetClose = () => setIsShareSheetOpen(false);
@@ -126,6 +142,8 @@ export const useMonthlyReport = () => {
   return {
     captureRef,
     downloadImage,
+    handleCardTransitionEnd,
+    handleCardTransitionStart,
     handleNewerMonth,
     handleOlderMonth,
     handleMonthPickerClose,
@@ -139,9 +157,10 @@ export const useMonthlyReport = () => {
     hasOlderMonth,
     hasReportError,
     isCardFlipped,
+    isCardTransitioning,
     isDownloading,
     isMonthPickerOpen,
-    isPending: monthlyReportQuery.isPending,
+    isPending: monthlyReportQuery.isPending || monthlyReportQuery.isPlaceholderData,
     isShareSheetOpen,
     refetch: monthlyReportQuery.refetch,
     report,

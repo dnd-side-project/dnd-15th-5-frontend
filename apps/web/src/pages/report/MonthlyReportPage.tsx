@@ -21,6 +21,8 @@ export default function MonthlyReportPage() {
   const {
     captureRef,
     downloadImage,
+    handleCardTransitionEnd,
+    handleCardTransitionStart,
     handleNewerMonth,
     handleOlderMonth,
     handleMonthPickerClose,
@@ -34,6 +36,7 @@ export default function MonthlyReportPage() {
     hasOlderMonth,
     hasReportError,
     isCardFlipped,
+    isCardTransitioning,
     isDownloading,
     isMonthPickerOpen,
     isPending,
@@ -62,8 +65,11 @@ export default function MonthlyReportPage() {
   }
 
   return (
-    <main aria-busy={isPending} className="relative overflow-hidden bg-neutral-00 pb-10">
-      {isPending && (
+    <main
+      aria-busy={isPending || isCardTransitioning}
+      className="relative overflow-hidden bg-neutral-00 pb-10"
+    >
+      {(isPending || isCardTransitioning) && (
         <span className="sr-only" role="status">
           월간 리포트를 불러오는 중입니다.
         </span>
@@ -90,6 +96,8 @@ export default function MonthlyReportPage() {
             captureRef={captureRef}
             isFlipped={isCardFlipped}
             onCardSelect={handleReportCardSelect}
+            onCardTransitionEnd={handleCardTransitionEnd}
+            onCardTransitionStart={handleCardTransitionStart}
             onFlip={handlePreferenceCardFlip}
             onShare={handleShareSheetOpen}
             selectedCardIndex={selectedCardIndex}
@@ -103,7 +111,7 @@ export default function MonthlyReportPage() {
         )}
       </div>
 
-      {isPending ? (
+      {isPending || isCardTransitioning ? (
         <div className="relative min-h-[70dvh]" />
       ) : report ? (
         <>

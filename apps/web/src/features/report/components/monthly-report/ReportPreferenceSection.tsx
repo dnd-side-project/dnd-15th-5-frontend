@@ -18,6 +18,8 @@ type ReportPreferenceSectionProps = {
   captureRef: Ref<HTMLDivElement>;
   isFlipped: boolean;
   onCardSelect: (index: number) => void;
+  onCardTransitionEnd: () => void;
+  onCardTransitionStart: () => void;
   onFlip: () => void;
   onShare: () => void;
   selectedCardIndex: number;
@@ -45,6 +47,8 @@ export default function ReportPreferenceSection({
   captureRef,
   isFlipped,
   onCardSelect,
+  onCardTransitionEnd,
+  onCardTransitionStart,
   onFlip,
   onShare,
   selectedCardIndex,
@@ -52,19 +56,23 @@ export default function ReportPreferenceSection({
   const selectedCard = cards[selectedCardIndex] ?? cards[0];
   const {
     carouselRef,
+    carouselStyle,
     handleCarouselClickCapture,
     handleCarouselKeyDown,
+    handleCarouselLostPointerCapture,
     handleCarouselPointerCancel,
     handleCarouselPointerDown,
     handleCarouselPointerMove,
     handleCarouselPointerUp,
   } = useReportPreferenceCarousel({
-    cardCount: cards.length,
+    cardIds: cards.map((card) => card.id),
     onCardSelect,
+    onTransitionEnd: onCardTransitionEnd,
+    onTransitionStart: onCardTransitionStart,
     selectedCardIndex,
   });
 
-  if (!selectedCard || selectedCard.isUnavailable) return null;
+  if (!selectedCard) return null;
 
   return (
     <section className="report-preference-section mt-4.5 flex flex-col items-center">
@@ -73,12 +81,14 @@ export default function ReportPreferenceSection({
         className="report-preference-carousel scrollbar-hidden"
         onClickCapture={handleCarouselClickCapture}
         onKeyDown={handleCarouselKeyDown}
+        onLostPointerCapture={handleCarouselLostPointerCapture}
         onPointerCancel={handleCarouselPointerCancel}
         onPointerDown={handleCarouselPointerDown}
         onPointerMove={handleCarouselPointerMove}
         onPointerUp={handleCarouselPointerUp}
         ref={carouselRef}
         role="region"
+        style={carouselStyle}
       >
         {cards.map((card, index) => {
           const isSelected = index === selectedCardIndex;
@@ -114,35 +124,39 @@ export default function ReportPreferenceSection({
           );
         })}
       </div>
-      {/* INFO: PNG 변환을 위해 저장용 카드를 display: none 없이 화면 밖에 렌더링한다. */}
-      <div aria-hidden className="pointer-events-none fixed top-0 left-[-9999px]">
-        <div ref={captureRef}>
-          <ReportPreferenceShareCard
-            metrics={selectedCard.metrics}
-            tags={selectedCard.tags}
-            title={selectedCard.title}
-            variant={selectedCard.variant}
-          />
-        </div>
-      </div>
-      <div className="mt-6.25 flex items-center gap-3.75">
-        <button
-          className="flex h-9.25 items-center gap-2 rounded-full bg-neutral-200 px-5 text-body-02-medium text-neutral-700"
-          onClick={onShare}
-          type="button"
-        >
-          <ShareIcon aria-hidden className="size-4" />
-          취향 카드 공유하기
-        </button>
-        <button
-          aria-label="취향 카드 뒤집기"
-          className="flex size-10 items-center justify-center rounded-full bg-neutral-200 text-lg text-neutral-600"
-          onClick={onFlip}
-          type="button"
-        >
-          <ReportCardFlipIcon aria-hidden className="h-3.25 w-3" />
-        </button>
-      </div>
+      {!selectedCard.isUnavailable && (
+        <>
+          {/* INFO: PNG 변환을 위해 저장용 카드를 display: none 없이 화면 밖에 렌더링한다. */}
+          <div aria-hidden className="pointer-events-none fixed top-0 left-[-9999px]">
+            <div ref={captureRef}>
+              <ReportPreferenceShareCard
+                metrics={selectedCard.metrics}
+                tags={selectedCard.tags}
+                title={selectedCard.title}
+                variant={selectedCard.variant}
+              />
+            </div>
+          </div>
+          <div className="mt-6.25 flex items-center gap-3.75">
+            <button
+              className="flex h-9.25 items-center gap-2 rounded-full bg-neutral-200 px-5 text-body-02-medium text-neutral-700"
+              onClick={onShare}
+              type="button"
+            >
+              <ShareIcon aria-hidden className="size-4" />
+              취향 카드 공유하기
+            </button>
+            <button
+              aria-label="취향 카드 뒤집기"
+              className="flex size-10 items-center justify-center rounded-full bg-neutral-200 text-lg text-neutral-600"
+              onClick={onFlip}
+              type="button"
+            >
+              <ReportCardFlipIcon aria-hidden className="h-3.25 w-3" />
+            </button>
+          </div>
+        </>
+      )}
     </section>
   );
 }

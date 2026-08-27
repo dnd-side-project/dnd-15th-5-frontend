@@ -17,6 +17,10 @@ jest.mock('@/features/report/apis/hooks/useFirstAvailableYearMonthQuery', () => 
   useFirstAvailableYearMonthQuery: () => ({ data: mockFirstAvailableYearMonth }),
 }));
 
+jest.mock('@/features/report/apis/hooks/useAdjacentMonthlyReportPrefetch', () => ({
+  useAdjacentMonthlyReportPrefetch: jest.fn(),
+}));
+
 jest.mock('@/features/report/apis/hooks/useMonthlyReportQuery', () => ({
   useMonthlyReportQuery: () => ({
     data: mockMonthlyReportData,
@@ -45,9 +49,11 @@ function MonthlyReportHarness() {
   const {
     handleMonthPickerOpen,
     handleMonthSelect,
+    handleNewerMonth,
     handleOlderMonth,
     isMonthPickerOpen,
     reportCards,
+    selectedCardIndex,
     selectedMonth,
   } = useMonthlyReport();
   const location = useLocation();
@@ -59,6 +65,7 @@ function MonthlyReportHarness() {
       <span>{location.search}</span>
       <span>{isMonthPickerOpen ? '월 선택 열림' : '월 선택 닫힘'}</span>
       <span data-testid="report-card-months">{reportCards.map((card) => card.id).join(',')}</span>
+      <span data-testid="selected-card-index">{selectedCardIndex}</span>
       <button onClick={handleMonthPickerOpen} type="button">
         월 선택 열기
       </button>
@@ -67,6 +74,9 @@ function MonthlyReportHarness() {
       </button>
       <button onClick={handleOlderMonth} type="button">
         이전 달
+      </button>
+      <button onClick={handleNewerMonth} type="button">
+        다음 달
       </button>
       <button onClick={() => navigate(-1)} type="button">
         브라우저 뒤로가기
@@ -186,5 +196,28 @@ describe('useMonthlyReport', () => {
 
     expect(screen.getByTestId('report-card-months')).toHaveTextContent('2026-05,2026-06');
     expect(screen.getByTestId('report-card-months')).not.toHaveTextContent('2026-04');
+  });
+
+  it('인접 카드 응답보다 빠르게 이동해도 선택 월 카드를 유지한다', async () => {
+    const user = userEvent.setup();
+    mockMonthlyReportData = createMockMonthlyReport({ month: 5, year: 2026 }, [
+      {
+        description: '설명',
+        isUnavailable: false,
+        metrics: [],
+        month: { month: 6, year: 2026 },
+        tags: [],
+        title: '골목 발굴러',
+        variant: 'alley-explorer',
+      },
+    ]);
+
+    renderMonthlyReportHook('/report/monthly-report?yearMonth=2026-05');
+
+    await user.click(screen.getByRole('button', { name: '다음 달' }));
+    await user.click(screen.getByRole('button', { name: '다음 달' }));
+
+    expect(screen.getByTestId('report-card-months')).toHaveTextContent('2026-05,2026-06,2026-07');
+    expect(screen.getByTestId('selected-card-index')).toHaveTextContent('2');
   });
 });
