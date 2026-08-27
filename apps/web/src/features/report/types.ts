@@ -20,13 +20,18 @@ export type MonthlyReportPersona = {
   variant: ReportPreferenceCardVariant;
 };
 
+export type MonthlyReportAdjacentCard = MonthlyReportPersona & {
+  month: YearMonth;
+};
+
 export type MonthlyReport = {
+  adjacentCards: readonly MonthlyReportAdjacentCard[];
   categories: readonly { category: SpendingCategory; percentage: number }[];
   districts: readonly { name: string; visits: number }[];
   month: YearMonth;
   persona: MonthlyReportPersona;
   shops: readonly {
-    id: string;
+    id: string | null;
     months: number;
     name: string;
     rank: 1 | 2 | 3;

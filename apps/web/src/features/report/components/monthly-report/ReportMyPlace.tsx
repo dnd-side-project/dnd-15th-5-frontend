@@ -36,19 +36,32 @@ export default function ReportMyPlace({ districts }: ReportMyPlaceProps) {
           </p>
         </article>
         <div className="flex flex-col gap-3.75">
-          {otherDistricts.slice(0, 2).map((district) => (
-            <article
-              className="flex h-18.75 flex-col justify-center rounded-16 bg-neutral-100 p-4"
-              key={district.name}
-            >
-              <span className="text-label-01-medium text-neutral-500">
-                {district.visits}회 방문
-              </span>
-              <strong className="mt-1 text-body-01-semibold text-neutral-900">
-                {district.name}
-              </strong>
+          {otherDistricts.length === 0 ? (
+            <article className="flex h-41.25 items-center justify-center rounded-16 bg-neutral-50 px-4 text-center text-body-02-medium text-neutral-400">
+              한 동네에 진심이었던 달
             </article>
-          ))}
+          ) : (
+            <>
+              {otherDistricts.slice(0, 2).map((district) => (
+                <article
+                  className="flex h-18.75 flex-col justify-center rounded-16 bg-neutral-100 p-4"
+                  key={district.name}
+                >
+                  <span className="text-label-01-medium text-neutral-500">
+                    {district.visits}회 방문
+                  </span>
+                  <strong className="mt-1 text-body-01-semibold text-neutral-900">
+                    {district.name}
+                  </strong>
+                </article>
+              ))}
+              {otherDistricts.length === 1 && (
+                <article className="flex h-18.75 items-center justify-center rounded-16 bg-neutral-50 px-4 text-center text-body-02-medium text-neutral-400">
+                  두 동네에 진심이었던 달
+                </article>
+              )}
+            </>
+          )}
         </div>
       </div>
     </section>

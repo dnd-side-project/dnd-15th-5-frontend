@@ -58,7 +58,7 @@ export default function WeekdaySpendingChart({ insight, items }: WeekdaySpending
           );
         })}
       </ul>
-      <p className="mt-2.25 rounded-lg bg-primary-50 py-2 text-center text-body-02-medium text-primary-500">
+      <p className="mt-7 rounded-lg bg-primary-50 py-2 text-center text-body-02-medium text-primary-500">
         {insight}
       </p>
     </section>

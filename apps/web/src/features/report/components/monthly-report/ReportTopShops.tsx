@@ -1,15 +1,28 @@
-import { RankFirstIcon, RankSecondIcon, RankThirdIcon } from '@/shared/assets/icons';
+import { Link } from 'react-router-dom';
+
+import {
+  ChevronRightIcon,
+  RankFirstIcon,
+  RankSecondIcon,
+  RankThirdIcon,
+} from '@/shared/assets/icons';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 
 import ReportSectionTitle from './ReportSectionTitle';
 
 const RANK_ICONS = [RankFirstIcon, RankSecondIcon, RankThirdIcon] as const;
-const TOP_SHOP_LIMIT = 3;
+const SHOP_RANKS = [1, 2, 3] as const;
+const EMPTY_RANK_MESSAGES = {
+  1: '이번 달 순위가 비어 있어요',
+  2: '단골 한 곳에 올인했어요',
+  3: '이번달 단골은 여기까지',
+} as const;
 const MAX_VISIBLE_SHOP_STICKERS = 5;
 const SHOP_STICKER_SIZE = 60;
 const SHOP_STICKER_MORE_BADGE_SIZE = 30;
 
 type TopShop = {
-  id: string;
+  id: string | null;
   months: number;
   name: string;
   rank: 1 | 2 | 3;
@@ -30,10 +43,25 @@ export default function ReportTopShops({ shops }: ReportTopShopsProps) {
         title="이번달의 가게"
       />
       <div className="mt-3 flex flex-col gap-3.75">
-        {shops.slice(0, TOP_SHOP_LIMIT).map((shop) => {
-          const RankIcon = RANK_ICONS[shop.rank - 1];
+        {SHOP_RANKS.map((rank) => {
+          const RankIcon = RANK_ICONS[rank - 1];
+          const shop = shops.find((item) => item.rank === rank);
+
+          if (!shop) {
+            return (
+              <article
+                className="flex h-18.75 items-center gap-3 rounded-16 bg-neutral-50 p-4"
+                key={rank}
+              >
+                <RankIcon aria-label={`${rank}위`} className="h-10 w-9.5 shrink-0 opacity-40" />
+                <p className="text-body-01-medium text-neutral-400">{EMPTY_RANK_MESSAGES[rank]}</p>
+              </article>
+            );
+          }
+
           const visibleStickerImages = shop.stickerImages.slice(0, MAX_VISIBLE_SHOP_STICKERS);
           const additionalStickerCount = shop.stickerImages.length - visibleStickerImages.length;
+          const shouldSpreadStickers = shop.stickerImages.length >= MAX_VISIBLE_SHOP_STICKERS;
           const stickerItemCount =
             visibleStickerImages.length + (additionalStickerCount > 0 ? 1 : 0);
           const stickerNaturalWidth =
@@ -44,7 +72,7 @@ export default function ReportTopShops({ shops }: ReportTopShopsProps) {
           return (
             <article
               className={`overflow-hidden rounded-16 ${shop.rank === 1 ? 'bg-primary-50' : 'bg-neutral-50'}`}
-              key={shop.id}
+              key={rank}
             >
               <div className="flex w-full items-center gap-3 p-4 text-left">
                 <RankIcon aria-label={`${shop.rank}위`} className="h-10 w-9.5 shrink-0" />
@@ -58,15 +86,32 @@ export default function ReportTopShops({ shops }: ReportTopShopsProps) {
                     함께한 지 <em className="not-italic text-primary-400">{shop.months}개월째</em>
                   </span>
                 </span>
+                {shop.id && (
+                  <Link
+                    aria-label={`${shop.name} 상세보기`}
+                    className="flex size-8 shrink-0 items-center justify-center rounded-full text-neutral-500 outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                    to={ROUTE_PATHS.shopDetail(shop.id)}
+                  >
+                    <ChevronRightIcon aria-hidden className="size-4" />
+                  </Link>
+                )}
               </div>
               {shop.rank === 1 && visibleStickerImages.length > 0 && (
                 <div
                   aria-label={`1위 가게 스티커 ${visibleStickerImages.length}개, 추가 ${additionalStickerCount}개`}
-                  className="grid items-center px-4 pb-4"
-                  style={{
-                    columnGap: `max(0px, calc((100% - ${stickerNaturalWidth}px) / ${stickerGapCount}))`,
-                    gridTemplateColumns: `repeat(${Math.max(visibleStickerImages.length - 1, 0)}, minmax(0, 1fr)) ${SHOP_STICKER_SIZE}px ${additionalStickerCount > 0 ? `${SHOP_STICKER_MORE_BADGE_SIZE}px` : ''}`,
-                  }}
+                  className={
+                    shouldSpreadStickers
+                      ? 'grid items-center px-4 pb-4'
+                      : 'flex items-center gap-3 px-4 pb-4'
+                  }
+                  style={
+                    shouldSpreadStickers
+                      ? {
+                          columnGap: `max(0px, calc((100% - ${stickerNaturalWidth}px) / ${stickerGapCount}))`,
+                          gridTemplateColumns: `repeat(${Math.max(visibleStickerImages.length - 1, 0)}, minmax(0, 1fr)) ${SHOP_STICKER_SIZE}px ${additionalStickerCount > 0 ? `${SHOP_STICKER_MORE_BADGE_SIZE}px` : ''}`,
+                        }
+                      : undefined
+                  }
                 >
                   {visibleStickerImages.map((sticker, index) => (
                     <span className="min-w-0" key={`${sticker}-${index}`}>

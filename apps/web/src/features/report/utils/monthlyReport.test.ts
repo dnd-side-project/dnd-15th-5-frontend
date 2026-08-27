@@ -19,6 +19,7 @@ describe('mapMonthlyReportResponse', () => {
         placeRanks: [
           {
             rank: 1,
+            placeId: 42,
             placeName: '아오이 카페',
             visitCount: 5,
             firstVisitedDate: '2026-04-02',
@@ -31,13 +32,15 @@ describe('mapMonthlyReportResponse', () => {
           { category: '새 카테고리', percentage: 10 },
         ],
         timePattern: {
-          peakDayOfWeek: '금',
-          peakTimeSlot: '저녁',
+          peakDayOfWeek: 'WED',
+          peakTimeSlot: 'LUNCH',
           dayOfWeekPattern: [
             { dayOfWeek: 1, visitCount: 2 },
             { dayOfWeek: 5, visitCount: 9 },
           ],
         },
+        previous: { yearMonth: '2026-06', type: 'RHMP' },
+        next: { yearMonth: '2026-08', type: 'NWMF' },
       },
       { month: 7, year: 2026 }
     );
@@ -62,13 +65,17 @@ describe('mapMonthlyReportResponse', () => {
         { label: '동네 갯수', value: 6 },
         { label: '새 가게 수', value: 8 },
       ],
-      shops: [{ name: '아오이 카페', visits: 5, months: 4 }],
+      shops: [{ id: '42', name: '아오이 카페', visits: 5, months: 4 }],
       districts: [{ name: '연남동', visits: 5 }],
       categories: [
         { category: '카페', percentage: 60 },
         { category: '기타', percentage: 10 },
       ],
-      weekdayInsight: '금요일 저녁에 가장 많이 소비했어요',
+      weekdayInsight: '당신의 소비는 수요일 오후에 깨어나요 🌤️',
+      adjacentCards: [
+        { month: { month: 6, year: 2026 }, title: '골목 야간반장', variant: 'night-watch' },
+        { month: { month: 8, year: 2026 }, title: '미식 유목민', variant: 'food-nomad' },
+      ],
     });
     expect(report?.shops[0]?.stickerImages).toHaveLength(1);
     expect(report?.weekdaySpending).toEqual([
@@ -80,6 +87,23 @@ describe('mapMonthlyReportResponse', () => {
       { day: '토', count: 0 },
       { day: '일', count: 0 },
     ]);
+  });
+
+  it.each([
+    ['MORNING', '오전', '☀️'],
+    ['LUNCH', '오후', '🌤️'],
+    ['EVENING', '저녁', '🌆'],
+    ['NIGHT', '밤', '🌙'],
+  ])('%s 시간대를 한글과 알맞은 이모티콘으로 표시한다', (peakTimeSlot, label, emoji) => {
+    const report = mapMonthlyReportResponse(
+      {
+        reportId: 1,
+        timePattern: { peakDayOfWeek: 'FRI', peakTimeSlot },
+      },
+      { month: 7, year: 2026 }
+    );
+
+    expect(report?.weekdayInsight).toBe(`당신의 소비는 금요일 ${label}에 깨어나요 ${emoji}`);
   });
 
   it.each([

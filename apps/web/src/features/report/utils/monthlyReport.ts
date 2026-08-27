@@ -3,8 +3,15 @@ import {
   REPORT_PERSONA_COPY,
   REPORT_PERSONA_TAGS,
   REPORT_PERSONA_VARIANTS,
+  REPORT_TIME_SLOT_EMOJIS,
+  REPORT_TIME_SLOT_LABELS,
+  REPORT_WEEKDAY_LABELS,
 } from '@/features/report/constants';
-import type { MonthlyReport, ReportPreferenceCardVariant } from '@/features/report/types';
+import type {
+  MonthlyReport,
+  MonthlyReportAdjacentCard,
+  ReportPreferenceCardVariant,
+} from '@/features/report/types';
 import { getStickerImageByName } from '@/shared/assets/images/stickers';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { getMonthDifference, parseYearMonth } from '@/shared/utils/yearMonth';
@@ -69,6 +76,27 @@ const createPersonaTags = (axes: PersonaAxes | null, fallbackTags?: readonly str
   ];
 };
 
+const mapAdjacentPersona = (
+  yearMonth: string | undefined,
+  type: string | undefined
+): MonthlyReportAdjacentCard | undefined => {
+  const month = parseYearMonth(yearMonth);
+  const axes = parsePersonaAxes(type);
+  if (!month || !axes) return undefined;
+
+  const variant = resolvePersonaVariant(type);
+  const copy = REPORT_PERSONA_COPY[variant];
+
+  return {
+    description: copy.description,
+    metrics: [],
+    month,
+    tags: createPersonaTags(axes, copy.tags),
+    title: copy.title,
+    variant,
+  };
+};
+
 const calculateKnownMonthCount = (firstVisitedDate: string | undefined, reportMonth: YearMonth) => {
   const firstVisitedMonth = parseYearMonth(firstVisitedDate?.slice(0, 7));
   if (!firstVisitedMonth) return 1;
@@ -77,12 +105,15 @@ const calculateKnownMonthCount = (firstVisitedDate: string | undefined, reportMo
 };
 
 const createWeekdayInsight = (peakDayOfWeek?: string, peakTimeSlot?: string) => {
-  const day = peakDayOfWeek?.trim();
-  const time = peakTimeSlot?.trim();
+  const rawDay = peakDayOfWeek?.trim();
+  const rawTime = peakTimeSlot?.trim();
+  const day = rawDay ? (REPORT_WEEKDAY_LABELS[rawDay.toUpperCase()] ?? rawDay) : undefined;
+  const time = rawTime ? (REPORT_TIME_SLOT_LABELS[rawTime.toUpperCase()] ?? rawTime) : undefined;
   if (!day && !time) return '요일별 소비 패턴을 확인해 보세요';
 
   const dayLabel = day ? (day.endsWith('요일') ? day : `${day}요일`) : '';
-  return `${[dayLabel, time].filter(Boolean).join(' ')}에 가장 많이 소비했어요`;
+  const emoji = time ? REPORT_TIME_SLOT_EMOJIS[time] : undefined;
+  return `당신의 소비는 ${[dayLabel, time].filter(Boolean).join(' ')}에 깨어나요${emoji ? ` ${emoji}` : ''}`;
 };
 
 /** 월간 리포트 API 응답을 상세 화면에서 사용하는 안전한 표시 모델로 변환합니다. */
@@ -109,6 +140,10 @@ export const mapMonthlyReportResponse = (
   const personaCopy = REPORT_PERSONA_COPY[personaVariant];
 
   return {
+    adjacentCards: [
+      mapAdjacentPersona(response.previous?.yearMonth, response.previous?.type),
+      mapAdjacentPersona(response.next?.yearMonth, response.next?.type),
+    ].filter((card): card is MonthlyReportAdjacentCard => Boolean(card)),
     month: reportMonth,
     persona: {
       description: personaCopy.description,
@@ -150,7 +185,7 @@ export const mapMonthlyReportResponse = (
 
       return [
         {
-          id: `${rank}-${name}`,
+          id: shop.placeId === undefined ? null : String(shop.placeId),
           months: calculateKnownMonthCount(shop.firstVisitedDate, reportMonth),
           name,
           rank: rank as 1 | 2 | 3,

@@ -52,9 +52,11 @@ export const useMonthlyReport = () => {
   const hasNewerMonth = selectedMonthIndex > 0;
   const hasOlderMonth = selectedMonthIndex < selectableMonths.length - 1;
   const reportCards = report
-    ? [{ ...report.persona, id: selectedYearMonth, month: selectedMonth }]
+    ? [...report.adjacentCards, { ...report.persona, month: selectedMonth }]
+        .map((card) => ({ ...card, id: formatYearMonth(card.month) }))
+        .sort((left, right) => left.id.localeCompare(right.id))
     : [];
-  const selectedCardIndex = report ? 0 : -1;
+  const selectedCardIndex = reportCards.findIndex((card) => card.id === selectedYearMonth);
   const hasReportError =
     monthlyReportQuery.isError &&
     !(isAxiosError(monthlyReportQuery.error) && monthlyReportQuery.error.response?.status === 404);

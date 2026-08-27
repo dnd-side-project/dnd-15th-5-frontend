@@ -56,6 +56,33 @@ export const REPORT_PERSONA_TAGS = {
   consumptionRhythm: { P: '규칙적', F: '즉흥적' },
 } as const;
 
+/** 월간 리포트의 주요 소비 시간대별 이모티콘입니다. */
+export const REPORT_TIME_SLOT_EMOJIS: Record<string, string> = {
+  오전: '☀️',
+  오후: '🌤️',
+  저녁: '🌆',
+  밤: '🌙',
+};
+
+/** 백엔드의 주요 소비 시간대 코드를 한글 표기로 변환합니다. */
+export const REPORT_TIME_SLOT_LABELS: Record<string, string> = {
+  MORNING: '오전',
+  LUNCH: '오후',
+  EVENING: '저녁',
+  NIGHT: '밤',
+};
+
+/** 백엔드의 주요 소비 요일 코드를 한글 축약 표기로 변환합니다. */
+export const REPORT_WEEKDAY_LABELS: Record<string, string> = {
+  MON: '월',
+  TUE: '화',
+  WED: '수',
+  THU: '목',
+  FRI: '금',
+  SAT: '토',
+  SUN: '일',
+};
+
 /** 월간 리포트 카테고리 차트에 사용하는 색상 토큰입니다. */
 export const REPORT_CATEGORY_COLOR_CLASS_NAMES: Record<SpendingCategory, string> = {
   카페: 'bg-report-category-cafe',
@@ -64,7 +91,7 @@ export const REPORT_CATEGORY_COLOR_CLASS_NAMES: Record<SpendingCategory, string>
   '편의점/마트': 'bg-report-category-market',
   '취미/놀거리': 'bg-report-category-entertainment',
   '미용/뷰티': 'bg-report-category-beauty',
-  기타: 'bg-neutral-300',
+  기타: 'bg-neutral-500',
 };
 
 /** 요일 축약 표기를 접근성 안내에 사용하는 전체 이름으로 변환합니다. */
