@@ -89,4 +89,57 @@ describe('useTogglePlaceLikeMutation', () => {
       message: '좋아요 상태를 변경하지 못했어요. 잠시 후 다시 시도해주세요.',
     });
   });
+
+  it('서로 다른 장소의 요청이 겹칠 때 실패한 장소만 이전 상태로 되돌린다', async () => {
+    let rejectFirstRequest: ((reason: Error) => void) | undefined;
+    let resolveSecondRequest:
+      ((response: Awaited<ReturnType<typeof toggleLike>>) => void) | undefined;
+    mockedToggleLike.mockImplementation((placeId) => {
+      if (placeId === 101) {
+        return new Promise((_, reject) => {
+          rejectFirstRequest = reject;
+        });
+      }
+
+      return new Promise((resolve) => {
+        resolveSecondRequest = resolve;
+      });
+    });
+    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const recommendationKey = ['/recommendations/nearby-places', { lat: 37.5, lng: 127 }] as const;
+    queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
+      data: {
+        sameCategoryPlaces: [
+          { placeId: 101, liked: false },
+          { placeId: 202, liked: false },
+        ],
+      },
+    });
+    const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    let firstRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    let secondRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    await act(async () => {
+      firstRequest = result.current.mutateAsync({ placeId: 101 });
+      secondRequest = result.current.mutateAsync({ placeId: 202 });
+      await Promise.resolve();
+    });
+
+    resolveSecondRequest?.({ data: { liked: true } });
+    await act(async () => {
+      await secondRequest;
+    });
+    rejectFirstRequest?.(new Error('first request failed'));
+    await act(async () => {
+      await expect(firstRequest).rejects.toThrow('first request failed');
+    });
+
+    const places =
+      queryClient.getQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey)?.data
+        ?.sameCategoryPlaces;
+    expect(places?.find(({ placeId }) => placeId === 101)?.liked).toBe(false);
+    expect(places?.find(({ placeId }) => placeId === 202)?.liked).toBe(true);
+  });
 });

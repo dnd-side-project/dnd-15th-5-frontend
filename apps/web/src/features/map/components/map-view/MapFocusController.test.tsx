@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { StrictMode } from 'react';
 
 import { SELECTED_PLACE_MAP_ZOOM } from '../../constants';
@@ -79,5 +79,34 @@ describe('MapFocusController', () => {
     fireIdle();
 
     expect(panBy).toHaveBeenCalledTimes(1);
+  });
+
+  it('새 포커스가 들어오면 이전 지연 오프셋을 취소하고 최신 위치에만 적용한다', () => {
+    const firstPosition = { lat: 37.5665, lng: 126.978 };
+    const nextPosition = { lat: 35.1796, lng: 129.0756 };
+    useMapFocusStore.setState({ focusPosition: firstPosition });
+    render(<MapFocusController />);
+    const firstIdleListener = idleListeners[0];
+
+    act(() => {
+      useMapFocusStore.setState({ focusPosition: nextPosition });
+    });
+    fireIdle();
+
+    expect(firstIdleListener).toBeDefined();
+    expect(removeListener).toHaveBeenCalledWith(firstIdleListener);
+    expect(moveCamera).toHaveBeenLastCalledWith({ center: nextPosition });
+    expect(panBy).toHaveBeenCalledTimes(1);
+  });
+
+  it('unmount 시 아직 대기 중인 오프셋을 취소한다', () => {
+    useMapFocusStore.setState({ focusPosition: { lat: 37.5665, lng: 126.978 } });
+    const { unmount } = render(<MapFocusController />);
+    const idleListener = idleListeners[0];
+
+    unmount();
+
+    expect(idleListener).toBeDefined();
+    expect(removeListener).toHaveBeenCalledWith(idleListener);
   });
 });

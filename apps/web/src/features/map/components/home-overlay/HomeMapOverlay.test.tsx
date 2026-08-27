@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
@@ -52,5 +52,20 @@ describe('HomeMapOverlay', () => {
 
     expect(useHomeBottomSheetStore.getState().topActionBottomPx).toBe(96);
     boundingClientRectSpy.mockRestore();
+  });
+
+  it('방문 장소 응답이 아직 없으면 0곳으로 표시하지 않는다', () => {
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      monthlyPlaceCount: undefined,
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+
+    render(
+      <MemoryRouter>
+        <HomeMapOverlay />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByText('0곳 기록')).not.toBeInTheDocument();
+    expect(screen.queryByText(/곳 기록/)).not.toBeInTheDocument();
   });
 });

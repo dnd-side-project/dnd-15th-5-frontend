@@ -6,7 +6,7 @@ import CurrentLocationCameraController from '@/features/map/components/current-l
 import CurrentLocationMarker from '@/features/map/components/current-location/CurrentLocationMarker';
 import RecommendationMapMarkers from '@/features/map/components/RecommendationMapMarkers';
 import MapStickers from '@/features/map/components/stickers/MapStickers';
-import { MAP_DEFAULT_CENTER, MAP_DEFAULT_ZOOM } from '@/features/map/constants';
+import { MAP_DEFAULT_ZOOM } from '@/features/map/constants';
 import { useCurrentPosition } from '@/features/map/hooks/useCurrentPosition';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useMapViewportStore } from '@/features/map/stores/mapViewportStore';
@@ -25,6 +25,7 @@ export default function GoogleMapView() {
   const [showLocationError, setShowLocationError] = useState(false);
   const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
+  const mapCenter = useMapViewportStore((state) => state.center);
   const setMapCenter = useMapViewportStore((state) => state.setCenter);
 
   const handleMapClick = () => {
@@ -45,7 +46,7 @@ export default function GoogleMapView() {
     <Map
       className="h-full w-full"
       mapId={GOOGLE_MAPS_MAP_ID}
-      defaultCenter={MAP_DEFAULT_CENTER}
+      defaultCenter={mapCenter}
       defaultZoom={MAP_DEFAULT_ZOOM}
       gestureHandling="greedy"
       disableDefaultUI

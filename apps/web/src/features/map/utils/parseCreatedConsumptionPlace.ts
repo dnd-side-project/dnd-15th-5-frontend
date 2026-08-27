@@ -14,10 +14,24 @@ export const parseCreatedConsumptionPlace = (
     return undefined;
   }
 
-  const latitude = Number(latitudeValue);
-  const longitude = Number(longitudeValue);
+  const normalizedLatitude = latitudeValue.trim();
+  const normalizedLongitude = longitudeValue.trim();
 
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+  if (!normalizedLatitude || !normalizedLongitude) {
+    return undefined;
+  }
+
+  const latitude = Number(normalizedLatitude);
+  const longitude = Number(normalizedLongitude);
+
+  if (
+    !Number.isFinite(latitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    !Number.isFinite(longitude) ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
     return undefined;
   }
 

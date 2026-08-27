@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { MAP_DEFAULT_CENTER } from '../../constants';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
+import { useMapViewportStore } from '../../stores/mapViewportStore';
 
 import GoogleMapView from './GoogleMapView';
 
@@ -11,6 +13,7 @@ const requestPosition = jest.fn();
 let clickableIcons: boolean | undefined;
 let disableDefaultUI: boolean | undefined;
 let mockIsAutomaticPanEnabled: boolean | undefined;
+let defaultCenter: { lat: number; lng: number } | undefined;
 
 jest.mock('@vis.gl/react-google-maps', () => ({
   Map: ({
@@ -18,13 +21,16 @@ jest.mock('@vis.gl/react-google-maps', () => ({
     onClick,
     clickableIcons: nextClickableIcons,
     disableDefaultUI: nextDisableDefaultUI,
+    defaultCenter: nextDefaultCenter,
   }: PropsWithChildren<{
     onClick?: () => void;
     clickableIcons?: boolean;
     disableDefaultUI?: boolean;
+    defaultCenter?: { lat: number; lng: number };
   }>) => {
     clickableIcons = nextClickableIcons;
     disableDefaultUI = nextDisableDefaultUI;
+    defaultCenter = nextDefaultCenter;
 
     return (
       <>
@@ -83,7 +89,9 @@ describe('GoogleMapView', () => {
     clickableIcons = undefined;
     disableDefaultUI = undefined;
     mockIsAutomaticPanEnabled = undefined;
+    defaultCenter = undefined;
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
+    useMapViewportStore.setState({ center: MAP_DEFAULT_CENTER });
   });
 
   it('Google 기본 UI와 POI 아이콘 클릭을 비활성화한다', () => {
@@ -99,6 +107,15 @@ describe('GoogleMapView', () => {
     render(<GoogleMapView />);
 
     expect(mockIsAutomaticPanEnabled).toBe(false);
+  });
+
+  it('다시 마운트할 때 저장된 추천 조회 중심을 지도의 초기 중심으로 복원한다', () => {
+    const savedCenter = { lat: 37.501, lng: 127.039 };
+    useMapViewportStore.setState({ center: savedCenter });
+
+    render(<GoogleMapView />);
+
+    expect(defaultCenter).toEqual(savedCenter);
   });
 
   it('현재 위치 오류 안내가 표시된 상태에서 지도를 누르면 안내를 숨긴다', async () => {

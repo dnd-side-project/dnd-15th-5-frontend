@@ -12,27 +12,35 @@ import {
 } from '@/features/map/apis/queryKeys';
 import { useToast } from '@/shared/ui/toast';
 
-import type { QueryClient, QueryKey } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 
 const LIKE_ERROR_MESSAGE = '좋아요 상태를 변경하지 못했어요. 잠시 후 다시 시도해주세요.';
 const NEARBY_PLACES_QUERY_KEY = getGetNearbyPlacesQueryKey();
 const VISITED_PLACES_QUERY_KEY = getGetVisitedPlaceMarkersQueryKey();
 
-type LikeSnapshot = {
-  nearbyPlaces: Array<[QueryKey, ApiResponseNearbyPlacesResponse | undefined]>;
-  visitedPlaces: Array<[QueryKey, ApiResponseVisitedPlaceMarkerResponse | undefined]>;
+type LikeMutationContext = {
+  optimisticLiked: boolean;
+  previousLiked: boolean | undefined;
 };
+
+type LikeStateUpdater = (liked: boolean | undefined) => boolean | undefined;
 
 const updateRecommendedPlaces = (
   places: RecommendedPlaceItem[] | undefined,
   placeId: number,
-  liked: boolean
-) => places?.map((place) => (place.placeId === placeId ? { ...place, liked } : place));
+  updateLiked: LikeStateUpdater
+) =>
+  places?.map((place) => {
+    if (place.placeId !== placeId) return place;
+
+    const liked = updateLiked(place.liked);
+    return liked === place.liked ? place : { ...place, liked };
+  });
 
 const updateNearbyPlacesResponse = (
   response: ApiResponseNearbyPlacesResponse | undefined,
   placeId: number,
-  liked: boolean
+  updateLiked: LikeStateUpdater
 ) =>
   response
     ? {
@@ -43,9 +51,13 @@ const updateNearbyPlacesResponse = (
               sameCategoryPlaces: updateRecommendedPlaces(
                 response.data.sameCategoryPlaces,
                 placeId,
-                liked
+                updateLiked
               ),
-              myTownPlaces: updateRecommendedPlaces(response.data.myTownPlaces, placeId, liked),
+              myTownPlaces: updateRecommendedPlaces(
+                response.data.myTownPlaces,
+                placeId,
+                updateLiked
+              ),
             }
           : response.data,
       }
@@ -54,7 +66,7 @@ const updateNearbyPlacesResponse = (
 const updateVisitedPlacesResponse = (
   response: ApiResponseVisitedPlaceMarkerResponse | undefined,
   placeId: number,
-  liked: boolean
+  updateLiked: LikeStateUpdater
 ) =>
   response
     ? {
@@ -62,22 +74,29 @@ const updateVisitedPlacesResponse = (
         data: response.data
           ? {
               ...response.data,
-              places: response.data.places?.map((place) =>
-                place.placeId === placeId ? { ...place, liked } : place
-              ),
+              places: response.data.places?.map((place) => {
+                if (place.placeId !== placeId) return place;
+
+                const liked = updateLiked(place.liked);
+                return liked === place.liked ? place : { ...place, liked };
+              }),
             }
           : response.data,
       }
     : response;
 
-const setCachedLikeState = (queryClient: QueryClient, placeId: number, liked: boolean) => {
+const updateCachedLikeState = (
+  queryClient: QueryClient,
+  placeId: number,
+  updateLiked: LikeStateUpdater
+) => {
   queryClient.setQueriesData<ApiResponseNearbyPlacesResponse>(
     { queryKey: NEARBY_PLACES_QUERY_KEY },
-    (response) => updateNearbyPlacesResponse(response, placeId, liked)
+    (response) => updateNearbyPlacesResponse(response, placeId, updateLiked)
   );
   queryClient.setQueriesData<ApiResponseVisitedPlaceMarkerResponse>(
     { queryKey: VISITED_PLACES_QUERY_KEY },
-    (response) => updateVisitedPlacesResponse(response, placeId, liked)
+    (response) => updateVisitedPlacesResponse(response, placeId, updateLiked)
   );
 };
 
@@ -90,7 +109,7 @@ export const useTogglePlaceLikeMutation = () => {
     Awaited<ReturnType<typeof toggleLike>>,
     Error,
     { placeId: number },
-    LikeSnapshot
+    LikeMutationContext
   >({
     mutationFn: ({ placeId }) => toggleLike(placeId),
     onMutate: async ({ placeId }) => {
@@ -114,26 +133,26 @@ export const useTogglePlaceLikeMutation = () => {
       const currentVisitedPlace = visitedPlaces
         .flatMap(([, response]) => response?.data?.places ?? [])
         .find((place) => place.placeId === placeId);
-      const nextLiked = !(currentRecommendation?.liked ?? currentVisitedPlace?.liked ?? false);
+      const previousLiked = currentRecommendation?.liked ?? currentVisitedPlace?.liked;
+      const optimisticLiked = !(previousLiked ?? false);
 
-      setCachedLikeState(queryClient, placeId, nextLiked);
+      updateCachedLikeState(queryClient, placeId, () => optimisticLiked);
 
-      return { nearbyPlaces, visitedPlaces };
+      return { optimisticLiked, previousLiked };
     },
-    onError: (_error, _variables, snapshot) => {
-      snapshot?.nearbyPlaces.forEach(([queryKey, data]) =>
-        queryClient.setQueryData(queryKey, data)
-      );
-      snapshot?.visitedPlaces.forEach(([queryKey, data]) =>
-        queryClient.setQueryData(queryKey, data)
-      );
+    onError: (_error, { placeId }, context) => {
+      if (context) {
+        updateCachedLikeState(queryClient, placeId, (liked) =>
+          liked === context.optimisticLiked ? context.previousLiked : liked
+        );
+      }
       showToast({ type: 'error', message: LIKE_ERROR_MESSAGE });
     },
     onSuccess: (response, { placeId }) => {
       const liked = response.data?.liked;
       if (liked === undefined) return;
 
-      setCachedLikeState(queryClient, placeId, liked);
+      updateCachedLikeState(queryClient, placeId, () => liked);
     },
     onSettled: async () => {
       await Promise.all([

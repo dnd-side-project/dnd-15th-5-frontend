@@ -141,11 +141,8 @@ export type ReceiptOcrResponse = {
    * @nullable
    */
   amount?: number | null;
-  /**
-   * OCR 결과로 조회한 Google Place 검색 결과
-   * @nullable
-   */
-  googlePlaceSearchResult?: GooglePlaceSearchResultResponse;
+  /** OCR 결과로 조회한 Google Place 검색 결과 */
+  googlePlaceSearchResult?: GooglePlaceSearchResultResponse | null;
 };
 
 export type ApiResponseReceiptOcrResponse = {

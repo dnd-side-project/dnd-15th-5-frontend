@@ -67,6 +67,10 @@ describe('ShopDetail', () => {
     } as unknown as ReturnType<typeof usePlaceVisitsInfiniteQuery>);
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it('매장 정보는 고정 영역에 두고 주소 아래를 방문 기록 스크롤 영역으로 표시한다', () => {
     jest.useFakeTimers().setSystemTime(new Date(2026, 7, 27));
 
@@ -98,8 +102,6 @@ describe('ShopDetail', () => {
     expect(within(scrollRegion).getByText('3주일 전')).toBeInTheDocument();
     expect(within(scrollRegion).getByText('8월 23일')).toBeInTheDocument();
     expect(within(scrollRegion).getByText('23,000원')).toBeInTheDocument();
-
-    jest.useRealTimers();
   });
 
   it('소비 기록 추가 링크를 제공하고 지도 버튼 동작을 바깥으로 전달한다', async () => {

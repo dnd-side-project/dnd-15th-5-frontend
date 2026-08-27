@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react';
+import { StrictMode } from 'react';
 
 import { mockGoogleMapsIdleEvent } from '../../googleMapsEventMock';
 import { getFocusedMarkerVerticalOffset } from '../../utils/focusMapOnPosition';
@@ -61,5 +62,26 @@ describe('<CurrentLocationCameraController />', () => {
     rerender(<CurrentLocationCameraController isAutomaticPanEnabled position={position} />);
 
     expect(moveCamera).not.toHaveBeenCalled();
+  });
+
+  it('StrictMode 사전 cleanup 뒤에도 지연된 바텀시트 오프셋을 한 번 적용한다', () => {
+    let idleCallback: (() => void) | undefined;
+    const { addListenerOnce, removeListener } = mockGoogleMapsIdleEvent();
+    addListenerOnce.mockImplementation((_target, _eventName, callback) => {
+      idleCallback = callback;
+      return { remove: jest.fn() };
+    });
+    const position = { lat: 37.5665, lng: 126.978 };
+
+    render(
+      <StrictMode>
+        <CurrentLocationCameraController isAutomaticPanEnabled position={position} />
+      </StrictMode>
+    );
+    idleCallback?.();
+
+    expect(addListenerOnce).toHaveBeenCalledTimes(2);
+    expect(removeListener).toHaveBeenCalledTimes(1);
+    expect(panBy).toHaveBeenCalledTimes(1);
   });
 });

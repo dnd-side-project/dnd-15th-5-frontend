@@ -265,6 +265,38 @@ describe('HomeBottomSheet', () => {
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
   });
 
+  it('조회에 성공했지만 선택한 추천이 없으면 재요청 대신 지도 홈으로 돌아간다', async () => {
+    const user = userEvent.setup();
+    useHomeBottomSheetStore.setState({
+      activeSheet: { type: 'likedRecommendation', recommendationId: 'missing-recommendation' },
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => (
+            <div>
+              {headerContent}
+              기존 홈 시트
+            </div>
+          )}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: '선택한 가게를 찾을 수 없어요' })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '다시 불러오기' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '지도 홈으로' }));
+
+    expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
+  });
+
   it('가게 추천 칩을 다시 누르면 추천 시트를 닫고 기존 홈 시트를 복원한다', async () => {
     const user = userEvent.setup();
     render(

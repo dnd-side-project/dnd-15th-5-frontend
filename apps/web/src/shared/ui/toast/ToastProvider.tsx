@@ -54,9 +54,11 @@ function ToastList({
 
 function ToastViewport({ placement }: { placement: WebToastData['placement'] }) {
   const { toasts } = BaseToast.useToastManager<WebToastData>();
-  const visibleToasts = toasts.filter(
-    (toast) => !toast.limited && (toast.data?.placement ?? 'default') === (placement ?? 'default')
-  );
+  const visibleToasts = toasts
+    .filter(
+      (toast) => !toast.limited && (toast.data?.placement ?? 'default') === (placement ?? 'default')
+    )
+    .slice(0, MAX_VISIBLE_TOASTS);
   const isAboveBottomSheet = placement === 'above-bottom-sheet';
 
   return (
@@ -79,7 +81,7 @@ function ToastViewport({ placement }: { placement: WebToastData['placement'] }) 
  *
  * 앱 루트에 한 번 배치하고 하위 컴포넌트에서 `useToast`를 사용합니다.
  * Toast는 자동으로 닫히며 아래 방향 스와이프 또는 `closeToast`로도 닫을 수 있습니다.
- * 동시에 노출할 수 있는 개수는 공통 `MAX_VISIBLE_TOASTS` 값을 따릅니다.
+ * 배치 위치별로 동시에 노출할 수 있는 개수는 공통 `MAX_VISIBLE_TOASTS` 값을 따릅니다.
  *
  * @example
  * ```tsx
@@ -93,8 +95,9 @@ function ToastViewport({ placement }: { placement: WebToastData['placement'] }) 
  * @param props.duration - Toast의 기본 노출 시간(ms)입니다.
  */
 export function ToastProvider({ children, duration = DEFAULT_TOAST_DURATION }: ToastProviderProps) {
+  // Base UI의 limit은 Provider 전체에 적용되므로, 실제 노출 제한은 각 Viewport에서 배치별로 적용한다.
   return (
-    <BaseToast.Provider timeout={duration} limit={MAX_VISIBLE_TOASTS}>
+    <BaseToast.Provider timeout={duration} limit={Number.MAX_SAFE_INTEGER}>
       {children}
       <BaseToast.Portal>
         <ToastViewport placement="default" />

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 
 import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from './constants';
 
@@ -140,6 +140,23 @@ describe('Toast', () => {
     expect(screen.getAllByRole('dialog')).toHaveLength(3);
     expect(screen.queryByText('Toast 1')).not.toBeInTheDocument();
     expect(screen.getByText('Toast 4')).toBeInTheDocument();
+  });
+
+  it('한 배치가 최대 개수에 도달해도 다른 배치의 Toast를 숨기지 않는다', () => {
+    render(
+      <ToastProvider duration={0}>
+        <ToastFixture />
+      </ToastProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '4개 열기' }));
+    fireEvent.click(screen.getByRole('button', { name: '바텀시트 위 열기' }));
+
+    expect(within(screen.getByTestId('toast-viewport')).getAllByRole('dialog')).toHaveLength(3);
+    expect(
+      within(screen.getByTestId('toast-viewport-above-bottom-sheet')).getAllByRole('dialog')
+    ).toHaveLength(1);
+    expect(screen.getByText('방문기록이 등록되었어요')).toBeInTheDocument();
   });
 
   it.each(TOAST_PRESENTATIONS)(

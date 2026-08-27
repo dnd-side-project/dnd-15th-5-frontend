@@ -27,4 +27,33 @@ describe('parseCreatedConsumptionPlace', () => {
       )
     ).toBeUndefined();
   });
+
+  it('비어 있는 좌표 문자열은 0으로 해석하지 않는다', () => {
+    expect(
+      parseCreatedConsumptionPlace(
+        new URLSearchParams({
+          createdPlaceName: '카페 차차',
+          createdPlaceLat: '   ',
+          createdPlaceLng: '127',
+        })
+      )
+    ).toBeUndefined();
+  });
+
+  it.each([
+    ['91', '127'],
+    ['-91', '127'],
+    ['37', '181'],
+    ['37', '-181'],
+  ])('위경도 범위를 벗어난 좌표(%s, %s)는 복원하지 않는다', (latitude, longitude) => {
+    expect(
+      parseCreatedConsumptionPlace(
+        new URLSearchParams({
+          createdPlaceName: '카페 차차',
+          createdPlaceLat: latitude,
+          createdPlaceLng: longitude,
+        })
+      )
+    ).toBeUndefined();
+  });
 });

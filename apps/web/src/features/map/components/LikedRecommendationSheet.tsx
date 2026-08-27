@@ -34,7 +34,7 @@ export default function LikedRecommendationSheet({
     );
   }
 
-  if (isError || !recommendation) {
+  if (isError) {
     return (
       <StateView
         variant="error"
@@ -43,6 +43,20 @@ export default function LikedRecommendationSheet({
         description="잠시 후 다시 시도해주세요."
         actionLabel="다시 불러오기"
         onAction={() => void refetch()}
+        className="py-6"
+      />
+    );
+  }
+
+  if (!recommendation) {
+    return (
+      <StateView
+        variant="empty"
+        headingAs="h1"
+        title="선택한 가게를 찾을 수 없어요"
+        description="지도에서 다른 가게를 선택해주세요."
+        actionLabel="지도 홈으로"
+        onAction={showHome}
         className="py-6"
       />
     );

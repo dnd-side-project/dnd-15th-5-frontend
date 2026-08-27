@@ -20,7 +20,7 @@ const QUICK_LINKS: ReadonlyArray<{
 ];
 
 type HomeTopBarProps = {
-  recordedShopCount: number;
+  recordedShopCount: number | undefined;
 };
 
 /**

@@ -18,7 +18,8 @@ export const useVisitedPlaceStickersQuery = () => {
     ...query,
     stickers,
     month: query.data?.data?.month,
-    monthlyPlaceCount: query.data?.data?.monthlyPlaceCount ?? 0,
+    monthlyPlaceCount:
+      query.data?.data === undefined ? undefined : (query.data.data.monthlyPlaceCount ?? 0),
     refetchStickers,
   };
 };
