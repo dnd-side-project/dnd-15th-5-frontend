@@ -91,13 +91,8 @@ export default function ReceiptReviewForm({
   const insets = useSafeAreaInsets();
   const shopName = initialShopName;
   const shopAddress = initialShopAddress;
-  const [isShopPhotoError, setIsShopPhotoError] = useState(false);
-  const [prevShopPhotoUrl, setPrevShopPhotoUrl] = useState(initialShopPhotoUrl);
-
-  if (initialShopPhotoUrl !== prevShopPhotoUrl) {
-    setPrevShopPhotoUrl(initialShopPhotoUrl);
-    setIsShopPhotoError(false);
-  }
+  const [failedShopPhotoUrl, setFailedShopPhotoUrl] = useState<string | null>(null);
+  const hasShopPhoto = Boolean(initialShopPhotoUrl) && initialShopPhotoUrl !== failedShopPhotoUrl;
 
   const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(
     () => initialVisitDateTime ?? createInitialVisitDateTime()
@@ -112,8 +107,8 @@ export default function ReceiptReviewForm({
       shopName.trim().length > 0 &&
       shopAddress.trim().length > 0 &&
       Boolean(initialShopId) &&
-      initialLatitude !== null &&
-      initialLongitude !== null,
+      Number.isFinite(initialLatitude) &&
+      Number.isFinite(initialLongitude),
     amount,
   });
   const hasShopError = !isShopValid;
@@ -200,13 +195,13 @@ export default function ReceiptReviewForm({
                 hasShopError ? 'border-notification' : 'border-neutral-300'
               }`}
             >
-              {initialShopPhotoUrl && !isShopPhotoError ? (
+              {initialShopPhotoUrl && hasShopPhoto ? (
                 <Image
                   source={{ uri: initialShopPhotoUrl }}
                   accessibilityLabel="가게 사진"
                   className="h-15 w-15 rounded-08 bg-neutral-100"
                   resizeMode="cover"
-                  onError={() => setIsShopPhotoError(true)}
+                  onError={() => setFailedShopPhotoUrl(initialShopPhotoUrl)}
                 />
               ) : (
                 <View
@@ -227,6 +222,7 @@ export default function ReceiptReviewForm({
                   {isShopValid ? shopName : '가게를 찾지 못했습니다'}
                 </Text>
                 <View className="mt-2 flex-row items-center gap-0.5">
+                  {/* #cacaca = neutral-300 */}
                   <LocationPinIcon width={9} height={12} color="#cacaca" />
                   <Text
                     accessibilityLabel="가게 주소"

@@ -101,14 +101,17 @@ describe('<ReceiptReviewForm />', () => {
   });
 
   it('가게 사진을 불러오지 못하면 기본 썸네일로 대체한다', async () => {
-    const { getByLabelText, queryByLabelText } = await render(
+    const commonProps = {
+      receiptUri: 'file://receipt.jpg',
+      initialShopName: '투썸플레이스 신논현점',
+      initialShopAddress: '서울특별시 강남구 봉은사로 125',
+      onBack: jest.fn(),
+      onClose: jest.fn(),
+    };
+    const { getByLabelText, queryByLabelText, rerender } = await render(
       <ReceiptReviewForm
-        receiptUri="file://receipt.jpg"
-        initialShopName="투썸플레이스 신논현점"
-        initialShopAddress="서울특별시 강남구 봉은사로 125"
+        {...commonProps}
         initialShopPhotoUrl="https://places.example.com/broken.jpg"
-        onBack={jest.fn()}
-        onClose={jest.fn()}
       />
     );
 
@@ -121,6 +124,17 @@ describe('<ReceiptReviewForm />', () => {
 
     expect(queryByLabelText('가게 사진')).toBeNull();
     expect(getByLabelText('가게 사진 없음')).toBeOnTheScreen();
+
+    await rerender(
+      <ReceiptReviewForm
+        {...commonProps}
+        initialShopPhotoUrl="https://places.example.com/replaced.jpg"
+      />
+    );
+
+    expect(getByLabelText('가게 사진')).toHaveProp('source', {
+      uri: 'https://places.example.com/replaced.jpg',
+    });
   });
 
   it('방문 일시 영역을 누르면 날짜 선택 바텀시트를 연다', async () => {
@@ -243,7 +257,7 @@ describe('<ReceiptReviewForm />', () => {
     expect(queryByText('필수항목을 작성해주세요')).toBeNull();
   });
 
-  it('가게가 비어 있으면 제출 시 가게 영역과 필수 항목 안내를 표시한다', async () => {
+  it('가게가 비어 있으면 오류 상태를 표시하고 제출을 막는다', async () => {
     const user = userEvent.setup();
     const { getByRole, getByTestId, getByText } = await render(
       <ReceiptReviewForm
