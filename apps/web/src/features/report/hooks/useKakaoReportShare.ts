@@ -69,7 +69,7 @@ export const useKakaoReportShare = ({
           imageHeight: uploadedImage.height ?? REPORT_SHARE_THUMBNAIL_HEIGHT,
           link,
         },
-        buttonTitle: '취향 해설 보기',
+        buttonTitle: '취향 카드 보기',
       });
       onShared?.();
     } catch (error) {

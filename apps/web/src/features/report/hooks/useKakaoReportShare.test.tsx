@@ -80,7 +80,7 @@ describe('useKakaoReportShare', () => {
           webUrl: 'http://localhost/share/share-token?yearMonth=2026-08',
         },
       },
-      buttonTitle: '취향 해설 보기',
+      buttonTitle: '취향 카드 보기',
     });
     expect(onShared).toHaveBeenCalledTimes(1);
   });
