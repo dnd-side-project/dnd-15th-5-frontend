@@ -1,4 +1,9 @@
 import type { MonthlyReportResponse } from '@/features/report/apis/dto';
+import {
+  REPORT_PERSONA_COPY,
+  REPORT_PERSONA_TAGS,
+  REPORT_PERSONA_VARIANTS,
+} from '@/features/report/constants';
 import type { MonthlyReport, ReportPreferenceCardVariant } from '@/features/report/types';
 import { getStickerImageByName } from '@/shared/assets/images/stickers';
 import type { YearMonth } from '@/shared/types/yearMonth';
@@ -16,15 +21,11 @@ const CATEGORY_NAMES = new Set<SpendingCategory>([
   '기타',
 ]);
 const WEEKDAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'] as const;
-const PERSONA_VARIANTS: Record<string, ReportPreferenceCardVariant> = {
-  ALLEY_EXPLORER: 'alley-explorer',
-  EXPLORER: 'alley-explorer',
-  FOOD_NOMAD: 'food-nomad',
-  NOMAD: 'food-nomad',
-  LOCAL_REGULAR: 'local-regular',
-  REGULAR: 'local-regular',
-  NIGHT_WATCH: 'night-watch',
-  NIGHT_WATCHER: 'night-watch',
+type PersonaAxes = {
+  activityRange: 'H' | 'W';
+  consumptionRhythm: 'P' | 'F';
+  consumptionTime: 'D' | 'M';
+  visitStyle: 'R' | 'N';
 };
 
 const toSafeNumber = (value?: number) => (Number.isFinite(value) ? Math.max(value ?? 0, 0) : 0);
@@ -36,14 +37,36 @@ const toSpendingCategory = (category?: string): SpendingCategory =>
     ? (category as SpendingCategory)
     : '기타';
 
-const resolvePersonaVariant = (type?: string, typeName?: string): ReportPreferenceCardVariant => {
-  const normalizedType = type?.trim().toUpperCase().replaceAll('-', '_');
-  if (normalizedType && PERSONA_VARIANTS[normalizedType]) return PERSONA_VARIANTS[normalizedType];
+const parsePersonaAxes = (type?: string): PersonaAxes | null => {
+  const normalizedType = type?.trim().toUpperCase();
+  const match = normalizedType?.match(/^([RN])([HW])([DM])([PF])$/);
+  if (!match) return null;
 
-  if (typeName?.includes('유목')) return 'food-nomad';
-  if (typeName?.includes('터줏대감')) return 'local-regular';
-  if (typeName?.includes('야간')) return 'night-watch';
+  return {
+    visitStyle: match[1] as PersonaAxes['visitStyle'],
+    activityRange: match[2] as PersonaAxes['activityRange'],
+    consumptionTime: match[3] as PersonaAxes['consumptionTime'],
+    consumptionRhythm: match[4] as PersonaAxes['consumptionRhythm'],
+  };
+};
+
+const resolvePersonaVariant = (type?: string): ReportPreferenceCardVariant => {
+  const normalizedType = type?.trim().toUpperCase();
+  if (normalizedType && normalizedType in REPORT_PERSONA_VARIANTS) {
+    return REPORT_PERSONA_VARIANTS[normalizedType as keyof typeof REPORT_PERSONA_VARIANTS];
+  }
+
   return 'alley-explorer';
+};
+
+const createPersonaTags = (axes: PersonaAxes | null, fallbackTags?: readonly string[]) => {
+  if (!axes) return fallbackTags?.filter(Boolean) ?? [];
+
+  return [
+    REPORT_PERSONA_TAGS.consumptionTime[axes.consumptionTime],
+    REPORT_PERSONA_TAGS.visitStyle[axes.visitStyle],
+    REPORT_PERSONA_TAGS.consumptionRhythm[axes.consumptionRhythm],
+  ];
 };
 
 const calculateKnownMonthCount = (firstVisitedDate: string | undefined, reportMonth: YearMonth) => {
@@ -81,11 +104,14 @@ export const mapMonthlyReportResponse = (
 
   const scores = response.persona?.scores;
   const persona = response.persona;
+  const personaAxes = parsePersonaAxes(persona?.type);
+  const personaVariant = resolvePersonaVariant(persona?.type);
+  const personaCopy = REPORT_PERSONA_COPY[personaVariant];
 
   return {
     month: reportMonth,
     persona: {
-      description: '',
+      description: personaCopy.description,
       metrics: [
         {
           leftLabel: '신규 탐색형',
@@ -108,9 +134,9 @@ export const mapMonthlyReportResponse = (
           value: toPercentage(scores?.scoreImpulsive),
         },
       ],
-      tags: persona?.keywords?.filter(Boolean) ?? [],
-      title: persona?.typeName?.trim() || '나의 소비 취향',
-      variant: resolvePersonaVariant(persona?.type, persona?.typeName),
+      tags: createPersonaTags(personaAxes, persona?.keywords ?? personaCopy.tags),
+      title: personaCopy.title,
+      variant: personaVariant,
     },
     summary: [
       { label: '방문 횟수', value: toSafeNumber(response.summary?.totalVisitCount) },
