@@ -40,7 +40,7 @@ export function CardThumbnail({ src, radius = 'small', size = 'default' }: CardT
         className={cn('inline-flex items-center justify-center bg-neutral-200', className)}
         aria-hidden="true"
       >
-        <StoreIcon className="size-3/5" aria-hidden="true" />
+        <StoreIcon className="size-1/2" aria-hidden="true" />
       </span>
     );
   }
