@@ -1,12 +1,27 @@
 import { router, useLocalSearchParams } from 'expo-router';
 
+import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import {
   createReceiptReviewRouteParams,
+  createRecordCreatedHomePath,
   isRecordCategory,
   parseVisitDateTime,
   ReceiptReviewForm,
+  useSubmitReceiptConsumption,
 } from '@/features/record';
 import type { ReceiptReviewRouteParams } from '@/features/record';
+
+import type { CreatedConsumptionPlace } from '@chapchap/shared/record';
+
+const parseRouteNumber = (value: string | undefined) => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 /**
  * 촬영한 영수증과 인식 결과를 확인하는 화면.
@@ -15,9 +30,12 @@ import type { ReceiptReviewRouteParams } from '@/features/record';
 export default function ReceiptConfirmScreen() {
   const {
     uri = '',
+    receiptImageId,
     shopName,
     shopAddress,
     shopPhotoUrl,
+    latitude,
+    longitude,
     amount,
     category,
     visitedAt,
@@ -25,25 +43,46 @@ export default function ReceiptConfirmScreen() {
     shopId,
   } = useLocalSearchParams<ReceiptReviewRouteParams>();
   const initialVisitDateTime = parseVisitDateTime(visitedAt, visitPeriod);
+  const parsedReceiptImageId = parseRouteNumber(receiptImageId);
+  const parsedLatitude = parseRouteNumber(latitude);
+  const parsedLongitude = parseRouteNumber(longitude);
+
+  const handleClose = () => {
+    requestWebViewNavigation('/home');
+    router.dismissTo('/');
+  };
+
+  const handleSubmitSuccess = (createdPlace: CreatedConsumptionPlace) => {
+    requestWebViewNavigation(createRecordCreatedHomePath(createdPlace));
+    router.dismissTo('/');
+  };
+
+  const { isSubmitting, submitReceiptConsumption } = useSubmitReceiptConsumption({
+    onSuccess: handleSubmitSuccess,
+  });
 
   const handleBack = () => {
-    // TODO: 공통 확인 UI 디자인 확정 후 작성 중 이탈 안내를 거쳐 카메라로 이동한다.
     router.replace('/camera');
   };
 
-  // TODO: 기록 생성 API 계약이 확정되면 onSubmit으로 저장하고 WebView의 /home을 갱신한다.
   return (
     <ReceiptReviewForm
       key={`${shopId ?? 'ocr'}:${shopName ?? ''}:${shopAddress ?? ''}`}
       receiptUri={uri}
+      initialReceiptImageId={parsedReceiptImageId}
       initialShopId={shopId}
       initialShopName={shopName}
       initialShopAddress={shopAddress}
       initialShopPhotoUrl={shopPhotoUrl || null}
+      initialLatitude={parsedLatitude}
+      initialLongitude={parsedLongitude}
       initialVisitDateTime={initialVisitDateTime}
       initialAmount={amount}
       initialCategory={isRecordCategory(category) ? category : undefined}
+      isSubmitting={isSubmitting}
       onBack={handleBack}
+      onClose={handleClose}
+      onSubmit={submitReceiptConsumption}
       onChangeShop={(state) =>
         router.push({
           pathname: '/place-search',

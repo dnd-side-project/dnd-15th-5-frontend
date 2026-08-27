@@ -1,13 +1,19 @@
 import { act, render } from '@testing-library/react-native';
-import { BackHandler, Linking } from 'react-native';
+import { AppState, BackHandler, Linking } from 'react-native';
+
+import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 
 import HomeScreen from './HomeScreen';
 
 const mockCreateBridgeResponse = jest.fn();
 const mockCreateResponseScript = jest.fn((_response: unknown, _trustedOrigin: string) => 'true;');
+const mockCreateAppActiveScript = jest.fn((_trustedOrigin: string) => 'app-active;');
 const removeBackHandler = jest.fn();
+const removeAppStateHandler = jest.fn();
 type HardwareBackHandler = Parameters<typeof BackHandler.addEventListener>[1];
+type AppStateChangeHandler = Parameters<typeof AppState.addEventListener>[1];
 let hardwareBackHandler: HardwareBackHandler | undefined;
+let appStateChangeHandler: AppStateChangeHandler | undefined;
 const hardwareBackPressEvent = { type: 'hardwareBackPress', timeStamp: 0 };
 const edgeToEdgeEdges = {
   top: 'off',
@@ -47,11 +53,27 @@ const { __mockGoBack: mockGoBack, __mockInjectJavaScript: mockInjectJavaScript }
 ) as { __mockGoBack: jest.Mock; __mockInjectJavaScript: jest.Mock };
 
 jest.mock('@/bridge', () => ({
+  createAppActiveScript: (trustedOrigin: string) => mockCreateAppActiveScript(trustedOrigin),
   createBridgeResponse: (message: unknown) => mockCreateBridgeResponse(message),
   createResponseScript: (response: unknown, trustedOrigin: string) =>
     mockCreateResponseScript(response, trustedOrigin),
+  getTrustedInternalUrl: (path: string, trustedOrigin: string) => {
+    const url = new URL(path, trustedOrigin);
+    return url.origin === trustedOrigin ? url.toString() : null;
+  },
   getUrlOrigin: (url: string) => new URL(url).origin,
   isTrustedBridgeUrl: (url: string, trustedOrigin: string) => new URL(url).origin === trustedOrigin,
+  respondToBridgeRequest: async (
+    message: { kind?: string },
+    trustedOrigin: string,
+    responseTarget: { injectJavaScript: (script: string) => void } | null
+  ) => {
+    if (message.kind !== 'request') return false;
+
+    const response = await mockCreateBridgeResponse(message);
+    responseTarget?.injectJavaScript(mockCreateResponseScript(response, trustedOrigin));
+    return true;
+  },
 }));
 
 describe('<HomeScreen />', () => {
@@ -59,15 +81,22 @@ describe('<HomeScreen />', () => {
 
   beforeEach(() => {
     hardwareBackHandler = undefined;
+    appStateChangeHandler = undefined;
     mockGoBack.mockReset();
     mockInjectJavaScript.mockReset();
     removeBackHandler.mockReset();
+    removeAppStateHandler.mockReset();
+    mockCreateAppActiveScript.mockClear();
     mockCreateBridgeResponse.mockReset();
     mockCreateBridgeResponse.mockResolvedValue({});
     mockCreateResponseScript.mockClear();
     jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_eventName, handler) => {
       hardwareBackHandler = handler;
       return { remove: removeBackHandler };
+    });
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_eventName, handler) => {
+      appStateChangeHandler = handler;
+      return { remove: removeAppStateHandler };
     });
     jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
   });
@@ -85,7 +114,7 @@ describe('<HomeScreen />', () => {
     getByText('웹 주소가 설정되지 않았습니다');
   });
 
-  it('웹 주소가 설정되면 인증 진입점인 루트 경로를 최초로 띄운다', async () => {
+  it('웹 주소가 설정되면 로그인 진입점인 루트 경로를 최초로 띄운다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173/record/receipt/camera';
 
     const { getByTestId } = await render(<HomeScreen />);
@@ -98,6 +127,19 @@ describe('<HomeScreen />', () => {
     expect(getByTestId('home-webview')).toHaveProp('contentInsetAdjustmentBehavior', 'never');
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
     expect(getByTestId('home-webview')).toHaveProp('setSupportMultipleWindows', false);
+  });
+
+  it('백그라운드에서 앱으로 돌아오면 WebView에 활성화 이벤트를 전달한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    await render(<HomeScreen />);
+
+    await act(async () => {
+      appStateChangeHandler?.('background');
+      appStateChangeHandler?.('active');
+    });
+
+    expect(mockCreateAppActiveScript).toHaveBeenCalledWith('https://chapchap.example.com');
+    expect(mockInjectJavaScript).toHaveBeenCalledWith('app-active;');
   });
 
   it('지도 홈은 전체 화면, 다른 웹 경로는 하단 배경만 edge-to-edge로 표시한다', async () => {
@@ -216,6 +258,66 @@ describe('<HomeScreen />', () => {
     expect(shouldStartLoad({ url: 'https://chapchap.example.com/home/shop/101' })).toBe(true);
     expect(shouldStartLoad({ url: googleMapsUrl })).toBe(false);
     expect(Linking.openURL).toHaveBeenCalledWith(googleMapsUrl);
+  });
+
+  it('카카오톡 공유 스킴은 WebView에서 막고 카카오톡 앱으로 전달한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { getByTestId } = await render(<HomeScreen />);
+    const shouldStartLoad = getByTestId('home-webview').props.onShouldStartLoadWithRequest;
+    const kakaoLinkUrl = 'kakaolink://send?appkey=javascript-key';
+
+    expect(shouldStartLoad({ url: kakaoLinkUrl })).toBe(false);
+    expect(Linking.openURL).toHaveBeenCalledWith(kakaoLinkUrl);
+  });
+
+  it('Android 카카오 Intent는 카카오링크 스킴으로 변환해 실행한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { getByTestId } = await render(<HomeScreen />);
+    const shouldStartLoad = getByTestId('home-webview').props.onShouldStartLoadWithRequest;
+    const kakaoIntentUrl =
+      'intent://send?appkey=javascript-key#Intent;scheme=kakaolink;package=com.kakao.talk;end';
+
+    expect(shouldStartLoad({ url: kakaoIntentUrl })).toBe(false);
+    expect(Linking.openURL).toHaveBeenCalledWith('kakaolink://send?appkey=javascript-key');
+  });
+
+  it('카카오톡을 실행할 수 없으면 Android Intent의 fallback URL을 연다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    jest.spyOn(Linking, 'openURL').mockRejectedValueOnce(new Error('카카오톡 미설치'));
+    const { getByTestId } = await render(<HomeScreen />);
+    const shouldStartLoad = getByTestId('home-webview').props.onShouldStartLoadWithRequest;
+    const fallbackUrl = 'https://play.google.com/store/apps/details?id=com.kakao.talk';
+    const kakaoIntentUrl = `intent://send#Intent;scheme=kakaolink;package=com.kakao.talk;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+
+    await act(async () => {
+      expect(shouldStartLoad({ url: kakaoIntentUrl })).toBe(false);
+    });
+
+    expect(Linking.openURL).toHaveBeenLastCalledWith(fallbackUrl);
+  });
+
+  it('네이티브 기록 완료 요청을 받으면 메인 WebView를 지도 홈으로 새로 이동한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    await render(<HomeScreen />);
+
+    await act(async () => {
+      requestWebViewNavigation('/home');
+    });
+
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      'window.location.replace("https://chapchap.example.com/home"); true;'
+    );
+  });
+
+  it('외부 origin으로 향하는 네이티브 내부 이동 요청은 무시한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    await render(<HomeScreen />);
+
+    await act(async () => {
+      requestWebViewNavigation('https://evil.example.com');
+    });
+
+    expect(mockInjectJavaScript).not.toHaveBeenCalled();
   });
 
   it('Android 뒤로가기는 실제 WebView 기록이 있을 때만 WebView에서 처리한다', async () => {

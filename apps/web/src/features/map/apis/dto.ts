@@ -3,6 +3,16 @@
  * Do not edit manually.
  */
 
+export type PlaceLikeResponse = {
+  liked?: boolean;
+};
+
+export type ApiResponsePlaceLikeResponse = {
+  code?: string;
+  message?: string;
+  data?: PlaceLikeResponse;
+};
+
 export type RecommendedPlaceItem = {
   placeId?: number;
   name?: string;
@@ -12,6 +22,8 @@ export type RecommendedPlaceItem = {
   longitude?: number;
   visitCount?: number;
   liked?: boolean;
+  thumbnailUrl?: string;
+  googleMapsUri?: string;
 };
 
 export type NearbyPlacesResponse = {
@@ -33,7 +45,9 @@ export type VisitedPlaceMarkerItem = {
   longitude?: number;
   visitCount?: number;
   liked?: boolean;
+  stickerCategory?: string;
   stickerName?: string;
+  googlePlaceId?: string;
 };
 
 export type VisitedPlaceMarkerResponse = {

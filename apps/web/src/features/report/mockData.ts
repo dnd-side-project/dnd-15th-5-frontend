@@ -1,4 +1,4 @@
-import type { FrequentShop, SpendingMonth, SpendingRecordGroup } from './types';
+import type { YearMonth } from '@/shared/types/yearMonth';
 
 const MOCK_REPORT_PERSONAS = {
   nightWatch: {
@@ -80,13 +80,13 @@ const MOCK_REPORT_DETAIL = {
     { category: '운동', percentage: 10 },
   ],
   weekdaySpending: [
-    { day: '월', amount: 26_000 },
-    { day: '화', amount: 18_000 },
-    { day: '수', amount: 56_000 },
-    { day: '목', amount: 40_000 },
-    { day: '금', amount: 96_000 },
-    { day: '토', amount: 77_000 },
-    { day: '일', amount: 52_000 },
+    { day: '월', count: 2 },
+    { day: '화', count: 1 },
+    { day: '수', count: 5 },
+    { day: '목', count: 4 },
+    { day: '금', count: 9 },
+    { day: '토', count: 7 },
+    { day: '일', count: 5 },
   ],
   weekdayInsight: '당신의 소비는 금요일 저녁에 깨어나요 🌙',
 } as const;
@@ -125,149 +125,4 @@ export const MOCK_SPENDING_MONTHS = [
   { year: 2026, month: 1 },
   { year: 2025, month: 12 },
   { year: 2025, month: 11 },
-] as const satisfies readonly SpendingMonth[];
-
-export const MOCK_SPENDING_RECORD_GROUPS = [
-  {
-    dateLabel: '22일 목요일',
-    dateValue: '2026-08-22',
-    records: [
-      {
-        id: 'record-01',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.22 · 오전',
-        category: '카페',
-      },
-      {
-        id: 'record-02',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.22 · 오전',
-        category: '카페',
-      },
-      {
-        id: 'record-03',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.22 · 오전',
-        category: '카페',
-      },
-    ],
-  },
-  {
-    dateLabel: '21일 수요일',
-    dateValue: '2026-08-21',
-    records: [
-      {
-        id: 'record-04',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.21 · 오전',
-        category: '카페',
-      },
-    ],
-  },
-  {
-    dateLabel: '20일 화요일',
-    dateValue: '2026-08-20',
-    records: [
-      {
-        id: 'record-05',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.20 · 오전',
-        category: '카페',
-      },
-      {
-        id: 'record-06',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.20 · 오전',
-        category: '카페',
-      },
-      {
-        id: 'record-07',
-        shopName: '투썸플레이스',
-        amount: 5500,
-        paidAtLabel: '2026.08.20 · 오전',
-        category: '카페',
-      },
-    ],
-  },
-] as const satisfies readonly SpendingRecordGroup[];
-
-export const MOCK_FREQUENT_SHOPS = [
-  {
-    id: 'frequent-shop-01',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 12,
-    totalVisitCount: 28,
-  },
-  {
-    id: 'frequent-shop-02',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 8,
-    totalVisitCount: 20,
-  },
-  {
-    id: 'frequent-shop-03',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 18,
-  },
-  {
-    id: 'frequent-shop-04',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 16,
-  },
-  {
-    id: 'frequent-shop-05',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 14,
-  },
-  {
-    id: 'frequent-shop-06',
-    name: '투썸플레이스',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 12,
-  },
-  {
-    id: 'frequent-shop-07',
-    name: '투썸플레이스 장기 임시 휴업 안내',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 10,
-  },
-  {
-    id: 'frequent-shop-08',
-    name: '투썸플레이스 장기 임시 휴업 안내',
-    district: '용산구',
-    category: '카페',
-    thumbnailSrc: null,
-    monthlyVisitCount: 7,
-    totalVisitCount: 9,
-  },
-] as const satisfies readonly FrequentShop[];
+] as const satisfies readonly YearMonth[];

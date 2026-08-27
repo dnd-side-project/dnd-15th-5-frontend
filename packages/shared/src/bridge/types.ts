@@ -21,6 +21,9 @@ export const BRIDGE_MESSAGE_KIND = {
 /** 웹 장소 검색이 네이티브 영수증 기록에서 열렸음을 구분하는 query 값. */
 export const RECEIPT_SHOP_SEARCH_SOURCE = 'receipt-native';
 
+/** 네이티브 앱이 백그라운드에서 활성 상태로 돌아왔음을 WebView에 알리는 DOM 이벤트 이름. */
+export const NATIVE_APP_ACTIVE_EVENT = 'chapchap:native-app-active';
+
 /** 웹이 응답을 기다리지 않고 네이티브에 알리는 이벤트와 payload 타입. */
 export type BridgeEventMap = {
   // 모바일이 /home의 WebView만 edge-to-edge로 표시할 수 있도록 현재 웹 경로를 전달한다.
@@ -32,6 +35,8 @@ export type BridgeEventMap = {
     shop: ShopSearchResult;
   };
   receiptShopSearchCancelled: Record<string, never>;
+  // 영수증 기록 중인 네이티브 화면을 모두 닫고 메인 WebView의 홈으로 이동하도록 요청한다.
+  receiptRecordCloseRequested: Record<string, never>;
 };
 
 export type BridgeEventType = keyof BridgeEventMap;

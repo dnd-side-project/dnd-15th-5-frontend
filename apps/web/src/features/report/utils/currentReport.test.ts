@@ -22,10 +22,10 @@ describe('mapCurrentStatusToReportPageData', () => {
     );
 
     expect(report.monthLabel).toBe('8월');
-    expect(report.monthlyRecordCount).toBe(7);
+    expect(report.monthlyCount).toBe(7);
     expect(report.monthlyStickerImages).toHaveLength(5);
     expect(report.monthlyAdditionalStickerCount).toBe(2);
-    expect(report.recentDiscovery).toBe('밤 활동 비중이 늘었어요');
+    expect(report.recentDiscoveryMessage).toBe('밤 활동 비중이 늘었어요');
     expect(report.weeklyPeriodLabel).toBe('8월 16일부터 22일까지');
     expect(report.weeklyRecords).toEqual([
       expect.objectContaining({ count: 1, date: 16, day: '일' }),
@@ -42,9 +42,9 @@ describe('mapCurrentStatusToReportPageData', () => {
     const report = mapCurrentStatusToReportPageData(undefined, '2026-09', new Date(2026, 7, 25));
 
     expect(report.monthLabel).toBe('9월');
-    expect(report.monthlyRecordCount).toBe(0);
+    expect(report.monthlyCount).toBe(0);
     expect(report.monthlyStickerImages).toEqual([]);
-    expect(report.recentDiscovery).toBe('');
+    expect(report.recentDiscoveryMessage).toBe('');
     expect(report.weeklyRecords).toHaveLength(7);
   });
 

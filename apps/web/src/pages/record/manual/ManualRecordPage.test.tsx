@@ -1,18 +1,42 @@
 import { getVisitPeriodForHour, getVisitPeriodLabel } from '@chapchap/shared/record';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import type { ShopSearchResult } from '@/features/shop';
 
 import ManualRecordPage from './ManualRecordPage';
+
+import type { VisitDateTimeValue } from '@chapchap/shared/record';
+
+const mockCreateConsumption = jest.fn();
+
+jest.mock('@/features/record/apis/hooks/useCreateConsumptionMutation', () => ({
+  useCreateConsumptionMutation: () => ({
+    createConsumption: mockCreateConsumption,
+    isCreatingConsumption: false,
+  }),
+}));
 
 const selectedShop: ShopSearchResult = {
   id: 'place-01',
   name: '투썸플레이스 신논현점',
   address: '서울특별시 강남구 봉은사로 125 1층',
   photoUrl: null,
+  latitude: 37.506481,
+  longitude: 127.024551,
 };
+
+function ShopSearchTarget() {
+  const location = useLocation();
+  const state = location.state as { manualRecordVisitDateTime?: VisitDateTimeValue } | null;
+
+  return (
+    <p data-has-visit-date={String(Boolean(state?.manualRecordVisitDateTime))}>
+      가게 검색 화면 {location.search}
+    </p>
+  );
+}
 
 const renderPage = () =>
   render(
@@ -25,12 +49,17 @@ const renderPage = () =>
     >
       <Routes>
         <Route path="/record/manual" element={<ManualRecordPage />} />
-        <Route path="/record/shop/search" element={<p>가게 검색 화면</p>} />
+        <Route path="/record/shop/search" element={<ShopSearchTarget />} />
+        <Route path="/home" element={<p>홈 화면</p>} />
       </Routes>
     </MemoryRouter>
   );
 
 describe('<ManualRecordPage />', () => {
+  beforeEach(() => {
+    mockCreateConsumption.mockClear();
+  });
+
   it('선택한 가게와 소비 정보 입력 폼을 보여준다', async () => {
     const user = userEvent.setup();
     renderPage();
@@ -53,18 +82,139 @@ describe('<ManualRecordPage />', () => {
     expect(screen.getByRole('button', { name: '기록하기' })).toBeEnabled();
   });
 
+  it('지난달 기록에서 장소 선택을 마치면 해당 월 날짜 선택을 바로 연다', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/manual',
+            search: '?yearMonth=2025-07',
+            state: { shop: selectedShop },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('dialog', { name: '방문 일시 선택' })).toBeInTheDocument();
+    expect(screen.getByText('2025년 7월')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2025년 7월 31일' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  });
+
+  it('지난달 기록의 장소를 변경한 뒤에는 날짜 선택을 다시 열지 않는다', () => {
+    const visitDateTime: VisitDateTimeValue = {
+      date: new Date(2025, 6, 15),
+      period: 'night',
+    };
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/manual',
+            search: '?yearMonth=2025-07',
+            state: { isShopChange: true, shop: selectedShop, visitDateTime },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByRole('dialog', { name: '방문 일시 선택' })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /방문 일시 변경, 7월 15일.*밤/ })
+    ).toBeInTheDocument();
+  });
+
+  it('지난달 수기 기록을 직접 열어도 최초 장소 선택 시 연월을 유지한다', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/record/manual?yearMonth=2025-07']}>
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+          <Route path="/record/shop/search" element={<ShopSearchTarget />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게를 선택해주세요' }));
+
+    expect(screen.getByText('가게 검색 화면 ?yearMonth=2025-07')).toBeInTheDocument();
+  });
+
+  it('기록하기를 누르면 선택한 장소와 소비 정보를 등록한다', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByRole('textbox', { name: '금액' }), '33000');
+    await user.click(screen.getByRole('button', { name: '기록하기' }));
+
+    expect(mockCreateConsumption).toHaveBeenCalledWith(
+      expect.objectContaining({
+        googlePlaceId: selectedShop.id,
+        placeName: selectedShop.name,
+        roadAddress: selectedShop.address,
+        latitude: selectedShop.latitude,
+        longitude: selectedShop.longitude,
+        amount: 33000,
+        category: '카페',
+      })
+    );
+  });
+
   it('변경 버튼과 뒤로 가기 버튼으로 가게 검색 화면에 돌아간다', async () => {
     const user = userEvent.setup();
     const { unmount } = renderPage();
 
     await user.click(screen.getByRole('button', { name: '변경' }));
-    expect(screen.getByText('가게 검색 화면')).toBeInTheDocument();
+    expect(screen.getByText('가게 검색 화면')).toHaveAttribute('data-has-visit-date', 'true');
 
     unmount();
     renderPage();
 
     await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
     expect(screen.getByText('가게 검색 화면')).toBeInTheDocument();
+  });
+
+  it('닫기 확인 후 나가기를 선택하면 지도 홈으로 이동한다', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+
+    expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
+    expect(screen.queryByText('홈 화면')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '나가기' })).toHaveClass(
+      'w-0',
+      'flex-1',
+      'text-body-01-medium'
+    );
+    expect(screen.getByRole('button', { name: '계속 작성하기' })).toHaveClass(
+      'w-0',
+      'flex-1',
+      'text-body-01-medium'
+    );
+
+    await user.click(screen.getByRole('button', { name: '계속 작성하기' }));
+    expect(
+      screen.queryByRole('dialog', { name: '기록 작성을 그만둘까요?' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '소비 정보를 입력해주세요' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    await user.click(screen.getByRole('button', { name: '나가기' }));
+
+    expect(screen.getByText('홈 화면')).toBeInTheDocument();
   });
 
   it('방문 일시 선택값을 CTA에 표시하고 확인하면 폼에 반영한다', async () => {

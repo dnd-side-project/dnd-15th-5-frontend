@@ -22,6 +22,7 @@ import SpendingHistoryPage from '@/pages/report/history/SpendingHistoryPage';
 import MonthlyRecordListPage from '@/pages/report/monthly-records/MonthlyRecordListPage';
 import MonthlyReportPage from '@/pages/report/MonthlyReportPage';
 import ReportPage from '@/pages/report/ReportPage';
+import SharedReportPage from '@/pages/report/shared/SharedReportPage';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import PaddedLayout from '@/shared/layout/PaddedLayout';
 
@@ -31,7 +32,7 @@ export const router = createBrowserRouter([
     element: <MobileLayout />,
     children: [
       {
-        // INFO: 앱 진입 및 초기 사용자 설정 화면에 좌우 여백을 적용한다.
+        // INFO: 로그인 및 약관 화면에 좌우 여백을 적용한다.
         element: <PaddedLayout />,
         children: [
           {
@@ -50,15 +51,20 @@ export const router = createBrowserRouter([
             element: <TermsAgreementRoute />,
             children: [{ path: ROUTE_PATHS.agreement, element: <AgreementPage /> }],
           },
-          {
-            element: <AuthenticatedRoute />,
-            children: [{ path: ROUTE_PATHS.onboarding, element: <OnboardingPage /> }],
-          },
         ],
+      },
+      {
+        path: ROUTE_PATTERNS.sharedReport,
+        element: <SharedReportPage />,
       },
       {
         element: <AuthenticatedRoute />,
         children: [
+          {
+            // INFO: 온보딩 이미지는 전체 너비를 사용하고 조작 영역만 자체 여백을 적용한다.
+            path: ROUTE_PATHS.onboarding,
+            element: <OnboardingPage />,
+          },
           {
             path: ROUTE_PATHS.report,
             element: <ReportPage />,

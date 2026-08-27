@@ -1,10 +1,13 @@
 import { generatePath } from 'react-router-dom';
 
+import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
+
 /**
  * React Router가 URL을 매칭할 때 사용하는 동적 경로 패턴.
  * 화면 이동에는 `ROUTE_PATHS`의 동적 경로 생성 함수를 사용한다.
  */
 export const ROUTE_PATTERNS = {
+  sharedReport: '/share/:shareToken',
   shopDetail: '/home/shop/:shopId',
 } as const;
 
@@ -33,7 +36,16 @@ export const ROUTE_PATHS = {
   frequentShopList: '/report/frequent-shops',
   monthlyRecordList: '/report/monthly-records',
   monthlyReport: '/report/monthly-report',
+  sharedReport: (shareToken: string) => generatePath(ROUTE_PATTERNS.sharedReport, { shareToken }),
 
   notifications: '/notifications',
   myPage: '/my-page',
 } as const;
+
+/** 선택한 연월을 유지해야 하는 기록 경로에 `yearMonth` 검색 파라미터를 추가합니다. */
+export const createYearMonthPath = (path: string, yearMonth?: string | null) => {
+  if (!yearMonth) return path;
+
+  const searchParams = new URLSearchParams({ [YEAR_MONTH_SEARCH_PARAM]: yearMonth });
+  return `${path}?${searchParams.toString()}`;
+};

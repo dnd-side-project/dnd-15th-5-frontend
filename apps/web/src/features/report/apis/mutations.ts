@@ -3,4 +3,151 @@
  * Do not edit manually.
  */
 
-export {};
+import { useMutation } from '@tanstack/react-query';
+
+import type {
+  MutationFunction,
+  QueryClient,
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
+
+import { apiClient } from '@/shared/apis/orvalMutator';
+
+import type { ErrorType } from '@/shared/apis/orvalMutator';
+
+import type {
+  AggregateMonthlyReportParams,
+  IssueShareLinkParams,
+  SecondParameter,
+} from '@/features/report/apis/dto';
+
+import { aggregateMonthlyReport, issueShareLink } from '@/features/report/apis/clients';
+
+export const getIssueShareLinkMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof issueShareLink>>,
+    TError,
+    { params: IssueShareLinkParams },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof issueShareLink>>,
+  TError,
+  { params: IssueShareLinkParams },
+  TContext
+> => {
+  const mutationKey = ['issueShareLink'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof issueShareLink>>,
+    { params: IssueShareLinkParams }
+  > = (props) => {
+    const { params } = props ?? {};
+
+    return issueShareLink(params, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type IssueShareLinkMutationResult = NonNullable<Awaited<ReturnType<typeof issueShareLink>>>;
+
+export type IssueShareLinkMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 취향카드 공유 링크 발급
+ */
+export const useIssueShareLink = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof issueShareLink>>,
+      TError,
+      { params: IssueShareLinkParams },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof issueShareLink>>,
+  TError,
+  { params: IssueShareLinkParams },
+  TContext
+> => {
+  return useMutation(getIssueShareLinkMutationOptions(options), queryClient);
+};
+
+export const getAggregateMonthlyReportMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+    TError,
+    { params: AggregateMonthlyReportParams },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+  TError,
+  { params: AggregateMonthlyReportParams },
+  TContext
+> => {
+  const mutationKey = ['aggregateMonthlyReport'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+    { params: AggregateMonthlyReportParams }
+  > = (props) => {
+    const { params } = props ?? {};
+
+    return aggregateMonthlyReport(params, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AggregateMonthlyReportMutationResult = NonNullable<
+  Awaited<ReturnType<typeof aggregateMonthlyReport>>
+>;
+
+export type AggregateMonthlyReportMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 월간 리포트 강제 집계 (테스트/백필용)
+ */
+export const useAggregateMonthlyReport = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+      TError,
+      { params: AggregateMonthlyReportParams },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof aggregateMonthlyReport>>,
+  TError,
+  { params: AggregateMonthlyReportParams },
+  TContext
+> => {
+  return useMutation(getAggregateMonthlyReportMutationOptions(options), queryClient);
+};

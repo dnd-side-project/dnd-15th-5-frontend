@@ -19,7 +19,7 @@ const createDefaultProps = () => ({
 });
 
 describe('<WebViewScreen />', () => {
-  it('지도 WebView의 스크롤과 단일 창 설정을 적용한다', async () => {
+  it('공통 WebView의 스크롤·확대·단일 창 설정을 적용한다', async () => {
     const onShouldStartLoadWithRequest = jest.fn(() => true);
     const { getByTestId } = await render(
       <WebViewScreen
@@ -38,6 +38,8 @@ describe('<WebViewScreen />', () => {
     expect(getByTestId('test-webview')).toHaveStyle({ height: '100%', width: '100%' });
     expect(getByTestId('test-webview')).toHaveProp('nestedScrollEnabled', true);
     expect(getByTestId('test-webview')).toHaveProp('setSupportMultipleWindows', false);
+    expect(getByTestId('test-webview')).toHaveProp('setBuiltInZoomControls', false);
+    expect(getByTestId('test-webview').props.injectedJavaScript).toContain('user-scalable=no');
     expect(getByTestId('test-webview').props.onShouldStartLoadWithRequest).toBe(
       onShouldStartLoadWithRequest
     );

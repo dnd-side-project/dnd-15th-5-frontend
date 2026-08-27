@@ -25,19 +25,20 @@ describe('monthly report charts', () => {
     expect(screen.getByRole('button', { name: '운동 10%' })).toBeInTheDocument();
   });
 
-  it('요일별 실제 소비 금액을 접근 가능한 이름으로 제공한다', () => {
+  it('요일별 실제 소비 횟수를 접근 가능한 이름으로 제공한다', () => {
     render(
       <WeekdaySpendingChart
         insight="금요일에 가장 많이 소비했어요"
         items={[
-          { day: '월', amount: 25_000 },
-          { day: '금', amount: 100_000 },
+          { day: '월', count: 2 },
+          { day: '금', count: 5 },
         ]}
       />
     );
 
-    expect(screen.getByRole('button', { name: '월요일 소비 25,000원' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '금요일 소비 100,000원' })).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: '요일별 소비 횟수' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '월요일 소비 2회' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '금요일 소비 5회' })).toBeInTheDocument();
   });
 
   it('카테고리 합계가 0이면 포커스 가능한 차트 대신 빈 상태를 보여준다', () => {

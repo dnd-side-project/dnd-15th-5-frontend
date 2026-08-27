@@ -6,16 +6,51 @@
 import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type {
+  AggregateMonthlyReportParams,
   ApiResponseConsumptionScrollResponse,
   ApiResponseCurrentStatusResponse,
   ApiResponseFrequentPlaceResponse,
+  ApiResponseMonthlyReportAggregationResultInfo,
   ApiResponseMonthlyReportResponse,
+  ApiResponsePersonaCardResponse,
+  ApiResponseShareLinkResponse,
   GetConsumptionsParams,
   GetCurrentStatusParams,
   GetFrequentPlacesParams,
   GetMonthlyReportParams,
+  IssueShareLinkParams,
   SecondParameter,
 } from '@/features/report/apis/dto';
+
+/**
+ * 연월(yyyy-MM) 기준 본인 리포트의 취향카드 공유 토큰을 발급한다. 이미 발급된 적이 있으면 기존 토큰을 그대로 반환한다.
+ * @summary 취향카드 공유 링크 발급
+ */
+export const issueShareLink = (
+  params: IssueShareLinkParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseShareLinkResponse>(
+    { url: `/reports/monthly/share`, method: 'POST', params, signal },
+    options
+  );
+};
+
+/**
+ * 연월(yyyy-MM)을 지정해 전체 활성 유저의 리포트를 즉시 집계한다. 스케줄러 대기 없이 임의의 달을 바로 만들 때 사용.
+ * @summary 월간 리포트 강제 집계 (테스트/백필용)
+ */
+export const aggregateMonthlyReport = (
+  params: AggregateMonthlyReportParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseMonthlyReportAggregationResultInfo>(
+    { url: `/reports/batch`, method: 'POST', params, signal },
+    options
+  );
+};
 
 /**
  * 계정과 연월(yyyy-MM) 기준으로 소비내역을 최신순 커서 기반으로 조회합니다. nextCursorPurchaseDate/nextCursorPurchaseTime/nextCursorId를 다음 요청에 넣어 보내면 됩니다.
@@ -28,6 +63,21 @@ export const getConsumptions = (
 ) => {
   return apiClient<ApiResponseConsumptionScrollResponse>(
     { url: `/consumptions`, method: 'GET', params, signal },
+    options
+  );
+};
+
+/**
+ * 공유 토큰으로 페르소나 정보만 담긴 취향카드를 조회한다. 로그인 없이 접근 가능.
+ * @summary 공유받은 취향카드 조회
+ */
+export const getSharedPersonaCard = (
+  shareToken: string,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponsePersonaCardResponse>(
+    { url: `/reports/share/${shareToken}`, method: 'GET', signal },
     options
   );
 };

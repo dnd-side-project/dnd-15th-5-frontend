@@ -1,7 +1,11 @@
 import { act, fireEvent, render } from '@testing-library/react';
 
 import ShopStickerHero from './ShopStickerHero';
-import { createShopStickerPlacements, createShopStickerStampDelays } from './shopStickerHeroLayout';
+import {
+  createShopStickerPlacements,
+  createShopStickerStampDelays,
+  mixShopStickerImages,
+} from './shopStickerHeroLayout';
 
 const STICKER_IMAGES = Array.from({ length: 6 }, (_, index) => `sticker-${index + 1}.png`);
 const HERO_HEIGHT = 301;
@@ -66,7 +70,7 @@ describe('ShopStickerHero', () => {
     });
   });
 
-  it('상세 히어로에는 최대 6개까지만 표시한다', () => {
+  it('전달받은 스티커를 개수 제한 없이 모두 표시한다', () => {
     const { container } = render(
       <ShopStickerHero
         headerContent={null}
@@ -75,7 +79,37 @@ describe('ShopStickerHero', () => {
       />
     );
 
-    expect(container.querySelectorAll('img')).toHaveLength(6);
+    expect(container.querySelectorAll('img')).toHaveLength(7);
+  });
+
+  it('같은 종류가 묶여 있어도 종류별로 한 장씩 섞어서 표시한다', () => {
+    const groupedStickerImages = [
+      'eyes.png',
+      'eyes.png',
+      'eyes.png',
+      'bravo.png',
+      'bravo.png',
+      'special.png',
+    ];
+    const expectedOrder = [
+      'eyes.png',
+      'bravo.png',
+      'special.png',
+      'eyes.png',
+      'bravo.png',
+      'eyes.png',
+    ];
+
+    expect(mixShopStickerImages(groupedStickerImages)).toEqual(expectedOrder);
+
+    const { container } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={groupedStickerImages} />
+    );
+    const renderedOrder = Array.from(container.querySelectorAll<HTMLImageElement>('img'), (image) =>
+      image.getAttribute('src')
+    );
+
+    expect(renderedOrder).toEqual(expectedOrder);
   });
 
   it('스티커 이미지가 모두 로드되면 인덱스 순서로 지연되는 등장 애니메이션을 재생한다', () => {

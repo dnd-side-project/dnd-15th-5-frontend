@@ -1,13 +1,13 @@
 import { useGetCurrentStatus } from '@/features/report/apis/queries';
 import {
-  formatYearMonth,
+  formatDateYearMonth,
   mapCurrentStatusToReportPageData,
 } from '@/features/report/utils/currentReport';
 
-/** 현재 월의 메인 리포트 현황을 화면 모델로 조회합니다. */
+/** 현재 월의 메인 리포트 현황과 화면에 필요한 파생 표시값을 조회합니다. */
 export const useCurrentReportQuery = () => {
   const currentDate = new Date();
-  const yearMonth = formatYearMonth(currentDate);
+  const yearMonth = formatDateYearMonth(currentDate);
   const query = useGetCurrentStatus(
     { yearMonth },
     {

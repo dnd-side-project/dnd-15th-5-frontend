@@ -3,6 +3,30 @@
  * Do not edit manually.
  */
 
+export type ShareLinkResponse = {
+  shareToken?: string;
+};
+
+export type ApiResponseShareLinkResponse = {
+  code?: string;
+  message?: string;
+  data?: ShareLinkResponse;
+};
+
+export type MonthlyReportAggregationResultInfo = {
+  yearMonth?: string;
+  lockAcquired?: boolean;
+  targetUserCount?: number;
+  succeededCount?: number;
+  failedUserIds?: number[];
+};
+
+export type ApiResponseMonthlyReportAggregationResultInfo = {
+  code?: string;
+  message?: string;
+  data?: MonthlyReportAggregationResultInfo;
+};
+
 export type ConsumptionResponse = {
   id?: number;
   placeId?: number;
@@ -11,6 +35,7 @@ export type ConsumptionResponse = {
   amount?: number;
   purchaseDate?: string;
   purchaseTime?: string;
+  thumbnailUrl?: string;
 };
 
 export type ConsumptionScrollResponse = {
@@ -34,15 +59,32 @@ export type ScoresResponse = {
   scoreImpulsive?: number;
 };
 
+export type PersonaCardResponse = {
+  nickname?: string;
+  type?: string;
+  typeName?: string;
+  description?: string;
+  keywords?: string[];
+  scores?: ScoresResponse;
+};
+
+export type ApiResponsePersonaCardResponse = {
+  code?: string;
+  message?: string;
+  data?: PersonaCardResponse;
+};
+
 export type PersonaResponse = {
   type?: string;
   typeName?: string;
+  description?: string;
   keywords?: string[];
   scores?: ScoresResponse;
 };
 
 export type PlaceRankResponse = {
   rank?: number;
+  placeId?: number;
   placeName?: string;
   visitCount?: number;
   firstVisitedDate?: string;
@@ -78,6 +120,11 @@ export type TimePatternResponse = {
   dayOfWeekPattern?: DayOfWeekCountResponse[];
 };
 
+export type AdjacentPersonaResponse = {
+  yearMonth?: string;
+  type?: string;
+};
+
 export type MonthlyReportResponse = {
   reportId?: number;
   yearMonth?: string;
@@ -87,6 +134,9 @@ export type MonthlyReportResponse = {
   summary?: SummaryResponse;
   categoryStats?: CategoryStatResponse[];
   timePattern?: TimePatternResponse;
+  firstAvailableYearMonth?: string;
+  previous?: AdjacentPersonaResponse;
+  next?: AdjacentPersonaResponse;
 };
 
 export type ApiResponseMonthlyReportResponse = {
@@ -109,6 +159,7 @@ export type CurrentStatusResponse = {
   monthlyCategoryCounts?: CurrentStatusResponseMonthlyCategoryCounts;
   recentDiscoveryMessage?: string;
   monthlyStickers?: StickerResponse[];
+  firstAvailableYearMonth?: string;
 };
 
 export type ApiResponseCurrentStatusResponse = {
@@ -124,6 +175,7 @@ export type FrequentPlaceItem = {
   category?: string;
   dongname?: string;
   visitCount?: number;
+  thumbnailUrl?: string;
 };
 
 export type FrequentPlaceResponse = {
@@ -138,6 +190,20 @@ export type ApiResponseFrequentPlaceResponse = {
   code?: string;
   message?: string;
   data?: FrequentPlaceResponse;
+};
+
+export type IssueShareLinkParams = {
+  /**
+   * 조회할 연월, 예: 2026-07
+   */
+  yearMonth: string;
+};
+
+export type AggregateMonthlyReportParams = {
+  /**
+   * 집계할 연월, 예: 2026-06
+   */
+  yearMonth: string;
 };
 
 export type GetConsumptionsParams = {

@@ -1,11 +1,22 @@
+import { SUNDAY_FIRST_WEEKDAY_LABELS } from '../common/constants';
+
 const DAYS_PER_WEEK = 7;
 const MORNING_START_HOUR = 5;
 const AFTERNOON_START_HOUR = 11;
 const EVENING_START_HOUR = 17;
 const NIGHT_START_HOUR = 21;
 
+const VISIT_PERIOD_START_TIME: Record<VisitPeriod, string> = {
+  morning: '05:00:00',
+  afternoon: '11:00:00',
+  evening: '17:00:00',
+  night: '21:00:00',
+};
+
+const padDatePart = (value: number) => String(value).padStart(2, '0');
+
 /** 일요일부터 시작하는 한국어 요일 라벨. */
-export const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
+export const WEEKDAY_LABELS = SUNDAY_FIRST_WEEKDAY_LABELS;
 
 /** 기록 UI에서 사용하는 시간대와 표시 범위. */
 export const VISIT_PERIODS = [
@@ -53,6 +64,20 @@ export const formatVisitDateTime = ({ date, period }: VisitDateTimeValue) => {
 
   return `${date.getMonth() + 1}월 ${date.getDate()}일 (${weekday}) · ${getVisitPeriodLabel(period)}`;
 };
+
+/**
+ * 기록 UI의 날짜·시간대를 소비 등록 API의 날짜와 시각으로 변환한다.
+ *
+ * 보관된 시각이 선택 시간대에 속하면 그대로 사용하고, 날짜 선택으로 시각이 사라진 경우에는
+ * 해당 시간대의 시작 시각을 전송한다.
+ */
+export const formatPurchaseDateTime = ({ date, period }: VisitDateTimeValue) => ({
+  purchaseDate: `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`,
+  purchaseTime:
+    getVisitPeriodForHour(date.getHours()) === period
+      ? `${padDatePart(date.getHours())}:${padDatePart(date.getMinutes())}:${padDatePart(date.getSeconds())}`
+      : VISIT_PERIOD_START_TIME[period],
+});
 
 /** 기준 날짜에서 월 단위로 이동한 달의 1일을 만든다. */
 export const createMonthDate = (date: Date, monthOffset: number) =>

@@ -17,6 +17,20 @@ const WEB_VIEW_SAFE_AREA_EDGES_BY_MODE = {
   none: [],
 } satisfies Record<WebViewSafeAreaMode, Edge[]>;
 const IOS_WEB_VIEW_RELOAD_WORKAROUND_HEIGHT = '99.9%';
+/** iOS WebView에서 웹 문서 자체의 핀치 확대를 막는 viewport 설정입니다. */
+const DISABLE_WEB_VIEW_ZOOM_SCRIPT = `
+  (function () {
+    var viewport = document.querySelector('meta[name="viewport"]');
+
+    if (viewport) {
+      viewport.setAttribute(
+        'content',
+        'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover'
+      );
+    }
+  })();
+  true;
+`;
 
 type GuideContent = {
   title: string;
@@ -63,6 +77,7 @@ function WebViewGuide({ title, descriptions }: GuideContent) {
  * `safeAreaMode`는 전체 inset 적용(`all`), 하단만 edge-to-edge(`except-bottom`), 전체
  * edge-to-edge(`none`) 중 하나만 받도록 제한해 서로 충돌하는 레이아웃 설정을 막습니다.
  * `except-bottom`과 `none`에서는 iOS 하단의 99.9% 높이 우회 값을 사용하지 않습니다.
+ * 앱 UI가 브라우저처럼 확대되지 않도록 iOS는 viewport 배율을, Android는 내장 줌을 제한합니다.
  *
  * @param props.uri - 로드할 웹 주소입니다. `null`이면 `missingConfiguration`을 표시합니다.
  * @param props.webViewRef - 뒤로 가기·브릿지 응답·프로세스 복구에 사용하는 WebView ref입니다.
@@ -120,6 +135,8 @@ export function WebViewScreen({
           source={source}
           automaticallyAdjustContentInsets={false}
           contentInsetAdjustmentBehavior="never"
+          setBuiltInZoomControls={false}
+          injectedJavaScript={DISABLE_WEB_VIEW_ZOOM_SCRIPT}
           allowsBackForwardNavigationGestures={allowsBackForwardNavigationGestures}
           nestedScrollEnabled
           setSupportMultipleWindows={false}

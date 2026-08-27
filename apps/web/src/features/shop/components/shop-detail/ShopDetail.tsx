@@ -2,9 +2,8 @@ import { useCallback, useRef } from 'react';
 
 import { usePlaceVisitsInfiniteQuery } from '@/features/shop/apis/hooks/usePlaceVisitsInfiniteQuery';
 import { useGetPlaceDetail } from '@/features/shop/apis/queries';
-import type { MockShopDetailData } from '@/features/shop/mockData';
 import { LocationPinIcon } from '@/shared/assets/icons';
-import { getStickerImageByName } from '@/shared/assets/images/stickers';
+import { getStickerImages } from '@/shared/assets/images/stickers';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { Chip } from '@/shared/ui/chip';
 import { RegularShopBadge } from '@/shared/ui/regular-shop-badge';
@@ -19,25 +18,17 @@ import type { ReactNode } from 'react';
 
 type ShopDetailProps = {
   headerContent: ReactNode;
-  mockData?: MockShopDetailData;
   onViewOnMap: () => void;
   placeId: number;
 };
 
-export default function ShopDetail({
-  headerContent,
-  mockData,
-  onViewOnMap,
-  placeId,
-}: ShopDetailProps) {
+export default function ShopDetail({ headerContent, onViewOnMap, placeId }: ShopDetailProps) {
   const isValidPlaceId = Number.isSafeInteger(placeId) && placeId > 0;
   const scrollRootRef = useRef<HTMLDivElement>(null);
   const placeDetailQuery = useGetPlaceDetail(placeId, {
-    query: { enabled: isValidPlaceId && !mockData },
+    query: { enabled: isValidPlaceId },
   });
-  const placeVisitsQuery = usePlaceVisitsInfiniteQuery(placeId, {
-    mockVisits: mockData?.visits,
-  });
+  const placeVisitsQuery = usePlaceVisitsInfiniteQuery(placeId);
   const { fetchNextPage, refetch: refetchPlaceVisits } = placeVisitsQuery;
   const handleVisitHistoryLoadMore = useCallback(() => {
     void fetchNextPage();
@@ -60,7 +51,7 @@ export default function ShopDetail({
     );
   }
 
-  if (!mockData && placeDetailQuery.isPending) {
+  if (placeDetailQuery.isPending) {
     return (
       <div
         role="status"
@@ -72,8 +63,8 @@ export default function ShopDetail({
     );
   }
 
-  const place = mockData?.place ?? placeDetailQuery.data?.data;
-  if ((!mockData && placeDetailQuery.isError) || !place) {
+  const place = placeDetailQuery.data?.data;
+  if (placeDetailQuery.isError || !place) {
     return (
       <StateView
         variant="error"
@@ -89,13 +80,7 @@ export default function ShopDetail({
 
   const visits = placeVisitsQuery.data?.pages.flatMap((page) => page.data?.visits ?? []) ?? [];
   const totalVisitCount = place.stats?.totalVisitCount ?? visits.length;
-  const stickerImages =
-    mockData?.stickerImages ??
-    (place.recentStickers ?? []).flatMap((sticker) => {
-      const stickerImage = getStickerImageByName(sticker.itemName);
-
-      return stickerImage ? [stickerImage] : [];
-    });
+  const stickerImages = getStickerImages(place.stickerSummary ?? place.recentStickers ?? []);
 
   return (
     <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
@@ -141,7 +126,8 @@ export default function ShopDetail({
           <VisitHistoryList
             visits={visits}
             isLoading={placeVisitsQuery.isPending}
-            isError={placeVisitsQuery.isError}
+            isError={placeVisitsQuery.isError && !placeVisitsQuery.isFetchNextPageError}
+            isFetchNextPageError={placeVisitsQuery.isFetchNextPageError}
             hasNextPage={Boolean(placeVisitsQuery.hasNextPage)}
             isFetchingNextPage={placeVisitsQuery.isFetchingNextPage}
             onLoadMore={handleVisitHistoryLoadMore}

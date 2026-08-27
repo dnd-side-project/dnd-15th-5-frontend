@@ -1,3 +1,5 @@
+export { createAppActiveScript } from './createAppActiveScript';
 export { createBridgeResponse } from './createBridgeResponse';
 export { createResponseScript } from './createResponseScript';
-export { getUrlOrigin, isTrustedBridgeUrl } from './trustedOrigin';
+export { respondToBridgeRequest } from './respondToBridgeRequest';
+export { getTrustedInternalUrl, getUrlOrigin, isTrustedBridgeUrl } from './trustedOrigin';

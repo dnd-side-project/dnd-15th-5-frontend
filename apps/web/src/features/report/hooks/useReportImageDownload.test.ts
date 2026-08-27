@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { domToBlob } from 'modern-screenshot';
 
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
+import { useToast } from '@/shared/ui/toast';
 
 import { useReportImageDownload } from './useReportImageDownload';
 
@@ -10,12 +11,15 @@ jest.mock('@/shared/lib/bridge', () => ({
   isNativeApp: jest.fn(),
   requestToNative: jest.fn(),
 }));
+jest.mock('@/shared/ui/toast', () => ({ useToast: jest.fn() }));
 
 const mockDomToBlob = jest.mocked(domToBlob);
 const mockIsNativeApp = jest.mocked(isNativeApp);
 const mockRequestToNative = jest.mocked(requestToNative);
+const mockUseToast = jest.mocked(useToast);
 const mockCreateObjectUrl = jest.fn(() => 'blob:report-image');
 const mockRevokeObjectUrl = jest.fn();
+const mockShowToast = jest.fn();
 
 const renderDownloadHook = () => {
   const hook = renderHook(() => useReportImageDownload('리포트.png'));
@@ -45,6 +49,7 @@ describe('useReportImageDownload', () => {
     mockDomToBlob.mockResolvedValue(new Blob(['png'], { type: 'image/png' }));
     mockIsNativeApp.mockReturnValue(false);
     mockRequestToNative.mockResolvedValue({ saved: true });
+    mockUseToast.mockReturnValue({ showToast: mockShowToast } as never);
   });
 
   it('일반 브라우저에서는 캡처한 PNG를 파일로 다운로드한다', async () => {
@@ -57,6 +62,10 @@ describe('useReportImageDownload', () => {
     expect(mockCreateObjectUrl).toHaveBeenCalledTimes(1);
     expect(clickSpy).toHaveBeenCalledTimes(1);
     expect(mockRequestToNative).not.toHaveBeenCalled();
+    expect(mockShowToast).toHaveBeenCalledWith({
+      message: '이미지가 저장되었어요.',
+      type: 'success',
+    });
     clickSpy.mockRestore();
   });
 
@@ -71,6 +80,10 @@ describe('useReportImageDownload', () => {
       fileName: '리포트.png',
     });
     expect(mockCreateObjectUrl).not.toHaveBeenCalled();
+    expect(mockShowToast).toHaveBeenCalledWith({
+      message: '이미지가 저장되었어요.',
+      type: 'success',
+    });
   });
 
   it('이미지 생성에 실패하면 오류 상태를 설정하고 진행 상태를 해제한다', async () => {
@@ -81,6 +94,7 @@ describe('useReportImageDownload', () => {
 
     expect(result.current.hasDownloadError).toBe(true);
     expect(result.current.isDownloading).toBe(false);
+    expect(mockShowToast).not.toHaveBeenCalled();
   });
 
   it('네이티브 사진 저장에 실패하면 오류 상태를 설정한다', async () => {
@@ -92,5 +106,6 @@ describe('useReportImageDownload', () => {
 
     expect(result.current.hasDownloadError).toBe(true);
     expect(result.current.isDownloading).toBe(false);
+    expect(mockShowToast).not.toHaveBeenCalled();
   });
 });

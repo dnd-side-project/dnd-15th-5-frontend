@@ -14,9 +14,11 @@ function ReportShareSheetHarness() {
       </button>
       <ReportShareSheet
         isDownloading={false}
+        isSharing={false}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onDownload={jest.fn()}
+        onKakaoShare={jest.fn()}
       />
     </>
   );

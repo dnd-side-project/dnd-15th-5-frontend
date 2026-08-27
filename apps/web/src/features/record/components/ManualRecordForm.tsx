@@ -8,20 +8,27 @@ import {
 } from '@chapchap/shared/record';
 import { useState } from 'react';
 
+import { useCreateConsumptionMutation } from '@/features/record/apis/hooks/useCreateConsumptionMutation';
+import { createConsumptionRequest } from '@/features/record/utils/createConsumptionRequest';
 import { CalendarIcon } from '@/shared/assets/icons';
-import { BackButton } from '@/shared/ui/back-button';
 import { Button } from '@/shared/ui/button';
+import { PlaceCard } from '@/shared/ui/card';
 import { CategoryChip } from '@/shared/ui/category-chip';
 
-import VisitDateTimePicker from './VisitDateTimePicker';
+import RecordNavigationHeader from './RecordNavigationHeader';
+import VisitDateTimeSheet from './visit-date-time-sheet/VisitDateTimeSheet';
 
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
-import type { ChangeEvent, FormEvent, ReactElement, ReactNode } from 'react';
+import type { ShopSearchResult } from '@chapchap/shared/shop';
+import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 
 type ManualRecordFormProps = {
-  selectedShop: ReactElement | null;
+  initialVisitDateTimeSheetOpen?: boolean;
+  initialVisitDateTime?: VisitDateTimeValue;
+  selectedShop: ShopSearchResult | null;
   onBack: () => void;
-  onChangeShop: () => void;
+  onClose: () => void;
+  onChangeShop: (visitDateTime: VisitDateTimeValue) => void;
   onSelectShop: () => void;
 };
 
@@ -46,47 +53,69 @@ function RequiredField({ children, label }: RequiredFieldProps) {
 
 /** 선택한 가게에 방문 일시·금액·카테고리를 입력하는 웹 수기 기록 폼. */
 export default function ManualRecordForm({
+  initialVisitDateTimeSheetOpen = false,
+  initialVisitDateTime,
   selectedShop,
   onBack,
+  onClose,
   onChangeShop,
   onSelectShop,
 }: ManualRecordFormProps) {
   const hasSelectedShop = selectedShop !== null;
+  const hasShopLocation =
+    selectedShop !== null &&
+    Number.isFinite(selectedShop.latitude) &&
+    Number.isFinite(selectedShop.longitude);
+  const { createConsumption, isCreatingConsumption } = useCreateConsumptionMutation();
   const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(
-    createInitialVisitDateTime
+    () => initialVisitDateTime ?? createInitialVisitDateTime()
   );
-  const [isDateTimePickerOpen, setIsDateTimePickerOpen] = useState(false);
+  const [isVisitDateTimeSheetOpen, setIsVisitDateTimeSheetOpen] = useState(
+    initialVisitDateTimeSheetOpen
+  );
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<RecordCategory>(RECORD_CATEGORIES[0]);
-  const { canSubmit } = validateRecordRequiredFields({ hasShop: hasSelectedShop, amount });
+  const { canSubmit } = validateRecordRequiredFields({ hasShop: hasShopLocation, amount });
 
   const handleAmountChange = (event: ChangeEvent<HTMLInputElement>) => {
     setAmount(sanitizeAmount(event.target.value));
   };
 
-  // TODO: 기록 생성 API 연동 후 성공 시 현재 리포트 쿼리를 무효화하고 이전 화면으로 이동한다.
-  // 지금은 새로고침만 막고 실제로 기록을 저장하지 않는다.
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!selectedShop || !canSubmit || isCreatingConsumption) {
+      return;
+    }
+
+    createConsumption(
+      createConsumptionRequest({ shop: selectedShop, visitDateTime, amount, category })
+    );
   };
 
-  const handleDateTimeConfirm = (nextValue: VisitDateTimeValue) => {
+  const handleVisitDateTimeConfirm = (nextValue: VisitDateTimeValue) => {
     setVisitDateTime(nextValue);
-    setIsDateTimePickerOpen(false);
+    setIsVisitDateTimeSheetOpen(false);
   };
 
   return (
     <div className="min-h-screen-safe-bottom flex flex-col">
-      <BackButton onClick={onBack} />
+      <RecordNavigationHeader onBack={onBack} onClose={onClose} />
 
       <h1 className="mt-6 text-heading-01-bold text-neutral-700">소비 정보를 입력해주세요</h1>
 
       {hasSelectedShop ? (
         <div className="mt-6 flex items-center rounded-16 border border-neutral-300 p-2">
-          <div className="min-w-0 flex-1 overflow-hidden">{selectedShop}</div>
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <PlaceCard
+              thumbnailSrc={selectedShop.photoUrl}
+              title={selectedShop.name}
+              location={selectedShop.address}
+            />
+          </div>
           <button
             type="button"
-            onClick={onChangeShop}
+            onClick={() => onChangeShop(visitDateTime)}
             className="ml-4 shrink-0 rounded-05 p-2 text-body-02-regular text-primary-500 outline-none hover:bg-primary-50 focus-visible:ring-2 focus-visible:ring-primary-300"
           >
             변경
@@ -107,7 +136,7 @@ export default function ManualRecordForm({
           <button
             type="button"
             aria-label={`방문 일시 변경, ${formatVisitDateTime(visitDateTime)}`}
-            onClick={() => setIsDateTimePickerOpen(true)}
+            onClick={() => setIsVisitDateTimeSheetOpen(true)}
             className="flex w-full items-center justify-between rounded-08 border border-neutral-300 p-4 text-body-01-regular text-neutral-700 outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
           >
             <span>{formatVisitDateTime(visitDateTime)}</span>
@@ -149,17 +178,17 @@ export default function ManualRecordForm({
         </div>
 
         <div className="mt-auto mb-8 px-1">
-          <Button type="submit" disabled={!canSubmit}>
+          <Button type="submit" disabled={!canSubmit} isLoading={isCreatingConsumption}>
             기록하기
           </Button>
         </div>
       </form>
 
-      {isDateTimePickerOpen && (
-        <VisitDateTimePicker
+      {isVisitDateTimeSheetOpen && (
+        <VisitDateTimeSheet
           value={visitDateTime}
-          onClose={() => setIsDateTimePickerOpen(false)}
-          onConfirm={handleDateTimeConfirm}
+          onClose={() => setIsVisitDateTimeSheetOpen(false)}
+          onConfirm={handleVisitDateTimeConfirm}
         />
       )}
     </div>

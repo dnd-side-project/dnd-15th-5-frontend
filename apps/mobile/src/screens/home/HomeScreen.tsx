@@ -1,14 +1,17 @@
-import { isBridgeEvent, isBridgeRequest, parseBridgeMessage } from '@chapchap/shared/bridge';
+import { isBridgeEvent, parseBridgeMessage } from '@chapchap/shared/bridge';
 import { useEffect, useRef } from 'react';
-import { BackHandler, Linking } from 'react-native';
+import { AppState, BackHandler, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import {
-  createBridgeResponse,
-  createResponseScript,
+  createAppActiveScript,
+  getTrustedInternalUrl,
   getUrlOrigin,
   isTrustedBridgeUrl,
+  respondToBridgeRequest,
 } from '@/bridge';
+import { getKakaoTalkShareTarget } from '@/bridge/kakaoTalkShare';
+import { subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
 
 import { useWebViewNavigationState } from './useWebViewNavigationState';
@@ -32,6 +35,21 @@ export default function HomeScreen() {
     useWebViewNavigationState(initialWebUrl ?? undefined);
 
   useEffect(() => {
+    let previousAppState = AppState.currentState;
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      const didBecomeActive = previousAppState !== 'active' && nextAppState === 'active';
+
+      previousAppState = nextAppState;
+
+      if (didBecomeActive && trustedWebOrigin) {
+        webViewRef.current?.injectJavaScript(createAppActiveScript(trustedWebOrigin));
+      }
+    });
+
+    return () => subscription.remove();
+  }, [trustedWebOrigin]);
+
+  useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       if (isMapHome || !canGoBack || !webViewRef.current) {
         return false;
@@ -43,6 +61,24 @@ export default function HomeScreen() {
 
     return () => subscription.remove();
   }, [canGoBack, isMapHome]);
+
+  useEffect(() => {
+    if (!trustedWebOrigin) {
+      return;
+    }
+
+    return subscribeWebViewNavigation((path) => {
+      const targetUrl = getTrustedInternalUrl(path, trustedWebOrigin);
+
+      if (!targetUrl) {
+        return;
+      }
+
+      webViewRef.current?.injectJavaScript(
+        `window.location.replace(${JSON.stringify(targetUrl)}); true;`
+      );
+    });
+  }, [trustedWebOrigin]);
 
   const handleBridgeMessage = async (event: WebViewMessageEvent) => {
     if (!trustedWebOrigin || !isTrustedBridgeUrl(event.nativeEvent.url, trustedWebOrigin)) {
@@ -58,14 +94,8 @@ export default function HomeScreen() {
       return;
     }
 
-    if (!isBridgeRequest(message)) {
-      return;
-    }
-
-    const response = await createBridgeResponse(message);
-
     // NOTE: 처리 중 외부 페이지로 이동해도 위치 등 네이티브 응답을 전달하지 않는다.
-    webViewRef.current?.injectJavaScript(createResponseScript(response, trustedWebOrigin));
+    await respondToBridgeRequest(message, trustedWebOrigin, webViewRef.current);
   };
 
   const handleShouldStartLoadWithRequest: NonNullable<
@@ -73,6 +103,20 @@ export default function HomeScreen() {
   > = ({ url }) => {
     if (!trustedWebOrigin || isTrustedBridgeUrl(url, trustedWebOrigin)) {
       return true;
+    }
+
+    const kakaoTalkShareTarget = getKakaoTalkShareTarget(url);
+
+    if (kakaoTalkShareTarget) {
+      void Linking.openURL(kakaoTalkShareTarget.launchUrl).catch(() => {
+        if (kakaoTalkShareTarget.fallbackUrl) {
+          void Linking.openURL(kakaoTalkShareTarget.fallbackUrl).catch(() => {
+            // TODO: 네이티브 공통 오류 안내 UI가 생기면 카카오톡 실행 실패를 사용자에게 알린다.
+          });
+        }
+      });
+
+      return false;
     }
 
     if (/^https?:\/\//i.test(url)) {

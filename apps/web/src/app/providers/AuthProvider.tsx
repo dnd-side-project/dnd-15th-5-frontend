@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
+import { matchPath } from 'react-router-dom';
 
 import { restoreNativeAuthentication } from '@/app/configureAxiosAuth';
 import { refreshWeb } from '@/features/auth/apis/clients';
-import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { Spinner } from '@/shared/ui/spinner';
@@ -21,7 +22,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     if (
       window.location.pathname === ROUTE_PATHS.authCallback ||
-      window.location.pathname === ROUTE_PATHS.oauthCallback
+      window.location.pathname === ROUTE_PATHS.oauthCallback ||
+      matchPath(ROUTE_PATTERNS.sharedReport, window.location.pathname)
     ) {
       setInitialized(true);
       return;

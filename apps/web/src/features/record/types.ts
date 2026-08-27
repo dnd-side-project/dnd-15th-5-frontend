@@ -1,4 +1,10 @@
+import type { VisitDateTimeValue } from '@chapchap/shared/record';
+
 export type ShopSearchLocationState = {
+  /** 기존 수기 기록에서 가게만 변경하러 진입했는지 나타냅니다. */
+  isChangingManualRecordShop?: boolean;
+  /** 가게 변경 전 수기 기록 폼에서 선택한 방문 일시입니다. */
+  manualRecordVisitDateTime?: VisitDateTimeValue;
   /**
    * 가게 미선택 상태의 수기 입력 화면에서 검색으로 교체 이동(`replace`)했을 때만 `true`로
    * 전달합니다. 이 경우 브라우저 히스토리에 돌아갈 곳이 없어, 뒤로 가기를 기록 방법 선택

@@ -1,10 +1,11 @@
+import { SUNDAY_FIRST_WEEKDAY_LABELS } from '@chapchap/shared/common/constants';
+
 import type { CurrentStatusResponse } from '@/features/report/apis/dto';
 import type { WeeklyRecord } from '@/features/report/types';
-import { getStickerImageByName } from '@/shared/assets/images/stickers';
+import { getStickerImages } from '@/shared/assets/images/stickers';
 
 const DAYS_IN_WEEK = 7;
 const MAX_VISIBLE_STICKERS = 5;
-const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
 
 /** Date 객체를 API와 라우트에서 사용하는 yyyy-MM-dd 형식으로 변환합니다. */
 const formatDateValue = (date: Date) => {
@@ -16,7 +17,7 @@ const formatDateValue = (date: Date) => {
 };
 
 /** Date 객체를 리포트 조회 파라미터인 yyyy-MM 형식으로 변환합니다. */
-export const formatYearMonth = (date: Date) =>
+export const formatDateYearMonth = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
 /**
@@ -38,7 +39,7 @@ const parseStatusDate = (
     if (formatDateValue(parsedDate) === dateValue) return parsedDate;
   }
 
-  if (formatYearMonth(fallbackDate) === fallbackYearMonth) return fallbackDate;
+  if (formatDateYearMonth(fallbackDate) === fallbackYearMonth) return fallbackDate;
 
   const matchedYearMonth = fallbackYearMonth.match(/^(\d{4})-(\d{2})$/);
   if (matchedYearMonth) {
@@ -69,7 +70,7 @@ const createWeeklyRecords = (
       ...(count > 0 ? { count } : {}),
       date: date.getDate(),
       dateValue: formatDateValue(date),
-      day: WEEKDAY_LABELS[index],
+      day: SUNDAY_FIRST_WEEKDAY_LABELS[index],
       ...(index > statusDate.getDay() ? { isFuture: true } : {}),
       ...(index === statusDate.getDay() ? { isToday: true } : {}),
     };
@@ -91,7 +92,7 @@ const formatWeeklyPeriod = (weeklyRecords: readonly WeeklyRecord[]) => {
 };
 
 /**
- * 현재 리포트 API 응답을 메인 리포트 화면 모델로 변환합니다.
+ * 현재 리포트 API 필드를 유지하면서 메인 화면에 필요한 파생 표시값을 추가합니다.
  * 스티커는 최대 5개까지만 이미지로 노출하고 나머지는 추가 개수로 집계합니다.
  */
 export const mapCurrentStatusToReportPageData = (
@@ -101,23 +102,22 @@ export const mapCurrentStatusToReportPageData = (
 ) => {
   const statusDate = parseStatusDate(status?.date, requestedYearMonth, fallbackDate);
   const weeklyRecords = createWeeklyRecords(statusDate, status?.weeklyCounts ?? []);
-  const monthlyRecordCount = status?.monthlyCount ?? 0;
-  const supportedStickerImages = (status?.monthlyStickers ?? []).flatMap(({ itemName }) => {
-    const stickerImage = getStickerImageByName(itemName);
-
-    return stickerImage ? [stickerImage] : [];
-  });
+  const supportedStickerImages = getStickerImages(status?.monthlyStickers ?? []);
   const monthlyStickerImages = supportedStickerImages.slice(0, MAX_VISIBLE_STICKERS);
 
   return {
+    ...status,
+    date: status?.date ?? formatDateValue(statusDate),
     monthLabel: `${statusDate.getMonth() + 1}월`,
+    monthlyCount: status?.monthlyCount ?? 0,
     monthlyAdditionalStickerCount: Math.max(
       supportedStickerImages.length - monthlyStickerImages.length,
       0
     ),
-    monthlyRecordCount,
     monthlyStickerImages,
-    recentDiscovery: status?.recentDiscoveryMessage?.trim() ?? '',
+    monthlyStickers: status?.monthlyStickers ?? [],
+    recentDiscoveryMessage: status?.recentDiscoveryMessage?.trim() ?? '',
+    weeklyCounts: status?.weeklyCounts ?? [],
     weeklyPeriodLabel: formatWeeklyPeriod(weeklyRecords),
     weeklyRecords,
   };

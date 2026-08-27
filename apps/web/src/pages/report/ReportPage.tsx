@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import {
   MonthlyStickerSummary,
@@ -10,6 +10,7 @@ import {
   WeeklyRecordCalendar,
   useCurrentReportQuery,
 } from '@/features/report';
+import { ChevronRightIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { StateView } from '@/shared/ui/state-view';
@@ -36,9 +37,9 @@ export default function ReportPage() {
   const {
     monthLabel,
     monthlyAdditionalStickerCount,
-    monthlyRecordCount,
+    monthlyCount,
     monthlyStickerImages,
-    recentDiscovery,
+    recentDiscoveryMessage,
     weeklyPeriodLabel,
     weeklyRecords,
   } = report;
@@ -72,6 +73,15 @@ export default function ReportPage() {
           </ReportSection>
 
           <ReportSection
+            action={
+              <Link
+                className="flex shrink-0 items-center gap-1 text-body-02-medium text-neutral-500 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
+                to={ROUTE_PATHS.monthlyRecordList}
+              >
+                전체보기
+                <ChevronRightIcon aria-hidden className="size-4 text-neutral-400" />
+              </Link>
+            }
             title={
               <>
                 이번달{' '}
@@ -81,7 +91,7 @@ export default function ReportPage() {
                     className="inline-block h-5 w-8 rounded-05 bg-primary-100 align-text-bottom"
                   />
                 ) : (
-                  <span className="text-primary-500">{monthlyRecordCount}개</span>
+                  <span className="text-primary-500">{monthlyCount}개</span>
                 )}
                 의 기록이 쌓이고 있어요 !
               </>
@@ -102,7 +112,7 @@ export default function ReportPage() {
             {isPending ? (
               <ReportContentSkeleton variant="discovery" />
             ) : (
-              <RecentDiscoveryPanel messages={recentDiscovery} />
+              <RecentDiscoveryPanel messages={recentDiscoveryMessage} />
             )}
           </ReportSection>
 

@@ -8,14 +8,22 @@ import { Button } from '@/shared/ui/button';
 
 type ReportShareSheetProps = {
   isDownloading: boolean;
+  isSharing: boolean;
   isOpen: boolean;
   onClose: () => void;
   onDownload: () => void;
+  onKakaoShare: () => void;
 };
 
 type ReportShareDialogProps = Omit<ReportShareSheetProps, 'isOpen'>;
 
-function ReportShareDialog({ isDownloading, onClose, onDownload }: ReportShareDialogProps) {
+function ReportShareDialog({
+  isDownloading,
+  isSharing,
+  onClose,
+  onDownload,
+  onKakaoShare,
+}: ReportShareDialogProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
 
   useScrollLock();
@@ -55,7 +63,7 @@ function ReportShareDialog({ isDownloading, onClose, onDownload }: ReportShareDi
               <ImageDownloadIcon aria-hidden className="size-4" />
               이미지 저장
             </Button>
-            <Button size="medium" variant="secondary">
+            <Button isLoading={isSharing} onClick={onKakaoShare} size="medium" variant="secondary">
               카카오톡으로 공유하기
             </Button>
           </div>
@@ -68,13 +76,21 @@ function ReportShareDialog({ isDownloading, onClose, onDownload }: ReportShareDi
 /** 취향 카드의 이미지 저장과 외부 공유 동작을 제공하는 하단 패널입니다. */
 export default function ReportShareSheet({
   isDownloading,
+  isSharing,
   isOpen,
   onClose,
   onDownload,
+  onKakaoShare,
 }: ReportShareSheetProps) {
   if (!isOpen) return null;
 
   return (
-    <ReportShareDialog isDownloading={isDownloading} onClose={onClose} onDownload={onDownload} />
+    <ReportShareDialog
+      isDownloading={isDownloading}
+      isSharing={isSharing}
+      onClose={onClose}
+      onDownload={onDownload}
+      onKakaoShare={onKakaoShare}
+    />
   );
 }

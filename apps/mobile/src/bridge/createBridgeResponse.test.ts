@@ -1,5 +1,6 @@
 import { BRIDGE_MESSAGE_KIND } from '@chapchap/shared/bridge';
 
+import { clearAccessToken } from '@/native/api';
 import {
   clearRefreshToken,
   getRefreshToken,
@@ -15,6 +16,7 @@ import { createBridgeResponse } from './createBridgeResponse';
 import type { BridgeRequest } from '@chapchap/shared/bridge';
 
 jest.mock('@/native/location', () => ({ getCurrentPosition: jest.fn() }));
+jest.mock('@/native/api', () => ({ clearAccessToken: jest.fn() }));
 jest.mock('@/native/save-image', () => ({ saveImageToLibrary: jest.fn() }));
 jest.mock('@/native/openReceiptCamera', () => ({ openReceiptCamera: jest.fn() }));
 jest.mock('@/native/auth', () => ({
@@ -25,6 +27,7 @@ jest.mock('@/native/auth', () => ({
 }));
 
 const mockClearRefreshToken = jest.mocked(clearRefreshToken);
+const mockClearAccessToken = jest.mocked(clearAccessToken);
 const mockGetRefreshToken = jest.mocked(getRefreshToken);
 const mockGetCurrentPosition = jest.mocked(getCurrentPosition);
 const mockSaveImageToLibrary = jest.mocked(saveImageToLibrary);
@@ -309,6 +312,7 @@ describe('createBridgeResponse', () => {
     const response = await createBridgeResponse(request);
 
     expect(mockSetRefreshToken).toHaveBeenCalledWith('rotated-refresh-token');
+    expect(mockClearAccessToken).toHaveBeenCalledTimes(1);
     expect(response).toEqual({
       kind: BRIDGE_MESSAGE_KIND.RESPONSE,
       id: request.id,
@@ -329,6 +333,7 @@ describe('createBridgeResponse', () => {
     const response = await createBridgeResponse(request);
 
     expect(mockClearRefreshToken).toHaveBeenCalledTimes(1);
+    expect(mockClearAccessToken).toHaveBeenCalledTimes(1);
     expect(response).toEqual({
       kind: BRIDGE_MESSAGE_KIND.RESPONSE,
       id: request.id,
