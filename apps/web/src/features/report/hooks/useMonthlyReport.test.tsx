@@ -2,19 +2,24 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 
+import type { MonthlyReport } from '@/features/report/types';
+
 import { useMonthlyReport } from './useMonthlyReport';
+
+let mockMonthlyReportData: MonthlyReport | undefined;
+let mockFirstAvailableYearMonth = { year: 2026, month: 4 };
 
 jest.mock('@/shared/ui/toast', () => ({
   useToast: () => ({ showToast: jest.fn() }),
 }));
 
 jest.mock('@/features/report/apis/hooks/useFirstAvailableYearMonthQuery', () => ({
-  useFirstAvailableYearMonthQuery: () => ({ data: { year: 2026, month: 4 } }),
+  useFirstAvailableYearMonthQuery: () => ({ data: mockFirstAvailableYearMonth }),
 }));
 
 jest.mock('@/features/report/apis/hooks/useMonthlyReportQuery', () => ({
   useMonthlyReportQuery: () => ({
-    data: undefined,
+    data: mockMonthlyReportData,
     error: null,
     isError: false,
     isPending: false,
@@ -42,6 +47,7 @@ function MonthlyReportHarness() {
     handleMonthSelect,
     handleOlderMonth,
     isMonthPickerOpen,
+    reportCards,
     selectedMonth,
   } = useMonthlyReport();
   const location = useLocation();
@@ -52,6 +58,7 @@ function MonthlyReportHarness() {
       <span>{`${selectedMonth.year}-${selectedMonth.month}`}</span>
       <span>{location.search}</span>
       <span>{isMonthPickerOpen ? '월 선택 열림' : '월 선택 닫힘'}</span>
+      <span data-testid="report-card-months">{reportCards.map((card) => card.id).join(',')}</span>
       <button onClick={handleMonthPickerOpen} type="button">
         월 선택 열기
       </button>
@@ -76,7 +83,33 @@ const renderMonthlyReportHook = (initialEntry: string) => {
   );
 };
 
+const createMockMonthlyReport = (
+  month: MonthlyReport['month'],
+  adjacentCards: MonthlyReport['adjacentCards']
+): MonthlyReport => ({
+  adjacentCards,
+  categories: [],
+  districts: [],
+  month,
+  persona: {
+    description: '설명',
+    metrics: [],
+    tags: [],
+    title: '골목 발굴러',
+    variant: 'alley-explorer',
+  },
+  shops: [],
+  summary: [],
+  weekdayInsight: '',
+  weekdaySpending: [],
+});
+
 describe('useMonthlyReport', () => {
+  beforeEach(() => {
+    mockFirstAvailableYearMonth = { year: 2026, month: 4 };
+    mockMonthlyReportData = undefined;
+  });
+
   it('URL의 yearMonth에 해당하는 리포트를 선택한다', () => {
     renderMonthlyReportHook('/report/monthly-report?yearMonth=2026-05');
 
@@ -128,5 +161,30 @@ describe('useMonthlyReport', () => {
 
     expect(screen.getByText('2026-7')).toBeInTheDocument();
     expect(screen.getByText('?yearMonth=2026-07')).toBeInTheDocument();
+  });
+
+  it('조회 가능한 범위를 벗어난 인접 empty 카드는 제외한다', () => {
+    mockMonthlyReportData = createMockMonthlyReport({ month: 7, year: 2026 }, [
+      { isUnavailable: true, month: { month: 6, year: 2026 } },
+      { isUnavailable: true, month: { month: 8, year: 2026 } },
+    ]);
+
+    renderMonthlyReportHook('/report/monthly-report?yearMonth=2026-07');
+
+    expect(screen.getByTestId('report-card-months')).toHaveTextContent('2026-06,2026-07');
+    expect(screen.getByTestId('report-card-months')).not.toHaveTextContent('2026-08');
+  });
+
+  it('최초 리포트보다 이전인 empty 카드는 제외한다', () => {
+    mockFirstAvailableYearMonth = { year: 2026, month: 5 };
+    mockMonthlyReportData = createMockMonthlyReport({ month: 5, year: 2026 }, [
+      { isUnavailable: true, month: { month: 4, year: 2026 } },
+      { isUnavailable: true, month: { month: 6, year: 2026 } },
+    ]);
+
+    renderMonthlyReportHook('/report/monthly-report?yearMonth=2026-05');
+
+    expect(screen.getByTestId('report-card-months')).toHaveTextContent('2026-05,2026-06');
+    expect(screen.getByTestId('report-card-months')).not.toHaveTextContent('2026-04');
   });
 });

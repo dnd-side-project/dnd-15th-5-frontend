@@ -52,7 +52,13 @@ export const useMonthlyReport = () => {
   const hasNewerMonth = selectedMonthIndex > 0;
   const hasOlderMonth = selectedMonthIndex < selectableMonths.length - 1;
   const reportCards = report
-    ? [...report.adjacentCards, { ...report.persona, month: selectedMonth }]
+    ? [
+        ...report.adjacentCards,
+        { ...report.persona, isUnavailable: false as const, month: selectedMonth },
+      ]
+        .filter((card) =>
+          selectableMonths.some((selectableMonth) => isSameMonth(selectableMonth, card.month))
+        )
         .map((card) => ({ ...card, id: formatYearMonth(card.month) }))
         .sort((left, right) => left.id.localeCompare(right.id))
     : [];
