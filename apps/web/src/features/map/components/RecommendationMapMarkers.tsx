@@ -33,9 +33,11 @@ export default function RecommendationMapMarkers() {
     }
 
     const activeRecommendation = recommendations.find(({ id }) => id === activeRecommendationId);
-    if (activeRecommendation) {
-      focusMapOnPosition(map, activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
+    if (!activeRecommendation) {
+      return;
     }
+
+    return focusMapOnPosition(map, activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
   }, [activeRecommendationId, isRecommendationOpen, map, recommendations]);
 
   const handleMarkerSelect = (recommendation: ShopRecommendation) => {
