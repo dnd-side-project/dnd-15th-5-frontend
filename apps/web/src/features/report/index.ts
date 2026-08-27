@@ -3,7 +3,6 @@ export { default as ReportPreferenceShareCard } from './components/monthly-repor
 export { default as CategoryChart } from './components/monthly-report/CategoryChart';
 export { default as ReportMyPlace } from './components/monthly-report/ReportMyPlace';
 export { default as MonthlyReportHeader } from './components/monthly-report/MonthlyReportHeader';
-export { default as MonthlyReportCardSkeleton } from './components/monthly-report/MonthlyReportCardSkeleton';
 export { default as MonthlyReportDetailsSkeleton } from './components/monthly-report/MonthlyReportDetailsSkeleton';
 export { default as MonthlyReportEmptyState } from './components/monthly-report/MonthlyReportEmptyState';
 export { default as MonthlyReportUnavailableCard } from './components/monthly-report/MonthlyReportUnavailableCard';

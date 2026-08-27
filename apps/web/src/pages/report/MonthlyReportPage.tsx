@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   CategoryChart,
-  MonthlyReportCardSkeleton,
   MonthlyReportEmptyState,
   MonthlyReportDetailsSkeleton,
   MonthlyReportHeader,
@@ -77,7 +76,7 @@ export default function MonthlyReportPage() {
       )}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-147.25 bg-monthly-report-hero" />
 
-      <div className="relative pt-4">
+      <div className={`relative pt-4 ${isPending && !report ? 'min-h-147.25' : ''}`}>
         <MonthlyReportHeader
           hasNewerMonth={hasNewerMonth}
           hasOlderMonth={hasOlderMonth}
@@ -91,7 +90,6 @@ export default function MonthlyReportPage() {
           selectableMonths={selectableMonths}
           selectedMonth={selectedMonth}
         />
-        {isPending && !report && <MonthlyReportCardSkeleton />}
         {report && (
           <ReportPreferenceSection
             cards={reportCards}
