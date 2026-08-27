@@ -6,22 +6,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import {
+  createReceiptConfirmParams,
   getRecordErrorMessage,
-  parseReceiptVisitDateTime,
   processReceiptImage,
   RecordExitConfirmDialog,
   RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET,
   ReceiptScanLoading,
 } from '@/features/record';
-import type { ReceiptReviewRouteParams } from '@/features/record';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
 import { CloseIcon, GalleryIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
 import { useToast } from '@/shared/ui/toast';
 
 import type { GestureResponderEvent } from 'react-native';
-
-type ProcessedReceipt = Awaited<ReturnType<typeof processReceiptImage>>;
 
 // NOTE: 손가락 이동 거리 대비 줌 변화량. 실제 기기에서 체감 속도를 보고 조정이 필요할 수 있다.
 const PINCH_ZOOM_SENSITIVITY = 0.5;
@@ -35,47 +32,6 @@ const getTouchDistance = (touches: GestureResponderEvent['nativeEvent']['touches
   }
 
   return Math.hypot(first.pageX - second.pageX, first.pageY - second.pageY);
-};
-
-const createReceiptConfirmParams = ({
-  uri,
-  receiptImageId,
-  storeName,
-  address,
-  purchaseDate,
-  purchaseTime,
-  amount,
-  googlePlaceSearchResult,
-}: ProcessedReceipt): ReceiptReviewRouteParams => {
-  const visitDateTime = parseReceiptVisitDateTime(purchaseDate, purchaseTime);
-  const recognizedShopName = googlePlaceSearchResult?.placeName || storeName;
-  const recognizedShopAddress = googlePlaceSearchResult?.roadAddress || address;
-
-  return {
-    uri,
-    receiptImageId: String(receiptImageId),
-    ...(googlePlaceSearchResult?.googlePlaceId
-      ? { shopId: googlePlaceSearchResult.googlePlaceId }
-      : {}),
-    ...(recognizedShopName ? { shopName: recognizedShopName } : {}),
-    ...(recognizedShopAddress ? { shopAddress: recognizedShopAddress } : {}),
-    ...(googlePlaceSearchResult?.thumbnailUrl
-      ? { shopPhotoUrl: googlePlaceSearchResult.thumbnailUrl }
-      : {}),
-    ...(googlePlaceSearchResult?.latitude !== undefined
-      ? { latitude: String(googlePlaceSearchResult.latitude) }
-      : {}),
-    ...(googlePlaceSearchResult?.longitude !== undefined
-      ? { longitude: String(googlePlaceSearchResult.longitude) }
-      : {}),
-    ...(amount !== null && amount !== undefined ? { amount: String(amount) } : {}),
-    ...(visitDateTime
-      ? {
-          visitedAt: String(visitDateTime.date.getTime()),
-          visitPeriod: visitDateTime.period,
-        }
-      : {}),
-  };
 };
 
 /**

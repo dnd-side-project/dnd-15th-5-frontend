@@ -2,6 +2,9 @@ import {
   createInitialVisitDateTime,
   formatAmount,
   formatPurchaseDateTime,
+  formatVisitDateTime,
+  formatVisitDateTimeConfirmLabel,
+  getCalendarWeekCount,
   getVisitPeriodForHour,
   isSameOrAfterMonth,
   isValidRecordAmount,
@@ -61,10 +64,38 @@ describe('shared record rules', () => {
     });
   });
 
+  it('방문 일시는 올해면 월일부터, 다른 연도면 연도부터 표시한다', () => {
+    const now = new Date(2026, 7, 20);
+
+    expect(formatVisitDateTime({ date: new Date(2026, 6, 5), period: 'evening' }, now)).toBe(
+      '7월 5일 (일) · 저녁'
+    );
+    expect(formatVisitDateTime({ date: new Date(2025, 6, 5), period: 'evening' }, now)).toBe(
+      '2025년 7월 5일 (토) · 저녁'
+    );
+  });
+
+  it('방문 일시 확인 버튼은 다른 연도의 날짜에만 연도를 표시한다', () => {
+    const now = new Date(2026, 7, 20);
+
+    expect(
+      formatVisitDateTimeConfirmLabel({ date: new Date(2026, 6, 5), period: 'evening' }, now)
+    ).toBe('7월 5일 저녁');
+    expect(
+      formatVisitDateTimeConfirmLabel({ date: new Date(2025, 6, 5), period: 'evening' }, now)
+    ).toBe('2025년 7월 5일 저녁');
+  });
+
   it('달력의 7개 요일과 미래 월 이동 제한을 웹·앱에서 같은 규칙으로 계산한다', () => {
     expect(WEEKDAY_LABELS).toHaveLength(7);
     expect(isSameOrAfterMonth(new Date(2026, 7, 1), new Date(2026, 7, 20))).toBe(true);
     expect(isSameOrAfterMonth(new Date(2026, 8, 1), new Date(2026, 7, 20))).toBe(true);
     expect(isSameOrAfterMonth(new Date(2026, 6, 1), new Date(2026, 7, 20))).toBe(false);
+  });
+
+  it('월별 달력의 주 수를 계산한다', () => {
+    expect(getCalendarWeekCount(new Date(2026, 1, 1))).toBe(4);
+    expect(getCalendarWeekCount(new Date(2026, 2, 1))).toBe(5);
+    expect(getCalendarWeekCount(new Date(2026, 7, 1))).toBe(6);
   });
 });

@@ -1,4 +1,9 @@
-import { getVisitPeriodForHour, getVisitPeriodLabel } from '@chapchap/shared/record';
+import {
+  formatVisitDateTime,
+  formatVisitDateTimeConfirmLabel,
+  getVisitPeriodForHour,
+  getVisitPeriodLabel,
+} from '@chapchap/shared/record';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
@@ -131,7 +136,7 @@ describe('<ManualRecordPage />', () => {
 
     expect(screen.queryByRole('dialog', { name: '방문 일시 선택' })).not.toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /방문 일시 변경, 7월 15일.*밤/ })
+      screen.getByRole('button', { name: /방문 일시 변경, 2025년 7월 15일.*밤/ })
     ).toBeInTheDocument();
   });
 
@@ -226,6 +231,7 @@ describe('<ManualRecordPage />', () => {
     const nextPeriodRange = nextPeriod === 'morning' ? '05–11시' : '21–05시';
     const previousDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
     const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const nextVisitDateTime: VisitDateTimeValue = { date: previousDate, period: nextPeriod };
     renderPage();
 
     await user.click(screen.getByRole('button', { name: /방문 일시 변경/ }));
@@ -276,7 +282,7 @@ describe('<ManualRecordPage />', () => {
     await user.click(screen.getByRole('button', { name: `${nextPeriodLabel} ${nextPeriodRange}` }));
 
     const confirmButton = screen.getByRole('button', {
-      name: `${previousDate.getMonth() + 1}월 ${previousDate.getDate()}일 ${nextPeriodLabel}`,
+      name: formatVisitDateTimeConfirmLabel(nextVisitDateTime, now),
     });
     expect(confirmButton).toBeInTheDocument();
 
@@ -289,9 +295,7 @@ describe('<ManualRecordPage />', () => {
     await waitFor(() => {
       expect(
         screen.getByRole('button', {
-          name: new RegExp(
-            `방문 일시 변경, ${previousDate.getMonth() + 1}월 ${previousDate.getDate()}일.*${nextPeriodLabel}`
-          ),
+          name: `방문 일시 변경, ${formatVisitDateTime(nextVisitDateTime, now)}`,
         })
       ).toBeInTheDocument();
       expect(screen.queryByRole('dialog', { name: '방문 일시 선택' })).not.toBeInTheDocument();
