@@ -2,11 +2,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 
-import type { MonthlyReport } from '@/features/report/types';
+import type { MonthlyReport, MonthlyReportData } from '@/features/report/types';
 
 import { useMonthlyReport } from './useMonthlyReport';
 
-let mockMonthlyReportData: MonthlyReport | undefined;
+let mockMonthlyReportData: MonthlyReportData | undefined;
 let mockFirstAvailableYearMonth = { year: 2026, month: 4 };
 
 jest.mock('@/shared/ui/toast', () => ({
@@ -160,7 +160,7 @@ describe('useMonthlyReport', () => {
     expect(screen.getByText('월 선택 닫힘')).toBeInTheDocument();
   });
 
-  it('브라우저 탐색으로 URL이 바뀌면 해당 월 리포트로 동기화한다', async () => {
+  it('월 이동으로 브라우저 히스토리를 추가하지 않는다', async () => {
     const user = userEvent.setup();
     renderMonthlyReportHook('/report/monthly-report?yearMonth=2026-07');
 
@@ -169,8 +169,8 @@ describe('useMonthlyReport', () => {
 
     await user.click(screen.getByRole('button', { name: '브라우저 뒤로가기' }));
 
-    expect(screen.getByText('2026-7')).toBeInTheDocument();
-    expect(screen.getByText('?yearMonth=2026-07')).toBeInTheDocument();
+    expect(screen.getByText('2026-6')).toBeInTheDocument();
+    expect(screen.getByText('?yearMonth=2026-06')).toBeInTheDocument();
   });
 
   it('조회 가능한 범위를 벗어난 인접 empty 카드는 제외한다', () => {
@@ -183,6 +183,31 @@ describe('useMonthlyReport', () => {
 
     expect(screen.getByTestId('report-card-months')).toHaveTextContent('2026-06,2026-07');
     expect(screen.getByTestId('report-card-months')).not.toHaveTextContent('2026-08');
+  });
+
+  it('선택한 달의 리포트가 없어도 응답에 포함된 양옆 카드를 유지한다', () => {
+    mockFirstAvailableYearMonth = { year: 2026, month: 3 };
+    mockMonthlyReportData = {
+      adjacentCards: [
+        { isUnavailable: true, month: { month: 3, year: 2026 } },
+        {
+          description: '설명',
+          isUnavailable: false,
+          metrics: [],
+          month: { month: 5, year: 2026 },
+          tags: [],
+          title: '골목 발굴러',
+          variant: 'alley-explorer',
+        },
+      ],
+      isUnavailable: true,
+      month: { month: 4, year: 2026 },
+    };
+
+    renderMonthlyReportHook('/report/monthly-report?yearMonth=2026-04');
+
+    expect(screen.getByTestId('report-card-months')).toHaveTextContent('2026-03,2026-04,2026-05');
+    expect(screen.getByTestId('selected-card-index')).toHaveTextContent('1');
   });
 
   it('최초 리포트보다 이전인 empty 카드는 제외한다', () => {

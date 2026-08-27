@@ -13,8 +13,8 @@ import {
   REPORT_WEEKDAY_LABELS,
 } from '@/features/report/constants';
 import type {
-  MonthlyReport,
   MonthlyReportAdjacentCard,
+  MonthlyReportData,
   ReportPreferenceCardVariant,
 } from '@/features/report/types';
 import { getStickerImageByName } from '@/shared/assets/images/stickers';
@@ -24,6 +24,7 @@ import { addMonth, getMonthDifference, parseYearMonth } from '@/shared/utils/yea
 import type { SpendingCategory } from '@chapchap/shared/common/types';
 
 const SPENDING_CATEGORY_SET = new Set<SpendingCategory>(SPENDING_CATEGORIES);
+
 type PersonaAxes = {
   activityRange: 'H' | 'W';
   consumptionRhythm: 'P' | 'F';
@@ -119,10 +120,25 @@ const createWeekdayInsight = (peakDayOfWeek?: string, peakTimeSlot?: string) => 
 export const mapMonthlyReportResponse = (
   response: MonthlyReportResponse | undefined,
   requestedMonth: YearMonth
-): MonthlyReport | undefined => {
-  if (response?.reportId === undefined) return undefined;
+): MonthlyReportData | undefined => {
+  if (!response) return undefined;
+  if (response.reportId === undefined && response.yearMonth === undefined) return undefined;
 
   const reportMonth = parseYearMonth(response.yearMonth) ?? requestedMonth;
+  const adjacentCards = [
+    mapAdjacentPersona(response.previous, addMonth(reportMonth, -1)),
+    mapAdjacentPersona(response.next, addMonth(reportMonth, 1)),
+  ].filter((card): card is MonthlyReportAdjacentCard => Boolean(card));
+
+  // NOTE: 미생성 월도 양옆 카드 탐색에 필요한 메타데이터는 응답되므로 버리지 않습니다.
+  if (response.reportId == null) {
+    return {
+      adjacentCards,
+      isUnavailable: true,
+      month: reportMonth,
+    };
+  }
+
   const categoryPercentages = new Map<SpendingCategory, number>();
   response.categoryStats?.forEach(({ category, percentage }) => {
     const categoryName = toSpendingCategory(category);
@@ -139,10 +155,7 @@ export const mapMonthlyReportResponse = (
   const personaCopy = REPORT_PERSONA_COPY[personaVariant];
 
   return {
-    adjacentCards: [
-      mapAdjacentPersona(response.previous, addMonth(reportMonth, -1)),
-      mapAdjacentPersona(response.next, addMonth(reportMonth, 1)),
-    ].filter((card): card is MonthlyReportAdjacentCard => Boolean(card)),
+    adjacentCards,
     month: reportMonth,
     persona: {
       description: personaCopy.description,

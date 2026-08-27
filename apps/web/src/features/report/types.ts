@@ -73,6 +73,16 @@ export type MonthlyReport = {
   weekdaySpending: readonly MonthlyReportWeekdaySpending[];
 };
 
+/** 리포트가 없는 달의 현재 월과 양옆 카드 데이터입니다. */
+export type MonthlyReportUnavailable = {
+  adjacentCards: readonly MonthlyReportAdjacentCard[];
+  isUnavailable: true;
+  month: YearMonth;
+};
+
+/** 월간 리포트 API에서 만들 수 있는 생성·미생성 화면 데이터입니다. */
+export type MonthlyReportData = MonthlyReport | MonthlyReportUnavailable;
+
 export type WeeklyRecord = {
   count?: number;
   date: number;

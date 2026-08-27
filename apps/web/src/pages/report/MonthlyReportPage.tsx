@@ -90,7 +90,7 @@ export default function MonthlyReportPage() {
           selectableMonths={selectableMonths}
           selectedMonth={selectedMonth}
         />
-        {report && (
+        {reportCards.length > 0 && (
           <ReportPreferenceSection
             cards={reportCards}
             captureRef={captureRef}
@@ -104,7 +104,9 @@ export default function MonthlyReportPage() {
         )}
         {!isPending && !report && (
           <div className="mt-4.5 flex flex-col items-center">
-            <MonthlyReportUnavailableCard selectedMonth={selectedMonth} />
+            {reportCards.length === 0 && (
+              <MonthlyReportUnavailableCard selectedMonth={selectedMonth} />
+            )}
             <MonthlyReportEmptyState selectedMonth={selectedMonth} />
           </div>
         )}

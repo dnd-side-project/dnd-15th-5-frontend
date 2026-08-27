@@ -1,30 +1,32 @@
 import type {
-  MonthlyReport,
   MonthlyReportAdjacentCard,
+  MonthlyReportData,
   MonthlyReportPreferenceCard,
 } from '@/features/report/types';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { formatYearMonth, isSameMonth } from '@/shared/utils/yearMonth';
 
 type CreateMonthlyReportCarouselCardsOptions = {
-  report: MonthlyReport | undefined;
+  reportData: MonthlyReportData | undefined;
   selectableMonths: readonly YearMonth[];
   selectedMonth: YearMonth;
 };
 
 /** 현재 리포트와 양옆 카드 응답을 월별 캐러셀 카드 목록으로 정규화합니다. */
 export const createMonthlyReportCarouselCards = ({
-  report,
+  reportData,
   selectableMonths,
   selectedMonth,
 }: CreateMonthlyReportCarouselCardsOptions): MonthlyReportPreferenceCard[] => {
-  if (!report) return [];
+  if (!reportData) return [];
 
   const selectedYearMonth = formatYearMonth(selectedMonth);
   const cardsByYearMonth = new Map<string, MonthlyReportAdjacentCard>();
   const reportCards: MonthlyReportAdjacentCard[] = [
-    ...report.adjacentCards,
-    { ...report.persona, isUnavailable: false, month: report.month },
+    ...reportData.adjacentCards,
+    'isUnavailable' in reportData
+      ? { isUnavailable: true, month: reportData.month }
+      : { ...reportData.persona, isUnavailable: false, month: reportData.month },
   ];
 
   reportCards.forEach((card) => cardsByYearMonth.set(formatYearMonth(card.month), card));
