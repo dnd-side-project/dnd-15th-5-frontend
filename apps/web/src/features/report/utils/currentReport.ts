@@ -1,10 +1,11 @@
+import { SUNDAY_FIRST_WEEKDAY_LABELS } from '@chapchap/shared/common/constants';
+
 import type { CurrentStatusResponse } from '@/features/report/apis/dto';
 import type { WeeklyRecord } from '@/features/report/types';
 import { getStickerImages } from '@/shared/assets/images/stickers';
 
 const DAYS_IN_WEEK = 7;
 const MAX_VISIBLE_STICKERS = 5;
-const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'] as const;
 
 /** Date 객체를 API와 라우트에서 사용하는 yyyy-MM-dd 형식으로 변환합니다. */
 const formatDateValue = (date: Date) => {
@@ -16,7 +17,7 @@ const formatDateValue = (date: Date) => {
 };
 
 /** Date 객체를 리포트 조회 파라미터인 yyyy-MM 형식으로 변환합니다. */
-export const formatYearMonth = (date: Date) =>
+export const formatDateYearMonth = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
 /**
@@ -38,7 +39,7 @@ const parseStatusDate = (
     if (formatDateValue(parsedDate) === dateValue) return parsedDate;
   }
 
-  if (formatYearMonth(fallbackDate) === fallbackYearMonth) return fallbackDate;
+  if (formatDateYearMonth(fallbackDate) === fallbackYearMonth) return fallbackDate;
 
   const matchedYearMonth = fallbackYearMonth.match(/^(\d{4})-(\d{2})$/);
   if (matchedYearMonth) {
@@ -69,7 +70,7 @@ const createWeeklyRecords = (
       ...(count > 0 ? { count } : {}),
       date: date.getDate(),
       dateValue: formatDateValue(date),
-      day: WEEKDAY_LABELS[index],
+      day: SUNDAY_FIRST_WEEKDAY_LABELS[index],
       ...(index > statusDate.getDay() ? { isFuture: true } : {}),
       ...(index === statusDate.getDay() ? { isToday: true } : {}),
     };

@@ -1,3 +1,8 @@
+import {
+  MONDAY_FIRST_WEEKDAY_LABELS,
+  SPENDING_CATEGORIES,
+} from '@chapchap/shared/common/constants';
+
 import type { AdjacentPersonaResponse, MonthlyReportResponse } from '@/features/report/apis/dto';
 import {
   REPORT_PERSONA_COPY,
@@ -18,16 +23,7 @@ import { addMonth, getMonthDifference, parseYearMonth } from '@/shared/utils/yea
 
 import type { SpendingCategory } from '@chapchap/shared/common/types';
 
-const CATEGORY_NAMES = new Set<SpendingCategory>([
-  '카페',
-  '운동',
-  '편의점/마트',
-  '취미/놀거리',
-  '음식점',
-  '미용/뷰티',
-  '기타',
-]);
-const WEEKDAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'] as const;
+const SPENDING_CATEGORY_SET = new Set<SpendingCategory>(SPENDING_CATEGORIES);
 type PersonaAxes = {
   activityRange: 'H' | 'W';
   consumptionRhythm: 'P' | 'F';
@@ -40,7 +36,7 @@ const toSafeNumber = (value?: number) => (Number.isFinite(value) ? Math.max(valu
 const toPercentage = (value?: number) => Math.min(toSafeNumber(value), 100);
 
 const toSpendingCategory = (category?: string): SpendingCategory =>
-  category && CATEGORY_NAMES.has(category as SpendingCategory)
+  category && SPENDING_CATEGORY_SET.has(category as SpendingCategory)
     ? (category as SpendingCategory)
     : '기타';
 
@@ -208,7 +204,7 @@ export const mapMonthlyReportResponse = (
       category,
       percentage: Math.min(percentage, 100),
     })),
-    weekdaySpending: WEEKDAY_LABELS.map((day, index) => ({
+    weekdaySpending: MONDAY_FIRST_WEEKDAY_LABELS.map((day, index) => ({
       day,
       count: toSafeNumber(
         response.timePattern?.dayOfWeekPattern?.find(({ dayOfWeek }) => dayOfWeek === index + 1)
