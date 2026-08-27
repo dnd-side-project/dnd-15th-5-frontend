@@ -6,5 +6,5 @@ type QueryWithKey = {
 export const isConsumptionRelatedQuery = ({ queryKey }: QueryWithKey) => {
   const [key] = queryKey;
 
-  return typeof key === 'string' && (key.startsWith('/consumptions') || key.startsWith('/reports'));
+  return typeof key === 'string' && (key.startsWith('/consumptions') || key === '/reports/current');
 };

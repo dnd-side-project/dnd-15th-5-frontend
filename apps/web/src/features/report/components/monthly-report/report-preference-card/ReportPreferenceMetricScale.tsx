@@ -1,14 +1,9 @@
+import type { ReportPreferenceMetric } from '@/features/report/types';
 import { cn } from '@/shared/lib/cn';
-
-export type ReportPreferenceCardMetric = {
-  leftLabel: string;
-  rightLabel: string;
-  value: number;
-};
 
 type ReportPreferenceMetricScaleProps = {
   compact?: boolean;
-  metric: ReportPreferenceCardMetric;
+  metric: ReportPreferenceMetric;
 };
 
 /** 소비 성향의 양극 지표와 현재 위치를 표시합니다. */

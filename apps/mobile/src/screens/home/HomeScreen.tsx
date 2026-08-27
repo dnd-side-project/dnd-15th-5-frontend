@@ -10,6 +10,7 @@ import {
   isTrustedBridgeUrl,
   respondToBridgeRequest,
 } from '@/bridge';
+import { getKakaoTalkShareTarget } from '@/bridge/kakaoTalkShare';
 import { subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
 
@@ -102,6 +103,20 @@ export default function HomeScreen() {
   > = ({ url }) => {
     if (!trustedWebOrigin || isTrustedBridgeUrl(url, trustedWebOrigin)) {
       return true;
+    }
+
+    const kakaoTalkShareTarget = getKakaoTalkShareTarget(url);
+
+    if (kakaoTalkShareTarget) {
+      void Linking.openURL(kakaoTalkShareTarget.launchUrl).catch(() => {
+        if (kakaoTalkShareTarget.fallbackUrl) {
+          void Linking.openURL(kakaoTalkShareTarget.fallbackUrl).catch(() => {
+            // TODO: 네이티브 공통 오류 안내 UI가 생기면 카카오톡 실행 실패를 사용자에게 알린다.
+          });
+        }
+      });
+
+      return false;
     }
 
     if (/^https?:\/\//i.test(url)) {

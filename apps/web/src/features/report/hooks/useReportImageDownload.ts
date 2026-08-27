@@ -1,10 +1,12 @@
-import { domToBlob } from 'modern-screenshot';
 import { useCallback, useRef, useState } from 'react';
 
-import { convertBlobToBase64, downloadBlob } from '@/features/report/utils/reportImage';
+import {
+  captureReportImageBlob,
+  convertBlobToBase64,
+  downloadBlob,
+} from '@/features/report/utils/reportImage';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
-
-const REPORT_IMAGE_CAPTURE_SCALE = 2;
+import { useToast } from '@/shared/ui/toast';
 
 /**
  * 지정한 DOM 영역을 2배 해상도의 PNG로 변환해 저장한다.
@@ -17,6 +19,7 @@ const REPORT_IMAGE_CAPTURE_SCALE = 2;
  * @returns 캡처 대상 ref, 다운로드 함수, 진행 상태와 실패 상태
  */
 export const useReportImageDownload = (fileName: string) => {
+  const { showToast } = useToast();
   const captureRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [hasDownloadError, setHasDownloadError] = useState(false);
@@ -28,26 +31,26 @@ export const useReportImageDownload = (fileName: string) => {
     setHasDownloadError(false);
 
     try {
-      await document.fonts.ready;
-
-      const imageBlob = await domToBlob(captureRef.current, {
-        scale: REPORT_IMAGE_CAPTURE_SCALE,
-      });
+      const imageBlob = await captureReportImageBlob(captureRef.current);
 
       if (isNativeApp()) {
         // NOTE: blob URL은 웹 런타임에서만 유효하므로 네이티브에는 Base64 데이터로 전달한다.
         const base64 = await convertBlobToBase64(imageBlob);
         await requestToNative('saveImage', { base64, fileName });
-        return;
+      } else {
+        downloadBlob(imageBlob, fileName);
       }
 
-      downloadBlob(imageBlob, fileName);
+      showToast({
+        message: '이미지가 저장되었어요.',
+        type: 'success',
+      });
     } catch {
       setHasDownloadError(true);
     } finally {
       setIsDownloading(false);
     }
-  }, [fileName, isDownloading]);
+  }, [fileName, isDownloading, showToast]);
 
   return {
     captureRef,

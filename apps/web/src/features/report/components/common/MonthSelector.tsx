@@ -42,7 +42,7 @@ export default function MonthSelector({
     >
       <button
         aria-label="이전 달 보기"
-        className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-400"
+        className="flex size-11 items-center justify-center text-neutral-900 disabled:text-neutral-400"
         disabled={!hasOlderMonth}
         onClick={onOlderMonth}
         type="button"
@@ -55,7 +55,7 @@ export default function MonthSelector({
             aria-expanded={isMonthPickerOpen}
             aria-label="월 선택"
             className={cn(
-              'text-neutral-900',
+              'h-11 text-neutral-900',
               isProminent ? 'min-w-7.5 text-title-01-semibold' : 'min-w-10 text-title-02-bold'
             )}
             onClick={onMonthClick}
@@ -76,7 +76,7 @@ export default function MonthSelector({
       </Heading>
       <button
         aria-label="다음 달 보기"
-        className="flex size-6 items-center justify-center text-neutral-900 disabled:text-neutral-400"
+        className="flex size-11 items-center justify-center text-neutral-900 disabled:text-neutral-400"
         disabled={!hasNewerMonth}
         onClick={onNewerMonth}
         type="button"

@@ -10,23 +10,30 @@ import type { To } from 'react-router-dom';
 type StateViewBaseProps = {
   title: string;
   description: string;
-  actionLabel: string;
   headingAs: 'h1' | 'h2' | 'h3';
   className?: string;
 };
 
 type StateViewProps = StateViewBaseProps & {
   variant: 'empty' | 'error';
-} & (
-    | {
-        onAction: MouseEventHandler<HTMLButtonElement>;
-        to?: never;
-      }
-    | {
-        onAction?: never;
-        to: To;
-      }
-  );
+} & StateViewActionConfig;
+
+type StateViewActionConfig =
+  | {
+      actionLabel: string;
+      onAction: MouseEventHandler<HTMLButtonElement>;
+      to?: never;
+    }
+  | {
+      actionLabel: string;
+      onAction?: never;
+      to: To;
+    }
+  | {
+      actionLabel?: never;
+      onAction?: never;
+      to?: never;
+    };
 
 type StateViewActionProps = {
   actionLabel: string;
@@ -58,7 +65,7 @@ type StateViewActionProps = {
  * @param props.variant - `empty`는 기록이 없는 상태를, `error`는 오류가 발생한 상태를 표시합니다.
  * @param props.title - 상태 화면에 표시할 제목입니다. 줄바꿈 문자(`\n`)를 사용할 수 있습니다.
  * @param props.description - 상태 화면에 표시할 안내 문구입니다. 줄바꿈 문자(`\n`)를 사용할 수 있습니다.
- * @param props.actionLabel - 액션 버튼 또는 링크에 표시할 문구입니다.
+ * @param props.actionLabel - 선택적 액션 버튼 또는 링크에 표시할 문구입니다.
  * @param props.headingAs - 페이지의 제목 구조에 맞춰 사용할 `h1`, `h2`, `h3` 태그입니다.
  * @param props.onAction - 버튼을 눌렀을 때 실행할 동작입니다. `to`와 함께 사용할 수 없습니다.
  * @param props.to - 링크를 눌렀을 때 이동할 경로입니다. `onAction`과 함께 사용할 수 없습니다.
@@ -90,7 +97,9 @@ export function StateView(props: StateViewProps) {
         {description}
       </p>
 
-      <StateViewAction actionLabel={actionLabel} onAction={props.onAction} to={props.to} />
+      {actionLabel && (
+        <StateViewAction actionLabel={actionLabel} onAction={props.onAction} to={props.to} />
+      )}
     </section>
   );
 }
