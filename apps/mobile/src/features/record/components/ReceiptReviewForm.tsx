@@ -22,7 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET } from '@/features/record/constants';
 import type { ReceiptDraft, ReceiptReviewState } from '@/features/record/types';
-import { CalendarIcon, CloseIcon } from '@/shared/assets/icons';
+import { CalendarIcon, CloseIcon, LocationPinIcon, StoreIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
 
 import RecordExitConfirmDialog from './RecordExitConfirmDialog';
@@ -91,6 +91,9 @@ export default function ReceiptReviewForm({
   const insets = useSafeAreaInsets();
   const shopName = initialShopName;
   const shopAddress = initialShopAddress;
+  const [failedShopPhotoUrl, setFailedShopPhotoUrl] = useState<string | null>(null);
+  const hasShopPhoto = Boolean(initialShopPhotoUrl) && initialShopPhotoUrl !== failedShopPhotoUrl;
+
   const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(
     () => initialVisitDateTime ?? createInitialVisitDateTime()
   );
@@ -102,12 +105,13 @@ export default function ReceiptReviewForm({
   const { isShopValid, isAmountValid, canSubmit } = validateRecordRequiredFields({
     hasShop:
       shopName.trim().length > 0 &&
+      shopAddress.trim().length > 0 &&
       Boolean(initialShopId) &&
-      initialLatitude !== null &&
-      initialLongitude !== null,
+      Number.isFinite(initialLatitude) &&
+      Number.isFinite(initialLongitude),
     amount,
   });
-  const hasShopError = hasAttemptedSubmit && !isShopValid;
+  const hasShopError = !isShopValid;
   const hasAmountError = hasAttemptedSubmit && !isAmountValid;
   const hasRequiredFieldError = hasAttemptedSubmit && !canSubmit;
   const isSubmitUnavailable = canSubmit && !onSubmit;
@@ -191,36 +195,43 @@ export default function ReceiptReviewForm({
                 hasShopError ? 'border-notification' : 'border-neutral-300'
               }`}
             >
-              {initialShopPhotoUrl ? (
+              {initialShopPhotoUrl && hasShopPhoto ? (
                 <Image
                   source={{ uri: initialShopPhotoUrl }}
                   accessibilityLabel="가게 사진"
                   className="h-15 w-15 rounded-08 bg-neutral-100"
                   resizeMode="cover"
+                  onError={() => setFailedShopPhotoUrl(initialShopPhotoUrl)}
                 />
               ) : (
                 <View
                   accessibilityLabel="가게 사진 없음"
-                  className="h-15 w-15 rounded-08 bg-neutral-100"
-                />
+                  className="h-15 w-15 items-center justify-center rounded-08 bg-neutral-100"
+                >
+                  <StoreIcon width={30} height={30} />
+                </View>
               )}
               <View className="ml-4 min-w-0 flex-1">
                 <Text
                   accessibilityLabel="가게 이름"
                   numberOfLines={1}
                   className={`font-pretendard-medium text-body-01-medium ${
-                    shopName ? 'text-neutral-700' : 'text-neutral-500'
+                    isShopValid ? 'text-neutral-700' : 'text-notification'
                   }`}
                 >
-                  {shopName || '가게를 확인해주세요'}
+                  {isShopValid ? shopName : '가게를 찾지 못했습니다'}
                 </Text>
-                <Text
-                  accessibilityLabel="가게 주소"
-                  numberOfLines={1}
-                  className="mt-2 font-pretendard-regular text-body-02-regular text-neutral-500"
-                >
-                  {shopAddress || '주소를 확인해주세요'}
-                </Text>
+                <View className="mt-2 flex-row items-center gap-0.5">
+                  {/* #cacaca = neutral-300 */}
+                  <LocationPinIcon width={9} height={12} color="#cacaca" />
+                  <Text
+                    accessibilityLabel="가게 주소"
+                    numberOfLines={1}
+                    className="min-w-0 flex-1 font-pretendard-regular text-body-02-regular text-neutral-500"
+                  >
+                    {isShopValid ? shopAddress : '가게 정보를 변경해주세요'}
+                  </Text>
+                </View>
               </View>
               <Pressable
                 onPress={() => {

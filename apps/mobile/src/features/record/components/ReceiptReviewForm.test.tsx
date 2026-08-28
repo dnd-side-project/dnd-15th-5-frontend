@@ -1,4 +1,4 @@
-import { fireEvent, render, userEvent } from '@testing-library/react-native';
+import { act, fireEvent, render, userEvent } from '@testing-library/react-native';
 import { Animated } from 'react-native';
 
 import ReceiptReviewForm from './ReceiptReviewForm';
@@ -100,6 +100,43 @@ describe('<ReceiptReviewForm />', () => {
     );
   });
 
+  it('가게 사진을 불러오지 못하면 기본 썸네일로 대체한다', async () => {
+    const commonProps = {
+      receiptUri: 'file://receipt.jpg',
+      initialShopName: '투썸플레이스 신논현점',
+      initialShopAddress: '서울특별시 강남구 봉은사로 125',
+      onBack: jest.fn(),
+      onClose: jest.fn(),
+    };
+    const { getByLabelText, queryByLabelText, rerender } = await render(
+      <ReceiptReviewForm
+        {...commonProps}
+        initialShopPhotoUrl="https://places.example.com/broken.jpg"
+      />
+    );
+
+    expect(getByLabelText('가게 사진')).toBeOnTheScreen();
+    expect(queryByLabelText('가게 사진 없음')).toBeNull();
+
+    await act(async () => {
+      fireEvent(getByLabelText('가게 사진'), 'error');
+    });
+
+    expect(queryByLabelText('가게 사진')).toBeNull();
+    expect(getByLabelText('가게 사진 없음')).toBeOnTheScreen();
+
+    await rerender(
+      <ReceiptReviewForm
+        {...commonProps}
+        initialShopPhotoUrl="https://places.example.com/replaced.jpg"
+      />
+    );
+
+    expect(getByLabelText('가게 사진')).toHaveProp('source', {
+      uri: 'https://places.example.com/replaced.jpg',
+    });
+  });
+
   it('방문 일시 영역을 누르면 날짜 선택 바텀시트를 연다', async () => {
     const user = userEvent.setup();
     const visitDateTime = { date: new Date(2026, 7, 20), period: 'afternoon' as const };
@@ -179,6 +216,7 @@ describe('<ReceiptReviewForm />', () => {
         initialReceiptImageId={15}
         initialShopId="place-01"
         initialShopName="카페 차차"
+        initialShopAddress="서울특별시 마포구 월드컵북로 1"
         initialLatitude={37.5}
         initialLongitude={127.02}
         onBack={jest.fn()}
@@ -219,7 +257,7 @@ describe('<ReceiptReviewForm />', () => {
     expect(queryByText('필수항목을 작성해주세요')).toBeNull();
   });
 
-  it('가게가 비어 있으면 제출 시 가게 영역과 필수 항목 안내를 표시한다', async () => {
+  it('가게가 비어 있으면 오류 상태를 표시하고 제출을 막는다', async () => {
     const user = userEvent.setup();
     const { getByRole, getByTestId, getByText } = await render(
       <ReceiptReviewForm
@@ -229,6 +267,13 @@ describe('<ReceiptReviewForm />', () => {
         onClose={jest.fn()}
         onSubmit={jest.fn()}
       />
+    );
+
+    expect(getByText('가게를 찾지 못했습니다')).toBeOnTheScreen();
+    expect(getByText('가게 정보를 변경해주세요')).toBeOnTheScreen();
+    expect(getByTestId('shop-field')).toHaveProp(
+      'className',
+      expect.stringContaining('border-notification')
     );
 
     await user.press(getByRole('button', { name: '기록하기' }));
@@ -261,6 +306,7 @@ describe('<ReceiptReviewForm />', () => {
         initialReceiptImageId={15}
         initialShopId="place-01"
         initialShopName="카페 차차"
+        initialShopAddress="서울특별시 마포구 월드컵북로 1"
         initialLatitude={37.5}
         initialLongitude={127.02}
         initialAmount="12000"

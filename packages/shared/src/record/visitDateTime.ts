@@ -58,11 +58,30 @@ export const getVisitPeriodForHour = (hour: number): VisitPeriod => {
 export const getVisitPeriodLabel = (period: VisitPeriod) =>
   VISIT_PERIODS.find((item) => item.value === period)?.label ?? '';
 
-/** 기록의 방문 날짜와 시간대를 사용자에게 보여줄 한국어 문자열로 만든다. */
-export const formatVisitDateTime = ({ date, period }: VisitDateTimeValue) => {
-  const weekday = new Intl.DateTimeFormat('ko-KR', { weekday: 'short' }).format(date);
+const formatVisitDateLabel = (date: Date, now: Date) => {
+  const dateLabel = `${date.getMonth() + 1}월 ${date.getDate()}일`;
 
-  return `${date.getMonth() + 1}월 ${date.getDate()}일 (${weekday}) · ${getVisitPeriodLabel(period)}`;
+  return date.getFullYear() === now.getFullYear()
+    ? dateLabel
+    : `${date.getFullYear()}년 ${dateLabel}`;
+};
+
+/** 기록의 방문 날짜와 시간대를 사용자에게 보여줄 한국어 문자열로 만든다. */
+export const formatVisitDateTime = ({ date, period }: VisitDateTimeValue, now = new Date()) => {
+  const weekday = new Intl.DateTimeFormat('ko-KR', { weekday: 'short' }).format(date);
+  const displayedDate = formatVisitDateLabel(date, now);
+
+  return `${displayedDate} (${weekday}) · ${getVisitPeriodLabel(period)}`;
+};
+
+/** 방문 일시 선택창의 확인 버튼에 표시할 날짜와 시간대 문자열을 만든다. */
+export const formatVisitDateTimeConfirmLabel = (
+  { date, period }: VisitDateTimeValue,
+  now = new Date()
+) => {
+  const displayedDate = formatVisitDateLabel(date, now);
+
+  return `${displayedDate} ${getVisitPeriodLabel(period)}`;
 };
 
 /**
@@ -101,13 +120,27 @@ export const isSameOrAfterMonth = (date: Date, referenceDate: Date) => {
   return month.getTime() >= referenceMonth.getTime();
 };
 
-/** 해당 월을 일요일부터 토요일까지 7열로 렌더링할 날짜 셀 목록을 만든다. */
-export const getCalendarDays = (date: Date) => {
+/** 달력 셀 배치에 필요한 월 정보를 계산한다. */
+const getCalendarMonthLayout = (date: Date) => {
   const year = date.getFullYear();
   const month = date.getMonth();
   const firstWeekday = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cellCount = Math.ceil((firstWeekday + daysInMonth) / DAYS_PER_WEEK) * DAYS_PER_WEEK;
+
+  return {
+    daysInMonth,
+    firstWeekday,
+    weekCount: Math.ceil((firstWeekday + daysInMonth) / DAYS_PER_WEEK),
+  };
+};
+
+/** 해당 월을 달력에 표시할 때 필요한 주 수를 계산한다. */
+export const getCalendarWeekCount = (date: Date) => getCalendarMonthLayout(date).weekCount;
+
+/** 해당 월을 일요일부터 토요일까지 7열로 렌더링할 날짜 셀 목록을 만든다. */
+export const getCalendarDays = (date: Date) => {
+  const { daysInMonth, firstWeekday, weekCount } = getCalendarMonthLayout(date);
+  const cellCount = weekCount * DAYS_PER_WEEK;
 
   return Array.from({ length: cellCount }, (_, index) => {
     const day = index - firstWeekday + 1;
