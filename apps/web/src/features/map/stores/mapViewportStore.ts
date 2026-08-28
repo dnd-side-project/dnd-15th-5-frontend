@@ -8,7 +8,7 @@ type MapViewportStore = {
   setCenter: (center: MapPosition) => void;
 };
 
-/** 주변 가게 추천 요청에 사용할 현재 지도 중심 좌표를 공유합니다. */
+/** 현재 지도 중심 좌표를 공유합니다. */
 export const useMapViewportStore = create<MapViewportStore>((set) => ({
   center: MAP_DEFAULT_CENTER,
   setCenter: (center) =>
