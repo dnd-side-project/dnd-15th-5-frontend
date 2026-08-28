@@ -16,6 +16,50 @@ const firePointerEvent = (element: Element, type: string, clientY: number) => {
   fireEvent(element, event);
 };
 
+// NOTE: 실제 브라우저처럼 콜백을 다음 프레임까지 보류한다. 동기 실행 mock은 콜백이
+// rafIdRef 할당보다 먼저 실행되어 후속 프레임 예약을 막으므로 사용하지 않는다.
+const mockAnimationFrameQueue = () => {
+  const originalRequestAnimationFrame = window.requestAnimationFrame;
+  const originalCancelAnimationFrame = window.cancelAnimationFrame;
+  const callbacks = new Map<number, FrameRequestCallback>();
+  let nextFrameId = 1;
+
+  window.requestAnimationFrame = jest.fn((callback: FrameRequestCallback) => {
+    const frameId = nextFrameId;
+    nextFrameId += 1;
+    callbacks.set(frameId, callback);
+    return frameId;
+  });
+  window.cancelAnimationFrame = jest.fn((frameId: number) => {
+    callbacks.delete(frameId);
+  });
+
+  return {
+    flushAnimationFrames: () => {
+      const pendingCallbacks = [...callbacks.values()];
+      callbacks.clear();
+      pendingCallbacks.forEach((callback) => callback(0));
+    },
+    restoreAnimationFrame: () => {
+      window.requestAnimationFrame = originalRequestAnimationFrame;
+      window.cancelAnimationFrame = originalCancelAnimationFrame;
+    },
+  };
+};
+
+const mockMatchMedia = (matches: boolean) => {
+  const originalMatchMedia = window.matchMedia;
+  window.matchMedia = jest.fn().mockReturnValue({
+    matches,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  }) as unknown as typeof window.matchMedia;
+
+  return () => {
+    window.matchMedia = originalMatchMedia;
+  };
+};
+
 describe('BottomSheet', () => {
   beforeEach(() => {
     setInnerHeight(800);
@@ -185,19 +229,29 @@ describe('BottomSheet', () => {
     expect(onHandleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('핸들을 위로 드래그하면 손가락을 따라 높이가 실시간으로 늘어난다', () => {
+  it('연속으로 드래그하면 프레임마다 최신 높이를 반영한다', () => {
+    const { flushAnimationFrames, restoreAnimationFrame } = mockAnimationFrameQueue();
     const { container } = render(<BottomSheet snapPoint="medium">내용</BottomSheet>);
     const sheet = container.firstChild as HTMLElement;
     const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
 
-    // medium(45%) = 360px에서 시작해 100px 위로 드래그하면 460px가 돼야 한다.
+    // 한 프레임 안의 이동은 마지막 값으로 합치고, 다음 프레임의 이동도 새로 반영한다.
     firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(handle, 'pointermove', 450);
     firePointerEvent(handle, 'pointermove', 400);
+    flushAnimationFrames();
 
     expect(sheet).toHaveStyle({ height: '460px' });
+
+    firePointerEvent(handle, 'pointermove', 350);
+    flushAnimationFrames();
+
+    expect(sheet).toHaveStyle({ height: '510px' });
+    restoreAnimationFrame();
   });
 
   it('손가락이 핸들 영역을 벗어나도 드래그를 계속 추적한다', () => {
+    const { flushAnimationFrames, restoreAnimationFrame } = mockAnimationFrameQueue();
     const onSnapPointChange = jest.fn();
     const { container } = render(
       <BottomSheet snapPoint="medium" onSnapPointChange={onSnapPointChange}>
@@ -209,12 +263,14 @@ describe('BottomSheet', () => {
 
     firePointerEvent(handle, 'pointerdown', 500);
     firePointerEvent(document.body, 'pointermove', 150);
+    flushAnimationFrames();
 
     expect(sheet).toHaveStyle({ height: '710px' });
 
     firePointerEvent(document.body, 'pointerup', 150);
 
     expect(onSnapPointChange).toHaveBeenCalledWith('full');
+    restoreAnimationFrame();
   });
 
   it('드래그 직후 발생한 click으로 높이 변경 콜백을 중복 호출하지 않는다', () => {
@@ -268,17 +324,20 @@ describe('BottomSheet', () => {
   });
 
   it('포인터 입력이 취소되면 드래그 높이를 초기화한다', () => {
+    const { flushAnimationFrames, restoreAnimationFrame } = mockAnimationFrameQueue();
     const { container } = render(<BottomSheet snapPoint="medium">내용</BottomSheet>);
     const sheet = container.firstChild as HTMLElement;
     const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
 
     firePointerEvent(handle, 'pointerdown', 500);
     firePointerEvent(handle, 'pointermove', 400);
+    flushAnimationFrames();
     expect(sheet).toHaveStyle({ height: '460px' });
 
     firePointerEvent(handle, 'pointercancel', 400);
 
     expect(sheet).toHaveStyle({ height: '45dvh' });
+    restoreAnimationFrame();
   });
 
   it('지정한 snapPoints 중 가장 가까운 단계로 스냅된다', () => {
@@ -300,5 +359,49 @@ describe('BottomSheet', () => {
     firePointerEvent(handle, 'pointerup', 380);
 
     expect(onSnapPointChange).toHaveBeenCalledWith('full');
+  });
+
+  it('핸들에 포커스가 있을 때 위/아래 화살표로 인접한 스냅 포인트로 이동한다', () => {
+    const onSnapPointChange = jest.fn();
+    render(
+      <BottomSheet snapPoint="medium" onSnapPointChange={onSnapPointChange}>
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    fireEvent.keyDown(handle, { key: 'ArrowUp' });
+    expect(onSnapPointChange).toHaveBeenCalledWith('full');
+
+    fireEvent.keyDown(handle, { key: 'ArrowDown' });
+    expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
+  });
+
+  it('콘텐츠 맞춤 높이에서는 화살표 키로 스냅 포인트를 바꾸지 않는다', () => {
+    const onSnapPointChange = jest.fn();
+    render(
+      <BottomSheet
+        snapPoint="medium"
+        snapPoints={['hidden', 'medium']}
+        onSnapPointChange={onSnapPointChange}
+        fitContent
+      >
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    fireEvent.keyDown(handle, { key: 'ArrowUp' });
+
+    expect(onSnapPointChange).not.toHaveBeenCalled();
+  });
+
+  it('모션 감소 설정 시 전환 지속시간을 0으로 만든다', () => {
+    const restoreMatchMedia = mockMatchMedia(true);
+
+    const { container } = render(<BottomSheet snapPoint="medium">내용</BottomSheet>);
+
+    expect(container.firstChild).toHaveStyle({ transitionDuration: '0ms' });
+    restoreMatchMedia();
   });
 });

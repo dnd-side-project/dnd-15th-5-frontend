@@ -34,15 +34,21 @@ jest.mock('@/shared/lib/bridge', () => ({
 function ManualRecordTarget() {
   const location = useLocation();
   const state = location.state as {
+    isDraftDirty?: boolean;
     isShopChange?: boolean;
     shop: ShopSearchResult;
     visitDateTime?: VisitDateTimeValue;
+    amount?: string;
+    category?: string;
   };
 
   return (
     <p
       data-shop-change={String(Boolean(state.isShopChange))}
+      data-draft-dirty={String(Boolean(state.isDraftDirty))}
       data-visit-date={state.visitDateTime?.date.toISOString()}
+      data-amount={state.amount}
+      data-category={state.category}
     >
       수기 입력 대상: {state.shop.name} {location.search}
     </p>
@@ -107,6 +113,8 @@ describe('<ShopSearchPage />', () => {
             state: {
               isChangingManualRecordShop: true,
               manualRecordVisitDateTime: visitDateTime,
+              manualRecordAmount: '12000',
+              manualRecordCategory: '카페',
             },
           },
         ]}
@@ -126,6 +134,46 @@ describe('<ShopSearchPage />', () => {
 
     expect(manualRecordTarget).toHaveAttribute('data-shop-change', 'true');
     expect(manualRecordTarget).toHaveAttribute('data-visit-date', visitDateTime.date.toISOString());
+    expect(manualRecordTarget).toHaveAttribute('data-amount', '12000');
+    expect(manualRecordTarget).toHaveAttribute('data-category', '카페');
+  });
+
+  it('최초 가게 선택 전 작성한 초안을 수기 입력 화면에 다시 전달한다', async () => {
+    const user = userEvent.setup();
+    const visitDateTime: VisitDateTimeValue = {
+      date: new Date(2026, 6, 15),
+      period: 'night',
+    };
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/shop/search',
+            state: {
+              replacedManualRecord: true,
+              manualRecordVisitDateTime: visitDateTime,
+              manualRecordAmount: '7000',
+              manualRecordCategory: '음식점',
+              manualRecordDraftDirty: true,
+            },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+          <Route path="/record/manual" element={<ManualRecordTarget />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '목업 장소 선택' }));
+
+    const manualRecordTarget = screen.getByText(`수기 입력 대상: ${selectedShop.name}`);
+    expect(manualRecordTarget).toHaveAttribute('data-visit-date', visitDateTime.date.toISOString());
+    expect(manualRecordTarget).toHaveAttribute('data-amount', '7000');
+    expect(manualRecordTarget).toHaveAttribute('data-category', '음식점');
+    expect(manualRecordTarget).toHaveAttribute('data-draft-dirty', 'true');
   });
 
   it('일반적으로 진입했다면 뒤로 가기 버튼을 누르면 이전 화면으로 돌아간다', async () => {
@@ -229,7 +277,7 @@ describe('<ShopSearchPage />', () => {
     expect(mockNotifyNative).toHaveBeenCalledWith('receiptShopSearchCancelled', {});
   });
 
-  it('X 버튼을 누르면 기록을 종료하고 홈으로 이동한다', async () => {
+  it('작성 중인 초안이 없는 검색 화면은 확인 없이 홈으로 이동한다', async () => {
     const user = userEvent.setup();
 
     render(
@@ -242,9 +290,33 @@ describe('<ShopSearchPage />', () => {
     );
 
     await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
-    await user.click(screen.getByRole('button', { name: '나가기' }));
 
     expect(screen.getByText('홈 화면')).toBeInTheDocument();
+  });
+
+  it('가게 변경 중인 검색 화면은 닫기 전에 초안 이탈을 확인한다', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/shop/search',
+            state: { isChangingManualRecordShop: true, manualRecordAmount: '12000' },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+          <Route path="/home" element={<p>홈 화면</p>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+
+    expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
+    expect(screen.queryByText('홈 화면')).not.toBeInTheDocument();
   });
 
   it('앱 영수증 플로우에서 X 버튼을 누르면 네이티브에 기록 종료를 요청한다', async () => {

@@ -3,10 +3,8 @@ import { useMap } from '@vis.gl/react-google-maps';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import type { MapPosition } from '@/features/map/types';
 import { CurrentLocationIcon } from '@/shared/assets/icons';
+import { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/BottomTabBar';
 
-// TODO: BottomTabBar의 실제 높이를 CSS 변수나 공통 레이아웃 상태로 공유해
-// 숨김 오프셋의 수동 동기화를 제거한다.
-const HIDDEN_BOTTOM_OFFSET = 'calc(6.5rem + env(safe-area-inset-bottom))';
 // 핸들과 버튼 사이 여백.
 const HANDLE_GAP = '0.75rem';
 
@@ -38,7 +36,7 @@ export default function CurrentLocationButton({
   const bottomSheetHeightPx = useHomeBottomSheetStore((state) => state.visibleHeightPx);
   // NOTE: 스냅 포인트 비율이 아닌 실제 렌더링 높이를 사용해야 콘텐츠 맞춤 시트에서도
   // 핸들과 버튼 사이 간격이 동일하게 유지된다.
-  const bottomOffset = `max(calc(${bottomSheetHeightPx}px + ${HANDLE_GAP}), ${HIDDEN_BOTTOM_OFFSET})`;
+  const bottomOffset = `max(calc(${bottomSheetHeightPx}px + ${HANDLE_GAP}), ${BOTTOM_TAB_BAR_HEIGHT_CSS})`;
 
   const handleCurrentLocationClick = () => {
     if (!map) {

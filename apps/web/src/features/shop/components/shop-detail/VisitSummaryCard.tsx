@@ -1,5 +1,6 @@
 import { MapIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import type { RecordLocationState } from '@/shared/types/recordNavigation';
 import { Button, LinkButton } from '@/shared/ui/button';
 
 import { formatFirstVisitedDate } from '../../utils/formatVisit';
@@ -10,6 +11,7 @@ type VisitSummaryCardProps = {
   monthlyVisitCount: number;
   onViewOnMap: () => void;
   placeId: number;
+  recordLocationState?: RecordLocationState;
   totalVisitCount: number;
 };
 
@@ -18,6 +20,7 @@ export default function VisitSummaryCard({
   monthlyVisitCount,
   onViewOnMap,
   placeId,
+  recordLocationState,
   totalVisitCount,
 }: VisitSummaryCardProps) {
   const normalizedVisitCount = normalizeVisitCount(totalVisitCount);
@@ -55,7 +58,12 @@ export default function VisitSummaryCard({
       </dl>
 
       <div className="mt-4 flex gap-4">
-        <LinkButton to={ROUTE_PATHS.record} size="large" className="h-12.5 min-w-0 flex-1">
+        <LinkButton
+          to={ROUTE_PATHS.record}
+          state={recordLocationState}
+          size="large"
+          className="h-12.5 min-w-0 flex-1"
+        >
           소비 기록 추가
         </LinkButton>
         <Button

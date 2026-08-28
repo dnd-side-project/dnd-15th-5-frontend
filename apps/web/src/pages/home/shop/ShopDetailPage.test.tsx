@@ -17,12 +17,15 @@ jest.mock('@/features/shop', () => ({
   ShopDetail: ({
     headerContent,
     onViewOnMap,
+    recordShop,
   }: {
     headerContent: ReactNode;
     onViewOnMap: () => void;
+    recordShop?: { id: string };
   }) => (
     <>
       {headerContent}
+      <p>{recordShop ? `기록 가게 ${recordShop.id}` : '기록 가게 없음'}</p>
       <button type="button" onClick={onViewOnMap}>
         지도에서 가게 보기
       </button>
@@ -42,6 +45,19 @@ describe('ShopDetailPage', () => {
       stickers: TEST_MAP_STICKERS,
       refetchStickers: jest.fn().mockResolvedValue(TEST_MAP_STICKERS),
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+  });
+
+  it('상세 경로의 매장과 일치하는 지도 마커를 소비 기록용 가게로 전달한다', () => {
+    const sticker = TEST_MAP_STICKERS[0]!;
+    render(
+      <MemoryRouter initialEntries={[`/home/shop/${sticker.place.id}`]}>
+        <Routes>
+          <Route path="/home/shop/:shopId" element={<ShopDetailPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText(`기록 가게 ${sticker.googlePlaceId}`)).toBeInTheDocument();
   });
 
   it('직접 진입해 마커 캐시가 비어 있어도 다시 조회한 좌표로 지도에 포커스한다', async () => {

@@ -105,7 +105,7 @@ describe('MapStickers', () => {
     const stickerButton = screen.getByRole('button', { name: `${sticker.label} 스티커` });
     const stickerImage = stickerButton.querySelector('img');
 
-    expect(stickerImage).toHaveClass('size-12.5');
+    expect(stickerImage).toHaveClass('size-17.5', 'scale-[0.7143]');
 
     await user.click(stickerButton);
 
@@ -116,7 +116,7 @@ describe('MapStickers', () => {
       stickerId: sticker.id,
     });
     expect(stickerButton).toHaveAccessibleName(`${sticker.label} 스티커, 선택됨`);
-    expect(stickerImage).toHaveClass('size-17.5');
+    expect(stickerImage).toHaveClass('size-17.5', 'scale-100');
   });
 
   it('다른 스티커를 선택하면 이전 스티커를 기본 크기로 되돌린다', async () => {
@@ -134,9 +134,9 @@ describe('MapStickers', () => {
     await user.click(secondSticker);
 
     expect(firstSticker).toHaveAccessibleName(`${TEST_MAP_STICKERS[0]!.label} 스티커`);
-    expect(firstSticker.querySelector('img')).toHaveClass('size-12.5');
+    expect(firstSticker.querySelector('img')).toHaveClass('scale-[0.7143]');
     expect(secondSticker).toHaveAccessibleName(`${TEST_MAP_STICKERS[1]!.label} 스티커, 선택됨`);
-    expect(secondSticker.querySelector('img')).toHaveClass('size-17.5');
+    expect(secondSticker.querySelector('img')).toHaveClass('scale-100');
   });
 
   it('스티커 클릭으로 홈 탭 시트를 해당 장소 상세 시트로 교체한다', async () => {

@@ -15,7 +15,11 @@ describe('ReportPreferenceShareScreen', () => {
       />
     );
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('이앤더님의 취향 카드');
-    expect(screen.getByRole('heading', { level: 1 })).not.toHaveTextContent(/\d+월/);
+    const title = screen.getByRole('heading', { level: 1 });
+
+    expect(title).toHaveTextContent('이앤더님의 취향 카드');
+    expect(title).not.toHaveTextContent(/\d+월/);
+    expect(title).toHaveClass('report-preference-share-title-enter');
+    expect(document.querySelector('.report-preference-share-card-enter')).toBeInTheDocument();
   });
 });

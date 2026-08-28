@@ -2,10 +2,10 @@ import { AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { useEffect } from 'react';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { useFocusMapOnPosition } from '@/features/map/hooks/useFocusMapOnPosition';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import type { HomeCategory, ShopRecommendation } from '@/features/map/types';
-import { focusMapOnPosition } from '@/features/map/utils/focusMapOnPosition';
 import {
   CafePinActiveIcon,
   CafePinIcon,
@@ -18,6 +18,8 @@ import {
 } from '@/shared/assets/icons';
 
 import type { ComponentType, SVGProps } from 'react';
+
+import './recommendationMapMarkers.css';
 
 const ACTIVE_RECOMMENDATION_ZOOM = 15;
 
@@ -48,6 +50,7 @@ const getRecommendationMarkerIcons = ({ isLiked, place }: ShopRecommendation) =>
 /** 추천 가게를 좋아요·카테고리 핀으로 표시하고 선택 시 해당 위치와 시트를 동기화합니다. */
 export default function RecommendationMapMarkers() {
   const map = useMap();
+  const focusMap = useFocusMapOnPosition(map);
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const showLikedRecommendation = useHomeBottomSheetStore((state) => state.showLikedRecommendation);
   const showRecommendation = useHomeBottomSheetStore((state) => state.showRecommendation);
@@ -67,7 +70,7 @@ export default function RecommendationMapMarkers() {
   const { recommendations } = useNearbyPlaceRecommendationsQuery();
 
   useEffect(() => {
-    if (!isRecommendationOpen || !map) {
+    if (!isRecommendationOpen) {
       return;
     }
 
@@ -76,13 +79,11 @@ export default function RecommendationMapMarkers() {
       return;
     }
 
-    return focusMapOnPosition(map, activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
-  }, [activeRecommendationId, isRecommendationOpen, map, recommendations]);
+    focusMap(activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
+  }, [activeRecommendationId, focusMap, isRecommendationOpen, recommendations]);
 
   const handleMarkerSelect = (recommendation: ShopRecommendation) => {
-    if (map) {
-      focusMapOnPosition(map, recommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
-    }
+    focusMap(recommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
     setActiveRecommendation(recommendation.id);
     if (recommendation.isLiked) {
       showLikedRecommendation(recommendation.id);
@@ -114,9 +115,10 @@ export default function RecommendationMapMarkers() {
             onClick={() => handleMarkerSelect(recommendation)}
           >
             <MarkerIcon
+              key={isActive ? 'active' : 'default'}
               aria-hidden="true"
               data-state={isActive ? 'active' : 'default'}
-              className={isActive ? 'size-11' : 'size-10'}
+              className={`recommendation-marker-icon ${isActive ? 'size-11' : 'size-10'}`}
             />
           </AdvancedMarker>
         );

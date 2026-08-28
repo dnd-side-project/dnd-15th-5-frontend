@@ -1,9 +1,11 @@
 import { RECORD_EXIT_CONFIRM_TEXT } from '@chapchap/shared/record';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useScrollLock } from '@/shared/hooks/useScrollLock';
+import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 
 type RecordExitConfirmDialogProps = {
@@ -17,6 +19,8 @@ export default function RecordExitConfirmDialog({
   onContinue,
 }: RecordExitConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [isVisible, setIsVisible] = useState(prefersReducedMotion);
 
   useFocusTrap(dialogRef, {
     initialFocusSelector: '[data-action="continue"]',
@@ -24,15 +28,32 @@ export default function RecordExitConfirmDialog({
   });
   useScrollLock();
 
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      return;
+    }
+
+    const animationFrameId = requestAnimationFrame(() => setIsVisible(true));
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [prefersReducedMotion]);
+
   return createPortal(
-    <div className="mobile-frame fixed inset-0 z-dialog flex items-center justify-center bg-neutral-900/30 px-4">
+    <div
+      className={cn(
+        'mobile-frame fixed inset-0 z-dialog flex items-center justify-center bg-neutral-900/30 px-4 transition-opacity duration-200',
+        isVisible ? 'opacity-100' : 'opacity-0'
+      )}
+    >
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="record-exit-title"
         aria-describedby="record-exit-description"
-        className="w-full max-w-[361px] rounded-30 bg-neutral-00 px-4 pt-8 pb-4"
+        className={cn(
+          'w-full max-w-[361px] rounded-30 bg-neutral-00 px-4 pt-8 pb-4 transition-[opacity,transform] duration-200',
+          isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+        )}
       >
         <h2 id="record-exit-title" className="text-center text-title-01-bold text-neutral-700">
           {RECORD_EXIT_CONFIRM_TEXT.title}

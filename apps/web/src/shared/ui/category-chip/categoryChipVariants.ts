@@ -3,7 +3,8 @@ import { cva } from 'class-variance-authority';
 export const categoryChipVariants = cva(
   [
     'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-16',
-    'bg-neutral-00 text-neutral-700 transition-colors outline-none select-none',
+    'bg-neutral-00 text-neutral-700 outline-none select-none',
+    'transition-[color,background-color,border-color,transform] duration-150 active:scale-95 motion-reduce:transform-none motion-reduce:transition-none',
     'hover:not-data-pressed:bg-neutral-50',
     'focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1',
     'data-pressed:bg-primary-500 data-pressed:text-neutral-00',

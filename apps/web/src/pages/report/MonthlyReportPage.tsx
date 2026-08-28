@@ -28,6 +28,7 @@ export default function MonthlyReportPage() {
     captureRef,
     downloadImage,
     handleCardTransitionChange,
+    handleCurrentReportSelect,
     handleNewerMonth,
     handleOlderMonth,
     handleMonthPickerClose,
@@ -111,6 +112,7 @@ export default function MonthlyReportPage() {
             onCardTransitionChange={handleCardTransitionChange}
             onFlip={handlePreferenceCardFlip}
             onShare={handleShareSheetOpen}
+            onViewCurrentReport={handleCurrentReportSelect}
             selectedCardIndex={selectedCardIndex}
             thumbnailCaptureRef={kakaoThumbnailRef}
           />
@@ -118,7 +120,10 @@ export default function MonthlyReportPage() {
         {!isPending && !report && (
           <div className="mt-4.5 flex flex-col items-center">
             {reportCards.length === 0 && (
-              <MonthlyReportUnavailableCard selectedMonth={selectedMonth} />
+              <MonthlyReportUnavailableCard
+                onViewCurrentReport={handleCurrentReportSelect}
+                selectedMonth={selectedMonth}
+              />
             )}
             <MonthlyReportEmptyState selectedMonth={selectedMonth} />
           </div>

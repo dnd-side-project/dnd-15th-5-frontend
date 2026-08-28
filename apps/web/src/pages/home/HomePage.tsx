@@ -6,7 +6,9 @@ import {
   HomeBottomSheet,
   HomeMapOverlay,
   parseCreatedConsumptionPlace,
+  toShopSearchResult,
   useCreatedConsumptionResult,
+  useVisitedPlaceStickersQuery,
 } from '@/features/map';
 import { FrequentShopSummary, SpendingHistory } from '@/features/report';
 import { SelectedPlaceSheet } from '@/features/shop';
@@ -18,6 +20,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { stickers } = useVisitedPlaceStickersQuery();
   const createdPlace =
     (location.state as { createdPlace?: CreatedConsumptionPlace } | null)?.createdPlace ??
     parseCreatedConsumptionPlace(searchParams);
@@ -38,7 +41,12 @@ export default function HomePage() {
         renderFrequentShops={(headerContent) => (
           <FrequentShopSummary headerContent={headerContent} />
         )}
-        renderSelectedPlace={(placeId) => <SelectedPlaceSheet placeId={placeId} />}
+        renderSelectedPlace={(placeId) => (
+          <SelectedPlaceSheet
+            placeId={placeId}
+            recordShop={toShopSearchResult(stickers.find(({ id }) => id === placeId))}
+          />
+        )}
         renderSpendingHistory={(headerContent) => (
           <SpendingHistory
             headerContent={headerContent}
