@@ -11,6 +11,7 @@ const mockedUseVisitedPlaceSearchInfiniteQuery = jest.mocked(useVisitedPlaceSear
 
 describe('VisitedPlaceSearch', () => {
   beforeEach(() => {
+    window.localStorage.clear();
     mockedUseVisitedPlaceSearchInfiniteQuery.mockImplementation(
       (keyword) =>
         ({
@@ -89,5 +90,88 @@ describe('VisitedPlaceSearch', () => {
     expect(screen.getByText('투썸플레이스')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '다시 불러오기' }));
     expect(fetchNextPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('검색 결과에서 매장을 선택하면 검색어가 최근 검색어로 저장된다', async () => {
+    const user = userEvent.setup();
+    render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);
+
+    const input = screen.getByPlaceholderText('검색어를 입력해주세요');
+    await user.type(input, '투썸');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    await user.click(screen.getByRole('button', { name: /투썸플레이스/ }));
+    await user.clear(input);
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    expect(screen.getByText('최근 검색어')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '투썸' })).toBeInTheDocument();
+  });
+
+  it('매장을 선택하지 않고 검색만 하면 최근 검색어로 저장하지 않는다', async () => {
+    const user = userEvent.setup();
+    render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);
+
+    const input = screen.getByPlaceholderText('검색어를 입력해주세요');
+    await user.type(input, '투썸');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    await user.clear(input);
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    expect(screen.queryByText('최근 검색어')).not.toBeInTheDocument();
+  });
+
+  it('최근 검색어를 클릭하면 해당 검색어로 다시 검색한다', async () => {
+    const user = userEvent.setup();
+    render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);
+
+    const input = screen.getByPlaceholderText('검색어를 입력해주세요');
+    await user.type(input, '투썸');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    await user.click(screen.getByRole('button', { name: /투썸플레이스/ }));
+    await user.clear(input);
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    await user.click(screen.getByRole('button', { name: '투썸' }));
+
+    expect(input).toHaveValue('투썸');
+    expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
+  });
+
+  it('같은 최근 검색어를 지웠다가 다시 클릭해도 재검색한다', async () => {
+    const user = userEvent.setup();
+    render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);
+
+    const input = screen.getByPlaceholderText('검색어를 입력해주세요');
+    await user.type(input, '투썸');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    await user.click(screen.getByRole('button', { name: /투썸플레이스/ }));
+    await user.clear(input);
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    await user.click(screen.getByRole('button', { name: '투썸' }));
+    expect(input).toHaveValue('투썸');
+
+    await user.clear(input);
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    await user.click(screen.getByRole('button', { name: '투썸' }));
+
+    expect(input).toHaveValue('투썸');
+    expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
+  });
+
+  it('최근 검색어를 삭제할 수 있다', async () => {
+    const user = userEvent.setup();
+    render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);
+
+    const input = screen.getByPlaceholderText('검색어를 입력해주세요');
+    await user.type(input, '투썸');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    await user.click(screen.getByRole('button', { name: /투썸플레이스/ }));
+    await user.clear(input);
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    await user.click(screen.getByRole('button', { name: '투썸 최근 검색어 삭제' }));
+
+    expect(screen.queryByText('최근 검색어')).not.toBeInTheDocument();
   });
 });

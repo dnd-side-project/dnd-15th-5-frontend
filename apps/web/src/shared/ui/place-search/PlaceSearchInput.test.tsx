@@ -42,4 +42,40 @@ describe('PlaceSearchInput', () => {
     });
     expect(onSearch).toHaveBeenCalledTimes(1);
   });
+
+  it('appliedKeyword가 바뀌면 검색어를 채우고 즉시 검색을 실행한다', () => {
+    const onSearch = jest.fn();
+    const { rerender } = render(<PlaceSearchInput onSearch={onSearch} />);
+
+    rerender(<PlaceSearchInput onSearch={onSearch} appliedKeyword={{ keyword: '투썸' }} />);
+
+    expect(screen.getByPlaceholderText('장소를 검색해주세요')).toHaveValue('투썸');
+    expect(onSearch).toHaveBeenCalledWith('투썸');
+  });
+
+  it('appliedKeyword 참조가 그대로 유지되면 다시 검색하지 않는다', () => {
+    const onSearch = jest.fn();
+    const appliedKeyword = { keyword: '투썸' };
+    const { rerender } = render(
+      <PlaceSearchInput onSearch={onSearch} appliedKeyword={appliedKeyword} />
+    );
+    onSearch.mockClear();
+
+    rerender(<PlaceSearchInput onSearch={onSearch} appliedKeyword={appliedKeyword} />);
+
+    expect(onSearch).not.toHaveBeenCalled();
+  });
+
+  it('같은 검색어를 다시 선택해도(새 객체로 전달되면) 다시 검색한다', () => {
+    const onSearch = jest.fn();
+    const { rerender } = render(
+      <PlaceSearchInput onSearch={onSearch} appliedKeyword={{ keyword: '투썸' }} />
+    );
+    onSearch.mockClear();
+
+    rerender(<PlaceSearchInput onSearch={onSearch} appliedKeyword={{ keyword: '투썸' }} />);
+
+    expect(onSearch).toHaveBeenCalledTimes(1);
+    expect(onSearch).toHaveBeenCalledWith('투썸');
+  });
 });
