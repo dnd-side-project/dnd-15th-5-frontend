@@ -41,6 +41,8 @@ describe('ReportPreferenceSection', () => {
     expect(captureRef.current).toHaveStyle({ height: '648px', width: '486px' });
     expect(captureRef.current?.querySelector('.report-preference-share')).toHaveClass('h-full');
     expect(thumbnailCaptureRef.current).toHaveTextContent('동네 터줏대감');
+    expect(thumbnailCaptureRef.current).toHaveClass('overflow-hidden');
+    expect(thumbnailCaptureRef.current).toHaveStyle({ height: '375px', width: '276px' });
     expect(thumbnailCaptureRef.current).not.toHaveTextContent(
       '익숙한 동네와 단골 가게를 자주 찾아요.'
     );

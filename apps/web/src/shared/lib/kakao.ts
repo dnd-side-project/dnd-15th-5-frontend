@@ -32,7 +32,7 @@ type KakaoSdk = {
   init: (javascriptKey: string) => void;
   isInitialized: () => boolean;
   Share: {
-    sendDefault: (settings: KakaoShareFeedTemplate) => Promise<unknown>;
+    sendDefault: (settings: KakaoShareFeedTemplate) => Promise<unknown> | void;
     uploadImage: (settings: { file: FileList }) => Promise<KakaoImageUploadResponse>;
   };
 };

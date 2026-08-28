@@ -49,12 +49,13 @@ export const useKakaoReportShare = ({
   const shareTemplate = preparedShare?.key === preparationKey ? preparedShare.template : null;
 
   useEffect(() => {
-    if (!isEnabled || preparedShare?.key === preparationKey) return;
+    if (!isEnabled) return;
 
     let isActive = true;
 
     const prepareKakaoShare = async () => {
       setIsPreparing(true);
+      setPreparedShare(null);
 
       const yearMonth = formatYearMonth({ month: selectedMonthNumber, year: selectedYear });
       const response = await issueShareLink({ params: { yearMonth } });
@@ -119,7 +120,6 @@ export const useKakaoReportShare = ({
     issueShareLink,
     nickname,
     preparationKey,
-    preparedShare?.key,
     selectedMonthNumber,
     selectedYear,
     showToast,
@@ -134,7 +134,7 @@ export const useKakaoReportShare = ({
       // NOTE: 모바일 브라우저가 앱 딥링크를 허용하도록 사용자 클릭 이벤트 안에서 즉시 호출한다.
       const shareRequest = getKakaoSdk().Share.sendDefault(shareTemplate);
 
-      void shareRequest
+      void Promise.resolve(shareRequest)
         .then(() => onShared?.())
         .catch((error: unknown) => {
           if (!isKakaoShareCancelled(error)) {

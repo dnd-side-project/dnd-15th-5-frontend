@@ -1,7 +1,10 @@
 import ReportPreferenceCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
 import ReportPreferenceCardFront from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCardFront';
 import ReportPreferenceShareScreen from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceShareScreen';
-import { REPORT_PHOTO_CAPTURE_SIZE } from '@/features/report/constants';
+import {
+  REPORT_KAKAO_THUMBNAIL_SIZE,
+  REPORT_PHOTO_CAPTURE_SIZE,
+} from '@/features/report/constants';
 import { useReportPreferenceCarousel } from '@/features/report/hooks/useReportPreferenceCarousel';
 import type { MonthlyReportPreferenceCard } from '@/features/report/types';
 import { ReportCardFlipIcon, ShareIcon } from '@/shared/assets/icons';
@@ -136,7 +139,11 @@ export default function ReportPreferenceSection({
                 variant={selectedCard.variant}
               />
             </div>
-            <div ref={thumbnailCaptureRef}>
+            <div
+              className="overflow-hidden rounded-15"
+              ref={thumbnailCaptureRef}
+              style={REPORT_KAKAO_THUMBNAIL_SIZE}
+            >
               <ReportPreferenceCardFront
                 isStandalone
                 tags={selectedCard.tags}

@@ -7,31 +7,20 @@ import type { AdjacentPersonaResponse, MonthlyReportResponse } from '@/features/
 import {
   REPORT_PERSONA_COPY,
   REPORT_PERSONA_TAGS,
-  REPORT_PERSONA_VARIANTS,
   REPORT_TIME_SLOT_EMOJIS,
   REPORT_TIME_SLOT_LABELS,
   REPORT_WEEKDAY_LABELS,
 } from '@/features/report/constants';
-import type {
-  MonthlyReportAdjacentCard,
-  MonthlyReportData,
-  ReportPreferenceCardVariant,
-} from '@/features/report/types';
+import type { MonthlyReportAdjacentCard, MonthlyReportData } from '@/features/report/types';
 import { getStickerImageByName } from '@/shared/assets/images/stickers';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { addMonth, getMonthDifference, parseYearMonth } from '@/shared/utils/yearMonth';
 
+import { parsePersonaAxes, resolvePersonaVariant, type PersonaAxes } from './persona';
+
 import type { SpendingCategory } from '@chapchap/shared/common/types';
 
 const SPENDING_CATEGORY_SET = new Set<SpendingCategory>(SPENDING_CATEGORIES);
-
-/** 페르소나 코드 네 자리를 구성하는 소비 성향 축입니다. */
-type PersonaAxes = {
-  activityRange: 'H' | 'W';
-  consumptionRhythm: 'P' | 'F';
-  consumptionTime: 'D' | 'M';
-  visitStyle: 'R' | 'N';
-};
 
 const toSafeNumber = (value?: number) => (Number.isFinite(value) ? Math.max(value ?? 0, 0) : 0);
 
@@ -41,29 +30,6 @@ const toSpendingCategory = (category?: string): SpendingCategory =>
   category && SPENDING_CATEGORY_SET.has(category as SpendingCategory)
     ? (category as SpendingCategory)
     : '기타';
-
-/** 백엔드의 RHDP 형식 코드를 네 가지 소비 성향 축으로 분리합니다. */
-const parsePersonaAxes = (type?: string): PersonaAxes | null => {
-  const normalizedType = type?.trim().toUpperCase();
-  const match = normalizedType?.match(/^([RN])([HW])([DM])([PF])$/);
-  if (!match) return null;
-
-  return {
-    visitStyle: match[1] as PersonaAxes['visitStyle'],
-    activityRange: match[2] as PersonaAxes['activityRange'],
-    consumptionTime: match[3] as PersonaAxes['consumptionTime'],
-    consumptionRhythm: match[4] as PersonaAxes['consumptionRhythm'],
-  };
-};
-
-const resolvePersonaVariant = (type?: string): ReportPreferenceCardVariant => {
-  const normalizedType = type?.trim().toUpperCase();
-  if (normalizedType && normalizedType in REPORT_PERSONA_VARIANTS) {
-    return REPORT_PERSONA_VARIANTS[normalizedType as keyof typeof REPORT_PERSONA_VARIANTS];
-  }
-
-  return 'alley-explorer';
-};
 
 const createPersonaTags = (axes: PersonaAxes | null, fallbackTags?: readonly string[]) => {
   if (!axes) return fallbackTags?.filter(Boolean) ?? [];
@@ -86,7 +52,7 @@ const mapAdjacentPersona = (
   const axes = parsePersonaAxes(adjacent?.type);
   if (!axes) return { isUnavailable: true, month };
 
-  const variant = resolvePersonaVariant(adjacent?.type);
+  const variant = resolvePersonaVariant(adjacent?.type) ?? 'alley-explorer';
   const copy = REPORT_PERSONA_COPY[variant];
 
   return {
@@ -154,7 +120,7 @@ export const mapMonthlyReportResponse = (
   const scores = response.persona?.scores;
   const persona = response.persona;
   const personaAxes = parsePersonaAxes(persona?.type);
-  const personaVariant = resolvePersonaVariant(persona?.type);
+  const personaVariant = resolvePersonaVariant(persona?.type) ?? 'alley-explorer';
   const personaCopy = REPORT_PERSONA_COPY[personaVariant];
 
   return {

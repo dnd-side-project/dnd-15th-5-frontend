@@ -39,6 +39,8 @@ describe('useKakaoReportShare', () => {
     sendDefault.mockReset();
     uploadImage.mockReset();
     showToast.mockReset();
+    mockedCaptureReportImageBlob.mockReset();
+    mockedCreateImageFileList.mockReset();
     mockedUseIssueShareLink.mockReturnValue({ mutateAsync } as never);
     mockedCaptureReportImageBlob.mockResolvedValue(imageBlob);
     mockedCreateImageFileList.mockReturnValue(imageFiles);
@@ -107,6 +109,50 @@ describe('useKakaoReportShare', () => {
 
     await waitFor(() => expect(result.current.isSharing).toBe(false));
     expect(showToast).not.toHaveBeenCalled();
+  });
+
+  it('Kakao SDK가 반환값 없이 앱을 실행해도 공유 성공으로 처리한다', async () => {
+    mutateAsync.mockResolvedValue({ data: { shareToken: 'share-token' } });
+    sendDefault.mockReturnValue(undefined);
+    const onShared = jest.fn();
+    const { result } = renderHook(() =>
+      useKakaoReportShare({
+        captureRef,
+        isEnabled: true,
+        nickname: '이앤더',
+        onShared,
+        selectedMonth: { year: 2026, month: 8 },
+      })
+    );
+
+    await waitFor(() => expect(result.current.isKakaoShareReady).toBe(true));
+    act(() => result.current.shareToKakao());
+
+    expect(sendDefault).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(onShared).toHaveBeenCalledTimes(1));
+    expect(showToast).not.toHaveBeenCalled();
+  });
+
+  it('공유 시트를 다시 열면 썸네일을 새로 캡처하고 업로드한다', async () => {
+    mutateAsync.mockResolvedValue({ data: { shareToken: 'share-token' } });
+    const { rerender, result } = renderHook(
+      ({ isEnabled }) =>
+        useKakaoReportShare({
+          captureRef,
+          isEnabled,
+          nickname: '이앤더',
+          selectedMonth: { year: 2026, month: 8 },
+        }),
+      { initialProps: { isEnabled: true } }
+    );
+
+    await waitFor(() => expect(result.current.isKakaoShareReady).toBe(true));
+
+    rerender({ isEnabled: false });
+    rerender({ isEnabled: true });
+
+    await waitFor(() => expect(uploadImage).toHaveBeenCalledTimes(2));
+    expect(mockedCaptureReportImageBlob).toHaveBeenCalledTimes(2);
   });
 
   it('링크 발급이나 SDK 호출 실패를 오류 토스트로 안내한다', async () => {
