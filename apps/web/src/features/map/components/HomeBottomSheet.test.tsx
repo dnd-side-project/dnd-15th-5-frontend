@@ -376,6 +376,34 @@ describe('HomeBottomSheet', () => {
     ).toBeInTheDocument();
   });
 
+  it('추천 가게를 기록용 장소로 조회하지 못하면 기록 화면 이동을 막는다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    mockedUseRecommendationRecordShopQuery.mockReturnValue({
+      query: {
+        data: undefined,
+        isPending: false,
+      },
+      isLibraryLoading: false,
+      isLibraryError: true,
+    } as unknown as ReturnType<typeof useRecommendationRecordShopQuery>);
+    useHomeBottomSheetStore.setState({
+      activeSheet: { type: 'likedRecommendation', recommendationId: recommendation.id },
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('button', { name: '기록하기' })).toBeDisabled();
+    expect(screen.queryByRole('link', { name: '기록하기' })).not.toBeInTheDocument();
+  });
+
   it('조회에 성공했지만 선택한 추천이 없으면 재요청 대신 지도 홈으로 돌아간다', async () => {
     const user = userEvent.setup();
     useHomeBottomSheetStore.setState({

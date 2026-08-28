@@ -126,7 +126,7 @@ export default function LikedRecommendationSheet({
         <Button isLoading size="large" className="mt-4">
           기록하기
         </Button>
-      ) : (
+      ) : recordLocationState ? (
         <LinkButton
           to={ROUTE_PATHS.record}
           state={recordLocationState}
@@ -135,6 +135,10 @@ export default function LikedRecommendationSheet({
         >
           기록하기
         </LinkButton>
+      ) : (
+        <Button disabled size="large" className="mt-4">
+          기록하기
+        </Button>
       )}
     </section>
   );
