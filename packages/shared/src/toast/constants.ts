@@ -4,7 +4,7 @@ import type { ToastType } from './types';
 export const DEFAULT_TOAST_TYPE: ToastType = 'success';
 
 /** 별도 duration을 지정하지 않았을 때 Toast가 노출되는 시간입니다. */
-export const DEFAULT_TOAST_DURATION = 3000;
+export const DEFAULT_TOAST_DURATION = 1500;
 
 /** 한 화면에 동시에 유지할 수 있는 최대 Toast 개수입니다. */
 export const MAX_VISIBLE_TOASTS = 3;
