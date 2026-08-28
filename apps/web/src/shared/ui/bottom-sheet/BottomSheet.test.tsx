@@ -431,6 +431,23 @@ describe('BottomSheet', () => {
     expect(onContentPullDown).toHaveBeenCalledTimes(1);
   });
 
+  it('줄 단위 휠 입력을 픽셀로 환산해 pull-down 임계값을 계산한다', () => {
+    const onContentPullDown = jest.fn();
+    const { container } = render(
+      <BottomSheet snapPoint="full" onContentPullDown={onContentPullDown}>
+        내용
+      </BottomSheet>
+    );
+    const content = (container.firstChild as HTMLElement).lastChild as HTMLElement;
+
+    content.scrollTop = 0;
+    fireEvent.wheel(content, { deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: -3 });
+    expect(onContentPullDown).not.toHaveBeenCalled();
+
+    fireEvent.wheel(content, { deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: -2 });
+    expect(onContentPullDown).toHaveBeenCalledTimes(1);
+  });
+
   it('콘텐츠 맞춤 높이에서는 화살표 키로 스냅 포인트를 바꾸지 않는다', () => {
     const onSnapPointChange = jest.fn();
     render(

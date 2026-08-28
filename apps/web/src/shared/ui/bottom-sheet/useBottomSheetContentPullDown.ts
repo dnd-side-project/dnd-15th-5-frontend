@@ -3,7 +3,20 @@ import { useEffect, useRef } from 'react';
 import type { TouchEventHandler, WheelEventHandler } from 'react';
 
 const CONTENT_PULL_DOWN_THRESHOLD_PX = 64;
+const WHEEL_LINE_HEIGHT_PX = 16;
 const WHEEL_GESTURE_RESET_MS = 150;
+
+const getWheelDeltaYPixels = (deltaY: number, deltaMode: number, pageHeight: number) => {
+  if (deltaMode === WheelEvent.DOM_DELTA_LINE) {
+    return deltaY * WHEEL_LINE_HEIGHT_PX;
+  }
+
+  if (deltaMode === WheelEvent.DOM_DELTA_PAGE) {
+    return deltaY * pageHeight;
+  }
+
+  return deltaY;
+};
 
 type UseBottomSheetContentPullDownParams = {
   onContentPullDown?: () => void;
@@ -71,7 +84,9 @@ export const useBottomSheetContentPullDown = ({
       return;
     }
 
-    wheelPullDistanceRef.current += -event.deltaY;
+    const pageHeight = event.currentTarget.clientHeight || window.innerHeight;
+    const deltaYPixels = getWheelDeltaYPixels(event.deltaY, event.deltaMode, pageHeight);
+    wheelPullDistanceRef.current += -deltaYPixels;
     if (wheelPullDistanceRef.current > CONTENT_PULL_DOWN_THRESHOLD_PX) {
       resetWheelGesture();
       onContentPullDown();
