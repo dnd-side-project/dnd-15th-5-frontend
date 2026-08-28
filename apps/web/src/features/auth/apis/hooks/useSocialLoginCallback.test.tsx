@@ -1,28 +1,37 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import type { ApiResponseAuthenticationResponse } from '@/features/auth/apis/dto';
 import { useExchangeSocialLoginCode } from '@/features/auth/apis/mutations';
+import { reloadToAuthPath } from '@/features/auth/utils/authCallbackNavigation';
 import { saveCodeVerifier } from '@/features/auth/utils/oauthSession';
 import { clearNativeRefreshToken, setNativeRefreshToken } from '@/shared/apis/nativeAuthToken';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { useAuthStore } from '@/shared/stores/authStore';
+import { useToast } from '@/shared/ui/toast';
 
 import { useSocialLoginCallback } from './useSocialLoginCallback';
 
 jest.mock('@/features/auth/apis/mutations', () => ({
   useExchangeSocialLoginCode: jest.fn(),
 }));
+jest.mock('@tanstack/react-query', () => ({ useQueryClient: jest.fn() }));
+jest.mock('@/features/auth/utils/authCallbackNavigation', () => ({ reloadToAuthPath: jest.fn() }));
 jest.mock('@/shared/apis/nativeAuthToken', () => ({
   clearNativeRefreshToken: jest.fn(),
   setNativeRefreshToken: jest.fn(),
 }));
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn() }));
+jest.mock('@/shared/ui/toast', () => ({ useToast: jest.fn() }));
 
 const mockUseExchangeSocialLoginCode = jest.mocked(useExchangeSocialLoginCode);
 const mockClearNativeRefreshToken = jest.mocked(clearNativeRefreshToken);
 const mockSetNativeRefreshToken = jest.mocked(setNativeRefreshToken);
 const mockIsNativeApp = jest.mocked(isNativeApp);
+const mockReloadToAuthPath = jest.mocked(reloadToAuthPath);
+const mockClearQueries = jest.fn();
+const mockShowToast = jest.fn();
 const mockMutate = jest.fn();
 let handleSuccess:
   ((response: ApiResponseAuthenticationResponse) => void | Promise<void>) | undefined;
@@ -42,6 +51,7 @@ const renderCallback = (initialEntry: string) =>
         <Route path="/auth/callback" element={<CallbackHarness />} />
         <Route path="/agreement" element={<p>약관 동의 화면</p>} />
         <Route path="/home" element={<p>홈 화면</p>} />
+        <Route path="/" element={<p>로그인 화면</p>} />
       </Routes>
     </MemoryRouter>
   );
@@ -54,6 +64,11 @@ describe('useSocialLoginCallback', () => {
     mockIsNativeApp.mockReturnValue(false);
     mockClearNativeRefreshToken.mockResolvedValue();
     mockSetNativeRefreshToken.mockResolvedValue();
+    jest.mocked(useQueryClient).mockReturnValue({ clear: mockClearQueries } as never);
+    jest.mocked(useToast).mockReturnValue({
+      showToast: mockShowToast,
+      closeToast: jest.fn(),
+    });
     useAuthStore.setState({
       accessToken: null,
       signupToken: null,
@@ -161,12 +176,33 @@ describe('useSocialLoginCallback', () => {
     });
   });
 
-  it('OAuth 취소 query가 전달되면 교환하지 않고 오류를 표시한다', async () => {
+  it('OAuth 취소 query가 전달되면 교환하지 않고 로그인 화면으로 돌아간다', async () => {
     saveCodeVerifier('code-verifier');
 
-    renderCallback('/auth/callback?error=access_denied');
+    renderCallback('/auth/callback?error=oauth_cancelled');
 
-    expect(await screen.findByText('소셜 로그인이 취소되었습니다.')).toBeInTheDocument();
+    expect(await screen.findByText('로그인 화면')).toBeInTheDocument();
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it('회원 탈퇴 취소 query가 전달되면 인증을 복원할 수 있도록 마이페이지를 다시 연다', async () => {
+    renderCallback('/auth/callback?error=withdrawal_cancelled');
+
+    await waitFor(() => expect(mockReloadToAuthPath).toHaveBeenCalledWith('/my-page'));
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it('회원 탈퇴 성공 query가 전달되면 인증과 캐시를 정리하고 완료를 안내한다', async () => {
+    useAuthStore.getState().setAccessToken('access-token');
+    renderCallback('/auth/callback?withdrawal=success');
+
+    await waitFor(() => expect(useAuthStore.getState().accessToken).toBeNull());
+    expect(mockClearQueries).toHaveBeenCalledTimes(1);
+    expect(mockShowToast).toHaveBeenCalledWith({
+      type: 'success',
+      message: '회원 탈퇴가 완료되었습니다.',
+    });
+    expect(await screen.findByText('로그인 화면')).toBeInTheDocument();
     expect(mockMutate).not.toHaveBeenCalled();
   });
 });

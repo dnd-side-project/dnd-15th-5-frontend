@@ -1,9 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useExchangeSocialLoginCode } from '@/features/auth/apis/mutations';
 import { AUTH_FLOW_ERROR_CODE, AuthFlowError } from '@/features/auth/errors';
-import { consumeOAuthCallback } from '@/features/auth/utils/oauthSession';
+import { reloadToAuthPath } from '@/features/auth/utils/authCallbackNavigation';
+import { resolveAuthCallback } from '@/features/auth/utils/resolveAuthCallback';
 import { resolveAuthenticationResult } from '@/features/auth/utils/resolveAuthenticationResult';
 import {
   clearAuthenticationTokens,
@@ -11,11 +13,14 @@ import {
 } from '@/shared/apis/authTokenLifecycle';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { useAuthStore } from '@/shared/stores/authStore';
+import { useToast } from '@/shared/ui/toast';
 
 /** OAuth 콜백을 한 번만 교환하고 인증 결과에 맞는 화면으로 이동합니다. */
 export const useSocialLoginCallback = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const { showToast } = useToast();
   const hasStarted = useRef(false);
   const [callbackError, setCallbackError] = useState<Error | null>(null);
   const setSignupToken = useAuthStore((state) => state.setSignupToken);
@@ -60,15 +65,35 @@ export const useSocialLoginCallback = () => {
     hasStarted.current = true;
 
     try {
-      const credentials = consumeOAuthCallback(searchParams);
-      mutate({ data: credentials });
+      const result = resolveAuthCallback(searchParams);
+
+      if (result.type === 'oauthCancelled') {
+        navigate(ROUTE_PATHS.login, { replace: true });
+        return;
+      }
+
+      if (result.type === 'withdrawalCancelled') {
+        reloadToAuthPath(ROUTE_PATHS.myPage);
+        return;
+      }
+
+      if (result.type === 'withdrawalSuccess') {
+        void clearAuthenticationTokens().then(() => {
+          queryClient.clear();
+          showToast({ type: 'success', message: '회원 탈퇴가 완료되었습니다.' });
+          navigate(ROUTE_PATHS.login, { replace: true });
+        });
+        return;
+      }
+
+      mutate({ data: result.credentials });
     } catch (error) {
       const callbackProcessingError =
         error instanceof Error ? error : new Error('로그인 콜백을 처리하지 못했습니다.');
 
       queueMicrotask(() => setCallbackError(callbackProcessingError));
     }
-  }, [mutate, searchParams]);
+  }, [mutate, navigate, queryClient, searchParams, showToast]);
 
   return {
     error: callbackError,
