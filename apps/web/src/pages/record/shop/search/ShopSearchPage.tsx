@@ -15,6 +15,8 @@ export default function ShopSearchPage() {
   const [searchParams] = useSearchParams();
   const shopSearchState = location.state as ShopSearchLocationState | null;
   const isReceiptNativeSearch = searchParams.get('source') === RECEIPT_SHOP_SEARCH_SOURCE;
+  const shouldConfirmClose =
+    isReceiptNativeSearch || Boolean(shopSearchState?.isChangingManualRecordShop);
   const manualRecordPath = createYearMonthPath(
     ROUTE_PATHS.manualRecord,
     searchParams.get(YEAR_MONTH_SEARCH_PARAM)
@@ -30,6 +32,8 @@ export default function ShopSearchPage() {
         isShopChange: Boolean(shopSearchState?.isChangingManualRecordShop),
         shop,
         visitDateTime: shopSearchState?.manualRecordVisitDateTime,
+        amount: shopSearchState?.manualRecordAmount,
+        category: shopSearchState?.manualRecordCategory,
       },
     });
   };
@@ -59,7 +63,11 @@ export default function ShopSearchPage() {
 
   return (
     <main className="flex min-h-full flex-col">
-      <RecordNavigationHeader onBack={handleBack} onClose={handleClose} />
+      <RecordNavigationHeader
+        onBack={handleBack}
+        onClose={handleClose}
+        confirmBeforeClose={shouldConfirmClose}
+      />
 
       <div className="mt-4">
         <ShopSearch onSelectShop={handleSelectShop} />

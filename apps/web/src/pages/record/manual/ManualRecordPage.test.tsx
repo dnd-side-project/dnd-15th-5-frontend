@@ -6,7 +6,7 @@ import {
 } from '@chapchap/shared/record';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import type { ShopSearchResult } from '@/features/shop';
 
@@ -34,12 +34,26 @@ const selectedShop: ShopSearchResult = {
 
 function ShopSearchTarget() {
   const location = useLocation();
-  const state = location.state as { manualRecordVisitDateTime?: VisitDateTimeValue } | null;
+  const navigate = useNavigate();
+  const state = location.state as {
+    manualRecordVisitDateTime?: VisitDateTimeValue;
+    manualRecordAmount?: string;
+    manualRecordCategory?: string;
+  } | null;
 
   return (
-    <p data-has-visit-date={String(Boolean(state?.manualRecordVisitDateTime))}>
-      가게 검색 화면 {location.search}
-    </p>
+    <div>
+      <p
+        data-has-visit-date={String(Boolean(state?.manualRecordVisitDateTime))}
+        data-amount={state?.manualRecordAmount}
+        data-category={state?.manualRecordCategory}
+      >
+        가게 검색 화면 {location.search}
+      </p>
+      <button type="button" onClick={() => navigate(-1)}>
+        검색에서 뒤로 가기
+      </button>
+    </div>
   );
 }
 
@@ -85,6 +99,25 @@ describe('<ManualRecordPage />', () => {
     expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('12,000');
     expect(screen.getByRole('textbox', { name: '금액' })).toBeValid();
     expect(screen.getByRole('button', { name: '기록하기' })).toBeEnabled();
+  });
+
+  it('매장 상세에서 전달한 카테고리를 처음부터 선택한다', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/manual',
+            state: { shop: selectedShop, category: '음식점' },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('button', { name: '음식점' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('지난달 기록에서 장소 선택을 마치면 해당 월 날짜 선택을 바로 연다', () => {
@@ -191,10 +224,78 @@ describe('<ManualRecordPage />', () => {
     expect(screen.getByText('가게 검색 화면')).toBeInTheDocument();
   });
 
-  it('닫기 확인 후 나가기를 선택하면 지도 홈으로 이동한다', async () => {
+  it('가게 변경으로 이동할 때 입력해둔 금액과 카테고리를 함께 전달한다', async () => {
     const user = userEvent.setup();
     renderPage();
 
+    await user.type(screen.getByRole('textbox', { name: '금액' }), '7000');
+    await user.click(screen.getByRole('button', { name: '음식점' }));
+    await user.click(screen.getByRole('button', { name: '변경' }));
+
+    const shopSearchScreen = screen.getByText('가게 검색 화면');
+    expect(shopSearchScreen).toHaveAttribute('data-amount', '7000');
+    expect(shopSearchScreen).toHaveAttribute('data-category', '음식점');
+  });
+
+  it('가게 변경을 취소해도 이전 수기 입력 화면의 초안을 복원한다', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByRole('textbox', { name: '금액' }), '7000');
+    await user.click(screen.getByRole('button', { name: '음식점' }));
+    await user.click(screen.getByRole('button', { name: '변경' }));
+    await user.click(screen.getByRole('button', { name: '검색에서 뒤로 가기' }));
+
+    expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('7,000');
+    expect(screen.getByRole('button', { name: '음식점' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('가게 검색에서 돌아왔을 때 전달받은 초안을 복원하고 변경사항으로 유지한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/manual',
+            state: {
+              isShopChange: true,
+              shop: selectedShop,
+              amount: '9000',
+              category: '음식점',
+            },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('9,000');
+    expect(screen.getByRole('button', { name: '음식점' })).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+    expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
+  });
+
+  it('입력한 내용이 없으면 확인 없이 바로 지도 홈으로 이동한다', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+
+    expect(
+      screen.queryByRole('dialog', { name: '기록 작성을 그만둘까요?' })
+    ).not.toBeInTheDocument();
+    expect(screen.getByText('홈 화면')).toBeInTheDocument();
+  });
+
+  it('입력한 내용이 있으면 닫기 확인 후 나가기를 선택해야 지도 홈으로 이동한다', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByRole('textbox', { name: '금액' }), '5000');
     await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
 
     expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
@@ -220,6 +321,60 @@ describe('<ManualRecordPage />', () => {
     await user.click(screen.getByRole('button', { name: '나가기' }));
 
     expect(screen.getByText('홈 화면')).toBeInTheDocument();
+  });
+
+  it('입력한 내용이 있으면 뒤로 가기도 확인 후 이동한다', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByRole('textbox', { name: '금액' }), '5000');
+    await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
+
+    expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '나가기' }));
+
+    expect(screen.getByText('가게 검색 화면')).toBeInTheDocument();
+  });
+
+  it('금액을 잘못 입력하면 필드 오류 안내를 보여준다', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByRole('textbox', { name: '금액' }), '0');
+
+    const amountInput = screen.getByRole('textbox', { name: '금액' });
+    const errorMessage = screen.getByRole('alert');
+
+    expect(errorMessage).toHaveTextContent('1원 이상');
+    expect(amountInput).toHaveAttribute('aria-invalid', 'true');
+    expect(amountInput).toHaveAttribute('aria-describedby', errorMessage.id);
+  });
+
+  it('위치 정보가 없는 가게는 변경 버튼과 연결된 필드 오류를 보여준다', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/manual',
+            state: { shop: { ...selectedShop, latitude: Number.NaN } },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const errorMessage = screen.getByRole('alert');
+
+    expect(errorMessage).toHaveTextContent('위치 정보가 없어 기록할 수 없어요');
+    expect(screen.getByRole('button', { name: '변경' })).toHaveAttribute(
+      'aria-describedby',
+      errorMessage.id
+    );
+    expect(screen.getByRole('button', { name: '기록하기' })).toBeDisabled();
   });
 
   it('방문 일시 선택값을 CTA에 표시하고 확인하면 폼에 반영한다', async () => {

@@ -6,4 +6,4 @@ export { default as ReceiptMethodLink } from './components/ReceiptMethodLink';
 export { useOpenReceiptCamera } from './hooks/useOpenReceiptCamera';
 export { createInitialVisitDateTimeForMonth } from './utils/createInitialVisitDateTimeForMonth';
 
-export type { ShopSearchLocationState } from './types';
+export type { ManualRecordDraft, ShopSearchLocationState } from './types';

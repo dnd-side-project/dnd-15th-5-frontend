@@ -23,7 +23,7 @@ export default function VisitPeriodSelector({
           <button
             aria-pressed={isSelected}
             className={cn(
-              'flex flex-col items-center justify-center rounded-16 border px-4 py-2 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1',
+              'flex flex-col items-center justify-center rounded-16 border px-4 py-2 outline-none transition-[background-color,border-color,color,transform] duration-150 active:scale-95 motion-reduce:transform-none motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1',
               isSelected
                 ? 'border-primary-500 bg-primary-500 text-neutral-00'
                 : 'border-neutral-300 bg-neutral-00 text-neutral-600 hover:bg-neutral-50'
