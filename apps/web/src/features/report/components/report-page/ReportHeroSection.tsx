@@ -1,25 +1,20 @@
 import { Link } from 'react-router-dom';
 
-import { BackButton } from '@/shared/ui/back-button';
-
 import ReportHeroCard from './report-hero-card/ReportHeroCard';
 
 type ReportHeroSectionProps = {
   monthlyReportPath: string;
   monthLabel: string;
-  onBack: () => void;
 };
 
 /** 리포트 페이지 상단의 생성 중 안내와 카드 애니메이션을 보여줍니다. */
 export default function ReportHeroSection({
   monthlyReportPath,
   monthLabel,
-  onBack,
 }: ReportHeroSectionProps) {
   return (
     <section className="relative h-63">
       <div aria-hidden className="absolute inset-x-0 top-42 h-51 bg-report-hero" />
-      <BackButton className="absolute top-0 left-4 z-report-hero-content" onClick={onBack} />
       <div className="absolute inset-x-0 top-18 z-report-hero-content flex items-end justify-between px-7.5">
         <div className="relative z-report-hero-content flex flex-col items-start gap-3.5">
           <h1 className="text-heading-03-bold text-neutral-900">
