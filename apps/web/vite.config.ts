@@ -1,16 +1,45 @@
 import { fileURLToPath } from 'node:url';
 
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 import svgr from 'vite-plugin-svgr';
 
+const SENTRY_ORGANIZATION = '481bfb6d59b2';
+const SENTRY_PROJECT = 'chapchap-web';
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', 'VITE_');
+  const isSentryUploadEnabled = mode === 'production' && Boolean(process.env.SENTRY_AUTH_TOKEN);
+  const sentryRelease = process.env.GITHUB_SHA
+    ? `${SENTRY_PROJECT}@${process.env.GITHUB_SHA}`
+    : undefined;
 
   return {
-    plugins: [react(), svgr(), tailwindcss()],
+    plugins: [
+      react(),
+      svgr(),
+      tailwindcss(),
+      sentryVitePlugin({
+        org: SENTRY_ORGANIZATION,
+        project: SENTRY_PROJECT,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        disable: !isSentryUploadEnabled,
+        telemetry: false,
+        sourcemaps: {
+          filesToDeleteAfterUpload: './dist/**/*.map',
+        },
+        release: {
+          name: sentryRelease,
+          setCommits: false,
+        },
+      }),
+    ],
+    build: {
+      sourcemap: isSentryUploadEnabled ? 'hidden' : false,
+    },
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

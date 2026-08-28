@@ -108,7 +108,15 @@
         }
       ],
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "chapchap-mobile",
+          "organization": "481bfb6d59b2"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "dependencies": {
     "@chapchap/shared": "workspace:*",
+    "@sentry/react-native": "^8.24.0",
     "expo": "~57.0.11",
     "expo-build-properties": "~57.0.9",
     "expo-camera": "~57.0.3",
