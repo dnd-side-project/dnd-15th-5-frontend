@@ -98,12 +98,20 @@ export default function RecommendationMapMarkers() {
     }
 
     lastFocusedRecommendationIdRef.current = activeRecommendationId;
-    focusMap(activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
+    focusMap(
+      activeRecommendation.position,
+      ACTIVE_RECOMMENDATION_ZOOM,
+      useHomeBottomSheetStore.getState().visibleHeightPx || undefined
+    );
   }, [activeRecommendationId, focusMap, isRecommendationOpen]);
 
   const handleMarkerSelect = (recommendation: ShopRecommendation) => {
     lastFocusedRecommendationIdRef.current = recommendation.id;
-    focusMap(recommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
+    focusMap(
+      recommendation.position,
+      ACTIVE_RECOMMENDATION_ZOOM,
+      useHomeBottomSheetStore.getState().visibleHeightPx || undefined
+    );
     setActiveRecommendation(recommendation.id);
     if (recommendation.isLiked) {
       showLikedRecommendation(recommendation.id);
@@ -142,7 +150,13 @@ export default function RecommendationMapMarkers() {
               key={isActive ? 'active' : 'default'}
               aria-hidden="true"
               data-state={isActive ? 'active' : 'default'}
-              className={cn('recommendation-marker-icon', isActive ? 'h-15.75 w-12.25' : 'size-10')}
+              // NOTE: 좋아요 기본 아이콘은 SVG 캔버스에 그림자용 여백이 더 많이 포함돼 있어
+              // 카테고리 기본 아이콘과 같은 박스 크기로는 배지가 더 작게 보인다. size-14로
+              // 키워서 실제 보이는 배지 크기를 카테고리 아이콘과 맞춘다.
+              className={cn(
+                'recommendation-marker-icon',
+                isActive ? 'h-18 w-14' : recommendation.isLiked ? 'size-14' : 'size-9'
+              )}
             />
           </AdvancedMarker>
         );
