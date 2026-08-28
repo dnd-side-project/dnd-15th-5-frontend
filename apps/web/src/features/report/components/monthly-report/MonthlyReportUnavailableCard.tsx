@@ -30,8 +30,8 @@ export default function MonthlyReportUnavailableCard({
         <h2 className="break-keep text-title-02-semibold">생성된 카드가 없어요</h2>
         <button
           className="mt-2 inline-flex items-center gap-1 text-body-02-medium outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-2"
+          disabled={!isActionAvailable}
           onClick={onViewCurrentReport}
-          tabIndex={isActionAvailable ? 0 : -1}
           type="button"
         >
           이번달 리포트 보러가기
