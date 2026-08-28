@@ -46,6 +46,11 @@ describe('ReportPreferenceSection', () => {
     expect(
       thumbnailCaptureRef.current?.querySelector('.report-preference-card-face--back')
     ).toBeNull();
+    expect(
+      screen.getAllByRole('img', {
+        name: '왕관과 망토를 두르고 왕좌에 앉은 캐릭터',
+      })[0]
+    ).toHaveClass('size-62.5', 'left-1/2', '-translate-x-1/2');
   });
 
   it('empty 카드에서는 공유와 뒤집기 버튼을 비활성화하고 키보드 월 이동은 유지한다', () => {
