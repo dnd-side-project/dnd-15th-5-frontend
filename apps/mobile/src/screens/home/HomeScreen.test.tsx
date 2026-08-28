@@ -277,6 +277,16 @@ describe('<HomeScreen />', () => {
     expect(Linking.openURL).toHaveBeenCalledWith(googleMapsUrl);
   });
 
+  it('이메일 링크는 WebView에서 막고 기기의 메일 앱으로 전달한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { getByTestId } = await render(<HomeScreen />);
+    const shouldStartLoad = getByTestId('home-webview').props.onShouldStartLoadWithRequest;
+    const mailtoUrl = 'mailto:contact@chapchap.kr?subject=%5BChapChap%5D%20%EB%AC%B8%EC%9D%98';
+
+    expect(shouldStartLoad({ url: mailtoUrl })).toBe(false);
+    expect(Linking.openURL).toHaveBeenCalledWith(mailtoUrl);
+  });
+
   it('카카오톡 공유 스킴은 WebView에서 막고 카카오톡 앱으로 전달한다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
     const { getByTestId } = await render(<HomeScreen />);
