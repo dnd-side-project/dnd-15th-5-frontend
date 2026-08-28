@@ -8,6 +8,8 @@ import type { FormEvent } from 'react';
 const DEFAULT_SEARCH_DEBOUNCE_MS = 400;
 
 type PlaceSearchInputProps = {
+  /** 최근 검색어 선택처럼 외부에서 검색어를 채우고 즉시 검색을 실행할 때 전달합니다. */
+  appliedKeyword?: string;
   debounceMs?: number;
   onSearch: (keyword: string) => void;
   placeholder?: string;
@@ -15,6 +17,7 @@ type PlaceSearchInputProps = {
 
 /** 입력 중 자동 검색과 즉시 제출을 함께 제공하는 공통 장소 검색창입니다. */
 export function PlaceSearchInput({
+  appliedKeyword,
   debounceMs = DEFAULT_SEARCH_DEBOUNCE_MS,
   onSearch,
   placeholder = '장소를 검색해주세요',
@@ -23,6 +26,7 @@ export function PlaceSearchInput({
   const debouncedKeyword = useDebouncedValue(keyword, debounceMs);
   const onSearchRef = useRef(onSearch);
   const lastSearchedKeywordRef = useRef(debouncedKeyword);
+  const lastAppliedKeywordRef = useRef(appliedKeyword);
 
   useEffect(() => {
     onSearchRef.current = onSearch;
@@ -36,6 +40,17 @@ export function PlaceSearchInput({
     lastSearchedKeywordRef.current = debouncedKeyword;
     onSearchRef.current(debouncedKeyword);
   }, [debouncedKeyword]);
+
+  useEffect(() => {
+    if (appliedKeyword === undefined || appliedKeyword === lastAppliedKeywordRef.current) {
+      return;
+    }
+
+    lastAppliedKeywordRef.current = appliedKeyword;
+    lastSearchedKeywordRef.current = appliedKeyword;
+    setKeyword(appliedKeyword);
+    onSearchRef.current(appliedKeyword);
+  }, [appliedKeyword]);
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

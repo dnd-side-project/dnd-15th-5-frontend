@@ -42,4 +42,24 @@ describe('PlaceSearchInput', () => {
     });
     expect(onSearch).toHaveBeenCalledTimes(1);
   });
+
+  it('appliedKeyword가 바뀌면 검색어를 채우고 즉시 검색을 실행한다', () => {
+    const onSearch = jest.fn();
+    const { rerender } = render(<PlaceSearchInput onSearch={onSearch} />);
+
+    rerender(<PlaceSearchInput onSearch={onSearch} appliedKeyword="투썸" />);
+
+    expect(screen.getByPlaceholderText('장소를 검색해주세요')).toHaveValue('투썸');
+    expect(onSearch).toHaveBeenCalledWith('투썸');
+  });
+
+  it('appliedKeyword가 같은 값으로 유지되면 다시 검색하지 않는다', () => {
+    const onSearch = jest.fn();
+    const { rerender } = render(<PlaceSearchInput onSearch={onSearch} appliedKeyword="투썸" />);
+    onSearch.mockClear();
+
+    rerender(<PlaceSearchInput onSearch={onSearch} appliedKeyword="투썸" />);
+
+    expect(onSearch).not.toHaveBeenCalled();
+  });
 });
