@@ -134,10 +134,11 @@ PRD 이후 구현 기준을 통일하기 위해 레이어별 책임과 라우트
 | `main` 동기화 브랜치 → `develop` | Create a merge commit | `main`의 부모 이력 보존                |
 | `develop` → `main`           | Create a merge commit   | 배포 이력과 장기 브랜치의 조상 관계 보존 |
 
-`feat/*`, `fix/*`, `refactor/*`, `docs/*`, `chore/*` 같은 일반 작업 브랜치는
-`develop`에 Squash merge한다. 반면 `main`과 `develop`은 장기 브랜치이므로 두 브랜치
-사이의 병합에는 Squash merge를 사용하지 않는다. 장기 브랜치를 Squash merge하면 부모
-이력이 사라져 이미 반영한 커밋이 다시 비교되거나 다음 배포 PR에서 충돌할 수 있다.
+`feat/*`, `fix/*`, `refactor/*`, `docs/*`, 일반 `chore/*` 같은 작업 브랜치는 `develop`에
+Squash merge한다. 단, `chore/main-develop-sync-*` 동기화 브랜치는 일반 `chore/*`의
+예외이며 Create a merge commit으로 병합한다. 또한 `main`과 `develop`은 장기 브랜치이므로
+두 브랜치 사이의 병합에는 Squash merge를 사용하지 않는다. 장기 브랜치를 Squash merge하면
+부모 이력이 사라져 이미 반영한 커밋이 다시 비교되거나 다음 배포 PR에서 충돌할 수 있다.
 
 `main`에 배포 또는 긴급 수정 커밋이 추가되어 `develop`에 없는 이력이 생겼다면 다음
 절차로 동기화한다.
