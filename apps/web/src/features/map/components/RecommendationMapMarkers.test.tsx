@@ -182,6 +182,27 @@ describe('RecommendationMapMarkers', () => {
     expect(panBy).toHaveBeenCalledWith(0, expect.any(Number));
   });
 
+  it('같은 추천을 보는 중에도 바텀시트 실측 높이가 바뀌면 지도를 다시 보정한다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    useHomeBottomSheetStore.getState().showRecommendation();
+    useShopRecommendationStore.setState({ activeRecommendationId: recommendation.id });
+
+    render(<RecommendationMapMarkers />);
+
+    expect(moveCamera).toHaveBeenCalledTimes(1);
+    moveCamera.mockClear();
+    panBy.mockClear();
+
+    const tallerSheetHeightPx = window.innerHeight;
+    act(() => {
+      useHomeBottomSheetStore.setState({ visibleHeightPx: tallerSheetHeightPx });
+    });
+
+    expect(moveCamera).toHaveBeenCalledTimes(1);
+    expect(moveCamera).toHaveBeenCalledWith({ center: recommendation.position, zoom: 15 });
+    expect(panBy).toHaveBeenCalledWith(0, getFocusedMarkerVerticalOffset(tallerSheetHeightPx));
+  });
+
   it('카테고리 마커를 누르면 추천 시트를 열고 선택한 가게를 공유한다', async () => {
     const user = userEvent.setup();
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;

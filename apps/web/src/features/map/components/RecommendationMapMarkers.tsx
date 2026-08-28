@@ -69,23 +69,28 @@ export default function RecommendationMapMarkers() {
     : isRecommendationOpen
       ? activeRecommendationId
       : null;
+  const visibleHeightPx = useHomeBottomSheetStore((state) => state.visibleHeightPx) || undefined;
   const { recommendations } = useNearbyPlaceRecommendationsQuery();
   const recommendationsRef = useRef(recommendations);
   const lastFocusedRecommendationIdRef = useRef<string | null>(null);
+  const lastFocusedVisibleHeightPxRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     recommendationsRef.current = recommendations;
   }, [recommendations]);
 
   useEffect(() => {
-    if (!isRecommendationOpen) {
+    if (!isRecommendationOpen || !activeRecommendationId) {
       lastFocusedRecommendationIdRef.current = null;
       return;
     }
 
+    // NOTE: id와 시트 실측 높이가 둘 다 이전과 같으면(= handleMarkerSelect가 이미 처리했거나
+    // 직전 실행과 동일) 다시 포커스하지 않는다. 높이만 바뀐 경우(콘텐츠 리플로우 등)는
+    // 같은 추천이라도 다시 포커스해서 핀이 바뀐 시트 높이에 가려지지 않게 한다.
     if (
-      !activeRecommendationId ||
-      lastFocusedRecommendationIdRef.current === activeRecommendationId
+      lastFocusedRecommendationIdRef.current === activeRecommendationId &&
+      lastFocusedVisibleHeightPxRef.current === visibleHeightPx
     ) {
       return;
     }
@@ -98,20 +103,14 @@ export default function RecommendationMapMarkers() {
     }
 
     lastFocusedRecommendationIdRef.current = activeRecommendationId;
-    focusMap(
-      activeRecommendation.position,
-      ACTIVE_RECOMMENDATION_ZOOM,
-      useHomeBottomSheetStore.getState().visibleHeightPx || undefined
-    );
-  }, [activeRecommendationId, focusMap, isRecommendationOpen]);
+    lastFocusedVisibleHeightPxRef.current = visibleHeightPx;
+    focusMap(activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM, visibleHeightPx);
+  }, [activeRecommendationId, focusMap, isRecommendationOpen, visibleHeightPx]);
 
   const handleMarkerSelect = (recommendation: ShopRecommendation) => {
     lastFocusedRecommendationIdRef.current = recommendation.id;
-    focusMap(
-      recommendation.position,
-      ACTIVE_RECOMMENDATION_ZOOM,
-      useHomeBottomSheetStore.getState().visibleHeightPx || undefined
-    );
+    lastFocusedVisibleHeightPxRef.current = visibleHeightPx;
+    focusMap(recommendation.position, ACTIVE_RECOMMENDATION_ZOOM, visibleHeightPx);
     setActiveRecommendation(recommendation.id);
     if (recommendation.isLiked) {
       showLikedRecommendation(recommendation.id);
