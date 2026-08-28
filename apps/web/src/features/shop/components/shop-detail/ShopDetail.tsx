@@ -7,22 +7,31 @@ import { getStickerImages } from '@/shared/assets/images/stickers';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { Chip } from '@/shared/ui/chip';
 import { RegularShopBadge } from '@/shared/ui/regular-shop-badge';
-import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
 
+import { createShopRecordLocationState } from '../../utils/createShopRecordLocationState';
+
+import ShopDetailSkeleton from './ShopDetailSkeleton';
 import ShopStickerHero from './ShopStickerHero';
 import VisitHistoryList from './VisitHistoryList';
 import VisitSummaryCard from './VisitSummaryCard';
 
+import type { ShopSearchResult } from '../../types';
 import type { ReactNode } from 'react';
 
 type ShopDetailProps = {
   headerContent: ReactNode;
   onViewOnMap: () => void;
   placeId: number;
+  recordShop?: ShopSearchResult;
 };
 
-export default function ShopDetail({ headerContent, onViewOnMap, placeId }: ShopDetailProps) {
+export default function ShopDetail({
+  headerContent,
+  onViewOnMap,
+  placeId,
+  recordShop,
+}: ShopDetailProps) {
   const isValidPlaceId = Number.isSafeInteger(placeId) && placeId > 0;
   const scrollRootRef = useRef<HTMLDivElement>(null);
   const placeDetailQuery = useGetPlaceDetail(placeId, {
@@ -52,15 +61,7 @@ export default function ShopDetail({ headerContent, onViewOnMap, placeId }: Shop
   }
 
   if (placeDetailQuery.isPending) {
-    return (
-      <div
-        role="status"
-        aria-label="가게 상세 불러오는 중"
-        className="flex h-dvh items-center justify-center"
-      >
-        <Spinner className="size-7 text-primary-500" />
-      </div>
-    );
+    return <ShopDetailSkeleton headerContent={headerContent} />;
   }
 
   const place = placeDetailQuery.data?.data;
@@ -81,6 +82,12 @@ export default function ShopDetail({ headerContent, onViewOnMap, placeId }: Shop
   const visits = placeVisitsQuery.data?.pages.flatMap((page) => page.data?.visits ?? []) ?? [];
   const totalVisitCount = place.stats?.totalVisitCount ?? visits.length;
   const stickerImages = getStickerImages(place.stickerSummary ?? place.recentStickers ?? []);
+  const recordLocationState = createShopRecordLocationState({
+    address: place.address,
+    category: place.category,
+    placeName: place.placeName ?? '',
+    recordShop,
+  });
 
   return (
     <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
@@ -104,9 +111,9 @@ export default function ShopDetail({ headerContent, onViewOnMap, placeId }: Shop
           <span aria-hidden="true" className="text-caption-01-regular text-neutral-300">
             |
           </span>
-          <p className="flex min-w-0 items-center gap-1 text-caption-01-regular text-neutral-500">
-            <LocationPinIcon aria-hidden="true" className="shrink-0" />
-            <span className="truncate">{place.address}</span>
+          <p className="flex min-w-0 items-start gap-1 text-caption-01-regular text-neutral-500">
+            <LocationPinIcon aria-hidden="true" className="mt-0.5 shrink-0" />
+            <span className="line-clamp-2">{place.address}</span>
           </p>
         </div>
 
@@ -121,6 +128,7 @@ export default function ShopDetail({ headerContent, onViewOnMap, placeId }: Shop
             monthlyVisitCount={place.stats?.monthlyVisitCount ?? 0}
             onViewOnMap={onViewOnMap}
             placeId={placeId}
+            recordLocationState={recordLocationState}
             totalVisitCount={totalVisitCount}
           />
           <VisitHistoryList

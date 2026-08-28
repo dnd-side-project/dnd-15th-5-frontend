@@ -1,6 +1,7 @@
 export { formatAmount, isValidRecordAmount, sanitizeAmount } from './amount';
 export {
   CREATED_CONSUMPTION_QUERY_KEYS,
+  MAX_RECORD_AMOUNT,
   RECORD_CATEGORIES,
   RECORD_EXIT_CONFIRM_TEXT,
 } from './constants';

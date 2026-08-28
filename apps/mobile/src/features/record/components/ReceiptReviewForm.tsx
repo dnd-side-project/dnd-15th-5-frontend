@@ -22,6 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET } from '@/features/record/constants';
 import type { ReceiptDraft, ReceiptReviewState } from '@/features/record/types';
+import { getPressedStyle } from '@/features/record/utils/getPressedStyle';
 import { CalendarIcon, CloseIcon, LocationPinIcon, StoreIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
 
@@ -306,6 +307,7 @@ export default function ReceiptReviewForm({
                         onPress={() => setCategory(recordCategory)}
                         accessibilityRole="button"
                         accessibilityState={{ selected }}
+                        style={getPressedStyle}
                         className={`items-center justify-center rounded-16 border px-4 py-2 ${
                           selected
                             ? 'border-primary-500 bg-primary-500'

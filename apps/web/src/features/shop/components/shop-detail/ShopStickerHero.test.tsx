@@ -1,4 +1,4 @@
-import { act, fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 
 import ShopStickerHero from './ShopStickerHero';
 import {
@@ -27,6 +27,10 @@ const getStickerStyles = (container: HTMLElement) =>
   }));
 
 describe('ShopStickerHero', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
   afterEach(() => {
     jest.useRealTimers();
   });
@@ -163,7 +167,7 @@ describe('ShopStickerHero', () => {
     expect(image).toHaveClass('shop-sticker-hero__stamp--playing');
   });
 
-  it('같은 개수의 스티커 URL이 바뀌면 로드 상태를 초기화한다', () => {
+  it('같은 매장에서 스티커 URL이 바뀌어도 세션 중 애니메이션을 다시 재생하지 않는다', () => {
     const initialImages = ['sticker-a.png', 'sticker-b.png'];
     const nextImages = ['sticker-c.png', 'sticker-d.png'];
     const { container, rerender } = render(
@@ -179,7 +183,7 @@ describe('ShopStickerHero', () => {
 
     replacedImages.forEach((image) => fireEvent.load(image));
     replacedImages.forEach((image) => {
-      expect(image).toHaveClass('shop-sticker-hero__stamp--playing');
+      expect(image).not.toHaveClass('shop-sticker-hero__stamp--playing');
     });
   });
 
@@ -202,5 +206,50 @@ describe('ShopStickerHero', () => {
     expect(newestImage).not.toHaveClass('shop-sticker-hero__stamp--playing');
     expect(newestImage.style.animationDelay).toBe(`${stampDelays[2]}ms`);
     expect(newestImage.style.animationDuration).toBe('657ms');
+  });
+
+  it('스티커가 없으면 빈 상태 안내를 보여준다', () => {
+    render(<ShopStickerHero headerContent={null} placeId={101} stickerImages={[]} />);
+
+    expect(screen.getByText('아직 획득한 스티커가 없어요')).toBeInTheDocument();
+  });
+
+  it('빈 상태만 본 매장은 같은 세션에 스티커가 생기면 첫 등장 애니메이션을 재생한다', () => {
+    const { unmount } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={[]} />
+    );
+    unmount();
+
+    const { container } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={STICKER_IMAGES} />
+    );
+    Array.from(container.querySelectorAll<HTMLImageElement>('img')).forEach((image) =>
+      fireEvent.load(image)
+    );
+
+    expect(container.querySelector('img')).toHaveClass('shop-sticker-hero__stamp--playing');
+  });
+
+  it('같은 세션에서 같은 매장을 다시 열면 등장 애니메이션을 재생하지 않는다', () => {
+    const { container, unmount } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={STICKER_IMAGES} />
+    );
+    Array.from(container.querySelectorAll<HTMLImageElement>('img')).forEach((image) =>
+      fireEvent.load(image)
+    );
+    expect(container.querySelector('img')).toHaveClass('shop-sticker-hero__stamp--playing');
+    unmount();
+
+    const { container: revisitContainer } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={STICKER_IMAGES} />
+    );
+    const revisitImages = Array.from(revisitContainer.querySelectorAll<HTMLImageElement>('img'));
+    revisitImages.forEach((image) =>
+      expect(image).not.toHaveClass('shop-sticker-hero__stamp--playing')
+    );
+    revisitImages.forEach((image) => fireEvent.load(image));
+    revisitImages.forEach((image) =>
+      expect(image).not.toHaveClass('shop-sticker-hero__stamp--playing')
+    );
   });
 });

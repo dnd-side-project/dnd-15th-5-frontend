@@ -1,14 +1,34 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import { isNativeApp } from '@/shared/lib/bridge';
+import {
+  getRecordCategoryFromLocationState,
+  getRecordShopFromLocationState,
+} from '@/shared/utils/recordNavigation';
 
 import RecordMethodPage from './RecordMethodPage';
 
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn() }));
 
 const mockIsNativeApp = jest.mocked(isNativeApp);
+const selectedShop = {
+  id: 'ChIJ-twosome-101',
+  name: '투썸플레이스',
+  address: '서울특별시 강남구 봉은사로 125 1층',
+  photoUrl: null,
+  latitude: 37.506481,
+  longitude: 127.024551,
+};
+
+function ManualRecordLocationProbe() {
+  const location = useLocation();
+  const shop = getRecordShopFromLocationState(location.state);
+  const category = getRecordCategoryFromLocationState(location.state);
+
+  return <p>{shop ? `${shop.id}|${shop.name}|${category}` : '선택 가게 없음'}</p>;
+}
 
 describe('<RecordMethodPage />', () => {
   beforeEach(() => {
@@ -48,6 +68,34 @@ describe('<RecordMethodPage />', () => {
       'href',
       '/record/shop/search?yearMonth=2026-07'
     );
+  });
+
+  it('매장에서 진입하면 검색 화면을 건너뛰고 선택 가게를 수기 기록 화면에 유지한다', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record',
+            search: '?yearMonth=2026-07',
+            state: { shop: selectedShop, category: '음식점' },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record" element={<RecordMethodPage />} />
+          <Route path="/record/manual" element={<ManualRecordLocationProbe />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const manualMethod = screen.getByRole('link', { name: /직접 작성/ });
+    expect(manualMethod).toHaveAttribute('href', '/record/manual?yearMonth=2026-07');
+
+    await user.click(manualMethod);
+
+    expect(screen.getByText('ChIJ-twosome-101|투썸플레이스|음식점')).toBeInTheDocument();
   });
 
   it('뒤로 가기 버튼을 누르면 이전 화면으로 이동한다', async () => {

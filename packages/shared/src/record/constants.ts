@@ -5,6 +5,9 @@ import type { SpendingCategory } from '../common/types';
 /** 웹 수기 입력과 앱 영수증 입력에서 공통으로 사용하는 소비 카테고리. */
 export const RECORD_CATEGORIES = SPENDING_CATEGORIES;
 
+/** 소비 기록 금액의 최댓값(원). 비정상적으로 큰 입력을 막기 위한 상한이다. */
+export const MAX_RECORD_AMOUNT = 100_000_000;
+
 /** 웹·앱 기록 플로우의 작성 중단 확인 다이얼로그 문구. */
 export const RECORD_EXIT_CONFIRM_TEXT = {
   title: '기록 작성을 그만둘까요?',

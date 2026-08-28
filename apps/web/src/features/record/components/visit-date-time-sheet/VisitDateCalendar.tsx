@@ -96,7 +96,7 @@ export default function VisitDateCalendar({
               aria-label={`${year}년 ${month + 1}월 ${day}일`}
               aria-pressed={isSelected}
               className={cn(
-                'flex size-9 items-center justify-center rounded-32 text-body-02-medium outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1',
+                'flex size-9 items-center justify-center rounded-32 text-body-02-medium outline-none transition-[background-color,color,transform] duration-150 active:scale-95 motion-reduce:transform-none motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1',
                 getCalendarDayClassName(weekday, isSelected, isFutureDate)
               )}
               disabled={isFutureDate}

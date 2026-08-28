@@ -2,6 +2,7 @@
   "expo": {
     "name": "ChapChap",
     "slug": "chapchap",
+    "owner": "dnd-15th-5",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

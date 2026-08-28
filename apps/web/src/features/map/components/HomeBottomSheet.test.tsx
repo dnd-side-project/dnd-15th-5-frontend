@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -390,5 +390,102 @@ describe('HomeBottomSheet', () => {
     expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(
       lastRecommendation?.id
     );
+  });
+
+  it('홈 시트에서 핸들을 클릭하면 단계가 순환한다', () => {
+    render(
+      <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSelectedPlace={renderSelectedPlace}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+    const sheet = handle.parentElement as HTMLElement;
+
+    expect(sheet).toHaveStyle({ height: '45dvh' });
+
+    fireEvent.click(handle);
+
+    expect(sheet).toHaveStyle({ height: '92dvh' });
+  });
+
+  it('모달형 시트에서 핸들을 클릭하면 홈 시트로 돌아간다', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => (
+            <div>
+              {headerContent}
+              기존 홈 시트
+            </div>
+          )}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    expect(screen.getByRole('dialog', { name: '가게 추천' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: '가게 추천' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '바텀시트 높이 조절' }));
+
+    expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
+  });
+
+  it('모달형 시트가 열려 있을 때 Escape를 누르면 홈 시트로 돌아간다', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => (
+            <div>
+              {headerContent}
+              기존 홈 시트
+            </div>
+          )}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    expect(screen.getByRole('heading', { level: 1, name: '가게 추천' })).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
+  });
+
+  it('시트 전체를 재마운트하지 않고 콘텐츠만 fade로 전환한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+    const bottomSheet = screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement;
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveClass('opacity-0');
+    expect(screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement).toBe(
+      bottomSheet
+    );
+
+    await waitFor(() => expect(dialog).toHaveClass('opacity-100'));
   });
 });

@@ -8,6 +8,7 @@ import {
   getVisitPeriodForHour,
   isSameOrAfterMonth,
   isValidRecordAmount,
+  MAX_RECORD_AMOUNT,
   sanitizeAmount,
   validateRecordRequiredFields,
   WEEKDAY_LABELS,
@@ -19,10 +20,13 @@ describe('shared record rules', () => {
     expect(formatAmount('12345678901234567890')).toBe('12,345,678,901,234,567,890');
   });
 
-  it('1원 이상의 금액만 유효하게 판단한다', () => {
+  it('1원 이상 최댓값 이하의 안전한 정수 금액만 유효하게 판단한다', () => {
     expect(isValidRecordAmount('')).toBe(false);
     expect(isValidRecordAmount('0')).toBe(false);
     expect(isValidRecordAmount('001')).toBe(true);
+    expect(isValidRecordAmount(String(MAX_RECORD_AMOUNT))).toBe(true);
+    expect(isValidRecordAmount(String(MAX_RECORD_AMOUNT + 1))).toBe(false);
+    expect(isValidRecordAmount('9'.repeat(30))).toBe(false);
   });
 
   it.each([
