@@ -91,12 +91,13 @@ describe('FrequentShopSummary', () => {
       refetch: jest.fn(),
     } as unknown as ReturnType<typeof useFrequentPlacesInfiniteQuery>);
 
-    render(
+    const { container } = render(
       <MemoryRouter>
         <FrequentShopSummary />
       </MemoryRouter>
     );
 
+    expect(container.firstElementChild).toHaveClass('pb-28');
     expect(screen.getByRole('heading', { name: '아직 기록이 없어요' })).toBeInTheDocument();
     expect(screen.queryByText('이번달 가장 많이 방문했어요!')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: '누적기록 보기' })).not.toBeInTheDocument();

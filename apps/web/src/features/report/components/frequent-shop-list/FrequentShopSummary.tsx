@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { GetFrequentPlacesPeriod } from '@/features/report/apis/dto';
 import { useFrequentPlacesInfiniteQuery } from '@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { cn } from '@/shared/lib/cn';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
 
@@ -33,7 +34,7 @@ export default function FrequentShopSummary({
   const isEmpty = !query.isPending && !query.isError && frequentPlaces.length === 0;
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className={cn('flex flex-1 flex-col', isEmpty && 'pb-28')}>
       <header className="sticky top-0 z-sticky-header bg-neutral-00 pt-1">{headerContent}</header>
 
       <h1 className="sr-only">자주 소비한 곳</h1>
