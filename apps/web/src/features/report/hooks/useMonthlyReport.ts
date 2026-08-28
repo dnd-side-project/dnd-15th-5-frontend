@@ -114,6 +114,8 @@ export const useMonthlyReport = () => {
     setIsMonthPickerOpen(false);
   };
 
+  const handleCurrentReportSelect = () => handleMonthChange(selectableMonths[0]);
+
   const handleReportCardSelect = (index: number) => {
     const reportCard = reportCards[index];
 
@@ -136,6 +138,7 @@ export const useMonthlyReport = () => {
     captureRef,
     downloadImage,
     handleCardTransitionChange,
+    handleCurrentReportSelect,
     handleNewerMonth,
     handleOlderMonth,
     handleMonthPickerClose,

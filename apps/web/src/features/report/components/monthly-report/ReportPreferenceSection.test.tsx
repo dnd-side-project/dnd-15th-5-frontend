@@ -28,6 +28,7 @@ describe('ReportPreferenceSection', () => {
         onCardTransitionChange={jest.fn()}
         onFlip={jest.fn()}
         onShare={jest.fn()}
+        onViewCurrentReport={jest.fn()}
         selectedCardIndex={0}
         thumbnailCaptureRef={thumbnailCaptureRef}
       />
@@ -46,7 +47,7 @@ describe('ReportPreferenceSection', () => {
     ).toBeNull();
   });
 
-  it('내부 버튼이 없는 empty 카드에서도 캐러셀에 포커스해 키보드로 이동한다', () => {
+  it('empty 카드에서는 공유와 뒤집기 버튼을 비활성화하고 키보드 월 이동은 유지한다', () => {
     const onCardSelect = jest.fn();
 
     render(
@@ -69,6 +70,7 @@ describe('ReportPreferenceSection', () => {
         onCardTransitionChange={jest.fn()}
         onFlip={jest.fn()}
         onShare={jest.fn()}
+        onViewCurrentReport={jest.fn()}
         selectedCardIndex={0}
         thumbnailCaptureRef={createRef<HTMLDivElement>()}
       />
@@ -77,6 +79,13 @@ describe('ReportPreferenceSection', () => {
     const carousel = screen.getByRole('region', { name: '월별 소비 성향 카드' });
 
     expect(carousel).toHaveAttribute('tabindex', '0');
+    expect(screen.getByRole('button', { name: '취향 카드 공유하기' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '취향 카드 뒤집기' })).toBeDisabled();
+    expect(screen.getByText('해당 월에 생성된 리포트가 없어요')).toHaveClass(
+      'mt-30',
+      'text-title-02-semibold',
+      'text-neutral-400'
+    );
 
     carousel.focus();
     fireEvent.keyDown(carousel, { key: 'ArrowRight' });
