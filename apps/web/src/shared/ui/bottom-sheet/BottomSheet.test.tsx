@@ -16,6 +16,36 @@ const firePointerEvent = (element: Element, type: string, clientY: number) => {
   fireEvent(element, event);
 };
 
+// NOTE: 드래그 중 실시간 높이는 rAF로 묶어 DOM에 직접 반영하므로, 테스트에서는
+// requestAnimationFrame을 동기 실행으로 바꿔 즉시 반영되도록 한다.
+const mockSyncAnimationFrame = () => {
+  const originalRequestAnimationFrame = window.requestAnimationFrame;
+  const originalCancelAnimationFrame = window.cancelAnimationFrame;
+  window.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+    callback(0);
+    return 0;
+  }) as typeof window.requestAnimationFrame;
+  window.cancelAnimationFrame = (() => undefined) as typeof window.cancelAnimationFrame;
+
+  return () => {
+    window.requestAnimationFrame = originalRequestAnimationFrame;
+    window.cancelAnimationFrame = originalCancelAnimationFrame;
+  };
+};
+
+const mockMatchMedia = (matches: boolean) => {
+  const originalMatchMedia = window.matchMedia;
+  window.matchMedia = jest.fn().mockReturnValue({
+    matches,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  }) as unknown as typeof window.matchMedia;
+
+  return () => {
+    window.matchMedia = originalMatchMedia;
+  };
+};
+
 describe('BottomSheet', () => {
   beforeEach(() => {
     setInnerHeight(800);
@@ -186,6 +216,7 @@ describe('BottomSheet', () => {
   });
 
   it('핸들을 위로 드래그하면 손가락을 따라 높이가 실시간으로 늘어난다', () => {
+    const restoreAnimationFrame = mockSyncAnimationFrame();
     const { container } = render(<BottomSheet snapPoint="medium">내용</BottomSheet>);
     const sheet = container.firstChild as HTMLElement;
     const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
@@ -195,9 +226,11 @@ describe('BottomSheet', () => {
     firePointerEvent(handle, 'pointermove', 400);
 
     expect(sheet).toHaveStyle({ height: '460px' });
+    restoreAnimationFrame();
   });
 
   it('손가락이 핸들 영역을 벗어나도 드래그를 계속 추적한다', () => {
+    const restoreAnimationFrame = mockSyncAnimationFrame();
     const onSnapPointChange = jest.fn();
     const { container } = render(
       <BottomSheet snapPoint="medium" onSnapPointChange={onSnapPointChange}>
@@ -215,6 +248,7 @@ describe('BottomSheet', () => {
     firePointerEvent(document.body, 'pointerup', 150);
 
     expect(onSnapPointChange).toHaveBeenCalledWith('full');
+    restoreAnimationFrame();
   });
 
   it('드래그 직후 발생한 click으로 높이 변경 콜백을 중복 호출하지 않는다', () => {
@@ -268,6 +302,7 @@ describe('BottomSheet', () => {
   });
 
   it('포인터 입력이 취소되면 드래그 높이를 초기화한다', () => {
+    const restoreAnimationFrame = mockSyncAnimationFrame();
     const { container } = render(<BottomSheet snapPoint="medium">내용</BottomSheet>);
     const sheet = container.firstChild as HTMLElement;
     const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
@@ -279,6 +314,7 @@ describe('BottomSheet', () => {
     firePointerEvent(handle, 'pointercancel', 400);
 
     expect(sheet).toHaveStyle({ height: '45dvh' });
+    restoreAnimationFrame();
   });
 
   it('지정한 snapPoints 중 가장 가까운 단계로 스냅된다', () => {
@@ -300,5 +336,49 @@ describe('BottomSheet', () => {
     firePointerEvent(handle, 'pointerup', 380);
 
     expect(onSnapPointChange).toHaveBeenCalledWith('full');
+  });
+
+  it('핸들에 포커스가 있을 때 위/아래 화살표로 인접한 스냅 포인트로 이동한다', () => {
+    const onSnapPointChange = jest.fn();
+    render(
+      <BottomSheet snapPoint="medium" onSnapPointChange={onSnapPointChange}>
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    fireEvent.keyDown(handle, { key: 'ArrowUp' });
+    expect(onSnapPointChange).toHaveBeenCalledWith('full');
+
+    fireEvent.keyDown(handle, { key: 'ArrowDown' });
+    expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
+  });
+
+  it('콘텐츠 맞춤 높이에서는 화살표 키로 스냅 포인트를 바꾸지 않는다', () => {
+    const onSnapPointChange = jest.fn();
+    render(
+      <BottomSheet
+        snapPoint="medium"
+        snapPoints={['hidden', 'medium']}
+        onSnapPointChange={onSnapPointChange}
+        fitContent
+      >
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    fireEvent.keyDown(handle, { key: 'ArrowUp' });
+
+    expect(onSnapPointChange).not.toHaveBeenCalled();
+  });
+
+  it('모션 감소 설정 시 전환 지속시간을 0으로 만든다', () => {
+    const restoreMatchMedia = mockMatchMedia(true);
+
+    const { container } = render(<BottomSheet snapPoint="medium">내용</BottomSheet>);
+
+    expect(container.firstChild).toHaveStyle({ transitionDuration: '0ms' });
+    restoreMatchMedia();
   });
 });

@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { cn } from '@/shared/lib/cn';
 
 import { BOTTOM_SHEET_HEIGHT_RATIO, BOTTOM_SHEET_TRANSITION_MS } from './constants';
@@ -46,8 +47,9 @@ const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
  *
  * 높이 단계(`snapPoint`)는 기본적으로 바깥에서 제어합니다(예: 다른 버튼 클릭으로 순환). 핸들을
  * 드래그하면 손가락을 따라 실시간으로 높이가 바뀌고, 손을 떼면 가장 가까운 단계로 스냅되면서
- * `onSnapPointChange`로 알립니다. `fixed` 포지션이라 `mobile-frame` 유틸리티로 모바일 프레임 폭에 맞춰
- * 가운데 정렬됩니다.
+ * `onSnapPointChange`로 알립니다. 핸들에 포커스를 두고 위/아래 화살표 키를 누르면(`fitContent`가
+ * 아닐 때) 인접한 스냅 포인트로 바로 이동합니다. `fixed` 포지션이라 `mobile-frame` 유틸리티로
+ * 모바일 프레임 폭에 맞춰 가운데 정렬됩니다.
  *
  * @example
  * ```tsx
@@ -105,15 +107,23 @@ export function BottomSheet({
     return window.innerHeight * BOTTOM_SHEET_HEIGHT_RATIO[point];
   };
 
-  const { canDismissFitContent, dragHeightPx, handleClick, handlePointerDown, isDragging } =
-    useBottomSheetDrag({
-      fitContent,
-      getSnapPointHeightPx,
-      onHandleClick,
-      onSnapPointChange,
-      snapPoint,
-      snapPoints,
-    });
+  const {
+    canDismissFitContent,
+    dragStartHeightPx,
+    handleClick,
+    handleKeyDown,
+    handlePointerDown,
+    isDragging,
+  } = useBottomSheetDrag({
+    fitContent,
+    getSnapPointHeightPx,
+    onHandleClick,
+    onSnapPointChange,
+    sheetElementRef,
+    snapPoint,
+    snapPoints,
+  });
+  const prefersReducedMotion = usePrefersReducedMotion();
   const isHidden = !isDragging && snapPoint === 'hidden';
   const isHandleInteractive = !fitContent || canDismissFitContent || Boolean(onHandleClick);
   const handleClassName =
@@ -141,14 +151,18 @@ export function BottomSheet({
     <div
       ref={handleRootRef}
       style={{
-        height: isDragging ? `${dragHeightPx}px` : fitContent ? 'auto' : heightAtSnapPoint,
+        height: isDragging
+          ? `${dragStartHeightPx ?? 0}px`
+          : fitContent
+            ? 'auto'
+            : heightAtSnapPoint,
         // NOTE: Tailwind duration 클래스 대신 상수를 그대로 써서, 이 값을 재사용하는
         // 다른 컴포넌트(예: 선택 시트 전환 로직)와 항상 같은 값을 유지한다.
-        transitionDuration: `${BOTTOM_SHEET_TRANSITION_MS}ms`,
+        transitionDuration: prefersReducedMotion ? '0ms' : `${BOTTOM_SHEET_TRANSITION_MS}ms`,
       }}
       className={cn(
         'mobile-frame fixed right-0 bottom-0 left-0 z-bottom-sheet flex flex-col rounded-t-30 bg-neutral-00 shadow-sheet',
-        !isDragging && 'transition-all ease-out',
+        !isDragging && 'transition-[height,transform] ease-out',
         isHidden ? 'translate-y-full' : 'translate-y-0'
       )}
     >
@@ -156,6 +170,7 @@ export function BottomSheet({
         <button
           type="button"
           onClick={handleClick}
+          onKeyDown={handleKeyDown}
           onPointerDown={handlePointerDown}
           aria-label="바텀시트 높이 조절"
           className={cn(
