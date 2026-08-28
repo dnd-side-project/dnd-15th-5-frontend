@@ -27,14 +27,12 @@ export default function ReportHeroSection({
             <br />
             만들어지는 중 ...
           </h1>
-          <span className="block w-full rounded-30 bg-primary-500 p-[1.5px]">
-            <Link
-              className="block w-full whitespace-nowrap rounded-full bg-primary-100 px-3.5 py-2.5 text-center text-body-02-semibold tracking-[-0.2px] text-primary-500 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:outline-none"
-              to={monthlyReportPath}
-            >
-              지난달 리포트 보러가기
-            </Link>
-          </span>
+          <Link
+            className="block w-full rounded-full border-2 border-primary-500 bg-primary-100 px-3.5 py-2.5 text-center text-body-02-semibold tracking-[-0.2px] whitespace-nowrap text-primary-500 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:outline-none"
+            to={monthlyReportPath}
+          >
+            지난달 리포트 보러가기
+          </Link>
         </div>
         <ReportHeroCard />
       </div>
