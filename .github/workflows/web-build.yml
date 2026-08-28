@@ -47,6 +47,7 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
           VITE_GOOGLE_MAPS_MAP_ID: ${{ vars.VITE_GOOGLE_MAPS_MAP_ID }}
+          VITE_KAKAO_JAVASCRIPT_KEY: ${{ secrets.VITE_KAKAO_JAVASCRIPT_KEY }}
         run: |
           : "${AWS_REGION:?AWS_REGION is required}"
           : "${AWS_GITHUB_ACTIONS_ROLE_ARN:?AWS_GITHUB_ACTIONS_ROLE_ARN is required}"
@@ -55,6 +56,7 @@ jobs:
           : "${EC2_WEB_ROOT:?EC2_WEB_ROOT is required}"
           : "${VITE_GOOGLE_MAPS_API_KEY:?VITE_GOOGLE_MAPS_API_KEY is required}"
           : "${VITE_GOOGLE_MAPS_MAP_ID:?VITE_GOOGLE_MAPS_MAP_ID is required}"
+          : "${VITE_KAKAO_JAVASCRIPT_KEY:?VITE_KAKAO_JAVASCRIPT_KEY is required}"
           : "${SENTRY_AUTH_TOKEN:?SENTRY_AUTH_TOKEN is required}"
 
           if ! printf '%s' "${GITHUB_SHA}" | grep -Eq '^[0-9a-f]{40}$'; then
@@ -83,6 +85,7 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
           VITE_GOOGLE_MAPS_MAP_ID: ${{ vars.VITE_GOOGLE_MAPS_MAP_ID }}
+          VITE_KAKAO_JAVASCRIPT_KEY: ${{ secrets.VITE_KAKAO_JAVASCRIPT_KEY }}
 
       - name: Package web artifact
         id: package
