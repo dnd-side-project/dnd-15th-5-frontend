@@ -3,6 +3,8 @@ export const AUTH_FLOW_ERROR_CODE = {
   DUPLICATE_CALLBACK: 'duplicateCallback',
   OAUTH_CANCELLED: 'oauthCancelled',
   OAUTH_FAILED: 'oauthFailed',
+  ACCOUNT_WITHDRAWN: 'accountWithdrawn',
+  WITHDRAWAL_FAILED: 'withdrawalFailed',
   MISSING_LOGIN_CODE: 'missingLoginCode',
   INVALID_AUTH_RESPONSE: 'invalidAuthResponse',
 } as const;
@@ -15,6 +17,8 @@ const AUTH_FLOW_ERROR_MESSAGE: Record<AuthFlowErrorCode, string> = {
   [AUTH_FLOW_ERROR_CODE.DUPLICATE_CALLBACK]: '이미 처리된 로그인 요청입니다.',
   [AUTH_FLOW_ERROR_CODE.OAUTH_CANCELLED]: '소셜 로그인이 취소되었습니다.',
   [AUTH_FLOW_ERROR_CODE.OAUTH_FAILED]: '소셜 로그인을 완료하지 못했습니다. 다시 시도해 주세요.',
+  [AUTH_FLOW_ERROR_CODE.ACCOUNT_WITHDRAWN]: '탈퇴한 계정은 로그인할 수 없습니다.',
+  [AUTH_FLOW_ERROR_CODE.WITHDRAWAL_FAILED]: '회원 탈퇴에 실패했습니다.',
   [AUTH_FLOW_ERROR_CODE.MISSING_LOGIN_CODE]: '로그인 코드를 확인할 수 없습니다.',
   [AUTH_FLOW_ERROR_CODE.INVALID_AUTH_RESPONSE]:
     '로그인 결과를 확인할 수 없습니다. 다시 로그인해 주세요.',

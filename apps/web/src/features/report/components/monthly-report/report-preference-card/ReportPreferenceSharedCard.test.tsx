@@ -21,9 +21,13 @@ describe('ReportPreferenceSharedCard', () => {
 
     const card = screen.getByRole('article', { name: '동네 터줏대감 공유 카드' });
     const titleGroup = screen.getByRole('heading', { name: '동네 터줏대감' }).parentElement;
+    const character = screen.getByRole('img', {
+      name: '왕관과 망토를 두르고 왕좌에 앉은 캐릭터',
+    });
 
     expect(card).toHaveClass('w-61', 'shadow-report-preference-share-card');
     expect(titleGroup).toHaveClass('text-neutral-00');
+    expect(character).toHaveClass('size-41.5', 'left-1/2', '-translate-x-1/2');
     expect(screen.getByText(CARD_PROPS.description)).toBeInTheDocument();
   });
 

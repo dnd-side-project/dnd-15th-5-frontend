@@ -15,6 +15,7 @@ import './reportPreferenceSection.css';
 type ReportPreferenceSectionProps = {
   cards: readonly MonthlyReportPreferenceCard[];
   captureRef: Ref<HTMLDivElement>;
+  isCurrentReportActionVisible: boolean;
   isFlipped: boolean;
   onCardSelect: (index: number) => void;
   onCardTransitionChange: (isTransitioning: boolean) => void;
@@ -29,6 +30,7 @@ type ReportPreferenceSectionProps = {
 export default function ReportPreferenceSection({
   cards,
   captureRef,
+  isCurrentReportActionVisible,
   isFlipped,
   onCardSelect,
   onCardTransitionChange,
@@ -97,6 +99,7 @@ export default function ReportPreferenceSection({
               {card.isUnavailable ? (
                 <MonthlyReportUnavailableCard
                   isActionAvailable={isSelected}
+                  isActionVisible={isCurrentReportActionVisible}
                   onViewCurrentReport={onViewCurrentReport}
                   selectedMonth={card.month}
                 />

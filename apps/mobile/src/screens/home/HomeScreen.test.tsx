@@ -184,6 +184,22 @@ describe('<HomeScreen />', () => {
           data: JSON.stringify({
             kind: 'event',
             type: 'routeChanged',
+            payload: { pathname: '/report/monthly-report' },
+          }),
+          url: 'http://192.168.0.2:5173/report/monthly-report',
+        },
+      });
+    });
+
+    expect(getByTestId('home-safe-area').props.edges).toEqual(bottomEdgeToEdgeEdges);
+    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
+
+    await act(async () => {
+      await getByTestId('home-webview').props.onMessage({
+        nativeEvent: {
+          data: JSON.stringify({
+            kind: 'event',
+            type: 'routeChanged',
             payload: { pathname: '/my-page' },
           }),
           url: 'http://192.168.0.2:5173/my-page',
@@ -192,6 +208,7 @@ describe('<HomeScreen />', () => {
     });
 
     expect(getByTestId('home-safe-area').props.edges).toEqual(bottomEdgeToEdgeEdges);
+    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
   });
 
   it('설정된 웹 주소와 다른 origin의 브릿지 요청은 처리하지 않는다', async () => {
