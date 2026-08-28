@@ -6,6 +6,7 @@ import { mockGoogleMapsIdleEvent } from '../googleMapsEventMock';
 import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
 import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
 import { TEST_SHOP_RECOMMENDATIONS } from '../testFixtures';
+import { getFocusedMarkerVerticalOffset } from '../utils/focusMapOnPosition';
 
 import RecommendationMapMarkers from './RecommendationMapMarkers';
 
@@ -144,7 +145,7 @@ describe('RecommendationMapMarkers', () => {
       name: `${recommendation.place.name} 추천 마커, 선택됨`,
     });
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'cafe-active');
-    expect(marker.firstElementChild).toHaveClass('h-15.75', 'w-12.25');
+    expect(marker.firstElementChild).toHaveClass('h-18', 'w-14');
     expect(marker.firstElementChild).toHaveAttribute('data-state', 'active');
     expect(moveCamera).toHaveBeenCalledWith({ center: recommendation.position, zoom: 15 });
     expect(panBy).toHaveBeenCalledWith(0, expect.any(Number));
@@ -181,6 +182,27 @@ describe('RecommendationMapMarkers', () => {
     expect(panBy).toHaveBeenCalledWith(0, expect.any(Number));
   });
 
+  it('같은 추천을 보는 중에도 바텀시트 실측 높이가 바뀌면 지도를 다시 보정한다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    useHomeBottomSheetStore.getState().showRecommendation();
+    useShopRecommendationStore.setState({ activeRecommendationId: recommendation.id });
+
+    render(<RecommendationMapMarkers />);
+
+    expect(moveCamera).toHaveBeenCalledTimes(1);
+    moveCamera.mockClear();
+    panBy.mockClear();
+
+    const tallerSheetHeightPx = window.innerHeight;
+    act(() => {
+      useHomeBottomSheetStore.setState({ visibleHeightPx: tallerSheetHeightPx });
+    });
+
+    expect(moveCamera).toHaveBeenCalledTimes(1);
+    expect(moveCamera).toHaveBeenCalledWith({ center: recommendation.position, zoom: 15 });
+    expect(panBy).toHaveBeenCalledWith(0, getFocusedMarkerVerticalOffset(tallerSheetHeightPx));
+  });
+
   it('카테고리 마커를 누르면 추천 시트를 열고 선택한 가게를 공유한다', async () => {
     const user = userEvent.setup();
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
@@ -191,7 +213,7 @@ describe('RecommendationMapMarkers', () => {
     const marker = screen.getByRole('button', {
       name: `${recommendation.place.name} 추천 마커`,
     });
-    expect(marker.firstElementChild).toHaveClass('size-10');
+    expect(marker.firstElementChild).toHaveClass('size-9');
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'cafe-default');
 
     await user.click(marker);
@@ -200,7 +222,30 @@ describe('RecommendationMapMarkers', () => {
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'recommendation' });
     expect(marker).toHaveAccessibleName(`${recommendation.place.name} 추천 마커, 선택됨`);
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'cafe-active');
-    expect(marker.firstElementChild).toHaveClass('h-15.75', 'w-12.25');
+    expect(marker.firstElementChild).toHaveClass('h-18', 'w-14');
+  });
+
+  it('바텀시트 실측 높이가 medium 비율보다 크면 그 높이를 기준으로 지도를 보정한다', async () => {
+    const user = userEvent.setup();
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    const tallCarouselSheetHeightPx = window.innerHeight;
+    useHomeBottomSheetStore.getState().showRecommendation();
+    useHomeBottomSheetStore.setState({ visibleHeightPx: tallCarouselSheetHeightPx });
+
+    render(<RecommendationMapMarkers />);
+
+    const marker = screen.getByRole('button', {
+      name: `${recommendation.place.name} 추천 마커`,
+    });
+    await user.click(marker);
+
+    expect(panBy).toHaveBeenCalledWith(
+      0,
+      getFocusedMarkerVerticalOffset(tallCarouselSheetHeightPx)
+    );
+    expect(getFocusedMarkerVerticalOffset(tallCarouselSheetHeightPx)).toBeGreaterThan(
+      getFocusedMarkerVerticalOffset()
+    );
   });
 
   it('좋아요 마커를 누르면 active 아이콘으로 바꾸고 선택한 가게를 공유한다', async () => {
@@ -213,7 +258,7 @@ describe('RecommendationMapMarkers', () => {
     const marker = screen.getByRole('button', {
       name: `${recommendation.place.name} 추천 마커`,
     });
-    expect(marker.firstElementChild).toHaveClass('size-10');
+    expect(marker.firstElementChild).toHaveClass('size-14');
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'like-default');
     expect(marker.firstElementChild).not.toHaveClass('opacity-60');
     expect(marker.firstElementChild).toHaveAttribute('data-state', 'default');
@@ -230,7 +275,7 @@ describe('RecommendationMapMarkers', () => {
     expect(marker).toHaveAccessibleName(`${recommendation.place.name} 추천 마커, 선택됨`);
     expect(marker.firstElementChild).toHaveAttribute('data-state', 'active');
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'like-active');
-    expect(marker.firstElementChild).toHaveClass('h-15.75', 'w-12.25');
+    expect(marker.firstElementChild).toHaveClass('h-18', 'w-14');
     expect(marker.firstElementChild).not.toHaveClass('opacity-100');
   });
 });

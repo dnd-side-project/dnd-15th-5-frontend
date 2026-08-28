@@ -1,33 +1,40 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
+import type { TermsAgreementRequest } from '@/features/auth/apis/dto';
 import { CheckIcon, ChevronRightIcon } from '@/shared/assets/icons';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 
-type AgreementKey = 'serviceTermsAgreed' | 'privacyPolicyAgreed' | 'locationTermsAgreed';
+type AgreementState = TermsAgreementRequest;
 
-type AgreementState = Record<AgreementKey, boolean>;
+type AgreementKey = keyof AgreementState;
 
 type TermsAgreementFormProps = {
   isLoading?: boolean;
   onSubmit: (agreement: AgreementState) => void;
 };
 
-// TODO: 약관 동의 디자인 시안 확정 후 수정 필요
 const INITIAL_AGREEMENT: AgreementState = {
+  ageConfirmed: false,
   serviceTermsAgreed: false,
-  privacyPolicyAgreed: false,
-  locationTermsAgreed: false,
 };
 
 const AGREEMENT_ITEMS: Array<{
+  detailPath?: string;
   key: AgreementKey;
   label: string;
 }> = [
-  { key: 'serviceTermsAgreed', label: '[필수] 서비스 이용약관 동의' },
-  { key: 'privacyPolicyAgreed', label: '[필수] 개인정보 수집 · 이용 동의' },
-  { key: 'locationTermsAgreed', label: '[선택] 위치기반 서비스 이용약관' },
+  { key: 'ageConfirmed', label: '[필수] 만 14세 이상입니다.' },
+  {
+    detailPath: ROUTE_PATHS.agreementTermsOfService,
+    key: 'serviceTermsAgreed',
+    label: '[필수] 서비스 이용약관 동의',
+  },
 ];
+
+const PRIVACY_POLICY_LABEL = '개인정보 처리방침';
 
 type AgreementCheckboxProps = {
   checked: boolean;
@@ -51,9 +58,10 @@ export default function TermsAgreementForm({
   isLoading = false,
   onSubmit,
 }: TermsAgreementFormProps) {
+  const navigate = useNavigate();
   const [agreement, setAgreement] = useState(INITIAL_AGREEMENT);
   const isAllAgreed = Object.values(agreement).every(Boolean);
-  const areRequiredTermsAgreed = agreement.serviceTermsAgreed && agreement.privacyPolicyAgreed;
+  const areRequiredTermsAgreed = agreement.ageConfirmed && agreement.serviceTermsAgreed;
 
   const handleAgreementChange = (key: AgreementKey) => {
     setAgreement((currentAgreement) => ({
@@ -66,9 +74,8 @@ export default function TermsAgreementForm({
     const nextAgreement = !isAllAgreed;
 
     setAgreement({
+      ageConfirmed: nextAgreement,
       serviceTermsAgreed: nextAgreement,
-      privacyPolicyAgreed: nextAgreement,
-      locationTermsAgreed: nextAgreement,
     });
   };
 
@@ -96,16 +103,35 @@ export default function TermsAgreementForm({
         <div className="my-5.5 border-t border-neutral-200" />
 
         <div className="flex flex-col gap-6 px-2">
-          {AGREEMENT_ITEMS.map((item) => (
-            <div key={item.key} className="flex items-center justify-between gap-2">
+          {AGREEMENT_ITEMS.map(({ detailPath, key, label }) => (
+            <div key={key} className="flex items-center justify-between gap-2">
               <AgreementCheckbox
-                checked={agreement[item.key]}
-                label={item.label}
-                onChange={() => handleAgreementChange(item.key)}
+                checked={agreement[key]}
+                label={label}
+                onChange={() => handleAgreementChange(key)}
               />
-              <ChevronRightIcon className="size-6 shrink-0 text-neutral-500" aria-hidden="true" />
+              {detailPath && (
+                <button
+                  type="button"
+                  aria-label={`${label} 내용 보기`}
+                  onClick={() => navigate(detailPath)}
+                  className="shrink-0 rounded-full p-1 outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                >
+                  <ChevronRightIcon className="size-6 text-neutral-500" aria-hidden="true" />
+                </button>
+              )}
             </div>
           ))}
+
+          {/* NOTE: 개인정보 처리방침은 동의가 아니라 확인 대상이라 체크박스 없이 열람만 가능한 행으로 둔다. */}
+          <button
+            type="button"
+            onClick={() => navigate(ROUTE_PATHS.agreementPrivacyPolicy)}
+            className="flex items-center justify-between gap-2 rounded-08 outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+          >
+            <span className="text-body-01-medium text-neutral-700">{PRIVACY_POLICY_LABEL}</span>
+            <ChevronRightIcon className="size-6 shrink-0 text-neutral-500" aria-hidden="true" />
+          </button>
         </div>
       </section>
 

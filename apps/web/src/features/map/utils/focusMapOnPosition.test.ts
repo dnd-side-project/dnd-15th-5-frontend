@@ -58,6 +58,24 @@ describe('focusMapOnPosition', () => {
     expect(panBy).toHaveBeenCalledWith(0, getFocusedMarkerVerticalOffset());
   });
 
+  it('바텀시트 실측 높이를 전달하면 medium 비율 대신 그 값을 기준으로 오프셋을 계산한다', () => {
+    const moveCamera = jest.fn();
+    const panBy = jest.fn();
+    const map = { moveCamera, panBy } as unknown as google.maps.Map;
+    const position = { lat: 37.5665, lng: 126.978 };
+    const tallFitContentSheetHeightPx = window.innerHeight;
+
+    focusMapOnPosition(map, position, 16, tallFitContentSheetHeightPx);
+
+    expect(panBy).toHaveBeenCalledWith(
+      0,
+      getFocusedMarkerVerticalOffset(tallFitContentSheetHeightPx)
+    );
+    expect(getFocusedMarkerVerticalOffset(tallFitContentSheetHeightPx)).toBeGreaterThan(
+      getFocusedMarkerVerticalOffset()
+    );
+  });
+
   it('지도가 안정되기(idle) 전에는 오프셋을 적용하지 않는다', () => {
     const moveCamera = jest.fn();
     const panBy = jest.fn();

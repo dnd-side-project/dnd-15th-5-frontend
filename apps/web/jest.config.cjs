@@ -10,6 +10,8 @@ module.exports = {
     '\\.(gif|jpe?g|png|webp)$': '<rootDir>/test/fileMock.ts',
     '\\.svg\\?react$': '<rootDir>/test/svgMock.tsx',
     '\\.svg$': '<rootDir>/test/fileMock.ts',
+    '^react-markdown$': '<rootDir>/test/reactMarkdownMock.tsx',
+    '^remark-gfm$': '<rootDir>/test/remarkGfmMock.ts',
     '^@/shared/lib/env$': '<rootDir>/src/shared/lib/env.mock.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
   },

@@ -88,10 +88,10 @@ export const exchangeSocialLoginCode = (
 /**
  * 로그인 코드 교환에서 발급된 Signup Token을 Bearer 토큰으로 사용합니다.
  *
- * 서비스 이용약관에 동의하면 회원가입을 완료하고 Access Token과 Refresh Token을 발급합니다.
+ * ageConfirmed와 serviceTermsAgreed가 모두 true이면 회원가입을 완료하고 Access Token과 Refresh Token을 발급합니다.
  *
  * Refresh Token 전달 방식은 로그인한 WEB/APP 유형을 따릅니다.
- * @summary 서비스 이용약관 동의 및 회원가입 완료
+ * @summary 가입 자격 확인 및 서비스 이용약관 동의로 회원가입 완료
  */
 export const agree = (
   termsAgreementRequest: BodyType<TermsAgreementRequest>,
