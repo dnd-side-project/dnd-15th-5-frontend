@@ -118,7 +118,7 @@ export default function ReportPage() {
 
           <div className="grid w-full grid-cols-2 gap-2">
             <ReportLinkButton to={ROUTE_PATHS.spendingHistory}>
-              소비내역
+              소비기록
               <br />
               보러가기
             </ReportLinkButton>
