@@ -9,12 +9,17 @@ import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
 import { StickerCollection } from '@/shared/ui/sticker-collection';
 
+import { createShopRecordLocationState } from '../../utils/createShopRecordLocationState';
+
+import type { ShopSearchResult } from '../../types';
+
 type SelectedPlaceSheetProps = {
   placeId: string;
+  recordShop?: ShopSearchResult;
 };
 
 /** 선택한 지도 스티커에 연결된 장소 요약과 최근 획득 스티커를 표시합니다. */
-export default function SelectedPlaceSheet({ placeId }: SelectedPlaceSheetProps) {
+export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlaceSheetProps) {
   const numericPlaceId = Number(placeId);
   const isValidPlaceId = Number.isSafeInteger(numericPlaceId) && numericPlaceId > 0;
   const query = useGetPlaceDetail(numericPlaceId, { query: { enabled: isValidPlaceId } });
@@ -64,6 +69,12 @@ export default function SelectedPlaceSheet({ placeId }: SelectedPlaceSheetProps)
     const image = getStickerImageByName(sticker.itemName);
     return image ? [image] : [];
   });
+  const recordLocationState = createShopRecordLocationState({
+    address: place.address,
+    category: place.category,
+    placeName: place.placeName,
+    recordShop,
+  });
 
   return (
     <section aria-labelledby={`selected-place-${place.placeId}`}>
@@ -98,6 +109,7 @@ export default function SelectedPlaceSheet({ placeId }: SelectedPlaceSheetProps)
       <div className="mt-4 flex gap-4 pb-2">
         <LinkButton
           to={ROUTE_PATHS.shopDetail(String(place.placeId))}
+          state={recordLocationState}
           size="large"
           className="min-w-0 flex-1"
         >
@@ -105,6 +117,7 @@ export default function SelectedPlaceSheet({ placeId }: SelectedPlaceSheetProps)
         </LinkButton>
         <LinkButton
           to={ROUTE_PATHS.record}
+          state={recordLocationState}
           variant="icon-primary"
           size="large"
           aria-label={`${place.placeName} 소비 기록 추가`}

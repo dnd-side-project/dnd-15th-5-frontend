@@ -7,5 +7,6 @@ export { useOpenVisitedPlaceOnMap } from './hooks/useOpenVisitedPlaceOnMap';
 export { useHomeBottomSheetStore } from './stores/homeBottomSheetStore';
 export { useMapFocusStore } from './stores/mapFocusStore';
 export { parseCreatedConsumptionPlace } from './utils/parseCreatedConsumptionPlace';
+export { toShopSearchResult } from './utils/placeAdapters';
 
 export type { MapSticker } from './types';
