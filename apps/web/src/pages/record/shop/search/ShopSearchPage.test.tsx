@@ -34,6 +34,7 @@ jest.mock('@/shared/lib/bridge', () => ({
 function ManualRecordTarget() {
   const location = useLocation();
   const state = location.state as {
+    isDraftDirty?: boolean;
     isShopChange?: boolean;
     shop: ShopSearchResult;
     visitDateTime?: VisitDateTimeValue;
@@ -44,6 +45,7 @@ function ManualRecordTarget() {
   return (
     <p
       data-shop-change={String(Boolean(state.isShopChange))}
+      data-draft-dirty={String(Boolean(state.isDraftDirty))}
       data-visit-date={state.visitDateTime?.date.toISOString()}
       data-amount={state.amount}
       data-category={state.category}
@@ -134,6 +136,44 @@ describe('<ShopSearchPage />', () => {
     expect(manualRecordTarget).toHaveAttribute('data-visit-date', visitDateTime.date.toISOString());
     expect(manualRecordTarget).toHaveAttribute('data-amount', '12000');
     expect(manualRecordTarget).toHaveAttribute('data-category', '카페');
+  });
+
+  it('최초 가게 선택 전 작성한 초안을 수기 입력 화면에 다시 전달한다', async () => {
+    const user = userEvent.setup();
+    const visitDateTime: VisitDateTimeValue = {
+      date: new Date(2026, 6, 15),
+      period: 'night',
+    };
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/record/shop/search',
+            state: {
+              replacedManualRecord: true,
+              manualRecordVisitDateTime: visitDateTime,
+              manualRecordAmount: '7000',
+              manualRecordCategory: '음식점',
+              manualRecordDraftDirty: true,
+            },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+          <Route path="/record/manual" element={<ManualRecordTarget />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '목업 장소 선택' }));
+
+    const manualRecordTarget = screen.getByText(`수기 입력 대상: ${selectedShop.name}`);
+    expect(manualRecordTarget).toHaveAttribute('data-visit-date', visitDateTime.date.toISOString());
+    expect(manualRecordTarget).toHaveAttribute('data-amount', '7000');
+    expect(manualRecordTarget).toHaveAttribute('data-category', '음식점');
+    expect(manualRecordTarget).toHaveAttribute('data-draft-dirty', 'true');
   });
 
   it('일반적으로 진입했다면 뒤로 가기 버튼을 누르면 이전 화면으로 돌아간다', async () => {

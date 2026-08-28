@@ -36,7 +36,7 @@ type ManualRecordFormProps = {
   onBack: () => void;
   onClose: () => void;
   onChangeShop: (draft: ManualRecordDraft) => void;
-  onSelectShop: () => void;
+  onSelectShop: (draft: ManualRecordDraft, isDraftDirty: boolean) => void;
 };
 
 type RequiredFieldProps = {
@@ -164,7 +164,7 @@ export default function ManualRecordForm({
       ) : (
         <button
           type="button"
-          onClick={onSelectShop}
+          onClick={() => onSelectShop({ visitDateTime, amount, category }, isDraftDirty)}
           className="mt-6 h-19 rounded-16 border border-neutral-300 text-body-01-medium text-primary-500 outline-none hover:bg-primary-50 focus-visible:ring-2 focus-visible:ring-primary-300"
         >
           가게를 선택해주세요

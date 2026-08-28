@@ -14,6 +14,7 @@ import { isValidYearMonth } from '@/shared/utils/yearMonth';
 import type { VisitDateTimeValue } from '@chapchap/shared/record';
 
 type ManualRecordLocationState = RecordLocationState & {
+  isDraftDirty?: boolean;
   isShopChange?: boolean;
   visitDateTime?: VisitDateTimeValue;
   amount?: string;
@@ -24,7 +25,7 @@ export default function ManualRecordPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const manualRecordState = (location.state as ManualRecordLocationState | null) ?? {};
-  const { isShopChange, visitDateTime, amount } = manualRecordState;
+  const { isDraftDirty, isShopChange, visitDateTime, amount } = manualRecordState;
   const shop = getRecordShopFromLocationState(manualRecordState);
   const category = getRecordCategoryFromLocationState(manualRecordState);
   const yearMonth = searchParams.get(YEAR_MONTH_SEARCH_PARAM);
@@ -54,11 +55,23 @@ export default function ManualRecordPage() {
       },
     });
   };
+  const handleSelectShop = (draft: ManualRecordDraft, draftDirty: boolean) => {
+    navigate(shopSearchPath, {
+      replace: true,
+      state: {
+        replacedManualRecord: true,
+        manualRecordVisitDateTime: draft.visitDateTime,
+        manualRecordAmount: draft.amount,
+        manualRecordCategory: draft.category,
+        manualRecordDraftDirty: draftDirty,
+      },
+    });
+  };
 
   return (
     <main>
       <ManualRecordForm
-        initialDraftDirty={Boolean(isShopChange)}
+        initialDraftDirty={Boolean(isShopChange || isDraftDirty)}
         initialVisitDateTimeSheetOpen={Boolean(shop) && hasRequestedYearMonth && !isShopChange}
         initialVisitDateTime={visitDateTime ?? createInitialVisitDateTimeForMonth(yearMonth)}
         initialAmount={amount}
@@ -67,12 +80,7 @@ export default function ManualRecordPage() {
         onBack={handleBack}
         onClose={() => navigate(ROUTE_PATHS.home, { replace: true })}
         onChangeShop={handleChangeShop}
-        onSelectShop={() =>
-          navigate(shopSearchPath, {
-            replace: true,
-            state: { replacedManualRecord: true },
-          })
-        }
+        onSelectShop={handleSelectShop}
       />
     </main>
   );

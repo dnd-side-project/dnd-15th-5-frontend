@@ -16,6 +16,8 @@ export type ShopSearchLocationState = {
   manualRecordAmount?: string;
   /** 가게 변경 전 수기 기록 폼에서 선택한 카테고리입니다. */
   manualRecordCategory?: RecordCategory;
+  /** 가게 검색으로 이동하기 전에 수기 기록 초안이 변경되었는지 여부입니다. */
+  manualRecordDraftDirty?: boolean;
   /**
    * 가게 미선택 상태의 수기 입력 화면에서 검색으로 교체 이동(`replace`)했을 때만 `true`로
    * 전달합니다. 이 경우 브라우저 히스토리에 돌아갈 곳이 없어, 뒤로 가기를 기록 방법 선택

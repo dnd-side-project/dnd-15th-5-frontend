@@ -16,7 +16,8 @@ export default function ShopSearchPage() {
   const shopSearchState = location.state as ShopSearchLocationState | null;
   const isReceiptNativeSearch = searchParams.get('source') === RECEIPT_SHOP_SEARCH_SOURCE;
   const shouldConfirmClose =
-    isReceiptNativeSearch || Boolean(shopSearchState?.isChangingManualRecordShop);
+    isReceiptNativeSearch ||
+    Boolean(shopSearchState?.isChangingManualRecordShop || shopSearchState?.manualRecordDraftDirty);
   const manualRecordPath = createYearMonthPath(
     ROUTE_PATHS.manualRecord,
     searchParams.get(YEAR_MONTH_SEARCH_PARAM)
@@ -29,6 +30,7 @@ export default function ShopSearchPage() {
 
     navigate(manualRecordPath, {
       state: {
+        isDraftDirty: Boolean(shopSearchState?.manualRecordDraftDirty),
         isShopChange: Boolean(shopSearchState?.isChangingManualRecordShop),
         shop,
         visitDateTime: shopSearchState?.manualRecordVisitDateTime,

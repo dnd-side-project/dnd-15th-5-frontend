@@ -39,6 +39,7 @@ function ShopSearchTarget() {
     manualRecordVisitDateTime?: VisitDateTimeValue;
     manualRecordAmount?: string;
     manualRecordCategory?: string;
+    manualRecordDraftDirty?: boolean;
   } | null;
 
   return (
@@ -47,6 +48,7 @@ function ShopSearchTarget() {
         data-has-visit-date={String(Boolean(state?.manualRecordVisitDateTime))}
         data-amount={state?.manualRecordAmount}
         data-category={state?.manualRecordCategory}
+        data-draft-dirty={String(Boolean(state?.manualRecordDraftDirty))}
       >
         가게 검색 화면 {location.search}
       </p>
@@ -188,6 +190,29 @@ describe('<ManualRecordPage />', () => {
     await user.click(screen.getByRole('button', { name: '가게를 선택해주세요' }));
 
     expect(screen.getByText('가게 검색 화면 ?yearMonth=2025-07')).toBeInTheDocument();
+  });
+
+  it('가게를 처음 선택할 때 입력해둔 초안을 검색 화면에 전달한다', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={['/record/manual']}>
+        <Routes>
+          <Route path="/record/manual" element={<ManualRecordPage />} />
+          <Route path="/record/shop/search" element={<ShopSearchTarget />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.type(screen.getByRole('textbox', { name: '금액' }), '7000');
+    await user.click(screen.getByRole('button', { name: '음식점' }));
+    await user.click(screen.getByRole('button', { name: '가게를 선택해주세요' }));
+
+    const shopSearchScreen = screen.getByText('가게 검색 화면');
+    expect(shopSearchScreen).toHaveAttribute('data-has-visit-date', 'true');
+    expect(shopSearchScreen).toHaveAttribute('data-amount', '7000');
+    expect(shopSearchScreen).toHaveAttribute('data-category', '음식점');
+    expect(shopSearchScreen).toHaveAttribute('data-draft-dirty', 'true');
   });
 
   it('기록하기를 누르면 선택한 장소와 소비 정보를 등록한다', async () => {
