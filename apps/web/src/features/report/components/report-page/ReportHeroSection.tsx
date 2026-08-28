@@ -13,9 +13,9 @@ export default function ReportHeroSection({
   monthLabel,
 }: ReportHeroSectionProps) {
   return (
-    <section className="relative h-63">
-      <div aria-hidden className="absolute inset-x-0 top-42 h-51 bg-report-hero" />
-      <div className="absolute inset-x-0 top-18 z-report-hero-content flex items-end justify-between px-7.5">
+    <section className="relative h-57">
+      <div aria-hidden className="absolute inset-x-0 top-36 h-51 bg-report-hero" />
+      <div className="absolute inset-x-0 top-12 z-report-hero-content flex items-end justify-between px-7.5">
         <div className="relative z-report-hero-content flex flex-col items-start gap-3.5">
           <h1 className="text-heading-03-bold text-neutral-900">
             {monthLabel} 취향 카드
