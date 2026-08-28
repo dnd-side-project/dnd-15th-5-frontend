@@ -7,9 +7,16 @@ import type { FormEvent } from 'react';
 
 const DEFAULT_SEARCH_DEBOUNCE_MS = 400;
 
+type AppliedKeyword = {
+  keyword: string;
+};
+
 type PlaceSearchInputProps = {
-  /** 최근 검색어 선택처럼 외부에서 검색어를 채우고 즉시 검색을 실행할 때 전달합니다. */
-  appliedKeyword?: string;
+  /**
+   * 최근 검색어 선택처럼 외부에서 검색어를 채우고 즉시 검색을 실행할 때 전달합니다.
+   * 같은 검색어를 다시 선택해도 반응하도록, 선택할 때마다 새 객체를 전달해야 합니다.
+   */
+  appliedKeyword?: AppliedKeyword;
   debounceMs?: number;
   onSearch: (keyword: string) => void;
   placeholder?: string;
@@ -47,9 +54,9 @@ export function PlaceSearchInput({
     }
 
     lastAppliedKeywordRef.current = appliedKeyword;
-    lastSearchedKeywordRef.current = appliedKeyword;
-    setKeyword(appliedKeyword);
-    onSearchRef.current(appliedKeyword);
+    lastSearchedKeywordRef.current = appliedKeyword.keyword;
+    setKeyword(appliedKeyword.keyword);
+    onSearchRef.current(appliedKeyword.keyword);
   }, [appliedKeyword]);
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {

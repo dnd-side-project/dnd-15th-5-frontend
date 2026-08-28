@@ -137,6 +137,28 @@ describe('VisitedPlaceSearch', () => {
     expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
   });
 
+  it('같은 최근 검색어를 지웠다가 다시 클릭해도 재검색한다', async () => {
+    const user = userEvent.setup();
+    render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);
+
+    const input = screen.getByPlaceholderText('검색어를 입력해주세요');
+    await user.type(input, '투썸');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    await user.click(screen.getByRole('button', { name: /투썸플레이스/ }));
+    await user.clear(input);
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    await user.click(screen.getByRole('button', { name: '투썸' }));
+    expect(input).toHaveValue('투썸');
+
+    await user.clear(input);
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    await user.click(screen.getByRole('button', { name: '투썸' }));
+
+    expect(input).toHaveValue('투썸');
+    expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
+  });
+
   it('최근 검색어를 삭제할 수 있다', async () => {
     const user = userEvent.setup();
     render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);

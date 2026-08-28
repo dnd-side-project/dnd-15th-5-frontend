@@ -21,7 +21,7 @@ type VisitedPlaceSearchItem = PlaceSearchItem & {
 /** 소비 기록이 있는 장소만 매장명과 주소로 검색합니다. */
 export default function VisitedPlaceSearch({ onSelectPlace }: VisitedPlaceSearchProps) {
   const [keyword, setKeyword] = useState('');
-  const [appliedKeyword, setAppliedKeyword] = useState<string>();
+  const [appliedKeyword, setAppliedKeyword] = useState<{ keyword: string }>();
   const { addRecentSearch, recentSearches, removeRecentSearch } = useRecentSearches();
   const searchQuery = useVisitedPlaceSearchInfiniteQuery(keyword);
   const { fetchNextPage, hasNextPage, isFetchNextPageError, isFetchingNextPage } = searchQuery;
@@ -68,7 +68,7 @@ export default function VisitedPlaceSearch({ onSelectPlace }: VisitedPlaceSearch
       {!hasKeyword && (
         <RecentSearchList
           keywords={recentSearches}
-          onSelect={setAppliedKeyword}
+          onSelect={(keyword) => setAppliedKeyword({ keyword })}
           onRemove={removeRecentSearch}
         />
       )}
