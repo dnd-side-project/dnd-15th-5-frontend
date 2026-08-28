@@ -7,6 +7,9 @@ import { PlaceSearchInput, PlaceSearchResultList } from '@/shared/ui/place-searc
 import type { PlaceSearchItem } from '@/shared/ui/place-search';
 import { Spinner } from '@/shared/ui/spinner';
 
+import { RecentSearchList } from './RecentSearchList';
+import { useRecentSearches } from './useRecentSearches';
+
 type VisitedPlaceSearchProps = {
   onSelectPlace: (placeId: string) => void;
 };
@@ -18,8 +21,17 @@ type VisitedPlaceSearchItem = PlaceSearchItem & {
 /** 소비 기록이 있는 장소만 매장명과 주소로 검색합니다. */
 export default function VisitedPlaceSearch({ onSelectPlace }: VisitedPlaceSearchProps) {
   const [keyword, setKeyword] = useState('');
+  const [appliedKeyword, setAppliedKeyword] = useState<string>();
+  const { addRecentSearch, recentSearches, removeRecentSearch } = useRecentSearches();
   const searchQuery = useVisitedPlaceSearchInfiniteQuery(keyword);
   const { fetchNextPage, hasNextPage, isFetchNextPageError, isFetchingNextPage } = searchQuery;
+  const hasKeyword = keyword.trim().length > 0;
+
+  const handleSelectPlace = (placeId: string) => {
+    addRecentSearch(keyword);
+    onSelectPlace(placeId);
+  };
+
   const matchedPlaces = useMemo<VisitedPlaceSearchItem[]>(
     () =>
       (searchQuery.data?.pages ?? []).flatMap((page) =>
@@ -48,15 +60,26 @@ export default function VisitedPlaceSearch({ onSelectPlace }: VisitedPlaceSearch
 
   return (
     <>
-      <PlaceSearchInput placeholder="검색어를 입력해주세요" onSearch={setKeyword} />
+      <PlaceSearchInput
+        placeholder="검색어를 입력해주세요"
+        onSearch={setKeyword}
+        appliedKeyword={appliedKeyword}
+      />
+      {!hasKeyword && (
+        <RecentSearchList
+          keywords={recentSearches}
+          onSelect={setAppliedKeyword}
+          onRemove={removeRecentSearch}
+        />
+      )}
       <PlaceSearchResultList
         places={matchedPlaces}
-        hasKeyword={keyword.trim().length > 0}
+        hasKeyword={hasKeyword}
         isLoading={searchQuery.isPending}
         isError={searchQuery.isError && !searchQuery.data}
         emptyMessage="기록한 장소 중에 검색 결과가 없습니다"
         getThumbnailSrc={(place) => place.thumbnailSrc}
-        onSelect={(place) => onSelectPlace(place.id)}
+        onSelect={(place) => handleSelectPlace(place.id)}
       />
       <div ref={loadMoreRef} aria-hidden="true" className="h-1" />
       {isFetchingNextPage && (
