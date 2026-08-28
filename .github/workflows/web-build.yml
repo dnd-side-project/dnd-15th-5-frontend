@@ -44,6 +44,7 @@ jobs:
 
       - name: Validate deployment configuration
         env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
           VITE_GOOGLE_MAPS_MAP_ID: ${{ vars.VITE_GOOGLE_MAPS_MAP_ID }}
         run: |
@@ -54,6 +55,7 @@ jobs:
           : "${EC2_WEB_ROOT:?EC2_WEB_ROOT is required}"
           : "${VITE_GOOGLE_MAPS_API_KEY:?VITE_GOOGLE_MAPS_API_KEY is required}"
           : "${VITE_GOOGLE_MAPS_MAP_ID:?VITE_GOOGLE_MAPS_MAP_ID is required}"
+          : "${SENTRY_AUTH_TOKEN:?SENTRY_AUTH_TOKEN is required}"
 
           if ! printf '%s' "${GITHUB_SHA}" | grep -Eq '^[0-9a-f]{40}$'; then
             echo "GITHUB_SHA must be a 40-character lowercase hexadecimal value."
@@ -78,6 +80,7 @@ jobs:
       - name: Build web
         run: pnpm --filter @chapchap/web build
         env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
           VITE_GOOGLE_MAPS_MAP_ID: ${{ vars.VITE_GOOGLE_MAPS_MAP_ID }}
 

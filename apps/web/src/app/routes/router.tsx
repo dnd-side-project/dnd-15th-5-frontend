@@ -1,8 +1,10 @@
+import * as Sentry from '@sentry/react';
 import { createBrowserRouter } from 'react-router-dom';
 
 import AppMainLayout from '@/app/layouts/AppMainLayout';
 import MobileLayout from '@/app/layouts/MobileLayout';
 import { AuthenticatedRoute, GuestOnlyRoute, TermsAgreementRoute } from '@/app/routes/AuthRoute';
+import RouteErrorPage from '@/app/routes/RouteErrorPage';
 import AgreementPage from '@/pages/agreement/AgreementPage';
 import AuthCallbackPage from '@/pages/auth-callback/AuthCallbackPage';
 import HomePage from '@/pages/home/HomePage';
@@ -26,10 +28,13 @@ import SharedReportPage from '@/pages/report/shared/SharedReportPage';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import PaddedLayout from '@/shared/layout/PaddedLayout';
 
-export const router = createBrowserRouter([
+const createSentryBrowserRouter = Sentry.wrapCreateBrowserRouter(createBrowserRouter);
+
+export const router = createSentryBrowserRouter([
   {
     // INFO: 모든 페이지에 모바일 최대 너비와 공통 배경을 적용한다.
     element: <MobileLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         // INFO: 로그인 및 약관 화면에 좌우 여백을 적용한다.
