@@ -8,6 +8,7 @@ import {
   parseCreatedConsumptionPlace,
   toShopSearchResult,
   useCreatedConsumptionResult,
+  useOpenVisitedPlaceOnMap,
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
 import { FrequentShopSummary, SpendingHistory } from '@/features/report';
@@ -21,12 +22,19 @@ export default function HomePage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { stickers } = useVisitedPlaceStickersQuery();
+  const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
   const createdPlace =
     (location.state as { createdPlace?: CreatedConsumptionPlace } | null)?.createdPlace ??
     parseCreatedConsumptionPlace(searchParams);
   const handleCreatedConsumptionResult = useCallback(() => {
     navigate(ROUTE_PATHS.home, { replace: true, state: null });
   }, [navigate]);
+  const handleFrequentShopSelect = useCallback(
+    (placeId: number) => {
+      void openVisitedPlaceOnMap(String(placeId));
+    },
+    [openVisitedPlaceOnMap]
+  );
 
   useCreatedConsumptionResult({
     createdPlace,
@@ -39,7 +47,10 @@ export default function HomePage() {
       <HomeMapOverlay />
       <HomeBottomSheet
         renderFrequentShops={(headerContent) => (
-          <FrequentShopSummary headerContent={headerContent} />
+          <FrequentShopSummary
+            headerContent={headerContent}
+            onShopSelect={handleFrequentShopSelect}
+          />
         )}
         renderSelectedPlace={(placeId) => (
           <SelectedPlaceSheet
@@ -49,8 +60,9 @@ export default function HomePage() {
         )}
         renderSpendingHistory={(headerContent) => (
           <SpendingHistory
+            contentBottomPaddingClassName="pb-28"
             headerContent={headerContent}
-            headerContentGapClassName="mt-4"
+            headerContentGapClassName="mt-2"
             headerDescription="이번달 작성한 소비기록을 확인해보세요"
           />
         )}
