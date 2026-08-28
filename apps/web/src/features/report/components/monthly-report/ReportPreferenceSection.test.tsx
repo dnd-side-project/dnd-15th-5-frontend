@@ -25,6 +25,7 @@ describe('ReportPreferenceSection', () => {
         ]}
         isCurrentReportActionVisible={false}
         isFlipped={false}
+        nickname="이앤더"
         onCardSelect={jest.fn()}
         onCardTransitionChange={jest.fn()}
         onFlip={jest.fn()}
@@ -36,6 +37,9 @@ describe('ReportPreferenceSection', () => {
     );
 
     expect(captureRef.current).toHaveTextContent('익숙한 동네와 단골 가게를 자주 찾아요.');
+    expect(captureRef.current).toHaveTextContent('이앤더님의 취향 카드');
+    expect(captureRef.current).toHaveStyle({ height: '648px', width: '486px' });
+    expect(captureRef.current?.querySelector('.report-preference-share')).toHaveClass('h-full');
     expect(thumbnailCaptureRef.current).toHaveTextContent('동네 터줏대감');
     expect(thumbnailCaptureRef.current).not.toHaveTextContent(
       '익숙한 동네와 단골 가게를 자주 찾아요.'
@@ -73,6 +77,7 @@ describe('ReportPreferenceSection', () => {
         ]}
         isCurrentReportActionVisible={true}
         isFlipped={false}
+        nickname="이앤더"
         onCardSelect={onCardSelect}
         onCardTransitionChange={jest.fn()}
         onFlip={jest.fn()}

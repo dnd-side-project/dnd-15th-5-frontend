@@ -109,6 +109,7 @@ export default function MonthlyReportPage() {
             captureRef={captureRef}
             isCurrentReportActionVisible={hasNewerMonth}
             isFlipped={isCardFlipped}
+            nickname={nickname}
             onCardSelect={handleReportCardSelect}
             onCardTransitionChange={handleCardTransitionChange}
             onFlip={handlePreferenceCardFlip}

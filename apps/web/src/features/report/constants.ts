@@ -2,6 +2,13 @@ import type { MonthlyReportPersona, ReportPreferenceCardVariant } from '@/featur
 
 import type { SpendingCategory } from '@chapchap/shared/common/types';
 
+/** 저장용 세로 사진의 레이아웃 크기와 1080×1440 PNG 출력을 위한 캡처 배율입니다. */
+export const REPORT_PHOTO_CAPTURE_SIZE = {
+  height: 648,
+  width: 486,
+} as const;
+export const REPORT_PHOTO_CAPTURE_SCALE = 1080 / REPORT_PHOTO_CAPTURE_SIZE.width;
+
 /**
  * 백엔드의 4축 페르소나 코드를 카드 디자인 유형으로 변환합니다.
  * 코드는 방문 스타일(R/N) → 활동 범위(H/W) → 소비 시간대(D/M) → 소비 리듬(P/F) 순서입니다.
