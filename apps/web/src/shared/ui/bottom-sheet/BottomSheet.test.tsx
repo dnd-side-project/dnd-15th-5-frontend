@@ -377,6 +377,77 @@ describe('BottomSheet', () => {
     expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
   });
 
+  it('콘텐츠 최상단에서 아래로 64px 넘게 당기면 pull-down 콜백을 호출한다', () => {
+    const onContentPullDown = jest.fn();
+    const { container } = render(
+      <BottomSheet snapPoint="full" onContentPullDown={onContentPullDown}>
+        내용
+      </BottomSheet>
+    );
+    const content = (container.firstChild as HTMLElement).lastChild as HTMLElement;
+
+    content.scrollTop = 0;
+    fireEvent.touchStart(content, { touches: [{ clientY: 100 }] });
+    fireEvent.touchMove(content, { touches: [{ clientY: 164 }] });
+    expect(onContentPullDown).not.toHaveBeenCalled();
+
+    fireEvent.touchMove(content, { touches: [{ clientY: 165 }] });
+    expect(onContentPullDown).toHaveBeenCalledTimes(1);
+
+    fireEvent.touchMove(content, { touches: [{ clientY: 160 }] });
+    expect(onContentPullDown).toHaveBeenCalledTimes(1);
+  });
+
+  it('콘텐츠를 스크롤한 상태에서는 아래 방향 제스처로 시트를 변경하지 않는다', () => {
+    const onContentPullDown = jest.fn();
+    const { container } = render(
+      <BottomSheet snapPoint="full" onContentPullDown={onContentPullDown}>
+        내용
+      </BottomSheet>
+    );
+    const content = (container.firstChild as HTMLElement).lastChild as HTMLElement;
+
+    content.scrollTop = 1;
+    fireEvent.touchStart(content, { touches: [{ clientY: 100 }] });
+    fireEvent.touchMove(content, { touches: [{ clientY: 160 }] });
+
+    expect(onContentPullDown).not.toHaveBeenCalled();
+  });
+
+  it('콘텐츠 최상단에서 위쪽 휠 입력이 누적되면 pull-down 콜백을 호출한다', () => {
+    const onContentPullDown = jest.fn();
+    const { container } = render(
+      <BottomSheet snapPoint="full" onContentPullDown={onContentPullDown}>
+        내용
+      </BottomSheet>
+    );
+    const content = (container.firstChild as HTMLElement).lastChild as HTMLElement;
+
+    content.scrollTop = 0;
+    fireEvent.wheel(content, { deltaY: -32 });
+    expect(onContentPullDown).not.toHaveBeenCalled();
+
+    fireEvent.wheel(content, { deltaY: -33 });
+    expect(onContentPullDown).toHaveBeenCalledTimes(1);
+  });
+
+  it('줄 단위 휠 입력을 픽셀로 환산해 pull-down 임계값을 계산한다', () => {
+    const onContentPullDown = jest.fn();
+    const { container } = render(
+      <BottomSheet snapPoint="full" onContentPullDown={onContentPullDown}>
+        내용
+      </BottomSheet>
+    );
+    const content = (container.firstChild as HTMLElement).lastChild as HTMLElement;
+
+    content.scrollTop = 0;
+    fireEvent.wheel(content, { deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: -3 });
+    expect(onContentPullDown).not.toHaveBeenCalled();
+
+    fireEvent.wheel(content, { deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: -2 });
+    expect(onContentPullDown).toHaveBeenCalledTimes(1);
+  });
+
   it('콘텐츠 맞춤 높이에서는 화살표 키로 스냅 포인트를 바꾸지 않는다', () => {
     const onSnapPointChange = jest.fn();
     render(

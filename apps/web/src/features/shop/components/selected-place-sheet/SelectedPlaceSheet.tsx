@@ -102,6 +102,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
       <StickerCollection
         stickers={stickerImages}
         maxItems={5}
+        replayStampAnimationOnClick
         ariaLabel="최근 획득한 스티커"
         className="mt-4"
       />

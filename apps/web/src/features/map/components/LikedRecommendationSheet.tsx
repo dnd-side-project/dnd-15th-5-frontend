@@ -1,10 +1,12 @@
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { getDistrict, getGoogleMapsPlaceUrl } from '@/features/map/utils/recommendation';
 import { BlueLocationPinIcon, LikeIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import { LinkButton } from '@/shared/ui/button';
+import type { RecordLocationState } from '@/shared/types/recordNavigation';
+import { Button, LinkButton } from '@/shared/ui/button';
 import { PlaceTagCard } from '@/shared/ui/card';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
@@ -21,6 +23,11 @@ export default function LikedRecommendationSheet({
   const likeMutation = useTogglePlaceLikeMutation();
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
   const recommendation = recommendations.find(({ id }) => id === recommendationId);
+  const {
+    query: recordShopQuery,
+    isLibraryLoading,
+    isLibraryError,
+  } = useRecommendationRecordShopQuery(recommendation);
 
   if (isPending) {
     return (
@@ -63,6 +70,16 @@ export default function LikedRecommendationSheet({
   }
 
   const { googleMapsUri, id, place, thumbnailSrc } = recommendation;
+  const recordLocationState = recordShopQuery.data
+    ? ({
+        shop: {
+          ...recordShopQuery.data,
+          name: place.name,
+        },
+        category: place.category,
+      } satisfies RecordLocationState)
+    : undefined;
+  const isResolvingRecordShop = !isLibraryError && (isLibraryLoading || recordShopQuery.isPending);
 
   const handleUnlike = () => {
     likeMutation.mutate({ placeId: Number(id) }, { onSuccess: showHome });
@@ -105,9 +122,24 @@ export default function LikedRecommendationSheet({
         </button>
       </div>
 
-      <LinkButton to={ROUTE_PATHS.record} size="large" className="mt-4">
-        기록하기
-      </LinkButton>
+      {isResolvingRecordShop ? (
+        <Button isLoading size="large" className="mt-4">
+          기록하기
+        </Button>
+      ) : recordLocationState ? (
+        <LinkButton
+          to={ROUTE_PATHS.record}
+          state={recordLocationState}
+          size="large"
+          className="mt-4"
+        >
+          기록하기
+        </LinkButton>
+      ) : (
+        <Button disabled size="large" className="mt-4">
+          기록하기
+        </Button>
+      )}
     </section>
   );
 }

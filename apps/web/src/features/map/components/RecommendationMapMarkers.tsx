@@ -1,5 +1,5 @@
 import { AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useFocusMapOnPosition } from '@/features/map/hooks/useFocusMapOnPosition';
@@ -16,6 +16,7 @@ import {
   RestaurantPinActiveIcon,
   RestaurantPinIcon,
 } from '@/shared/assets/icons';
+import { cn } from '@/shared/lib/cn';
 
 import type { ComponentType, SVGProps } from 'react';
 
@@ -61,28 +62,47 @@ export default function RecommendationMapMarkers() {
     (state) => state.setActiveRecommendation
   );
   const isRecommendationOpen = activeSheet.type === 'recommendation';
-  const selectedRecommendationId =
-    activeSheet.type === 'likedRecommendation'
-      ? activeSheet.recommendationId
-      : isRecommendationOpen
-        ? activeRecommendationId
-        : null;
+  const isLikedRecommendationOpen = activeSheet.type === 'likedRecommendation';
+  const areMarkersVisible = isRecommendationOpen || isLikedRecommendationOpen;
+  const selectedRecommendationId = isLikedRecommendationOpen
+    ? activeSheet.recommendationId
+    : isRecommendationOpen
+      ? activeRecommendationId
+      : null;
   const { recommendations } = useNearbyPlaceRecommendationsQuery();
+  const recommendationsRef = useRef(recommendations);
+  const lastFocusedRecommendationIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    recommendationsRef.current = recommendations;
+  }, [recommendations]);
 
   useEffect(() => {
     if (!isRecommendationOpen) {
+      lastFocusedRecommendationIdRef.current = null;
       return;
     }
 
-    const activeRecommendation = recommendations.find(({ id }) => id === activeRecommendationId);
+    if (
+      !activeRecommendationId ||
+      lastFocusedRecommendationIdRef.current === activeRecommendationId
+    ) {
+      return;
+    }
+
+    const activeRecommendation = recommendationsRef.current.find(
+      ({ id }) => id === activeRecommendationId
+    );
     if (!activeRecommendation) {
       return;
     }
 
+    lastFocusedRecommendationIdRef.current = activeRecommendationId;
     focusMap(activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
-  }, [activeRecommendationId, focusMap, isRecommendationOpen, recommendations]);
+  }, [activeRecommendationId, focusMap, isRecommendationOpen]);
 
   const handleMarkerSelect = (recommendation: ShopRecommendation) => {
+    lastFocusedRecommendationIdRef.current = recommendation.id;
     focusMap(recommendation.position, ACTIVE_RECOMMENDATION_ZOOM);
     setActiveRecommendation(recommendation.id);
     if (recommendation.isLiked) {
@@ -92,6 +112,10 @@ export default function RecommendationMapMarkers() {
 
     showRecommendation();
   };
+
+  if (!areMarkersVisible) {
+    return null;
+  }
 
   return (
     <>
@@ -118,7 +142,7 @@ export default function RecommendationMapMarkers() {
               key={isActive ? 'active' : 'default'}
               aria-hidden="true"
               data-state={isActive ? 'active' : 'default'}
-              className={`recommendation-marker-icon ${isActive ? 'size-11' : 'size-10'}`}
+              className={cn('recommendation-marker-icon', isActive ? 'h-15.75 w-12.25' : 'size-10')}
             />
           </AdvancedMarker>
         );
