@@ -23,6 +23,7 @@ describe('ReportPreferenceSection', () => {
             variant: 'local-regular',
           },
         ]}
+        isCurrentReportActionVisible={false}
         isFlipped={false}
         onCardSelect={jest.fn()}
         onCardTransitionChange={jest.fn()}
@@ -65,6 +66,7 @@ describe('ReportPreferenceSection', () => {
             month: { month: 6, year: 2026 },
           },
         ]}
+        isCurrentReportActionVisible={true}
         isFlipped={false}
         onCardSelect={onCardSelect}
         onCardTransitionChange={jest.fn()}
