@@ -7,7 +7,7 @@ import { AccessibilityInfo } from 'react-native';
  * 기록 기능의 바텀시트 애니메이션을 생략할 때 사용합니다.
  */
 export const useReducedMotion = () => {
-  const [isReducedMotionEnabled, setIsReducedMotionEnabled] = useState(false);
+  const [isReducedMotionEnabled, setIsReducedMotionEnabled] = useState<boolean | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -18,7 +18,12 @@ export const useReducedMotion = () => {
           setIsReducedMotionEnabled(enabled);
         }
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (isMounted) {
+          // 접근성 설정을 확인할 수 없을 때는 애니메이션을 생략하는 쪽으로 안전하게 처리한다.
+          setIsReducedMotionEnabled(true);
+        }
+      });
 
     const subscription = AccessibilityInfo.addEventListener(
       'reduceMotionChanged',

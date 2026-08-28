@@ -103,23 +103,26 @@ export default function VisitDateTimePicker({
     date: selectedDate,
     period: selectedPeriod,
   });
+  const transitionDuration = prefersReducedMotion === false ? TRANSITION_DURATION : 0;
 
   useEffect(() => {
-    const duration = prefersReducedMotion ? 0 : TRANSITION_DURATION;
+    if (prefersReducedMotion === null) {
+      return;
+    }
 
     Animated.parallel([
       Animated.timing(backdropOpacity, {
         toValue: 1,
-        duration,
+        duration: transitionDuration,
         useNativeDriver: true,
       }),
       Animated.timing(sheetTranslateY, {
         toValue: 0,
-        duration,
+        duration: transitionDuration,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [backdropOpacity, prefersReducedMotion, sheetTranslateY]);
+  }, [backdropOpacity, prefersReducedMotion, sheetTranslateY, transitionDuration]);
 
   const closeBottomSheet = useCallback(
     (afterClose?: () => void) => {
@@ -128,17 +131,16 @@ export default function VisitDateTimePicker({
       }
 
       setIsClosing(true);
-      const duration = prefersReducedMotion ? 0 : TRANSITION_DURATION;
 
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue: 0,
-          duration,
+          duration: transitionDuration,
           useNativeDriver: true,
         }),
         Animated.timing(sheetTranslateY, {
           toValue: sheetOffset,
-          duration,
+          duration: transitionDuration,
           useNativeDriver: true,
         }),
       ]).start(() => {
@@ -149,11 +151,11 @@ export default function VisitDateTimePicker({
         onClose();
       });
     },
-    [backdropOpacity, isClosing, onClose, prefersReducedMotion, sheetOffset, sheetTranslateY]
+    [backdropOpacity, isClosing, onClose, sheetOffset, sheetTranslateY, transitionDuration]
   );
 
   const resetSheetPosition = useCallback(() => {
-    if (prefersReducedMotion) {
+    if (prefersReducedMotion !== false) {
       sheetTranslateY.setValue(0);
       return;
     }
