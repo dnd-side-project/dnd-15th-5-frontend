@@ -107,6 +107,7 @@ export default function MonthlyReportPage() {
           <ReportPreferenceSection
             cards={reportCards}
             captureRef={captureRef}
+            isCurrentReportActionVisible={hasNewerMonth}
             isFlipped={isCardFlipped}
             onCardSelect={handleReportCardSelect}
             onCardTransitionChange={handleCardTransitionChange}
@@ -121,6 +122,7 @@ export default function MonthlyReportPage() {
           <div className="mt-4.5 flex flex-col items-center">
             {reportCards.length === 0 && (
               <MonthlyReportUnavailableCard
+                isActionVisible={hasNewerMonth}
                 onViewCurrentReport={handleCurrentReportSelect}
                 selectedMonth={selectedMonth}
               />
