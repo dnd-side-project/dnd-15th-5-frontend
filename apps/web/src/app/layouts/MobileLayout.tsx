@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { matchPath, Outlet, useLocation } from 'react-router-dom';
 
+import ScrollToTop from '@/app/routes/ScrollToTop';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import { notifyNative } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
@@ -29,15 +30,19 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   }, [pathname]);
 
   return (
-    <div className="flex min-h-screen justify-center bg-neutral-100">
-      <div
-        className={cn(
-          'mobile-frame min-h-screen bg-neutral-00',
-          !usesOwnBottomSafeArea && 'pb-safe-bottom'
-        )}
-      >
-        {children ?? <Outlet />}
+    <>
+      <ScrollToTop />
+
+      <div className="flex min-h-screen justify-center bg-neutral-100">
+        <div
+          className={cn(
+            'mobile-frame min-h-screen bg-neutral-00',
+            !usesOwnBottomSafeArea && 'pb-safe-bottom'
+          )}
+        >
+          {children ?? <Outlet />}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
