@@ -20,6 +20,8 @@ export const ROUTE_PATHS = {
   authCallback: '/auth/callback',
   oauthCallback: '/oauth/callback',
   agreement: '/agreement',
+  agreementPrivacyPolicy: '/agreement/privacy-policy',
+  agreementTermsOfService: '/agreement/terms-of-service',
   onboarding: '/onboarding',
 
   home: '/home',
