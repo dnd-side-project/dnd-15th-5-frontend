@@ -4,11 +4,12 @@ import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion'
 import { cn } from '@/shared/lib/cn';
 
 import { BOTTOM_SHEET_HEIGHT_RATIO, BOTTOM_SHEET_TRANSITION_MS } from './constants';
+import { useBottomSheetContentPullDown } from './useBottomSheetContentPullDown';
 import { useBottomSheetDrag } from './useBottomSheetDrag';
 import { useBottomSheetVisibleHeight } from './useBottomSheetVisibleHeight';
 
 import type { BottomSheetSnapPoint, BottomSheetSnapPoints } from './types';
-import type { ReactNode, Ref } from 'react';
+import type { ReactNode, Ref, UIEventHandler } from 'react';
 
 const SNAP_POINT_HEIGHT: Record<BottomSheetSnapPoint, string> = {
   full: `${BOTTOM_SHEET_HEIGHT_RATIO.full * 100}dvh`,
@@ -28,6 +29,8 @@ type BottomSheetProps = {
   contentClassName?: string;
   rootRef?: Ref<HTMLDivElement>;
   fullTopBoundaryPx?: number;
+  onContentPullDown?: () => void;
+  onContentScroll?: UIEventHandler<HTMLDivElement>;
   onVisibleHeightChange?: (heightPx: number) => void;
 };
 
@@ -78,6 +81,8 @@ const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
  * @param props.contentClassName - 콘텐츠 영역에 추가할 스타일입니다.
  * @param props.rootRef - 바텀시트 루트 요소를 참조합니다.
  * @param props.fullTopBoundaryPx - `full` 단계에서 시트 상단이 넘어가지 않을 화면 기준 Y 좌표입니다.
+ * @param props.onContentPullDown - 콘텐츠 최상단에서 아래로 64px 넘게 당겼을 때 호출됩니다.
+ * @param props.onContentScroll - 내부 콘텐츠 영역이 세로로 스크롤될 때 호출됩니다.
  * @param props.onVisibleHeightChange - 드래그·스냅·콘텐츠 변경을 반영한 실제 노출 높이를 알립니다.
  */
 export function BottomSheet({
@@ -90,6 +95,8 @@ export function BottomSheet({
   contentClassName,
   rootRef,
   fullTopBoundaryPx,
+  onContentPullDown,
+  onContentScroll,
   onVisibleHeightChange,
 }: BottomSheetProps) {
   const sheetElementRef = useRef<HTMLDivElement>(null);
@@ -140,6 +147,8 @@ export function BottomSheet({
     },
     [rootRef]
   );
+  const { handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel } =
+    useBottomSheetContentPullDown({ onContentPullDown });
 
   useBottomSheetVisibleHeight({
     elementRef: sheetElementRef,
@@ -184,11 +193,17 @@ export function BottomSheet({
         <div className={handleClassName}>{handleBar}</div>
       )}
       <div
+        onScroll={onContentScroll}
+        onTouchCancel={handleTouchEnd}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
+        onTouchStart={handleTouchStart}
+        onWheel={handleWheel}
         className={cn(
           'px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]',
           fitContent
             ? 'shrink-0 overflow-visible'
-            : 'scrollbar-hidden min-h-0 flex-1 overflow-y-auto',
+            : 'scrollbar-hidden min-h-0 flex-1 overflow-y-auto overscroll-y-contain',
           contentClassName
         )}
       >

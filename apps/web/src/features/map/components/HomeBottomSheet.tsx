@@ -16,7 +16,7 @@ import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from '@/shared/ui/toast';
 import LikedRecommendationSheet from './LikedRecommendationSheet';
 import ShopRecommendationSheet from './ShopRecommendationSheet';
 
-import type { ReactNode } from 'react';
+import type { ReactNode, UIEvent } from 'react';
 
 type TabValue = 'frequentShops' | 'history';
 
@@ -35,6 +35,7 @@ type BottomSheetPresentation = {
 };
 
 const MODAL_SHEET_SNAP_POINTS = ['hidden', 'medium'] as const;
+const AUTO_EXPAND_SCROLL_THRESHOLD_PX = 32;
 const TOP_ACTION_TO_SHEET_GAP_PX = 12;
 
 type ModalSheetContentProps = {
@@ -195,14 +196,16 @@ export default function HomeBottomSheet({
   };
 
   const renderSegmentedToggle = () => (
-    <SegmentedToggle
-      options={[
-        { label: '자주 소비한 곳', value: 'frequentShops' },
-        { label: '소비 기록', value: 'history' },
-      ]}
-      value={tab}
-      onValueChange={handleTabChange}
-    />
+    <div className="pb-2">
+      <SegmentedToggle
+        options={[
+          { label: '자주 소비한 곳', value: 'frequentShops' },
+          { label: '소비 기록', value: 'history' },
+        ]}
+        value={tab}
+        onValueChange={handleTabChange}
+      />
+    </div>
   );
 
   const handleModalSheetSnapPointChange = (nextSnapPoint: BottomSheetSnapPoint) => {
@@ -211,12 +214,25 @@ export default function HomeBottomSheet({
     }
   };
 
+  const handleHomeSheetContentScroll = (event: UIEvent<HTMLDivElement>) => {
+    if (snapPoint === 'medium' && event.currentTarget.scrollTop > AUTO_EXPAND_SCROLL_THRESHOLD_PX) {
+      setSnapPoint('full');
+    }
+  };
+
+  const handleHomeSheetContentPullDown = () => {
+    setSnapPoint('medium');
+  };
+
   const contentTransitionClassName = useSheetContentTransitionClassName(
     getSheetTransitionKey(activeSheet)
   );
 
   const homeSheetContent = (
-    <div ref={contentRootRef} className={contentTransitionClassName}>
+    <div
+      ref={contentRootRef}
+      className={cn('flex min-h-full flex-col bg-neutral-00', contentTransitionClassName)}
+    >
       <div
         data-active-tab-panel={tab === 'frequentShops' ? 'true' : undefined}
         aria-hidden={tab !== 'frequentShops'}
@@ -281,6 +297,10 @@ export default function HomeBottomSheet({
       fitContent={!isHomeSheet}
       contentClassName={sheetPresentation.contentClassName}
       fullTopBoundaryPx={fullTopBoundaryPx}
+      onContentPullDown={
+        isHomeSheet && snapPoint === 'full' ? handleHomeSheetContentPullDown : undefined
+      }
+      onContentScroll={isHomeSheet ? handleHomeSheetContentScroll : undefined}
       onVisibleHeightChange={handleVisibleHeightChange}
     >
       {sheetPresentation.isModal ? (
