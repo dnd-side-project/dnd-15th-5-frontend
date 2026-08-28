@@ -12,23 +12,6 @@ describe('sharedPersona', () => {
     ).toEqual([30, 40, 20, 60]);
   });
 
-  it('공유 응답의 레거시 페르소나 타입도 프론트 카피로 변환한다', () => {
-    expect(
-      mapSharedPersonaCard({
-        keywords: ['낮 활동파', '즉흥적'],
-        nickname: '이앤더',
-        scores: {},
-        type: 'ALLEY_EXPLORER',
-        typeName: '골목 발굴러',
-      })
-    ).toMatchObject({
-      nickname: '이앤더',
-      tags: ['낮 활동파', '신규 탐색형', '즉흥적'],
-      title: '골목 발굴러',
-      variant: 'alley-explorer',
-    });
-  });
-
   it('4축 페르소나 코드는 프론트의 카드 카피와 태그로 매핑한다', () => {
     expect(
       mapSharedPersonaCard({

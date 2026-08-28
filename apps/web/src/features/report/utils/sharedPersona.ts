@@ -6,14 +6,6 @@ import {
 } from '@/features/report/constants';
 import type { ReportPreferenceCardVariant, ReportPreferenceMetric } from '@/features/report/types';
 
-const PERSONA_VARIANT_BY_TYPE: Record<string, ReportPreferenceCardVariant> = {
-  ...REPORT_PERSONA_VARIANTS,
-  ALLEY_EXPLORER: 'alley-explorer',
-  FOOD_NOMAD: 'food-nomad',
-  LOCAL_REGULAR: 'local-regular',
-  NIGHT_WATCH: 'night-watch',
-};
-
 const clampScore = (score?: number) => Math.min(Math.max(score ?? 50, 0), 100);
 const invertScore = (score?: number) => 100 - clampScore(score);
 
@@ -43,8 +35,13 @@ export const createPreferenceMetrics = (
 ];
 
 export const getPreferenceCardVariant = (type: string | undefined): ReportPreferenceCardVariant => {
-  const normalizedType = type?.trim().replaceAll('-', '_').toUpperCase();
-  return (normalizedType && PERSONA_VARIANT_BY_TYPE[normalizedType]) || 'night-watch';
+  const normalizedType = type?.trim().toUpperCase();
+
+  if (normalizedType && normalizedType in REPORT_PERSONA_VARIANTS) {
+    return REPORT_PERSONA_VARIANTS[normalizedType as keyof typeof REPORT_PERSONA_VARIANTS];
+  }
+
+  return 'night-watch';
 };
 
 const createPreferenceTags = (type: string | undefined, fallbackTags?: readonly string[]) => {
