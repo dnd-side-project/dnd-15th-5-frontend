@@ -3,10 +3,10 @@ import type { SpendingCategory } from './types';
 /** 기록과 리포트에서 공통으로 사용하는 소비 카테고리. */
 export const SPENDING_CATEGORIES = [
   '카페',
-  '운동',
+  '음식점',
   '편의점/마트',
   '취미/놀거리',
-  '음식점',
+  '운동',
   '미용/뷰티',
   '기타',
 ] as const satisfies readonly SpendingCategory[];
