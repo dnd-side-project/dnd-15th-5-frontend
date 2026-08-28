@@ -24,7 +24,7 @@ describe('MonthlyRecordEmptyState', () => {
 
     expect(screen.getByRole('heading', { name: '아직 기록이 없어요' })).toBeInTheDocument();
     expect(
-      screen.getByText('소비 기록을 작성해보세요. 빈 공간이 채워질 거예요.')
+      screen.getByText('소비 기록을 작성하면 이번 달 소비 내역을 보여드릴게요.')
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '소비 기록 작성하기' })).toHaveAttribute(
       'href',
@@ -36,7 +36,9 @@ describe('MonthlyRecordEmptyState', () => {
     renderEmptyState(true);
 
     expect(screen.getByRole('heading', { name: '7월에는 기록이 없어요' })).toBeInTheDocument();
-    expect(screen.getByText('지난 소비를 기록하면 빈 공간이 채워질 거예요.')).toBeInTheDocument();
+    expect(
+      screen.getByText('지난 소비를 기록하면 7월 소비 내역을 보여드릴게요.')
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '7월 기록 추가하기' })).toHaveAttribute(
       'href',
       '/record?yearMonth=2026-07'
