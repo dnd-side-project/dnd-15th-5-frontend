@@ -44,7 +44,8 @@ type StateViewActionProps = {
 /**
  * 데이터가 없거나 데이터를 불러오지 못한 상태를 안내하는 공통 UI입니다.
  *
- * `empty` 이미지는 피그마의 Luminosity 블렌드 모드를 적용해 흑백으로 표시합니다.
+ * `empty` 이미지는 조상 배경과 합성하지 않는 grayscale 필터로 흑백 표시해, 바텀시트처럼
+ * 별도 스태킹 컨텍스트가 생기는 화면에서도 원본 색상이 노출되지 않게 합니다.
  * 제목과 안내 문구에는 `whitespace-pre-line`을 적용해 문자열의 줄바꿈 문자(`\n`)를
  * 실제 줄바꿈으로 표시하며, `break-keep`으로 한글 단어 중간의 줄바꿈을 방지합니다.
  * 제목은 줄 길이를 균형 있게 배치하고, 안내 문구는 마지막 줄에 단어 하나만 남는 현상을 줄입니다.
@@ -84,7 +85,7 @@ export function StateView(props: StateViewProps) {
       <img
         src={image}
         alt=""
-        className={cn('size-30 object-contain', variant === 'empty' && 'mix-blend-luminosity')}
+        className={cn('size-30 object-contain', variant === 'empty' && 'grayscale')}
       />
 
       <Heading

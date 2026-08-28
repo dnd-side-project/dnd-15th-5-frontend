@@ -107,6 +107,17 @@ describe('SpendingHistory', () => {
     );
   });
 
+  it('화면 맥락에 맞는 소비내역 하단 여백을 적용한다', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <SpendingHistory contentBottomPaddingClassName="pb-28" />
+      </MemoryRouter>
+    );
+
+    expect(container.firstElementChild?.lastElementChild).toHaveClass('pb-28');
+    expect(container.firstElementChild?.lastElementChild).not.toHaveClass('pb-8');
+  });
+
   it('상단 안내 문구를 전달하면 월 선택 대신 안내를 보여준다', () => {
     render(
       <MemoryRouter>
@@ -120,6 +131,22 @@ describe('SpendingHistory', () => {
     expect(screen.queryByRole('button', { name: '월 선택' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '이전 달 보기' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '다음 달 보기' })).not.toBeInTheDocument();
+  });
+
+  it('기록이 없으면 상단 안내 문구를 숨긴다', () => {
+    mockedUseConsumptionsInfiniteQuery.mockReturnValue({
+      ...createQueryResult('2026-08'),
+      data: { pages: [{ data: { consumptions: [] } }] },
+    } as unknown as ReturnType<typeof useConsumptionsInfiniteQuery>);
+
+    render(
+      <MemoryRouter>
+        <SpendingHistory headerDescription="이번달 작성한 소비기록을 확인해보세요" />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { name: '아직 기록이 없어요' })).toBeInTheDocument();
+    expect(screen.queryByText('이번달 작성한 소비기록을 확인해보세요')).not.toBeInTheDocument();
   });
 
   it('최초 조회 중에는 소비내역 스켈레톤을 보여준다', () => {

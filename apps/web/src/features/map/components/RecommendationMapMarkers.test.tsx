@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useNearbyPlaceRecommendationsQuery } from '../apis/hooks/useNearbyPlaceRecommendationsQuery';
@@ -101,6 +101,7 @@ describe('RecommendationMapMarkers', () => {
         unsupportedRecommendation,
       ],
     } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    useHomeBottomSheetStore.getState().showRecommendation();
 
     render(<RecommendationMapMarkers />);
 
@@ -122,6 +123,16 @@ describe('RecommendationMapMarkers', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('가게 추천 탭을 활성화하지 않으면 추천 마커를 표시하지 않는다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+
+    render(<RecommendationMapMarkers />);
+
+    expect(
+      screen.queryByRole('button', { name: `${recommendation.place.name} 추천 마커` })
+    ).not.toBeInTheDocument();
+  });
+
   it('추천 캐러셀에서 선택한 가게를 활성 카테고리 핀으로 표시한다', () => {
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
     useHomeBottomSheetStore.getState().showRecommendation();
@@ -133,15 +144,47 @@ describe('RecommendationMapMarkers', () => {
       name: `${recommendation.place.name} 추천 마커, 선택됨`,
     });
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'cafe-active');
-    expect(marker.firstElementChild).toHaveClass('size-11');
+    expect(marker.firstElementChild).toHaveClass('h-15.75', 'w-12.25');
     expect(marker.firstElementChild).toHaveAttribute('data-state', 'active');
     expect(moveCamera).toHaveBeenCalledWith({ center: recommendation.position, zoom: 15 });
+    expect(panBy).toHaveBeenCalledWith(0, expect.any(Number));
+  });
+
+  it('지도 이동으로 추천 목록이 갱신돼도 같은 카드를 다시 포커스하지 않고 다음 카드 선택 시 포커스한다', () => {
+    const firstRecommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    const nextRecommendation = TEST_SHOP_RECOMMENDATIONS[1]!;
+    useHomeBottomSheetStore.getState().showRecommendation();
+    useShopRecommendationStore.setState({ activeRecommendationId: firstRecommendation.id });
+
+    const { rerender } = render(<RecommendationMapMarkers />);
+
+    expect(moveCamera).toHaveBeenCalledTimes(1);
+    moveCamera.mockClear();
+    panBy.mockClear();
+
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: TEST_SHOP_RECOMMENDATIONS.slice(1),
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    rerender(<RecommendationMapMarkers />);
+
+    expect(moveCamera).not.toHaveBeenCalled();
+
+    act(() => {
+      useShopRecommendationStore.getState().setActiveRecommendation(nextRecommendation.id);
+    });
+
+    expect(moveCamera).toHaveBeenCalledTimes(1);
+    expect(moveCamera).toHaveBeenCalledWith({
+      center: nextRecommendation.position,
+      zoom: 15,
+    });
     expect(panBy).toHaveBeenCalledWith(0, expect.any(Number));
   });
 
   it('카테고리 마커를 누르면 추천 시트를 열고 선택한 가게를 공유한다', async () => {
     const user = userEvent.setup();
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    useHomeBottomSheetStore.getState().showRecommendation();
 
     render(<RecommendationMapMarkers />);
 
@@ -157,12 +200,13 @@ describe('RecommendationMapMarkers', () => {
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'recommendation' });
     expect(marker).toHaveAccessibleName(`${recommendation.place.name} 추천 마커, 선택됨`);
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'cafe-active');
-    expect(marker.firstElementChild).toHaveClass('size-11');
+    expect(marker.firstElementChild).toHaveClass('h-15.75', 'w-12.25');
   });
 
   it('좋아요 마커를 누르면 active 아이콘으로 바꾸고 선택한 가게를 공유한다', async () => {
     const user = userEvent.setup();
     const recommendation = TEST_SHOP_RECOMMENDATIONS[1]!;
+    useHomeBottomSheetStore.getState().showRecommendation();
 
     render(<RecommendationMapMarkers />);
 
@@ -186,7 +230,7 @@ describe('RecommendationMapMarkers', () => {
     expect(marker).toHaveAccessibleName(`${recommendation.place.name} 추천 마커, 선택됨`);
     expect(marker.firstElementChild).toHaveAttribute('data-state', 'active');
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'like-active');
-    expect(marker.firstElementChild).toHaveClass('size-11');
+    expect(marker.firstElementChild).toHaveClass('h-15.75', 'w-12.25');
     expect(marker.firstElementChild).not.toHaveClass('opacity-100');
   });
 });

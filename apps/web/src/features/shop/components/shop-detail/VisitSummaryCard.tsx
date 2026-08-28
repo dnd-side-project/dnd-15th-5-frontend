@@ -38,7 +38,9 @@ export default function VisitSummaryCard({
           </>
         )}
       </h2>
-      <p className="mt-1 text-center text-body-01-medium text-neutral-700">{celebration.message}</p>
+      <p className="mt-0.5 text-center text-body-01-medium text-neutral-700">
+        {celebration.message}
+      </p>
 
       <dl className="mt-4 grid grid-cols-3 gap-2">
         <div className="flex min-w-0 flex-col items-center justify-center rounded-16 bg-neutral-00 py-3.5">

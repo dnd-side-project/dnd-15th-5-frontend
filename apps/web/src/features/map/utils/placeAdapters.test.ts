@@ -29,6 +29,21 @@ describe('placeAdapters', () => {
     });
   });
 
+  it('방문 기록 없이 좋아요만 한 장소는 지도 스티커로 변환하지 않는다', () => {
+    const stickers = toMapStickers([
+      {
+        placeId: 102,
+        placeName: '좋아요한 가게',
+        latitude: 37.4999,
+        longitude: 127.0364,
+        visitCount: 0,
+        liked: true,
+      },
+    ]);
+
+    expect(stickers).toEqual([]);
+  });
+
   it('Google Place ID가 있는 지도 스티커를 소비 기록용 가게 모델로 변환한다', () => {
     const [sticker] = toMapStickers([
       {
