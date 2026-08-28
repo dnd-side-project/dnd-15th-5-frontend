@@ -20,6 +20,7 @@ type ReportPreferenceSectionProps = {
   onCardTransitionChange: (isTransitioning: boolean) => void;
   onFlip: () => void;
   onShare: () => void;
+  onViewCurrentReport: () => void;
   selectedCardIndex: number;
   thumbnailCaptureRef: Ref<HTMLDivElement>;
 };
@@ -33,6 +34,7 @@ export default function ReportPreferenceSection({
   onCardTransitionChange,
   onFlip,
   onShare,
+  onViewCurrentReport,
   selectedCardIndex,
   thumbnailCaptureRef,
 }: ReportPreferenceSectionProps) {
@@ -93,7 +95,11 @@ export default function ReportPreferenceSection({
               key={card.id}
             >
               {card.isUnavailable ? (
-                <MonthlyReportUnavailableCard selectedMonth={card.month} />
+                <MonthlyReportUnavailableCard
+                  isActionAvailable={isSelected}
+                  onViewCurrentReport={onViewCurrentReport}
+                  selectedMonth={card.month}
+                />
               ) : (
                 <ReportPreferenceCard
                   description={card.description}
@@ -132,25 +138,32 @@ export default function ReportPreferenceSection({
               />
             </div>
           </div>
-          <div className="mt-6.25 flex items-center gap-3.75">
-            <button
-              className="flex h-9.25 items-center gap-2 rounded-full bg-neutral-200 px-5 text-body-02-medium text-neutral-700"
-              onClick={onShare}
-              type="button"
-            >
-              <ShareIcon aria-hidden className="size-4" />
-              취향 카드 공유하기
-            </button>
-            <button
-              aria-label="취향 카드 뒤집기"
-              className="flex size-10 items-center justify-center rounded-full bg-neutral-200 text-lg text-neutral-600"
-              onClick={onFlip}
-              type="button"
-            >
-              <ReportCardFlipIcon aria-hidden className="h-3.25 w-3" />
-            </button>
-          </div>
         </>
+      )}
+      <div className="mt-6.25 flex items-center gap-3.75">
+        <button
+          className="flex h-9.25 items-center gap-2 rounded-full bg-neutral-200 px-5 text-body-02-medium text-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+          disabled={selectedCard.isUnavailable}
+          onClick={onShare}
+          type="button"
+        >
+          <ShareIcon aria-hidden className="size-4" />
+          취향 카드 공유하기
+        </button>
+        <button
+          aria-label="취향 카드 뒤집기"
+          className="flex size-10 items-center justify-center rounded-full bg-neutral-200 text-lg text-neutral-600 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400 disabled:[&_path]:fill-neutral-200 disabled:[&_path]:stroke-neutral-400"
+          disabled={selectedCard.isUnavailable}
+          onClick={onFlip}
+          type="button"
+        >
+          <ReportCardFlipIcon aria-hidden className="h-3.25 w-3" />
+        </button>
+      </div>
+      {selectedCard.isUnavailable && (
+        <p className="mt-30 text-center text-title-02-semibold text-neutral-400">
+          해당 월에 생성된 리포트가 없어요
+        </p>
       )}
     </section>
   );
