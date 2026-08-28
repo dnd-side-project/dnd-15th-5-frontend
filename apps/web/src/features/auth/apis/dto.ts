@@ -71,9 +71,11 @@ export type LoginCodeExchangeRequest = {
 };
 
 /**
- * 서비스 이용약관 동의 요청
+ * 가입 자격 확인 및 서비스 이용약관 동의 요청
  */
 export type TermsAgreementRequest = {
+  /** 만 14세 이상 확인 여부 */
+  ageConfirmed: boolean;
   /** 서비스 이용약관 동의 여부 */
   serviceTermsAgreed: boolean;
 };

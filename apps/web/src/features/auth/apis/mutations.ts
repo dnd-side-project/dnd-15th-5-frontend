@@ -246,7 +246,7 @@ export type AgreeMutationBody = BodyType<TermsAgreementRequest>;
 export type AgreeMutationError = ErrorType<ApiResponse>;
 
 /**
- * @summary 서비스 이용약관 동의 및 회원가입 완료
+ * @summary 가입 자격 확인 및 서비스 이용약관 동의로 회원가입 완료
  */
 export const useAgree = <TError = ErrorType<ApiResponse>, TContext = unknown>(
   options?: {

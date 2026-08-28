@@ -58,7 +58,7 @@ describe('useTermsAgreement', () => {
 
   it('Signup Token과 필수 약관 동의 값을 전송한다', () => {
     const { result } = renderHook(() => useTermsAgreement());
-    const agreement = { serviceTermsAgreed: true };
+    const agreement = { ageConfirmed: true, serviceTermsAgreed: true };
 
     act(() => result.current.submitTermsAgreement(agreement));
 
@@ -111,6 +111,7 @@ describe('useTermsAgreement', () => {
 
     act(() =>
       result.current.submitTermsAgreement({
+        ageConfirmed: true,
         serviceTermsAgreed: true,
       })
     );
