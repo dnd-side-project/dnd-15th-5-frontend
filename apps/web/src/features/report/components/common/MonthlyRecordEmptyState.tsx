@@ -23,8 +23,8 @@ export default function MonthlyRecordEmptyState({
       className="my-auto"
       description={
         isPastMonth
-          ? '지난 소비를 기록하면\n빈 공간이 채워질 거예요.'
-          : '소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'
+          ? `지난 소비를 기록하면 ${selectedMonth.month}월 소비 내역을 보여드릴게요.`
+          : '소비 기록을 작성하면 이번 달 소비 내역을 보여드릴게요.'
       }
       headingAs="h2"
       title={isPastMonth ? `${selectedMonth.month}월에는 기록이 없어요` : '아직 기록이 없어요'}

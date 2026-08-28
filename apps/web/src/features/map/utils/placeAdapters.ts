@@ -18,6 +18,12 @@ export const normalizeHomeCategory = (category?: string): HomeCategory =>
 /** 방문 장소 API 응답 중 지도에 표시할 수 있는 항목만 스티커 모델로 변환합니다. */
 export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =>
   (places ?? []).flatMap((place) => {
+    // NOTE: 백엔드가 방문하지 않고 좋아요만 한 장소를 visitCount 0으로 함께 반환하고 있다.
+    // 지도 스티커는 소비 기록으로 획득한 장소만 표시해야 하므로 백엔드 수정 전까지 제외한다.
+    if (place.visitCount === 0) {
+      return [];
+    }
+
     if (
       place.placeId === undefined ||
       !place.placeName ||

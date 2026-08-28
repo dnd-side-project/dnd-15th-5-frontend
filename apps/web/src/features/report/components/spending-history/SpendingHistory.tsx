@@ -26,6 +26,7 @@ import SpendingRecordList from './SpendingRecordList';
 import type { ReactNode } from 'react';
 
 type SpendingHistoryProps = {
+  contentBottomPaddingClassName?: string;
   headerDescription?: string;
   headerContent?: ReactNode;
   headerContentGapClassName?: string;
@@ -52,12 +53,14 @@ const getSupportedMonthFromDate = (
  * 선택한 월의 소비내역을 날짜별로 보여주고 월 이동과 월 선택 시트를 제공합니다.
  *
  * @param props - 소비내역 화면 속성입니다.
+ * @param props.contentBottomPaddingClassName - 소비내역 콘텐츠의 하단 여백 클래스입니다.
  * @param props.headerDescription - 월 선택 영역 대신 표시할 상단 안내 문구입니다.
  * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
  * @param props.headerContentGapClassName - 상단 콘텐츠와 월 선택 영역 사이의 간격 클래스입니다.
  * @param props.initialDate - 처음 표시할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
  */
 export default function SpendingHistory({
+  contentBottomPaddingClassName = 'pb-8',
   headerDescription,
   headerContent,
   headerContentGapClassName = 'mt-5',
@@ -113,6 +116,11 @@ export default function SpendingHistory({
     (!lastLoadedDate || lastLoadedDate >= filteredDate)
   );
   const { fetchNextPage, isFetchingNextPage } = consumptionsQuery;
+  const isEmpty =
+    !consumptionsQuery.isPending &&
+    !consumptionsQuery.isError &&
+    !shouldFetchMoreForDate &&
+    visibleRecordGroups.length === 0;
 
   useEffect(() => {
     if (shouldFetchMoreForDate && !isFetchingNextPage && !consumptionsQuery.isFetchNextPageError) {
@@ -162,18 +170,20 @@ export default function SpendingHistory({
       {headerDescription && (
         <>
           <h1 className="sr-only">{selectedMonth.month}월 소비 내역</h1>
-          <p
-            className={cn(
-              'text-center text-body-02-medium text-neutral-500 mb-2',
-              headerContent && headerContentGapClassName
-            )}
-          >
-            {headerDescription}
-          </p>
+          {!isEmpty && (
+            <p
+              className={cn(
+                'text-center text-body-02-medium text-neutral-500 mb-2',
+                headerContent && headerContentGapClassName
+              )}
+            >
+              {headerDescription}
+            </p>
+          )}
         </>
       )}
 
-      <div className="flex flex-1 flex-col pb-8">
+      <div className={cn('flex flex-1 flex-col', contentBottomPaddingClassName)}>
         {consumptionsQuery.isPending && <SpendingHistorySkeleton />}
 
         {!consumptionsQuery.isPending &&
@@ -194,12 +204,9 @@ export default function SpendingHistory({
             />
           )}
 
-        {!consumptionsQuery.isPending &&
-          !consumptionsQuery.isError &&
-          !shouldFetchMoreForDate &&
-          visibleRecordGroups.length === 0 && (
-            <MonthlyRecordEmptyState isPastMonth={isPastMonth} selectedMonth={selectedMonth} />
-          )}
+        {isEmpty && (
+          <MonthlyRecordEmptyState isPastMonth={isPastMonth} selectedMonth={selectedMonth} />
+        )}
 
         {!consumptionsQuery.isPending && visibleRecordGroups.length > 0 && (
           <SpendingRecordList

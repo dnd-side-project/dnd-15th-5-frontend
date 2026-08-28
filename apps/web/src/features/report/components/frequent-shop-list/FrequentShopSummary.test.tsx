@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
 import { useFrequentPlacesInfiniteQuery } from '@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery';
@@ -65,5 +66,40 @@ describe('FrequentShopSummary', () => {
       'href',
       '/report/frequent-shops'
     );
+  });
+
+  it('가게를 선택하면 해당 장소 ID를 전달한다', async () => {
+    const user = userEvent.setup();
+    const onShopSelect = jest.fn();
+
+    render(
+      <MemoryRouter>
+        <FrequentShopSummary onShopSelect={onShopSelect} />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '투썸플레이스 1 지도에서 보기' }));
+
+    expect(onShopSelect).toHaveBeenCalledWith(1);
+  });
+
+  it('기록이 없으면 안내 문구와 누적기록 버튼을 숨긴다', () => {
+    mockedUseFrequentPlacesInfiniteQuery.mockReturnValue({
+      data: { pages: [{ data: { places: [], hasNext: false } }] },
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useFrequentPlacesInfiniteQuery>);
+
+    const { container } = render(
+      <MemoryRouter>
+        <FrequentShopSummary />
+      </MemoryRouter>
+    );
+
+    expect(container.firstElementChild).toHaveClass('pb-28');
+    expect(screen.getByRole('heading', { name: '아직 기록이 없어요' })).toBeInTheDocument();
+    expect(screen.queryByText('이번달 가장 많이 방문했어요!')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '누적기록 보기' })).not.toBeInTheDocument();
   });
 });

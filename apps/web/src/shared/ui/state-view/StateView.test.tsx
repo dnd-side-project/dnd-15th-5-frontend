@@ -28,13 +28,14 @@ describe('StateView', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: '아직 기록이 없어요' })
     ).toBeInTheDocument();
-    expect(container.querySelector('img')).toHaveClass('mix-blend-luminosity');
+    expect(container.querySelector('img')).toHaveClass('grayscale');
+    expect(container.querySelector('img')).not.toHaveClass('mix-blend-luminosity');
 
     await user.click(screen.getByRole('button', { name: '소비 기록 작성하기' }));
     expect(handleAction).toHaveBeenCalledTimes(1);
   });
 
-  it('error 상태를 표시하고 이미지에는 luminosity를 적용하지 않는다', () => {
+  it('error 상태를 표시하고 이미지에는 grayscale을 적용하지 않는다', () => {
     const { container } = render(
       <StateView
         variant="error"
@@ -50,7 +51,7 @@ describe('StateView', () => {
       screen.getByRole('heading', { level: 2, name: '에러가 발생했어요' })
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '다시 시도하기' })).toBeInTheDocument();
-    expect(container.querySelector('img')).not.toHaveClass('mix-blend-luminosity');
+    expect(container.querySelector('img')).not.toHaveClass('grayscale');
   });
 
   it('home 액션을 선택하면 홈 링크를 표시한다', () => {
