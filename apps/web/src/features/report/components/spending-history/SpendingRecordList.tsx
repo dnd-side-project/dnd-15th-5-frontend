@@ -35,11 +35,17 @@ export default function SpendingRecordList({
     <div>
       <div className="space-y-5">
         {groups.map((group) => {
-          const headingId = `date-${group.purchaseDate}`;
+          const sectionId = `date-${group.purchaseDate}`;
+          const headingId = `${sectionId}-heading`;
           const purchaseDateLabel = formatPurchaseDateLabel(group.purchaseDate);
 
           return (
-            <section key={group.purchaseDate} aria-labelledby={headingId}>
+            <section
+              key={group.purchaseDate}
+              aria-labelledby={headingId}
+              className="scroll-mt-24"
+              id={sectionId}
+            >
               <h2 id={headingId} className="mb-3 text-body-01-semibold text-neutral-900">
                 {purchaseDateLabel}
               </h2>
