@@ -6,9 +6,10 @@ import {
   MyPageMenuSection,
   MyPageProfileSection,
   MyPageShortcutMenu,
+  WithdrawAccountButton,
   useGetMyAccount,
 } from '@/features/my-page';
-import { AccountRemoveIcon, ContactIcon, TermsIcon } from '@/shared/assets/icons';
+import { ContactIcon, TermsIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { StateView } from '@/shared/ui/state-view';
 
@@ -57,7 +58,7 @@ export default function MyPage() {
 
         <MyPageMenuSection className="mt-4">
           <LogoutButton />
-          <MyPageMenuItem icon={AccountRemoveIcon} label="회원탈퇴" />
+          <WithdrawAccountButton />
         </MyPageMenuSection>
       </section>
     </main>

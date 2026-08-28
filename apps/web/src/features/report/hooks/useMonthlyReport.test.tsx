@@ -47,6 +47,7 @@ jest.mock('./useReportImageDownload', () => ({
 
 function MonthlyReportHarness() {
   const {
+    handleCurrentReportSelect,
     handleMonthPickerOpen,
     handleMonthSelect,
     handleNewerMonth,
@@ -77,6 +78,9 @@ function MonthlyReportHarness() {
       </button>
       <button onClick={handleNewerMonth} type="button">
         다음 달
+      </button>
+      <button onClick={handleCurrentReportSelect} type="button">
+        이번달 리포트
       </button>
       <button onClick={() => navigate(-1)} type="button">
         브라우저 뒤로가기
@@ -144,6 +148,16 @@ describe('useMonthlyReport', () => {
 
     expect(screen.getByText('2026-6')).toBeInTheDocument();
     expect(screen.getByText('?yearMonth=2026-06')).toBeInTheDocument();
+  });
+
+  it('이번달 리포트 선택 시 최신 리포트 월로 이동한다', async () => {
+    const user = userEvent.setup();
+    renderMonthlyReportHook('/report/monthly-report?yearMonth=2026-05');
+
+    await user.click(screen.getByRole('button', { name: '이번달 리포트' }));
+
+    expect(screen.getByText('2026-7')).toBeInTheDocument();
+    expect(screen.getByText('?yearMonth=2026-07')).toBeInTheDocument();
   });
 
   it('월 선택 시트를 열고 선택한 리포트 월을 URL에 반영한다', async () => {

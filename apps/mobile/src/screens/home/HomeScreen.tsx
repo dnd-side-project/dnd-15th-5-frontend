@@ -31,7 +31,7 @@ export default function HomeScreen() {
   const trustedWebOrigin = webUrl ? getUrlOrigin(webUrl) : null;
   const initialWebUrl = trustedWebOrigin ? `${trustedWebOrigin}/` : null;
   const webViewRef = useRef<WebView>(null);
-  const { canGoBack, handleNavigationStateChange, handleRouteChange, isMapHome } =
+  const { canGoBack, handleNavigationStateChange, handleRouteChange, isMapHome, isMonthlyReport } =
     useWebViewNavigationState(initialWebUrl ?? undefined);
 
   useEffect(() => {
@@ -142,7 +142,7 @@ export default function HomeScreen() {
       loadErrorTitle="웹 화면을 불러오지 못했습니다"
       loadErrorDescriptions={webUrl ? [webUrl] : []}
       safeAreaMode={isMapHome ? 'none' : 'except-bottom'}
-      allowsBackForwardNavigationGestures={!isMapHome}
+      allowsBackForwardNavigationGestures={!isMapHome && !isMonthlyReport}
       onNavigationStateChange={({ canGoBack: nextCanGoBack, url }) =>
         handleNavigationStateChange(url, nextCanGoBack)
       }
