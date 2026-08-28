@@ -86,7 +86,18 @@ PRD 이후 구현 기준을 통일하기 위해 레이어별 책임과 라우트
 | `refactor/*` | 리팩토링          |
 | `docs/*`     | 문서 수정         |
 | `chore/*`    | 설정 및 기타 작업 |
-| `release/*`  | 배포 준비         |
+
+모든 변경은 이슈를 먼저 생성한 뒤 `develop`에서 작업 브랜치를 생성해 진행한다.
+`develop`과 `main`에는 직접 푸시하지 않는다.
+
+일반 작업과 배포 흐름은 다음과 같다.
+
+```txt
+이슈 생성 → 작업 브랜치 생성 → develop 대상 PR → develop → main 대상 배포 PR
+```
+
+배포를 위한 별도의 `release/*` 브랜치는 사용하지 않는다. 배포는 반드시 `develop`을
+`main`으로 병합하는 PR로 진행한다.
 
 ### Branch Naming
 
@@ -113,9 +124,44 @@ PRD 이후 구현 기준을 통일하기 위해 레이어별 책임과 라우트
 - `develop` 브랜치에서 새 브랜치를 생성한다.
 - 작업이 끝나면 `develop` 브랜치를 대상으로 PR을 생성한다.
 
+### Merge Strategy
+
+브랜치 관계에 따라 다음 병합 방식을 사용한다.
+
+| 병합 방향                    | 병합 방식               | 목적                                  |
+| ---------------------------- | ----------------------- | ------------------------------------- |
+| 작업 브랜치 → `develop`      | Squash merge            | 작업 단위를 하나의 커밋으로 정리      |
+| `main` 동기화 브랜치 → `develop` | Create a merge commit | `main`의 부모 이력 보존                |
+| `develop` → `main`           | Create a merge commit   | 배포 이력과 장기 브랜치의 조상 관계 보존 |
+
+`feat/*`, `fix/*`, `refactor/*`, `docs/*`, 일반 `chore/*` 같은 작업 브랜치는 `develop`에
+Squash merge한다. 단, `chore/main-develop-sync-*` 동기화 브랜치는 일반 `chore/*`의
+예외이며 Create a merge commit으로 병합한다. 또한 `main`과 `develop`은 장기 브랜치이므로
+두 브랜치 사이의 병합에는 Squash merge를 사용하지 않는다. 장기 브랜치를 Squash merge하면
+부모 이력이 사라져 이미 반영한 커밋이 다시 비교되거나 다음 배포 PR에서 충돌할 수 있다.
+
+`main`에 배포 또는 긴급 수정 커밋이 추가되어 `develop`에 없는 이력이 생겼다면 다음
+절차로 동기화한다.
+
+```txt
+이슈 생성
+→ develop에서 chore/main-develop-sync-<issue-number> 브랜치 생성
+→ 동기화 브랜치에 main 병합
+→ develop 대상 PR 생성
+→ Create a merge commit으로 병합
+```
+
+동기화 브랜치에는 `main`을 실제로 병합해 두 브랜치의 부모 이력이 포함되어야 한다.
+동기화 PR도 Squash merge하지 않는다.
+
 ## 5. PR Policy
 
 PR 본문은 `.github/PULL_REQUEST_TEMPLATE.md` 형식을 따른다.
+
+- 일반 작업 PR의 대상 브랜치는 `develop`이다.
+- 배포 PR은 `develop`에서 `main` 방향으로 생성한다.
+- `main`에서 `develop`으로 직접 PR을 생성하지 않고, 이슈와 동기화 브랜치를 거친다.
+- PR의 병합 방식은 [Merge Strategy](#merge-strategy)를 따른다.
 
 PR 제목은 다음 형식으로 작성한다.
 
@@ -146,6 +192,8 @@ PR 본문에는 다음 내용을 포함한다.
 ## 6. PR Checklist
 
 - 관련 이슈를 연결했는지 확인한다.
+- PR의 기준 브랜치와 대상 브랜치가 올바른지 확인한다.
+- 브랜치 관계에 맞는 병합 방식을 선택했는지 확인한다.
 - 구현 내용과 PR 설명이 일치하는지 확인한다.
 - UI를 변경했다면 스크린샷 또는 영상을 첨부한다.
 - 라이브러리를 추가했다면 추가 이유를 작성한다.
