@@ -5,7 +5,7 @@ type KakaoShareLink = {
   webUrl: string;
 };
 
-type KakaoShareFeedTemplate = {
+export type KakaoShareFeedTemplate = {
   objectType: 'feed';
   content: {
     title: string;

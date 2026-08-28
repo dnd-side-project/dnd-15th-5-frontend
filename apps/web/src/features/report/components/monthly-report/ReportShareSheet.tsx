@@ -8,6 +8,8 @@ import { Button } from '@/shared/ui/button';
 
 type ReportShareSheetProps = {
   isDownloading: boolean;
+  isKakaoShareReady: boolean;
+  isPreparingKakaoShare: boolean;
   isSharing: boolean;
   isOpen: boolean;
   onClose: () => void;
@@ -19,6 +21,8 @@ type ReportShareDialogProps = Omit<ReportShareSheetProps, 'isOpen'>;
 
 function ReportShareDialog({
   isDownloading,
+  isKakaoShareReady,
+  isPreparingKakaoShare,
   isSharing,
   onClose,
   onDownload,
@@ -63,7 +67,13 @@ function ReportShareDialog({
               <ImageDownloadIcon aria-hidden className="size-4" />
               이미지 저장
             </Button>
-            <Button isLoading={isSharing} onClick={onKakaoShare} size="medium" variant="secondary">
+            <Button
+              disabled={!isKakaoShareReady}
+              isLoading={isPreparingKakaoShare || isSharing}
+              onClick={onKakaoShare}
+              size="medium"
+              variant="secondary"
+            >
               카카오톡으로 공유하기
             </Button>
           </div>
@@ -76,6 +86,8 @@ function ReportShareDialog({
 /** 취향 카드의 이미지 저장과 외부 공유 동작을 제공하는 하단 패널입니다. */
 export default function ReportShareSheet({
   isDownloading,
+  isKakaoShareReady,
+  isPreparingKakaoShare,
   isSharing,
   isOpen,
   onClose,
@@ -87,6 +99,8 @@ export default function ReportShareSheet({
   return (
     <ReportShareDialog
       isDownloading={isDownloading}
+      isKakaoShareReady={isKakaoShareReady}
+      isPreparingKakaoShare={isPreparingKakaoShare}
       isSharing={isSharing}
       onClose={onClose}
       onDownload={onDownload}
