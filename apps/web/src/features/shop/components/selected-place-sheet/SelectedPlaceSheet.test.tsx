@@ -48,7 +48,7 @@ describe('SelectedPlaceSheet', () => {
     expect(screen.queryByRole('status', { name: '가게 요약 불러오는 중' })).not.toBeInTheDocument();
   });
 
-  it('장소 상세 응답으로 선택 장소 요약과 이동 링크를 표시한다', () => {
+  it('장소 상세 응답으로 선택 장소 요약과 상호작용 가능한 최근 스티커를 표시한다', () => {
     mockedUseGetPlaceDetail.mockReturnValue({
       data: {
         data: {
@@ -74,6 +74,7 @@ describe('SelectedPlaceSheet', () => {
     expect(screen.getByRole('heading', { name: '투썸플레이스' })).toBeInTheDocument();
     expect(screen.getByText('나의 단골')).toBeInTheDocument();
     expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '1번째 스티커 붙이기' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '상세보기' })).toHaveAttribute(
       'href',
       '/home/shop/101'

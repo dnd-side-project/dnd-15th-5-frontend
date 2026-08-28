@@ -1,11 +1,24 @@
+import { useState } from 'react';
+
 import { cn } from '@/shared/lib/cn';
 
+import '@/shared/styles/stickerStamp.css';
+import './StickerCollection.css';
+
 const STICKER_COLUMN_COUNT = 5;
+const STAMP_PLAYING_CLASS = 'sticker-collection__stamp--playing';
+
+type StampPlayback = {
+  index: number;
+  isPlaying: boolean;
+  sequence: number;
+};
 
 type StickerCollectionProps = {
   ariaLabel?: string;
   className?: string;
   maxItems?: number;
+  replayStampAnimationOnClick?: boolean;
   size?: 'default' | 'compact';
   stickers: readonly string[];
 };
@@ -15,9 +28,11 @@ export default function StickerCollection({
   ariaLabel = '스티커 목록',
   className,
   maxItems,
+  replayStampAnimationOnClick = false,
   size = 'default',
   stickers,
 }: StickerCollectionProps) {
+  const [stampPlayback, setStampPlayback] = useState<StampPlayback | null>(null);
   const visibleStickers = maxItems === undefined ? stickers : stickers.slice(0, maxItems);
   const slotCount = Math.max(
     STICKER_COLUMN_COUNT,
@@ -28,6 +43,13 @@ export default function StickerCollection({
     (_, index) => visibleStickers[index] ?? null
   );
   const isCompact = size === 'compact';
+  const playStampAnimation = (index: number) => {
+    setStampPlayback((current) => ({
+      index,
+      isPlaying: true,
+      sequence: (current?.sequence ?? 0) + 1,
+    }));
+  };
 
   return (
     <ul
@@ -44,11 +66,40 @@ export default function StickerCollection({
           className={cn('flex justify-self-center justify-center', isCompact ? 'w-13.75' : 'w-18')}
         >
           {stickerImage ? (
-            <img
-              src={stickerImage}
-              alt=""
-              className={cn('object-contain', isCompact ? 'size-13.75' : 'size-18')}
-            />
+            replayStampAnimationOnClick ? (
+              <button
+                type="button"
+                aria-label={`${index + 1}번째 스티커 붙이기`}
+                onClick={() => playStampAnimation(index)}
+                className="rounded-full outline-none hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 active:bg-neutral-200"
+              >
+                <img
+                  key={
+                    stampPlayback?.index === index
+                      ? `${index}-${stampPlayback.sequence}`
+                      : `${index}-idle`
+                  }
+                  src={stickerImage}
+                  alt=""
+                  className={cn(
+                    'sticker-collection__stamp object-contain',
+                    isCompact ? 'size-13.75' : 'size-18',
+                    stampPlayback?.index === index && stampPlayback.isPlaying && STAMP_PLAYING_CLASS
+                  )}
+                  onAnimationEnd={() =>
+                    setStampPlayback((current) =>
+                      current?.index === index ? { ...current, isPlaying: false } : current
+                    )
+                  }
+                />
+              </button>
+            ) : (
+              <img
+                src={stickerImage}
+                alt=""
+                className={cn('object-contain', isCompact ? 'size-13.75' : 'size-18')}
+              />
+            )
           ) : (
             <span
               aria-label="빈 스티커 자리"
