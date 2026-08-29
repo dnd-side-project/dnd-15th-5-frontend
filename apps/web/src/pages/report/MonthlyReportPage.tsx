@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useGetMyAccount } from '@/features/my-page';
 import {
   CategoryChart,
-  MonthlyReportEmptyState,
   MonthlyReportDetailsSkeleton,
   MonthlyReportHeader,
   MonthlyReportUnavailableCard,
@@ -131,7 +130,8 @@ export default function MonthlyReportPage() {
                 selectedMonth={selectedMonth}
               />
             )}
-            <MonthlyReportEmptyState selectedMonth={selectedMonth} />
+            {/* NOTE: 개발용 리포트 생성 버튼은 배포 전까지 노출하지 않는다. */}
+            {/* <MonthlyReportEmptyState selectedMonth={selectedMonth} /> */}
           </div>
         )}
       </div>
