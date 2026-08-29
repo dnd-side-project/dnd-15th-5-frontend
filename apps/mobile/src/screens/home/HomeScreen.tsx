@@ -119,7 +119,7 @@ export default function HomeScreen() {
       return false;
     }
 
-    if (/^https?:\/\//i.test(url)) {
+    if (/^(?:https?:\/\/|mailto:)/i.test(url)) {
       void Linking.openURL(url).catch(() => {
         // TODO: 네이티브 공통 오류 안내 UI가 생기면 외부 링크 실행 실패를 사용자에게 알린다.
       });
