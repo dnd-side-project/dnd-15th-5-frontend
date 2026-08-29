@@ -3,4 +3,12 @@
  * Do not edit manually.
  */
 
-export {};
+import type { GetNotificationsParams } from '@/features/notification/apis/dto';
+
+export const getGetNotificationsQueryKey = (params?: GetNotificationsParams) => {
+  return [`/notifications`, ...(params ? [params] : [])] as const;
+};
+
+export const getHasUnreadQueryKey = () => {
+  return [`/notifications/unread-exists`] as const;
+};

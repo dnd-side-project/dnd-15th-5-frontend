@@ -11,6 +11,7 @@ import {
   useOpenVisitedPlaceOnMap,
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
+import { useHasUnreadNotificationQuery } from '@/features/notification';
 import { FrequentShopSummary, SpendingHistory } from '@/features/report';
 import { SelectedPlaceSheet } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
@@ -21,6 +22,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { hasUnreadNotification } = useHasUnreadNotificationQuery();
   const { stickers } = useVisitedPlaceStickersQuery();
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
   const createdPlace =
@@ -44,7 +46,7 @@ export default function HomePage() {
   return (
     <div className="mobile-frame fixed inset-0 z-0 flex flex-col">
       <GoogleMapView />
-      <HomeMapOverlay />
+      <HomeMapOverlay hasUnreadNotification={hasUnreadNotification} />
       <HomeBottomSheet
         renderFrequentShops={(headerContent) => (
           <FrequentShopSummary

@@ -8,6 +8,7 @@ import {
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
 import { TEST_MAP_STICKERS } from '@/features/map/testFixtures';
+import { useHasUnreadNotificationQuery } from '@/features/notification';
 import { useToast } from '@/shared/ui/toast';
 
 import HomePage from './HomePage';
@@ -25,6 +26,9 @@ jest.mock('@/features/map', () => ({
   }) => renderFrequentShops(null),
 }));
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
+jest.mock('@/features/notification', () => ({
+  useHasUnreadNotificationQuery: jest.fn(),
+}));
 jest.mock('@/features/report', () => ({
   FrequentShopSummary: ({ onShopSelect }: { onShopSelect?: (placeId: number) => void }) => (
     <button type="button" onClick={() => onShopSelect?.(101)}>
@@ -39,6 +43,7 @@ jest.mock('@/features/shop', () => ({
 jest.mock('@/shared/ui/toast', () => ({ useToast: jest.fn() }));
 
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
+const mockedUseHasUnreadNotificationQuery = jest.mocked(useHasUnreadNotificationQuery);
 const mockedUseToast = jest.mocked(useToast);
 const mockShowToast = jest.fn().mockReturnValue('toast-1');
 
@@ -69,6 +74,9 @@ describe('<HomePage />', () => {
       stickers: TEST_MAP_STICKERS,
       refetchStickers: jest.fn().mockResolvedValue(TEST_MAP_STICKERS),
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+    mockedUseHasUnreadNotificationQuery.mockReturnValue({
+      hasUnreadNotification: false,
+    } as ReturnType<typeof useHasUnreadNotificationQuery>);
   });
 
   it('방금 등록한 장소가 첫 방문이면 지도에 포커스하고 첫 방문 안내 Toast를 바텀시트 위에 띄운다', async () => {

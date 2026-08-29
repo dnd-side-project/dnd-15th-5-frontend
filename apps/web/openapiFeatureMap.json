@@ -24,7 +24,7 @@
       "operationIds": ["getMyAccount", "updateMyAccount", "withdrawMyAccount"]
     },
     "notification": {
-      "tags": ["Notification"],
+      "tags": ["notification-controller", "Account"],
       "operationIds": [
         "unregisterDeviceToken",
         "registerDeviceToken",
@@ -39,13 +39,13 @@
     "report": {
       "tags": ["Consumption", "Report"],
       "operationIds": [
+        "aggregateMonthlyReport",
         "getMonthlyReport",
         "getCurrentStatus",
         "getConsumptions",
         "getFrequentPlaces",
         "issueShareLink",
-        "getSharedPersonaCard",
-        "aggregateMonthlyReport"
+        "getSharedPersonaCard"
       ]
     },
     "shop": {
