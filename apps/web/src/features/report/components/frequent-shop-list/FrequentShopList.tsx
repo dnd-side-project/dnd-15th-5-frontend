@@ -63,8 +63,8 @@ export default function FrequentShopList({ headerContent }: FrequentShopListProp
   };
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="sticky top-0 z-sticky-header bg-neutral-00 pt-4">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <header className="z-sticky-header shrink-0 bg-neutral-00 pt-4">
         {headerContent}
         <div className="relative -mx-4 mt-4 h-15.5 border-b border-neutral-200 bg-neutral-00">
           <div className="scrollbar-hidden flex h-full items-center gap-1.5 overflow-x-auto px-4 pr-20">
@@ -93,73 +93,75 @@ export default function FrequentShopList({ headerContent }: FrequentShopListProp
         </div>
       </header>
 
-      <h1 className="sr-only">단골 리스트</h1>
-      <div className="flex flex-1 flex-col">
-        {frequentPlacesQuery.isPending && <FrequentShopListSkeleton />}
+      <div className="min-h-0 flex flex-1 flex-col overflow-y-auto">
+        <h1 className="sr-only">단골 리스트</h1>
+        <div className="flex flex-1 flex-col">
+          {frequentPlacesQuery.isPending && <FrequentShopListSkeleton />}
 
-        {!frequentPlacesQuery.isPending &&
-          frequentPlacesQuery.isError &&
-          frequentPlaces.length === 0 && (
-            <StateView
-              variant="error"
-              title="단골 리스트를 불러오지 못했어요"
-              description="잠시 후 다시 시도해주세요."
-              actionLabel="다시 불러오기"
-              headingAs="h2"
-              onAction={() => void frequentPlacesQuery.refetch()}
-              className="my-auto"
-            />
+          {!frequentPlacesQuery.isPending &&
+            frequentPlacesQuery.isError &&
+            frequentPlaces.length === 0 && (
+              <StateView
+                variant="error"
+                title="단골 리스트를 불러오지 못했어요"
+                description="잠시 후 다시 시도해주세요."
+                actionLabel="다시 불러오기"
+                headingAs="h2"
+                onAction={() => void frequentPlacesQuery.refetch()}
+                className="my-auto"
+              />
+            )}
+
+          {!frequentPlacesQuery.isPending && frequentPlaces.length > 0 && (
+            <>
+              <ol className="-mx-4 flex flex-col gap-6 pt-4 pb-page-bottom">
+                {frequentPlaces.map((place, index) => (
+                  <FrequentShopItem
+                    key={place.placeId ?? `${place.placeName ?? 'place'}-${index}`}
+                    category={place.category}
+                    dongname={place.dongname}
+                    placeName={place.placeName}
+                    rank={place.rank ?? index + 1}
+                    thumbnailSrc={place.thumbnailUrl}
+                    visitCount={place.visitCount}
+                  />
+                ))}
+              </ol>
+
+              <div ref={loadMoreRef} aria-hidden="true" className="h-px" />
+              {isFetchingNextPage && (
+                <div
+                  role="status"
+                  aria-label="단골 리스트 더 불러오는 중"
+                  className="flex justify-center py-5"
+                >
+                  <Spinner className="text-primary-500" />
+                </div>
+              )}
+              {isFetchNextPageError && (
+                <div className="flex justify-center py-5">
+                  <Button variant="primary" size="small" onClick={() => void fetchNextPage()}>
+                    다시 불러오기
+                  </Button>
+                </div>
+              )}
+            </>
           )}
 
-        {!frequentPlacesQuery.isPending && frequentPlaces.length > 0 && (
-          <>
-            <ol className="-mx-4 flex flex-col gap-6 pt-4 pb-page-bottom">
-              {frequentPlaces.map((place, index) => (
-                <FrequentShopItem
-                  key={place.placeId ?? `${place.placeName ?? 'place'}-${index}`}
-                  category={place.category}
-                  dongname={place.dongname}
-                  placeName={place.placeName}
-                  rank={place.rank ?? index + 1}
-                  thumbnailSrc={place.thumbnailUrl}
-                  visitCount={place.visitCount}
-                />
-              ))}
-            </ol>
-
-            <div ref={loadMoreRef} aria-hidden="true" className="h-px" />
-            {isFetchingNextPage && (
-              <div
-                role="status"
-                aria-label="단골 리스트 더 불러오는 중"
-                className="flex justify-center py-5"
-              >
-                <Spinner className="text-primary-500" />
-              </div>
+          {!frequentPlacesQuery.isPending &&
+            !frequentPlacesQuery.isError &&
+            frequentPlaces.length === 0 && (
+              <StateView
+                variant="empty"
+                title="아직 기록이 없어요"
+                description={'소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'}
+                actionLabel="소비 기록 작성하기"
+                headingAs="h2"
+                to={ROUTE_PATHS.record}
+                className="my-auto"
+              />
             )}
-            {isFetchNextPageError && (
-              <div className="flex justify-center py-5">
-                <Button variant="primary" size="small" onClick={() => void fetchNextPage()}>
-                  다시 불러오기
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-
-        {!frequentPlacesQuery.isPending &&
-          !frequentPlacesQuery.isError &&
-          frequentPlaces.length === 0 && (
-            <StateView
-              variant="empty"
-              title="아직 기록이 없어요"
-              description={'소비 기록을 작성해보세요.\n빈 공간이 채워질 거예요.'}
-              actionLabel="소비 기록 작성하기"
-              headingAs="h2"
-              to={ROUTE_PATHS.record}
-              className="my-auto"
-            />
-          )}
+        </div>
       </div>
 
       {isPeriodFilterOpen && (
