@@ -57,8 +57,8 @@ export default function MonthlyStickerRecordList({ headerContent }: MonthlyStick
   };
 
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="sticky top-0 z-sticky-header bg-neutral-00 pt-4 pb-4">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <header className="z-sticky-header shrink-0 bg-neutral-00 pt-4 pb-4">
         {headerContent}
         <MonthSelector
           className="mt-5"
@@ -74,46 +74,48 @@ export default function MonthlyStickerRecordList({ headerContent }: MonthlyStick
         />
       </header>
 
-      {stickerRecordsQuery.isPending ? (
-        <MonthlyStickerRecordListSkeleton />
-      ) : stickerRecordsQuery.isError ? (
-        <StateView
-          actionLabel="다시 시도하기"
-          className="my-auto"
-          description={'잠시 후에\n다시 시도해주세요.'}
-          headingAs="h2"
-          onAction={() => void stickerRecordsQuery.refetch()}
-          title="기록을 불러오지 못했어요"
-          variant="error"
-        />
-      ) : recordGroups.length > 0 ? (
-        <div className="flex flex-col gap-6.75 pb-8">
-          {recordGroups.map(({ acquiredDate, stickerImages }) => {
-            const acquiredDateLabel = formatAcquiredDateLabel(acquiredDate);
+      <div className="min-h-0 flex flex-1 flex-col overflow-y-auto">
+        {stickerRecordsQuery.isPending ? (
+          <MonthlyStickerRecordListSkeleton />
+        ) : stickerRecordsQuery.isError ? (
+          <StateView
+            actionLabel="다시 시도하기"
+            className="my-auto"
+            description={'잠시 후에\n다시 시도해주세요.'}
+            headingAs="h2"
+            onAction={() => void stickerRecordsQuery.refetch()}
+            title="기록을 불러오지 못했어요"
+            variant="error"
+          />
+        ) : recordGroups.length > 0 ? (
+          <div className="flex flex-col gap-6.75 pb-8">
+            {recordGroups.map(({ acquiredDate, stickerImages }) => {
+              const acquiredDateLabel = formatAcquiredDateLabel(acquiredDate);
 
-            return (
-              <section
-                key={acquiredDate}
-                aria-labelledby={`monthly-sticker-record-${acquiredDate}`}
-              >
-                <h2
-                  id={`monthly-sticker-record-${acquiredDate}`}
-                  className="mb-2 text-body-01-semibold text-neutral-900"
+              return (
+                <section
+                  key={acquiredDate}
+                  aria-labelledby={`monthly-sticker-record-${acquiredDate}`}
                 >
-                  {acquiredDateLabel}
-                </h2>
-                <StickerCollection
-                  ariaLabel={`${acquiredDateLabel}에 받은 스티커`}
-                  size="compact"
-                  stickers={stickerImages}
-                />
-              </section>
-            );
-          })}
-        </div>
-      ) : (
-        <MonthlyRecordEmptyState isPastMonth={isPastMonth} selectedMonth={selectedMonth} />
-      )}
+                  <h2
+                    id={`monthly-sticker-record-${acquiredDate}`}
+                    className="mb-2 text-body-01-semibold text-neutral-900"
+                  >
+                    {acquiredDateLabel}
+                  </h2>
+                  <StickerCollection
+                    ariaLabel={`${acquiredDateLabel}에 받은 스티커`}
+                    size="compact"
+                    stickers={stickerImages}
+                  />
+                </section>
+              );
+            })}
+          </div>
+        ) : (
+          <MonthlyRecordEmptyState isPastMonth={isPastMonth} selectedMonth={selectedMonth} />
+        )}
+      </div>
 
       {isMonthPickerOpen && (
         <MonthPickerSheet

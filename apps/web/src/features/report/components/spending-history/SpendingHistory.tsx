@@ -26,6 +26,7 @@ import SpendingRecordList from './SpendingRecordList';
 import type { ReactNode } from 'react';
 
 type SpendingHistoryProps = {
+  containedScroll?: boolean;
   contentBottomPaddingClassName?: string;
   headerDescription?: string;
   headerContent?: ReactNode;
@@ -37,6 +38,8 @@ type MonthSelection = {
   dateValue?: string;
   month: YearMonth;
 };
+
+const TARGET_DATE_VIEWPORT_POSITION_RATIO = 0.45;
 
 const getSupportedMonthFromDate = (
   dateValue: string | undefined,
@@ -53,6 +56,7 @@ const getSupportedMonthFromDate = (
  * 선택한 월의 소비내역을 날짜별로 보여주고 월 이동과 월 선택 시트를 제공합니다.
  *
  * @param props - 소비내역 화면 속성입니다.
+ * @param props.containedScroll - 헤더는 고정하고 그 아래 콘텐츠만 독립적으로 스크롤할지 여부입니다.
  * @param props.contentBottomPaddingClassName - 소비내역 콘텐츠의 하단 여백 클래스입니다.
  * @param props.headerDescription - 월 선택 영역 대신 표시할 상단 안내 문구입니다.
  * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
@@ -60,6 +64,7 @@ const getSupportedMonthFromDate = (
  * @param props.scrollToDate - 진입 후 스크롤할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
  */
 export default function SpendingHistory({
+  containedScroll = false,
   contentBottomPaddingClassName = 'pb-8',
   headerDescription,
   headerContent,
@@ -71,6 +76,7 @@ export default function SpendingHistory({
   const initialSelectedMonth =
     getSupportedMonthFromDate(scrollToDate, currentMonth) ?? currentMonth;
   const hasScrolledToDateRef = useRef(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [monthSelection, setMonthSelection] = useState<MonthSelection>(() => ({
     dateValue: scrollToDate,
     month: initialSelectedMonth,
@@ -129,12 +135,30 @@ export default function SpendingHistory({
   useEffect(() => {
     if (!targetDate || hasScrolledToDateRef.current) return;
 
-    const targetSection = document.getElementById(`date-${targetDate}`);
-    if (!targetSection) return;
+    const targetHeading = document.getElementById(`date-${targetDate}-heading`);
+    if (!targetHeading) return;
 
-    targetSection.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    const scrollContainer = scrollContainerRef.current;
+
+    if (containedScroll && scrollContainer) {
+      const targetTop =
+        targetHeading.getBoundingClientRect().top -
+        scrollContainer.getBoundingClientRect().top +
+        scrollContainer.scrollTop -
+        scrollContainer.clientHeight * TARGET_DATE_VIEWPORT_POSITION_RATIO;
+
+      scrollContainer.scrollTo({ behavior: 'smooth', top: Math.max(0, targetTop) });
+    } else {
+      const targetTop =
+        targetHeading.getBoundingClientRect().top +
+        window.scrollY -
+        window.innerHeight * TARGET_DATE_VIEWPORT_POSITION_RATIO;
+
+      window.scrollTo({ behavior: 'smooth', top: Math.max(0, targetTop) });
+    }
+
     hasScrolledToDateRef.current = true;
-  }, [recordGroups, targetDate]);
+  }, [containedScroll, recordGroups, targetDate]);
 
   useEffect(() => {
     if (shouldFetchMoreForDate && !isFetchingNextPage && !consumptionsQuery.isFetchNextPageError) {
@@ -157,10 +181,11 @@ export default function SpendingHistory({
   };
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className={cn('flex flex-1 flex-col', containedScroll && 'min-h-0 overflow-hidden')}>
       <header
         className={cn(
-          'sticky top-0 z-sticky-header bg-neutral-00',
+          'z-sticky-header bg-neutral-00',
+          containedScroll ? 'shrink-0' : 'sticky top-0',
           !headerDescription && 'pb-5',
           headerContent ? 'pt-1' : 'pt-2'
         )}
@@ -181,56 +206,65 @@ export default function SpendingHistory({
         )}
       </header>
 
-      {headerDescription && (
-        <>
-          <h1 className="sr-only">{selectedMonth.month}월 소비 내역</h1>
-          {!isEmpty && (
-            <p
-              className={cn(
-                'text-center text-body-02-medium text-neutral-500 mb-2',
-                headerContent && headerContentGapClassName
-              )}
-            >
-              {headerDescription}
-            </p>
+      <div
+        ref={containedScroll ? scrollContainerRef : undefined}
+        className={cn(
+          containedScroll ? 'min-h-0 flex flex-1 flex-col overflow-y-auto' : 'contents'
+        )}
+      >
+        {headerDescription && (
+          <>
+            <h1 className="sr-only">{selectedMonth.month}월 소비 내역</h1>
+            {!isEmpty && (
+              <p
+                className={cn(
+                  'text-center text-body-02-medium text-neutral-500 mb-2',
+                  headerContent && headerContentGapClassName
+                )}
+              >
+                {headerDescription}
+              </p>
+            )}
+          </>
+        )}
+
+        <div className={cn('flex flex-1 flex-col', contentBottomPaddingClassName)}>
+          {consumptionsQuery.isPending && <SpendingHistorySkeleton />}
+
+          {!consumptionsQuery.isPending &&
+            consumptionsQuery.isError &&
+            recordGroups.length === 0 && (
+              <StateView
+                variant="error"
+                title="소비내역을 불러오지 못했어요"
+                description={'잠시 후 다시 시도해주세요.'}
+                actionLabel="다시 불러오기"
+                headingAs="h2"
+                onAction={() =>
+                  void (consumptionsQuery.isFetchNextPageError
+                    ? fetchNextPage()
+                    : consumptionsQuery.refetch())
+                }
+                className="my-auto"
+              />
+            )}
+
+          {isEmpty && (
+            <MonthlyRecordEmptyState isPastMonth={isPastMonth} selectedMonth={selectedMonth} />
           )}
-        </>
-      )}
 
-      <div className={cn('flex flex-1 flex-col', contentBottomPaddingClassName)}>
-        {consumptionsQuery.isPending && <SpendingHistorySkeleton />}
-
-        {!consumptionsQuery.isPending && consumptionsQuery.isError && recordGroups.length === 0 && (
-          <StateView
-            variant="error"
-            title="소비내역을 불러오지 못했어요"
-            description={'잠시 후 다시 시도해주세요.'}
-            actionLabel="다시 불러오기"
-            headingAs="h2"
-            onAction={() =>
-              void (consumptionsQuery.isFetchNextPageError
-                ? fetchNextPage()
-                : consumptionsQuery.refetch())
-            }
-            className="my-auto"
-          />
-        )}
-
-        {isEmpty && (
-          <MonthlyRecordEmptyState isPastMonth={isPastMonth} selectedMonth={selectedMonth} />
-        )}
-
-        {!consumptionsQuery.isPending && recordGroups.length > 0 && (
-          <SpendingRecordList
-            groups={recordGroups}
-            hasNextPage={!shouldFetchMoreForDate && consumptionsQuery.hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-            isLoadMoreError={consumptionsQuery.isFetchNextPageError}
-            onLoadMore={() => void fetchNextPage()}
-            onRetry={() => void fetchNextPage()}
-            targetDate={targetDate}
-          />
-        )}
+          {!consumptionsQuery.isPending && recordGroups.length > 0 && (
+            <SpendingRecordList
+              groups={recordGroups}
+              hasNextPage={!shouldFetchMoreForDate && consumptionsQuery.hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              isLoadMoreError={consumptionsQuery.isFetchNextPageError}
+              onLoadMore={() => void fetchNextPage()}
+              onRetry={() => void fetchNextPage()}
+              targetDate={targetDate}
+            />
+          )}
+        </div>
       </div>
 
       {!headerDescription && isMonthPickerOpen && (

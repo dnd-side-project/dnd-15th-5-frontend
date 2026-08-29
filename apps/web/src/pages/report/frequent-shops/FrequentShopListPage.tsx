@@ -7,7 +7,7 @@ export default function FrequentShopListPage() {
   const navigate = useNavigate();
 
   return (
-    <main className="min-h-screen-safe-bottom flex flex-col">
+    <main className="mobile-frame pb-safe-bottom fixed inset-0 flex flex-col overflow-hidden bg-neutral-00 px-4">
       <FrequentShopList
         headerContent={<BackButton onClick={() => navigate(-1)} className="mt-0" />}
       />
