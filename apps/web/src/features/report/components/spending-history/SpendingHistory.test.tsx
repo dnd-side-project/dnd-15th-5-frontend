@@ -20,6 +20,7 @@ jest.mock('@/shared/assets/images/state', () => ({
 const mockedUseConsumptionsInfiniteQuery = jest.mocked(useConsumptionsInfiniteQuery);
 const fetchNextPage = jest.fn();
 const refetch = jest.fn();
+const scrollTo = jest.fn();
 
 const consumptions = [
   ...Array.from({ length: 3 }, (_, index) => ({
@@ -84,6 +85,8 @@ describe('SpendingHistory', () => {
   beforeEach(() => {
     fetchNextPage.mockReset();
     refetch.mockReset();
+    scrollTo.mockReset();
+    Object.defineProperty(window, 'scrollTo', { configurable: true, value: scrollTo });
     mockUseFirstAvailableYearMonthQuery.mockReturnValue({ data: { year: 2025, month: 11 } });
     mockedUseConsumptionsInfiniteQuery.mockImplementation(createQueryResult);
   });
@@ -114,8 +117,27 @@ describe('SpendingHistory', () => {
       </MemoryRouter>
     );
 
-    expect(container.firstElementChild?.lastElementChild).toHaveClass('pb-28');
-    expect(container.firstElementChild?.lastElementChild).not.toHaveClass('pb-8');
+    const content = container.querySelector('.pb-28');
+
+    expect(content).toBeInTheDocument();
+    expect(content).not.toHaveClass('pb-8');
+  });
+
+  it('상세 화면에서는 헤더를 고정하고 아래 콘텐츠만 스크롤한다', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <SpendingHistory containedScroll />
+      </MemoryRouter>
+    );
+
+    const root = container.firstElementChild;
+    const header = root?.querySelector('header');
+    const scrollRegion = header?.nextElementSibling;
+
+    expect(root).toHaveClass('min-h-0', 'overflow-hidden');
+    expect(header).toHaveClass('shrink-0');
+    expect(header).not.toHaveClass('sticky');
+    expect(scrollRegion).toHaveClass('min-h-0', 'flex-1', 'overflow-y-auto');
   });
 
   it('상단 안내 문구를 전달하면 월 선택 대신 안내를 보여준다', () => {
@@ -217,10 +239,12 @@ describe('SpendingHistory', () => {
   });
 
   it('이동할 날짜가 있으면 전체 기록을 유지하고 해당 날짜로 스크롤한다', () => {
-    const scrollIntoView = jest.fn();
-    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+    jest.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+      top: 500,
+    } as DOMRect);
+    Object.defineProperty(window, 'innerHeight', {
       configurable: true,
-      value: scrollIntoView,
+      value: 800,
     });
 
     renderSpendingHistory('2026-08-21');
@@ -229,7 +253,7 @@ describe('SpendingHistory', () => {
     expect(screen.getByRole('heading', { name: '21일 금요일' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '22일 토요일' })).toBeInTheDocument();
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(7);
-    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+    expect(scrollTo).toHaveBeenCalledWith({ behavior: 'smooth', top: 140 });
 
     const targetSection = screen.getByRole('heading', { name: '21일 금요일' }).closest('section');
     const otherSection = screen.getByRole('heading', { name: '22일 토요일' }).closest('section');
