@@ -228,6 +228,7 @@ export default function SpendingHistory({
             isLoadMoreError={consumptionsQuery.isFetchNextPageError}
             onLoadMore={() => void fetchNextPage()}
             onRetry={() => void fetchNextPage()}
+            targetDate={targetDate}
           />
         )}
       </div>

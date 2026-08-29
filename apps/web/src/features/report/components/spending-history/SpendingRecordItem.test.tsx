@@ -51,4 +51,19 @@ describe('SpendingRecordItem', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
   });
+
+  it('가게 식별자가 null이면 링크 없이 기록만 표시한다', () => {
+    render(
+      <MemoryRouter>
+        <ul>
+          <SpendingRecordItem
+            consumption={{ ...consumption, placeId: null as unknown as number }}
+          />
+        </ul>
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
+  });
 });

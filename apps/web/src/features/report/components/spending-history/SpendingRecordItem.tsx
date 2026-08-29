@@ -31,7 +31,7 @@ export default function SpendingRecordItem({ consumption }: SpendingRecordItemPr
     </>
   );
 
-  if (consumption.placeId === undefined) {
+  if (consumption.placeId === undefined || consumption.placeId === null) {
     return <li className="flex items-center gap-3">{content}</li>;
   }
 

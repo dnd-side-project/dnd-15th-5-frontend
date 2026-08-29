@@ -230,6 +230,14 @@ describe('SpendingHistory', () => {
     expect(screen.getByRole('heading', { name: '22일 토요일' })).toBeInTheDocument();
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(7);
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+
+    const targetSection = screen.getByRole('heading', { name: '21일 금요일' }).closest('section');
+    const otherSection = screen.getByRole('heading', { name: '22일 토요일' }).closest('section');
+
+    expect(targetSection).toHaveAttribute('aria-current', 'date');
+    expect(targetSection).toHaveClass('bg-primary-50', 'p-3');
+    expect(otherSection).not.toHaveAttribute('aria-current');
+    expect(otherSection).not.toHaveClass('bg-primary-50', 'p-3');
   });
 
   it('날짜 링크로 진입한 뒤 다른 월을 선택하면 다음 페이지를 불러온다', async () => {
