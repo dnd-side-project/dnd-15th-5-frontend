@@ -21,7 +21,10 @@ export function Skeleton<Element extends ElementType = 'div'>({
     <Component
       {...props}
       aria-hidden="true"
-      className={cn('animate-pulse rounded-08 bg-neutral-200', className)}
+      className={cn(
+        'animate-pulse rounded-08 bg-neutral-200 motion-reduce:animate-none',
+        className
+      )}
     />
   );
 }

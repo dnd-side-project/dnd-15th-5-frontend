@@ -1,9 +1,13 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import { usePlaceVisitsInfiniteQuery } from '@/features/shop/apis/hooks/usePlaceVisitsInfiniteQuery';
 import { useGetPlaceDetail } from '@/features/shop/apis/queries';
+import {
+  getRecordCategoryFromLocationState,
+  getRecordShopFromLocationState,
+} from '@/shared/utils/recordNavigation';
 
 import ShopDetail from './ShopDetail';
 
@@ -17,6 +21,22 @@ jest.mock('@/features/shop/apis/hooks/usePlaceVisitsInfiniteQuery', () => ({
 
 const mockedUseGetPlaceDetail = jest.mocked(useGetPlaceDetail);
 const mockedUsePlaceVisitsInfiniteQuery = jest.mocked(usePlaceVisitsInfiniteQuery);
+const recordShop = {
+  id: 'ChIJ-twosome-101',
+  name: '지도 마커의 가게명',
+  address: '',
+  photoUrl: null,
+  latitude: 37.506481,
+  longitude: 127.024551,
+};
+
+function RecordLocationProbe() {
+  const location = useLocation();
+  const shop = getRecordShopFromLocationState(location.state);
+  const category = getRecordCategoryFromLocationState(location.state);
+
+  return <p>{shop ? `${shop.id}|${shop.name}|${shop.address}|${category}` : '선택 가게 없음'}</p>;
+}
 
 describe('ShopDetail', () => {
   beforeEach(() => {
@@ -116,8 +136,21 @@ describe('ShopDetail', () => {
     const user = userEvent.setup();
     const onViewOnMap = jest.fn();
     render(
-      <MemoryRouter>
-        <ShopDetail placeId={101} headerContent={null} onViewOnMap={onViewOnMap} />
+      <MemoryRouter initialEntries={['/home/shop/101']}>
+        <Routes>
+          <Route
+            path="/home/shop/:shopId"
+            element={
+              <ShopDetail
+                placeId={101}
+                recordShop={recordShop}
+                headerContent={null}
+                onViewOnMap={onViewOnMap}
+              />
+            }
+          />
+          <Route path="/record" element={<RecordLocationProbe />} />
+        </Routes>
       </MemoryRouter>
     );
 
@@ -125,6 +158,33 @@ describe('ShopDetail', () => {
     await user.click(screen.getByRole('button', { name: '지도에서 가게 보기' }));
 
     expect(onViewOnMap).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('link', { name: '소비 기록 추가' }));
+    expect(
+      screen.getByText('ChIJ-twosome-101|투썸플레이스|서울특별시 강남구 봉은사로 125 1층|카페')
+    ).toBeInTheDocument();
+  });
+
+  it('불러오는 동안 뒤로 가기 버튼과 함께 레이아웃을 닮은 스켈레톤을 보여준다', () => {
+    mockedUseGetPlaceDetail.mockReturnValue({
+      data: undefined,
+      isPending: true,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useGetPlaceDetail>);
+
+    render(
+      <MemoryRouter>
+        <ShopDetail
+          placeId={101}
+          headerContent={<button type="button">뒤로 가기</button>}
+          onViewOnMap={jest.fn()}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('status', { name: '가게 상세 불러오는 중' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '뒤로 가기' })).toBeInTheDocument();
   });
 
   it('최근 5개 대신 summary에 집계된 스티커를 개수만큼 모두 표시한다', () => {

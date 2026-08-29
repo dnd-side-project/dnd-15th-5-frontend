@@ -1,16 +1,19 @@
 import {
   createMonthDate,
+  formatVisitDateTimeConfirmLabel,
   getCalendarDays,
-  getVisitPeriodLabel,
+  getCalendarWeekCount,
   isSameDate,
   isSameOrAfterMonth,
   VISIT_PERIODS,
   WEEKDAY_LABELS,
 } from '@chapchap/shared/record';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Modal, Pressable, Text, View } from 'react-native';
+import { Animated, Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useReducedMotion } from '@/features/record/hooks/useReducedMotion';
+import { getPressedStyle } from '@/features/record/utils/getPressedStyle';
 import { ChevronLeftIcon } from '@/shared/assets/icons';
 
 import type { VisitDateTimeValue } from '@chapchap/shared/record';
@@ -18,9 +21,9 @@ import type { GestureResponderEvent } from 'react-native';
 
 const SUNDAY_INDEX = 0;
 const SATURDAY_INDEX = 6;
-const SHEET_OFFSET = 640;
 const TRANSITION_DURATION = 300;
 const DRAG_CLOSE_DISTANCE = 80;
+const FULL_CALENDAR_WEEK_COUNT = 6;
 
 type VisitDateTimePickerProps = {
   value: VisitDateTimeValue;
@@ -61,8 +64,10 @@ export default function VisitDateTimePicker({
   onConfirm,
 }: VisitDateTimePickerProps) {
   const insets = useSafeAreaInsets();
+  const prefersReducedMotion = useReducedMotion();
+  const { height: sheetOffset } = useWindowDimensions();
   const [backdropOpacity] = useState(() => new Animated.Value(0));
-  const [sheetTranslateY] = useState(() => new Animated.Value(SHEET_OFFSET));
+  const [sheetTranslateY] = useState(() => new Animated.Value(sheetOffset));
   const [isClosing, setIsClosing] = useState(false);
   const dragStartYRef = useRef(0);
   const dragDistanceRef = useRef(0);
@@ -80,6 +85,12 @@ export default function VisitDateTimePicker({
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const isNextMonthDisabled = isSameOrAfterMonth(visibleMonth, today);
   const calendarDays = getCalendarDays(visibleMonth);
+  const missingCalendarWeekCount = Math.max(
+    FULL_CALENDAR_WEEK_COUNT - getCalendarWeekCount(visibleMonth),
+    0
+  );
+  const calendarHeightSpacerClassName =
+    missingCalendarWeekCount === 2 ? 'h-20' : missingCalendarWeekCount === 1 ? 'h-10' : null;
   const calendarWeeks = Array.from(
     { length: calendarDays.length / WEEKDAY_LABELS.length },
     (_, weekIndex) => {
@@ -88,24 +99,30 @@ export default function VisitDateTimePicker({
       return calendarDays.slice(startIndex, startIndex + WEEKDAY_LABELS.length);
     }
   );
-  const confirmLabel = `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 ${getVisitPeriodLabel(
-    selectedPeriod
-  )}`;
+  const confirmLabel = formatVisitDateTimeConfirmLabel({
+    date: selectedDate,
+    period: selectedPeriod,
+  });
+  const transitionDuration = prefersReducedMotion === false ? TRANSITION_DURATION : 0;
 
   useEffect(() => {
+    if (prefersReducedMotion === null) {
+      return;
+    }
+
     Animated.parallel([
       Animated.timing(backdropOpacity, {
         toValue: 1,
-        duration: TRANSITION_DURATION,
-        useNativeDriver: false,
+        duration: transitionDuration,
+        useNativeDriver: true,
       }),
       Animated.timing(sheetTranslateY, {
         toValue: 0,
-        duration: TRANSITION_DURATION,
-        useNativeDriver: false,
+        duration: transitionDuration,
+        useNativeDriver: true,
       }),
     ]).start();
-  }, [backdropOpacity, sheetTranslateY]);
+  }, [backdropOpacity, prefersReducedMotion, sheetTranslateY, transitionDuration]);
 
   const closeBottomSheet = useCallback(
     (afterClose?: () => void) => {
@@ -114,16 +131,17 @@ export default function VisitDateTimePicker({
       }
 
       setIsClosing(true);
+
       Animated.parallel([
         Animated.timing(backdropOpacity, {
           toValue: 0,
-          duration: TRANSITION_DURATION,
-          useNativeDriver: false,
+          duration: transitionDuration,
+          useNativeDriver: true,
         }),
         Animated.timing(sheetTranslateY, {
-          toValue: SHEET_OFFSET,
-          duration: TRANSITION_DURATION,
-          useNativeDriver: false,
+          toValue: sheetOffset,
+          duration: transitionDuration,
+          useNativeDriver: true,
         }),
       ]).start(() => {
         if (afterClose) {
@@ -133,18 +151,23 @@ export default function VisitDateTimePicker({
         onClose();
       });
     },
-    [backdropOpacity, isClosing, onClose, sheetTranslateY]
+    [backdropOpacity, isClosing, onClose, sheetOffset, sheetTranslateY, transitionDuration]
   );
 
   const resetSheetPosition = useCallback(() => {
+    if (prefersReducedMotion !== false) {
+      sheetTranslateY.setValue(0);
+      return;
+    }
+
     Animated.spring(sheetTranslateY, {
       toValue: 0,
       damping: 20,
       stiffness: 240,
       mass: 0.8,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }).start();
-  }, [sheetTranslateY]);
+  }, [prefersReducedMotion, sheetTranslateY]);
 
   const handleDragStart = useCallback(
     (event: GestureResponderEvent) => {
@@ -309,6 +332,7 @@ export default function VisitDateTimePicker({
                           accessibilityRole="button"
                           accessibilityLabel={`${year}년 ${month + 1}월 ${day}일`}
                           accessibilityState={{ selected, disabled: isFutureDate }}
+                          style={getPressedStyle}
                           className={`h-9 w-9 items-center justify-center rounded-32 ${
                             selected ? 'bg-primary-500' : 'bg-neutral-00'
                           }`}
@@ -341,6 +365,7 @@ export default function VisitDateTimePicker({
                     accessibilityRole="button"
                     accessibilityLabel={period.label}
                     accessibilityState={{ selected }}
+                    style={getPressedStyle}
                     className={`min-w-0 flex-1 items-center justify-center rounded-16 border py-2 ${
                       selected
                         ? 'border-primary-500 bg-primary-500'
@@ -365,6 +390,10 @@ export default function VisitDateTimePicker({
                 );
               })}
             </View>
+
+            {calendarHeightSpacerClassName && (
+              <View testID="calendar-height-spacer" className={calendarHeightSpacerClassName} />
+            )}
 
             <Pressable
               onPress={handleConfirm}

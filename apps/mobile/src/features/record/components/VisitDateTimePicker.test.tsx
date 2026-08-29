@@ -1,11 +1,13 @@
 import { act, render, userEvent, waitFor, within } from '@testing-library/react-native';
-import { Animated } from 'react-native';
+import { AccessibilityInfo, Animated } from 'react-native';
 
 import VisitDateTimePicker from './VisitDateTimePicker';
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 47, right: 0, bottom: 34, left: 0 }),
 }));
+
+const isReduceMotionEnabledSpy = jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled');
 
 beforeAll(() => {
   jest.spyOn(Animated, 'timing').mockImplementation(
@@ -24,6 +26,56 @@ beforeAll(() => {
 afterAll(() => jest.restoreAllMocks());
 
 describe('<VisitDateTimePicker />', () => {
+  beforeEach(() => {
+    isReduceMotionEnabledSpy.mockReset().mockResolvedValue(false);
+    jest.mocked(Animated.timing).mockClear();
+  });
+
+  it('모션 감소 설정을 확인하기 전에는 진입 애니메이션을 시작하지 않는다', async () => {
+    let resolveReduceMotion!: (enabled: boolean) => void;
+    isReduceMotionEnabledSpy.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveReduceMotion = resolve;
+      })
+    );
+
+    await render(
+      <VisitDateTimePicker
+        value={{ date: new Date(), period: 'afternoon' }}
+        onClose={jest.fn()}
+        onConfirm={jest.fn()}
+      />
+    );
+
+    expect(Animated.timing).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveReduceMotion(true);
+    });
+
+    await waitFor(() => expect(Animated.timing).toHaveBeenCalledTimes(2));
+    jest.mocked(Animated.timing).mock.calls.forEach(([, config]) => {
+      expect(config).toEqual(expect.objectContaining({ duration: 0 }));
+    });
+  });
+
+  it('모션 감소 설정 조회에 실패하면 애니메이션을 생략한다', async () => {
+    isReduceMotionEnabledSpy.mockRejectedValueOnce(new Error('설정 조회 실패'));
+
+    await render(
+      <VisitDateTimePicker
+        value={{ date: new Date(), period: 'afternoon' }}
+        onClose={jest.fn()}
+        onConfirm={jest.fn()}
+      />
+    );
+
+    await waitFor(() => expect(Animated.timing).toHaveBeenCalledTimes(2));
+    jest.mocked(Animated.timing).mock.calls.forEach(([, config]) => {
+      expect(config).toEqual(expect.objectContaining({ duration: 0 }));
+    });
+  });
+
   it('미래 날짜를 막고 선택한 날짜와 시간대를 확인한다', async () => {
     const onConfirm = jest.fn();
     const user = userEvent.setup();
@@ -87,6 +139,28 @@ describe('<VisitDateTimePicker />', () => {
     getAllByTestId('calendar-week').forEach((week) => {
       expect(within(week).getAllByTestId('calendar-cell')).toHaveLength(7);
     });
+  });
+
+  it('시간대 선택 버튼 아래 여백으로 4주와 5주 달을 6주 높이에 맞춘다', async () => {
+    const user = userEvent.setup();
+    const { getByTestId, queryByTestId, getByRole } = await render(
+      <VisitDateTimePicker
+        value={{ date: new Date(2015, 1, 15), period: 'afternoon' }}
+        onClose={jest.fn()}
+        onConfirm={jest.fn()}
+      />
+    );
+
+    expect(getByTestId('calendar-height-spacer')).toHaveProp('className', 'h-20');
+
+    await user.press(getByRole('button', { name: '다음 달' }));
+
+    expect(getByTestId('calendar-height-spacer')).toHaveProp('className', 'h-10');
+
+    await user.press(getByRole('button', { name: '다음 달' }));
+    await user.press(getByRole('button', { name: '다음 달' }));
+
+    expect(queryByTestId('calendar-height-spacer')).toBeNull();
   });
 
   it('핸들을 아래로 드래그하면 바텀시트를 닫는다', async () => {

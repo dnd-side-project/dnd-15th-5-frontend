@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { REPORT_PHOTO_CAPTURE_SCALE } from '@/features/report/constants';
 import {
   captureReportImageBlob,
   convertBlobToBase64,
@@ -31,7 +32,10 @@ export const useReportImageDownload = (fileName: string) => {
     setHasDownloadError(false);
 
     try {
-      const imageBlob = await captureReportImageBlob(captureRef.current);
+      const imageBlob = await captureReportImageBlob(
+        captureRef.current,
+        REPORT_PHOTO_CAPTURE_SCALE
+      );
 
       if (isNativeApp()) {
         // NOTE: blob URL은 웹 런타임에서만 유효하므로 네이티브에는 Base64 데이터로 전달한다.

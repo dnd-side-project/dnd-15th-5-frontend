@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/shared/lib/cn';
 
 import type { MouseEventHandler } from 'react';
+import type { LinkProps } from 'react-router-dom';
 
 type RecordMethodLinkProps = {
   description: string;
@@ -11,6 +12,7 @@ type RecordMethodLinkProps = {
   variant: 'primary' | 'secondary';
   disabled?: boolean;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
+  state?: LinkProps['state'];
 };
 
 /** 기록 방법의 제목과 설명을 함께 보여주는 이동 링크. */
@@ -21,6 +23,7 @@ export default function RecordMethodLink({
   variant,
   disabled = false,
   onClick,
+  state,
 }: RecordMethodLinkProps) {
   const isPrimary = variant === 'primary';
   const className = cn(
@@ -56,7 +59,7 @@ export default function RecordMethodLink({
   }
 
   return (
-    <Link to={to} onClick={onClick} className={className}>
+    <Link to={to} state={state} onClick={onClick} className={className}>
       {content}
     </Link>
   );

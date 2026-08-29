@@ -26,6 +26,7 @@ export default function ShopRecommendationSheet() {
     (state) => state.setActiveRecommendation
   );
   const carouselRef = useRef<HTMLUListElement>(null);
+  const hasInitializedRecommendationsRef = useRef(false);
   const programmaticScrollTargetRef = useRef<number | null>(null);
   const programmaticScrollTimeoutRef = useRef<number | null>(null);
   const activeIndex = Math.max(
@@ -34,13 +35,18 @@ export default function ShopRecommendationSheet() {
   );
 
   useEffect(() => {
+    const firstRecommendation = recommendations[0];
+    if (!firstRecommendation || hasInitializedRecommendationsRef.current) {
+      return;
+    }
+
+    hasInitializedRecommendationsRef.current = true;
     const currentActiveRecommendationId =
       useShopRecommendationStore.getState().activeRecommendationId;
     const hasActiveRecommendation = recommendations.some(
       ({ id }) => id === currentActiveRecommendationId
     );
-    const firstRecommendation = recommendations[0];
-    if (!hasActiveRecommendation && firstRecommendation) {
+    if (!hasActiveRecommendation) {
       setActiveRecommendation(firstRecommendation.id);
     }
   }, [recommendations, setActiveRecommendation]);
@@ -143,7 +149,7 @@ export default function ShopRecommendationSheet() {
         variant="empty"
         headingAs="h2"
         title="주변 추천 가게가 없어요"
-        description="지도를 옮긴 뒤 다시 확인해주세요."
+        description="잠시 후 다시 확인해주세요."
         actionLabel="다시 불러오기"
         onAction={() => void refetch()}
         className="py-8"

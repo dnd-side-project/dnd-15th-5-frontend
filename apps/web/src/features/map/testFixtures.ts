@@ -4,6 +4,7 @@ import type { MapSticker, ShopRecommendation } from './types';
 
 export const TEST_MAP_STICKERS: readonly MapSticker[] = [
   {
+    googlePlaceId: 'ChIJ-twosome-101',
     id: '101',
     image: StickerCoffeeImage,
     isLiked: false,
@@ -20,6 +21,7 @@ export const TEST_MAP_STICKERS: readonly MapSticker[] = [
     visitCount: 3,
   },
   {
+    googlePlaceId: 'ChIJ-dart-pub-102',
     id: '102',
     image: StickerDartImage,
     isLiked: false,

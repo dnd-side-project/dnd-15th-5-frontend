@@ -10,6 +10,13 @@ import { cn } from '@/shared/lib/cn';
 
 import type { ComponentType, SVGProps } from 'react';
 
+/**
+ * 하단 탭바가 차지하는 높이입니다. 탭바가 숨겨졌을 때(또는 탭바 위 다른 요소가 탭바와 겹치지
+ * 않아야 할 때) 이 값을 그대로 오프셋으로 사용해, 탭바의 실제 패딩·아이콘 크기가 바뀌어도 두 곳이
+ * 따로 어긋나지 않게 한다.
+ */
+export const BOTTOM_TAB_BAR_HEIGHT_CSS = 'calc(6.5rem + env(safe-area-inset-bottom))';
+
 type TabNavLinkProps = {
   to: string;
   end?: boolean;
@@ -69,7 +76,7 @@ export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="sticky bottom-0 z-bottom-navigation grid shrink-0 grid-cols-3 items-start rounded-t-30 border-x border-t border-neutral-200 bg-neutral-00 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+      className="mobile-frame fixed right-0 bottom-0 left-0 z-bottom-navigation grid grid-cols-3 items-start rounded-t-30 border-x border-t border-neutral-200 bg-neutral-00 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
     >
       <TabNavLink
         to={ROUTE_PATHS.home}

@@ -19,7 +19,7 @@ const SNAP_POINT_TO_STEP_INDEX: Record<BottomSheetSnapPoint, number> = {
   hidden: 3,
 };
 
-type HomeBottomSheetContent =
+export type HomeBottomSheetContent =
   | { type: 'home' }
   | { type: 'recommendation' }
   | { type: 'selectedPlace'; stickerId: string }

@@ -28,6 +28,7 @@ export default function MonthlyReportPage() {
     captureRef,
     downloadImage,
     handleCardTransitionChange,
+    handleCurrentReportSelect,
     handleNewerMonth,
     handleOlderMonth,
     handleMonthPickerClose,
@@ -54,12 +55,15 @@ export default function MonthlyReportPage() {
     selectedMonth,
   } = useMonthlyReport();
   const nickname = accountQuery.data?.data?.nickname?.trim() || '챱챱 사용자';
-  const { isSharing, shareToKakao } = useKakaoReportShare({
-    captureRef: kakaoThumbnailRef,
-    nickname,
-    onShared: handleShareSheetClose,
-    selectedMonth,
-  });
+  const { isKakaoShareReady, isPreparingKakaoShare, isSharing, shareToKakao } = useKakaoReportShare(
+    {
+      captureRef: kakaoThumbnailRef,
+      isEnabled: isShareSheetOpen,
+      nickname,
+      onShared: handleShareSheetClose,
+      selectedMonth,
+    }
+  );
 
   if (hasReportError) {
     return (
@@ -106,11 +110,14 @@ export default function MonthlyReportPage() {
           <ReportPreferenceSection
             cards={reportCards}
             captureRef={captureRef}
+            isCurrentReportActionVisible={hasNewerMonth}
             isFlipped={isCardFlipped}
+            nickname={nickname}
             onCardSelect={handleReportCardSelect}
             onCardTransitionChange={handleCardTransitionChange}
             onFlip={handlePreferenceCardFlip}
             onShare={handleShareSheetOpen}
+            onViewCurrentReport={handleCurrentReportSelect}
             selectedCardIndex={selectedCardIndex}
             thumbnailCaptureRef={kakaoThumbnailRef}
           />
@@ -118,7 +125,11 @@ export default function MonthlyReportPage() {
         {!isPending && !report && (
           <div className="mt-4.5 flex flex-col items-center">
             {reportCards.length === 0 && (
-              <MonthlyReportUnavailableCard selectedMonth={selectedMonth} />
+              <MonthlyReportUnavailableCard
+                isActionVisible={hasNewerMonth}
+                onViewCurrentReport={handleCurrentReportSelect}
+                selectedMonth={selectedMonth}
+              />
             )}
             <MonthlyReportEmptyState selectedMonth={selectedMonth} />
           </div>
@@ -154,6 +165,8 @@ export default function MonthlyReportPage() {
 
               <ReportShareSheet
                 isDownloading={isDownloading}
+                isKakaoShareReady={isKakaoShareReady}
+                isPreparingKakaoShare={isPreparingKakaoShare}
                 isSharing={isSharing}
                 isOpen={isShareSheetOpen}
                 onClose={handleShareSheetClose}

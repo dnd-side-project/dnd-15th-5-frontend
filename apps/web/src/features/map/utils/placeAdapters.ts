@@ -8,6 +8,8 @@ import type {
 } from '@/features/map/types';
 import { StickerEyesImage, getStickerImageByName } from '@/shared/assets/images/stickers';
 
+import type { ShopSearchResult } from '@chapchap/shared/shop';
+
 const DEFAULT_CATEGORY: HomeCategory = '기타';
 
 export const normalizeHomeCategory = (category?: string): HomeCategory =>
@@ -16,6 +18,12 @@ export const normalizeHomeCategory = (category?: string): HomeCategory =>
 /** 방문 장소 API 응답 중 지도에 표시할 수 있는 항목만 스티커 모델로 변환합니다. */
 export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =>
   (places ?? []).flatMap((place) => {
+    // NOTE: 백엔드가 방문하지 않고 좋아요만 한 장소를 visitCount 0으로 함께 반환하고 있다.
+    // 지도 스티커는 소비 기록으로 획득한 장소만 표시해야 하므로 백엔드 수정 전까지 제외한다.
+    if (place.visitCount === 0) {
+      return [];
+    }
+
     if (
       place.placeId === undefined ||
       !place.placeName ||
@@ -30,6 +38,7 @@ export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =
 
     return [
       {
+        googlePlaceId: place.googlePlaceId,
         id: String(place.placeId),
         image,
         isLiked: Boolean(place.liked),
@@ -47,6 +56,35 @@ export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =
       },
     ];
   });
+
+/** 지도 스티커를 소비 기록 폼이 사용하는 가게 모델로 변환합니다. */
+export const toShopSearchResult = (sticker?: MapSticker): ShopSearchResult | undefined => {
+  const googlePlaceId = sticker?.googlePlaceId?.trim();
+  const name = sticker?.place.name.trim();
+  const latitude = sticker?.position.lat;
+  const longitude = sticker?.position.lng;
+
+  if (
+    !sticker ||
+    !googlePlaceId ||
+    !name ||
+    typeof latitude !== 'number' ||
+    !Number.isFinite(latitude) ||
+    typeof longitude !== 'number' ||
+    !Number.isFinite(longitude)
+  ) {
+    return undefined;
+  }
+
+  return {
+    id: googlePlaceId,
+    name,
+    address: sticker.place.address.trim(),
+    photoUrl: null,
+    latitude,
+    longitude,
+  };
+};
 
 const toRecommendation = (
   place: RecommendedPlaceItem,

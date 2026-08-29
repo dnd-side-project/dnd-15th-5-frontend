@@ -15,7 +15,7 @@
   --shadow-current-location-button: 0 5.33px 13.33px 0 rgba(0, 0, 0, 0.1);
   --shadow-preference-banner: 0 0 10px 0 rgba(74, 107, 255, 0.3);
   --shadow-category-filter: -13px 0 2px 0 rgba(255, 255, 255, 0.65);
-  --shadow-report-preference-card: 0 0 17px 0 rgba(0, 0, 0, 0.11);
+  --shadow-report-preference-card: 0 0 20px 0 rgb(122 147 255 / 18%);
   --shadow-report-preference-save-card: 0 0 11px 0 rgba(0, 0, 0, 0.15);
   --shadow-report-preference-share-card: 0 0 19.56px 0 rgb(0 0 0 / 15%);
   --shadow-chart-tooltip: 0 4px 12px 0 rgba(0, 0, 0, 0.18);

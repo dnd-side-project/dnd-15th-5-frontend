@@ -25,8 +25,12 @@ describe('BottomTabBar', () => {
     );
 
     expect(screen.getByRole('navigation', { name: '주요 메뉴' })).toHaveClass(
+      'mobile-frame',
+      'fixed',
+      'bottom-0',
       'pb-[calc(0.75rem+env(safe-area-inset-bottom))]'
     );
+    expect(screen.getByRole('navigation', { name: '주요 메뉴' })).not.toHaveClass('sticky');
     expect(screen.getByRole('link', { name: '홈' })).toHaveAttribute('href', '/home');
     expect(screen.getByRole('link', { name: '기록하기' })).toHaveAttribute('href', '/record');
     expect(screen.getByRole('link', { name: '리포트' })).toHaveAttribute('href', '/report');

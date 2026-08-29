@@ -1,14 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 
 import {
+  ContactButton,
   LogoutButton,
   MyPageMenuItem,
   MyPageMenuSection,
   MyPageProfileSection,
   MyPageShortcutMenu,
+  WithdrawAccountButton,
   useGetMyAccount,
 } from '@/features/my-page';
-import { AccountRemoveIcon, ContactIcon, TermsIcon } from '@/shared/assets/icons';
+import { TermsIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { StateView } from '@/shared/ui/state-view';
 
@@ -52,12 +54,12 @@ export default function MyPage() {
 
         <MyPageMenuSection>
           <MyPageMenuItem icon={TermsIcon} label="이용약관 및 개인정보처리방침" />
-          <MyPageMenuItem icon={ContactIcon} label="문의하기" />
+          <ContactButton />
         </MyPageMenuSection>
 
         <MyPageMenuSection className="mt-4">
           <LogoutButton />
-          <MyPageMenuItem icon={AccountRemoveIcon} label="회원탈퇴" />
+          <WithdrawAccountButton />
         </MyPageMenuSection>
       </section>
     </main>

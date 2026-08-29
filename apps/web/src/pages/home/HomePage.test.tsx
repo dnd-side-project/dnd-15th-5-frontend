@@ -1,4 +1,5 @@
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
 import {
@@ -12,18 +13,28 @@ import { useToast } from '@/shared/ui/toast';
 
 import HomePage from './HomePage';
 
+import type { ReactNode } from 'react';
+
 jest.mock('@/features/map', () => ({
   ...jest.requireActual('@/features/map'),
   GoogleMapView: () => null,
   HomeMapOverlay: () => null,
-  HomeBottomSheet: () => null,
+  HomeBottomSheet: ({
+    renderFrequentShops,
+  }: {
+    renderFrequentShops: (headerContent: null) => ReactNode;
+  }) => renderFrequentShops(null),
 }));
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 jest.mock('@/features/notification', () => ({
   useHasUnreadNotificationQuery: jest.fn(),
 }));
 jest.mock('@/features/report', () => ({
-  FrequentShopSummary: () => null,
+  FrequentShopSummary: ({ onShopSelect }: { onShopSelect?: (placeId: number) => void }) => (
+    <button type="button" onClick={() => onShopSelect?.(101)}>
+      자주 소비한 가게 선택
+    </button>
+  ),
   SpendingHistory: () => null,
 }));
 jest.mock('@/features/shop', () => ({
@@ -171,5 +182,20 @@ describe('<HomePage />', () => {
 
     expect(mockShowToast).not.toHaveBeenCalled();
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
+  });
+
+  it('자주 소비한 가게를 선택하면 해당 가게로 포커스하고 상세 시트를 연다', async () => {
+    const user = userEvent.setup();
+    renderHomePage();
+
+    await user.click(screen.getByRole('button', { name: '자주 소비한 가게 선택' }));
+
+    await waitFor(() =>
+      expect(useMapFocusStore.getState().focusPosition).toEqual(TEST_MAP_STICKERS[0]!.position)
+    );
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+      type: 'selectedPlace',
+      stickerId: TEST_MAP_STICKERS[0]!.id,
+    });
   });
 });

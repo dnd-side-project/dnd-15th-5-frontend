@@ -31,7 +31,7 @@ export default function HomeScreen() {
   const trustedWebOrigin = webUrl ? getUrlOrigin(webUrl) : null;
   const initialWebUrl = trustedWebOrigin ? `${trustedWebOrigin}/` : null;
   const webViewRef = useRef<WebView>(null);
-  const { canGoBack, handleNavigationStateChange, handleRouteChange, isMapHome } =
+  const { canGoBack, handleNavigationStateChange, handleRouteChange, isMapHome, isMonthlyReport } =
     useWebViewNavigationState(initialWebUrl ?? undefined);
 
   useEffect(() => {
@@ -119,7 +119,7 @@ export default function HomeScreen() {
       return false;
     }
 
-    if (/^https?:\/\//i.test(url)) {
+    if (/^(?:https?:\/\/|mailto:)/i.test(url)) {
       void Linking.openURL(url).catch(() => {
         // TODO: 네이티브 공통 오류 안내 UI가 생기면 외부 링크 실행 실패를 사용자에게 알린다.
       });
@@ -142,7 +142,7 @@ export default function HomeScreen() {
       loadErrorTitle="웹 화면을 불러오지 못했습니다"
       loadErrorDescriptions={webUrl ? [webUrl] : []}
       safeAreaMode={isMapHome ? 'none' : 'except-bottom'}
-      allowsBackForwardNavigationGestures={!isMapHome}
+      allowsBackForwardNavigationGestures={!isMapHome && !isMonthlyReport}
       onNavigationStateChange={({ canGoBack: nextCanGoBack, url }) =>
         handleNavigationStateChange(url, nextCanGoBack)
       }

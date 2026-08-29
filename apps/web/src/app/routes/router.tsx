@@ -1,9 +1,13 @@
+import * as Sentry from '@sentry/react';
 import { createBrowserRouter } from 'react-router-dom';
 
 import AppMainLayout from '@/app/layouts/AppMainLayout';
 import MobileLayout from '@/app/layouts/MobileLayout';
 import { AuthenticatedRoute, GuestOnlyRoute, TermsAgreementRoute } from '@/app/routes/AuthRoute';
+import RouteErrorPage from '@/app/routes/RouteErrorPage';
 import AgreementPage from '@/pages/agreement/AgreementPage';
+import PrivacyPolicyPage from '@/pages/agreement/PrivacyPolicyPage';
+import TermsOfServicePage from '@/pages/agreement/TermsOfServicePage';
 import AuthCallbackPage from '@/pages/auth-callback/AuthCallbackPage';
 import HomePage from '@/pages/home/HomePage';
 import MapSearchPage from '@/pages/home/search/MapSearchPage';
@@ -26,10 +30,13 @@ import SharedReportPage from '@/pages/report/shared/SharedReportPage';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import PaddedLayout from '@/shared/layout/PaddedLayout';
 
-export const router = createBrowserRouter([
+const createSentryBrowserRouter = Sentry.wrapCreateBrowserRouter(createBrowserRouter);
+
+export const router = createSentryBrowserRouter([
   {
     // INFO: 모든 페이지에 모바일 최대 너비와 공통 배경을 적용한다.
     element: <MobileLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         // INFO: 로그인 및 약관 화면에 좌우 여백을 적용한다.
@@ -49,7 +56,11 @@ export const router = createBrowserRouter([
           },
           {
             element: <TermsAgreementRoute />,
-            children: [{ path: ROUTE_PATHS.agreement, element: <AgreementPage /> }],
+            children: [
+              { path: ROUTE_PATHS.agreement, element: <AgreementPage /> },
+              { path: ROUTE_PATHS.agreementPrivacyPolicy, element: <PrivacyPolicyPage /> },
+              { path: ROUTE_PATHS.agreementTermsOfService, element: <TermsOfServicePage /> },
+            ],
           },
         ],
       },
@@ -66,10 +77,6 @@ export const router = createBrowserRouter([
             element: <OnboardingPage />,
           },
           {
-            path: ROUTE_PATHS.report,
-            element: <ReportPage />,
-          },
-          {
             path: ROUTE_PATHS.monthlyReport,
             element: <MonthlyReportPage />,
           },
@@ -81,6 +88,10 @@ export const router = createBrowserRouter([
               {
                 path: ROUTE_PATHS.home,
                 element: <HomePage />,
+              },
+              {
+                path: ROUTE_PATHS.report,
+                element: <ReportPage />,
               },
             ],
           },

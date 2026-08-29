@@ -1,17 +1,19 @@
 import { useMemo } from 'react';
 
 import { useGetNearbyPlaces } from '@/features/map/apis/queries';
-import { useMapViewportStore } from '@/features/map/stores/mapViewportStore';
 import { toShopRecommendations } from '@/features/map/utils/placeAdapters';
 
 const RECOMMENDATION_RADIUS_METERS = 1_000;
+const TALK_HERE_RECOMMENDATION_CENTER = {
+  lat: 37.4896386,
+  lng: 126.9759403,
+} as const;
 
-/** 현재 지도 중심을 기준으로 추천 가게를 조회해 캐러셀·마커 공통 모델로 제공합니다. */
+/** 지도 위치와 무관하게 이수역 토크히어를 중심으로 추천 가게를 조회합니다. */
 export const useNearbyPlaceRecommendationsQuery = () => {
-  const center = useMapViewportStore((state) => state.center);
   const query = useGetNearbyPlaces({
-    lat: center.lat,
-    lng: center.lng,
+    lat: TALK_HERE_RECOMMENDATION_CENTER.lat,
+    lng: TALK_HERE_RECOMMENDATION_CENTER.lng,
     radiusMeters: RECOMMENDATION_RADIUS_METERS,
   });
   const response = query.data?.data;

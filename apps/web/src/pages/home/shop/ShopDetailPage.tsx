@@ -1,15 +1,25 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
-import { useOpenVisitedPlaceOnMap } from '@/features/map';
+import {
+  toShopSearchResult,
+  useOpenVisitedPlaceOnMap,
+  useVisitedPlaceStickersQuery,
+} from '@/features/map';
 import { ShopDetail } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { BackButton } from '@/shared/ui/back-button';
+import { getRecordShopFromLocationState } from '@/shared/utils/recordNavigation';
 
 export default function ShopDetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { shopId } = useParams();
   const placeId = Number(shopId);
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
+  const { stickers } = useVisitedPlaceStickersQuery();
+  const recordShop =
+    getRecordShopFromLocationState(location.state) ??
+    toShopSearchResult(stickers.find(({ id }) => id === shopId));
 
   const focusThisShopOnMap = async () => {
     if (!shopId) return;
@@ -39,6 +49,7 @@ export default function ShopDetailPage() {
     <main>
       <ShopDetail
         placeId={placeId}
+        recordShop={recordShop}
         onViewOnMap={() => void handleViewOnMap()}
         headerContent={<BackButton onClick={() => void handleBack()} />}
       />

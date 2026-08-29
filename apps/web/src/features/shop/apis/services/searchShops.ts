@@ -1,10 +1,6 @@
-import {
-  SHOP_SEARCH_LANGUAGE,
-  SHOP_SEARCH_MAX_RESULT_COUNT,
-  SHOP_SEARCH_PHOTO_MAX_WIDTH,
-  SHOP_SEARCH_REGION,
-} from '@/features/shop/constants';
+import { SHOP_SEARCH_MAX_RESULT_COUNT } from '@/features/shop/constants';
 import type { ShopSearchResult } from '@/features/shop/types';
+import { searchGooglePlaces } from '@/shared/lib/google-places/searchGooglePlaces';
 
 /**
  * 키워드로 장소를 검색한다.
@@ -21,42 +17,8 @@ import type { ShopSearchResult } from '@/features/shop/types';
 export const searchShops = async (
   placesLibrary: google.maps.PlacesLibrary,
   keyword: string
-): Promise<ShopSearchResult[]> => {
-  const { places } = await placesLibrary.Place.searchByText({
+): Promise<ShopSearchResult[]> =>
+  searchGooglePlaces(placesLibrary, {
     textQuery: keyword,
-    fields: ['id', 'displayName', 'formattedAddress', 'photos', 'location'],
-    language: SHOP_SEARCH_LANGUAGE,
-    region: SHOP_SEARCH_REGION,
     maxResultCount: SHOP_SEARCH_MAX_RESULT_COUNT,
   });
-
-  return places.flatMap((place) => {
-    const name = place.displayName?.trim();
-    const address = place.formattedAddress?.trim();
-    const latitude = place.location?.lat();
-    const longitude = place.location?.lng();
-
-    if (
-      !place.id ||
-      !name ||
-      !address ||
-      typeof latitude !== 'number' ||
-      !Number.isFinite(latitude) ||
-      typeof longitude !== 'number' ||
-      !Number.isFinite(longitude)
-    ) {
-      return [];
-    }
-
-    return [
-      {
-        id: place.id,
-        name,
-        address,
-        photoUrl: place.photos?.[0]?.getURI({ maxWidth: SHOP_SEARCH_PHOTO_MAX_WIDTH }) ?? null,
-        latitude,
-        longitude,
-      },
-    ];
-  });
-};

@@ -1,22 +1,37 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import { TEST_MAP_STICKERS, TEST_SHOP_RECOMMENDATIONS } from '@/features/map/testFixtures';
+import {
+  getRecordCategoryFromLocationState,
+  getRecordShopFromLocationState,
+} from '@/shared/utils/recordNavigation';
 
 import HomeCategoryFilter from './home-overlay/HomeCategoryFilter';
 import HomeBottomSheet from './HomeBottomSheet';
 
 jest.mock('@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery');
+jest.mock('@/features/map/apis/hooks/useRecommendationRecordShopQuery');
 jest.mock('@/features/map/apis/hooks/useTogglePlaceLikeMutation');
 
 const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
+const mockedUseRecommendationRecordShopQuery = jest.mocked(useRecommendationRecordShopQuery);
 const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation);
 const mutateLike = jest.fn();
+const recommendationRecordShop = {
+  id: TEST_MAP_STICKERS[0]!.googlePlaceId!,
+  name: TEST_MAP_STICKERS[0]!.place.name,
+  address: TEST_MAP_STICKERS[0]!.place.address,
+  photoUrl: null,
+  latitude: TEST_MAP_STICKERS[0]!.position.lat,
+  longitude: TEST_MAP_STICKERS[0]!.position.lng,
+};
 
 const renderSelectedPlace = () => (
   <section>
@@ -25,6 +40,14 @@ const renderSelectedPlace = () => (
     <a href={`/home/shop/${TEST_MAP_STICKERS[0]!.place.id}`}>상세보기</a>
   </section>
 );
+
+function RecordLocationProbe() {
+  const location = useLocation();
+  const shop = getRecordShopFromLocationState(location.state);
+  const category = getRecordCategoryFromLocationState(location.state);
+
+  return <p>{shop ? `${shop.id}|${shop.name}|${shop.address}|${category}` : '선택 가게 없음'}</p>;
+}
 
 describe('HomeBottomSheet', () => {
   beforeEach(() => {
@@ -48,6 +71,14 @@ describe('HomeBottomSheet', () => {
       isError: false,
       refetch: jest.fn(),
     } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    mockedUseRecommendationRecordShopQuery.mockReturnValue({
+      query: {
+        data: recommendationRecordShop,
+        isPending: false,
+      },
+      isLibraryLoading: false,
+      isLibraryError: false,
+    } as unknown as ReturnType<typeof useRecommendationRecordShopQuery>);
     mockedUseTogglePlaceLikeMutation.mockReturnValue({
       mutate: mutateLike,
       isPending: false,
@@ -88,6 +119,9 @@ describe('HomeBottomSheet', () => {
       'aria-hidden',
       'false'
     );
+    expect(
+      screen.getByRole('button', { name: '자주 소비한 곳' }).parentElement?.parentElement
+    ).toHaveClass('pb-2');
   });
 
   it('소비 기록 탭을 선택하면 페이지에서 전달한 소비내역을 표시한다', async () => {
@@ -143,6 +177,49 @@ describe('HomeBottomSheet', () => {
 
     expect(screen.getByRole('textbox', { name: '선택한 월' })).toHaveValue('6월');
     expect(scrollContainer.scrollTop).toBe(120);
+  });
+
+  it('중간 높이에서 콘텐츠를 32px 넘게 스크롤하면 최대 높이로 확장한다', () => {
+    render(
+      <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSelectedPlace={renderSelectedPlace}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+    const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' })
+      .parentElement as HTMLElement;
+    const scrollContainer = sheet.lastElementChild as HTMLElement;
+
+    scrollContainer.scrollTop = 32;
+    fireEvent.scroll(scrollContainer);
+    expect(sheet).toHaveStyle({ height: '45dvh' });
+
+    scrollContainer.scrollTop = 33;
+    fireEvent.scroll(scrollContainer);
+
+    expect(sheet).toHaveStyle({ height: '92dvh' });
+  });
+
+  it('최대 높이의 콘텐츠 최상단에서 아래로 당기면 중간 높이로 축소한다', () => {
+    useHomeBottomSheetStore.setState({ stepIndex: 1 });
+    render(
+      <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSelectedPlace={renderSelectedPlace}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+    const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' })
+      .parentElement as HTMLElement;
+    const scrollContainer = sheet.lastElementChild as HTMLElement;
+
+    expect(sheet).toHaveStyle({ height: '92dvh' });
+    scrollContainer.scrollTop = 0;
+    fireEvent.touchStart(scrollContainer, { touches: [{ clientY: 100 }] });
+    fireEvent.touchMove(scrollContainer, { touches: [{ clientY: 165 }] });
+
+    expect(sheet).toHaveStyle({ height: '45dvh' });
   });
 
   it('탭 전환 후 새로 렌더링된 활성 탭 버튼으로 포커스를 복원한다', async () => {
@@ -263,6 +340,68 @@ describe('HomeBottomSheet', () => {
     );
     expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
+  });
+
+  it('좋아요한 추천 가게에서 기록하기를 누르면 추천 가게를 기록 화면에 전달한다', async () => {
+    const user = userEvent.setup();
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    useHomeBottomSheetStore.setState({
+      activeSheet: { type: 'likedRecommendation', recommendationId: recommendation.id },
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/home']}>
+        <Routes>
+          <Route
+            path="/home"
+            element={
+              <HomeBottomSheet
+                renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+                renderSelectedPlace={renderSelectedPlace}
+                renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+              />
+            }
+          />
+          <Route path="/record" element={<RecordLocationProbe />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('link', { name: '기록하기' }));
+
+    expect(
+      screen.getByText(
+        `${recommendationRecordShop.id}|${recommendationRecordShop.name}|${recommendationRecordShop.address}|${recommendation.place.category}`
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('추천 가게를 기록용 장소로 조회하지 못하면 기록 화면 이동을 막는다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    mockedUseRecommendationRecordShopQuery.mockReturnValue({
+      query: {
+        data: undefined,
+        isPending: false,
+      },
+      isLibraryLoading: false,
+      isLibraryError: true,
+    } as unknown as ReturnType<typeof useRecommendationRecordShopQuery>);
+    useHomeBottomSheetStore.setState({
+      activeSheet: { type: 'likedRecommendation', recommendationId: recommendation.id },
+    });
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('button', { name: '기록하기' })).toBeDisabled();
+    expect(screen.queryByRole('link', { name: '기록하기' })).not.toBeInTheDocument();
   });
 
   it('조회에 성공했지만 선택한 추천이 없으면 재요청 대신 지도 홈으로 돌아간다', async () => {
@@ -390,5 +529,134 @@ describe('HomeBottomSheet', () => {
     expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(
       lastRecommendation?.id
     );
+  });
+
+  it('지도 이동으로 추천 목록이 바뀌어도 활성 카드를 자동 교체하지 않는다', async () => {
+    const user = userEvent.setup();
+    const renderBottomSheet = () => (
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+    const { rerender } = render(renderBottomSheet());
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(
+      TEST_SHOP_RECOMMENDATIONS[0]!.id
+    );
+
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: TEST_SHOP_RECOMMENDATIONS.slice(1),
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    rerender(renderBottomSheet());
+
+    expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(
+      TEST_SHOP_RECOMMENDATIONS[0]!.id
+    );
+  });
+
+  it('홈 시트에서 핸들을 클릭하면 단계가 순환한다', () => {
+    render(
+      <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSelectedPlace={renderSelectedPlace}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+    const sheet = handle.parentElement as HTMLElement;
+
+    expect(sheet).toHaveStyle({ height: '45dvh' });
+
+    fireEvent.click(handle);
+
+    expect(sheet).toHaveStyle({ height: '92dvh' });
+  });
+
+  it('모달형 시트에서 핸들을 클릭하면 홈 시트로 돌아간다', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => (
+            <div>
+              {headerContent}
+              기존 홈 시트
+            </div>
+          )}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    expect(screen.getByRole('dialog', { name: '가게 추천' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: '가게 추천' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '바텀시트 높이 조절' }));
+
+    expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
+  });
+
+  it('모달형 시트가 열려 있을 때 Escape를 누르면 홈 시트로 돌아간다', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => (
+            <div>
+              {headerContent}
+              기존 홈 시트
+            </div>
+          )}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    expect(screen.getByRole('heading', { level: 1, name: '가게 추천' })).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
+  });
+
+  it('시트 전체를 재마운트하지 않고 콘텐츠만 fade로 전환한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <HomeCategoryFilter />
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </>
+    );
+    const bottomSheet = screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement;
+
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveClass('opacity-0');
+    expect(screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement).toBe(
+      bottomSheet
+    );
+
+    await waitFor(() => expect(dialog).toHaveClass('opacity-100'));
   });
 });

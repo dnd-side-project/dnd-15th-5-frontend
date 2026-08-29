@@ -21,7 +21,7 @@ export default function SharedReportPage() {
     return (
       <main
         aria-label="공유 취향 카드 불러오는 중"
-        className="flex min-h-dvh items-center justify-center bg-neutral-100"
+        className="flex min-h-dvh items-center justify-center"
         role="status"
       >
         <Spinner className="size-7 text-primary-500" />
@@ -45,7 +45,7 @@ export default function SharedReportPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-start justify-center overflow-x-hidden bg-neutral-100">
+    <main className="flex min-h-dvh items-start justify-center overflow-x-hidden">
       <ReportPreferenceShareScreen {...sharedCardQuery.data} />
     </main>
   );

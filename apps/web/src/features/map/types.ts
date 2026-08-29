@@ -14,6 +14,7 @@ export type CurrentPositionError =
   | { reason: 'servicesDisabled'; message: string };
 
 export type MapSticker = {
+  googlePlaceId?: string;
   id: string;
   image: string;
   isLiked: boolean;

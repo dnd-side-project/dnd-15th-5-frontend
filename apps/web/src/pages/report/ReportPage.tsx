@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import {
   MonthlyStickerSummary,
@@ -16,7 +16,6 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { StateView } from '@/shared/ui/state-view';
 
 export default function ReportPage() {
-  const navigate = useNavigate();
   const { data: report, hasReportError, isPending, refetch } = useCurrentReportQuery();
 
   if (hasReportError) {
@@ -52,13 +51,9 @@ export default function ReportPage() {
         </span>
       )}
 
-      <ReportHeroSection
-        monthlyReportPath={ROUTE_PATHS.monthlyReport}
-        monthLabel={monthLabel}
-        onBack={() => navigate(-1)}
-      />
+      <ReportHeroSection monthlyReportPath={ROUTE_PATHS.monthlyReport} monthLabel={monthLabel} />
 
-      <div className="relative rounded-t-30 bg-neutral-00 pt-10 pr-4 pb-page-bottom pl-4.25">
+      <div className="relative rounded-t-30 bg-neutral-00 pt-10 pr-4 pb-[calc(var(--spacing-page-bottom)+6.5rem)] pl-4.25">
         <div className="flex flex-col gap-6">
           <ReportSection title="이 주의 소비 기록">
             {isPending ? (
@@ -118,7 +113,7 @@ export default function ReportPage() {
 
           <div className="grid w-full grid-cols-2 gap-2">
             <ReportLinkButton to={ROUTE_PATHS.spendingHistory}>
-              소비내역
+              소비기록
               <br />
               보러가기
             </ReportLinkButton>

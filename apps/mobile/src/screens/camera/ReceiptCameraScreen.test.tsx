@@ -122,6 +122,131 @@ describe('<ReceiptCameraScreen />', () => {
     });
   });
 
+  it('Google Place 주소 앞의 대한민국을 제거해 수기 입력 주소와 형식을 맞춘다', async () => {
+    const picture = { uri: 'file://captured.jpg', width: 3000, height: 4000 };
+    mockTakePictureAsync.mockResolvedValue(picture);
+    mockNormalizeReceiptImage.mockResolvedValue({ uri: 'file://normalized.jpg' });
+    mockRecognizeReceipt.mockResolvedValue({
+      receiptImageId: 15,
+      storeName: '투썸플레이스 신논현점',
+      address: null,
+      purchaseDate: null,
+      purchaseTime: null,
+      amount: null,
+      googlePlaceSearchResult: {
+        googlePlaceId: 'ChIJ-two-some',
+        placeName: '투썸플레이스 신논현점',
+        roadAddress: '대한민국 서울특별시 강남구 봉은사로 125 1층',
+        latitude: 37.506481,
+        longitude: 127.024551,
+        thumbnailUrl: 'https://example.com/twosome.jpg',
+      },
+    });
+    const { getByRole } = await render(<ReceiptCameraScreen />);
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '영수증 촬영' }));
+      await Promise.resolve();
+      await jest.runAllTimersAsync();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/receipt-confirm',
+      params: expect.objectContaining({
+        shopAddress: '서울특별시 강남구 봉은사로 125 1층',
+      }),
+    });
+  });
+
+  it('Google Place 매칭이 없으면 OCR 원문 가게명과 주소를 매장 정보로 사용하지 않는다', async () => {
+    const picture = { uri: 'file://captured.jpg', width: 3000, height: 4000 };
+    mockTakePictureAsync.mockResolvedValue(picture);
+    mockNormalizeReceiptImage.mockResolvedValue({ uri: 'file://normalized.jpg' });
+    mockRecognizeReceipt.mockResolvedValue({
+      receiptImageId: 15,
+      storeName: '상계동 분식',
+      address: '대한민국 서울특별시 노원구 상계 8동',
+      purchaseDate: null,
+      purchaseTime: null,
+      amount: null,
+    });
+    const { getByRole } = await render(<ReceiptCameraScreen />);
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '영수증 촬영' }));
+      await Promise.resolve();
+      await jest.runAllTimersAsync();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/receipt-confirm',
+      params: {
+        uri: 'file://normalized.jpg',
+        receiptImageId: '15',
+      },
+    });
+  });
+
+  it('Google Place 결과에서 도로명주소를 찾지 못하면 OCR 주소로 대체하지 않는다', async () => {
+    const picture = { uri: 'file://captured.jpg', width: 3000, height: 4000 };
+    mockTakePictureAsync.mockResolvedValue(picture);
+    mockNormalizeReceiptImage.mockResolvedValue({ uri: 'file://normalized.jpg' });
+    mockRecognizeReceipt.mockResolvedValue({
+      receiptImageId: 15,
+      storeName: '상계동 분식',
+      address: '대한민국 서울특별시 노원구 상계 8동',
+      purchaseDate: null,
+      purchaseTime: null,
+      amount: null,
+      googlePlaceSearchResult: {
+        googlePlaceId: 'ChIJ-sanggye',
+        placeName: '상계동 분식',
+        latitude: 37.665,
+        longitude: 127.057,
+      },
+    });
+    const { getByRole } = await render(<ReceiptCameraScreen />);
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '영수증 촬영' }));
+      await Promise.resolve();
+      await jest.runAllTimersAsync();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/receipt-confirm',
+      params: {
+        uri: 'file://normalized.jpg',
+        receiptImageId: '15',
+      },
+    });
+  });
+
+  it('OCR 응답에 receiptImageId가 없으면 라우트 파라미터에 포함하지 않는다', async () => {
+    const picture = { uri: 'file://captured.jpg', width: 3000, height: 4000 };
+    mockTakePictureAsync.mockResolvedValue(picture);
+    mockNormalizeReceiptImage.mockResolvedValue({ uri: 'file://normalized.jpg' });
+    mockRecognizeReceipt.mockResolvedValue({
+      storeName: null,
+      address: null,
+      purchaseDate: null,
+      purchaseTime: null,
+      amount: null,
+    });
+    const { getByRole } = await render(<ReceiptCameraScreen />);
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '영수증 촬영' }));
+      await Promise.resolve();
+      await jest.runAllTimersAsync();
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/receipt-confirm',
+      params: { uri: 'file://normalized.jpg' },
+    });
+  });
+
   it('X 버튼에서 나가기를 확인하면 기록 화면을 닫고 메인 WebView를 홈으로 이동시킨다', async () => {
     const { findByText, getByRole } = await render(<ReceiptCameraScreen />);
 

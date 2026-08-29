@@ -1,39 +1,46 @@
-import { ReportCardTextureImage } from '@/shared/assets/images/preference-card';
+import { ChevronRightIcon } from '@/shared/assets/icons';
+import { ReportCardUnavailableImage } from '@/shared/assets/images/preference-card';
 import type { YearMonth } from '@/shared/types/yearMonth';
 
 type MonthlyReportUnavailableCardProps = {
+  isActionAvailable?: boolean;
+  isActionVisible?: boolean;
+  onViewCurrentReport: () => void;
   selectedMonth: YearMonth;
 };
 
-/** 리포트가 생성되지 않은 월을 물음표 카드로 표시합니다. */
+/** 카드가 생성되지 않은 월을 최신 월간 리포트로 이동할 수 있는 카드로 표시합니다. */
 export default function MonthlyReportUnavailableCard({
+  isActionAvailable = true,
+  isActionVisible = true,
+  onViewCurrentReport,
   selectedMonth,
 }: MonthlyReportUnavailableCardProps) {
   return (
     <article
       aria-label={`${selectedMonth.month}월 리포트 미생성 카드`}
-      className="relative h-93.75 w-69 overflow-hidden rounded-15 bg-primary-300 shadow-report-preference-card"
+      className="relative h-93.75 w-69 overflow-hidden rounded-15 shadow-report-preference-card"
     >
       <img
         alt=""
         aria-hidden
-        className="pointer-events-none absolute inset-0 size-full object-cover opacity-25 mix-blend-overlay select-none"
+        className="pointer-events-none absolute inset-0 size-full object-cover select-none"
         draggable={false}
-        src={ReportCardTextureImage}
+        src={ReportCardUnavailableImage}
       />
-      <span
-        aria-hidden
-        className="absolute inset-0 flex items-center justify-center text-[132px] leading-none font-bold text-primary-500"
-      >
-        ?
-      </span>
-      <div className="absolute inset-x-5 bottom-8 text-center">
-        <h2 className="break-keep text-title-02-semibold text-neutral-00">
-          {selectedMonth.month}월 리포트가 없어요
-        </h2>
-        <p className="mt-2 break-keep text-body-02-semibold text-primary-100">
-          다음 달 리포트를 위해 기록해 주세요
-        </p>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-neutral-500">
+        <h2 className="break-keep text-title-02-semibold">생성된 카드가 없어요</h2>
+        {isActionVisible && (
+          <button
+            className="mt-2 inline-flex items-center gap-1 text-body-02-medium outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 focus-visible:ring-offset-2"
+            disabled={!isActionAvailable}
+            onClick={onViewCurrentReport}
+            type="button"
+          >
+            최근 리포트 보러가기
+            <ChevronRightIcon aria-hidden className="size-4" />
+          </button>
+        )}
       </div>
     </article>
   );

@@ -1,4 +1,7 @@
-import { Stack, usePathname } from 'expo-router';
+import '@/shared/lib/monitoring/sentry';
+
+import * as Sentry from '@sentry/react-native';
+import { ErrorBoundary as ExpoRouterErrorBoundary, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 import { ToastProvider } from '@/shared/ui/toast';
@@ -8,7 +11,7 @@ import '../global.css';
 const RECEIPT_CAMERA_TOAST_BOTTOM_OFFSET = 195;
 const NEUTRAL_00_COLOR = '#ffffff';
 
-export default function RootLayout() {
+function RootLayout() {
   const pathname = usePathname();
   const isReceiptCamera = pathname === '/camera';
 
@@ -28,3 +31,7 @@ export default function RootLayout() {
     </ToastProvider>
   );
 }
+
+export const ErrorBoundary = Sentry.wrapExpoRouterErrorBoundary(ExpoRouterErrorBoundary);
+
+export default Sentry.wrap(RootLayout);

@@ -1,6 +1,10 @@
 import ReportPreferenceCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
 import ReportPreferenceCardFront from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCardFront';
-import ReportPreferenceSharedCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceSharedCard';
+import ReportPreferenceShareScreen from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceShareScreen';
+import {
+  REPORT_KAKAO_THUMBNAIL_SIZE,
+  REPORT_PHOTO_CAPTURE_SIZE,
+} from '@/features/report/constants';
 import { useReportPreferenceCarousel } from '@/features/report/hooks/useReportPreferenceCarousel';
 import type { MonthlyReportPreferenceCard } from '@/features/report/types';
 import { ReportCardFlipIcon, ShareIcon } from '@/shared/assets/icons';
@@ -15,11 +19,14 @@ import './reportPreferenceSection.css';
 type ReportPreferenceSectionProps = {
   cards: readonly MonthlyReportPreferenceCard[];
   captureRef: Ref<HTMLDivElement>;
+  isCurrentReportActionVisible: boolean;
   isFlipped: boolean;
+  nickname: string;
   onCardSelect: (index: number) => void;
   onCardTransitionChange: (isTransitioning: boolean) => void;
   onFlip: () => void;
   onShare: () => void;
+  onViewCurrentReport: () => void;
   selectedCardIndex: number;
   thumbnailCaptureRef: Ref<HTMLDivElement>;
 };
@@ -28,11 +35,14 @@ type ReportPreferenceSectionProps = {
 export default function ReportPreferenceSection({
   cards,
   captureRef,
+  isCurrentReportActionVisible,
   isFlipped,
+  nickname,
   onCardSelect,
   onCardTransitionChange,
   onFlip,
   onShare,
+  onViewCurrentReport,
   selectedCardIndex,
   thumbnailCaptureRef,
 }: ReportPreferenceSectionProps) {
@@ -93,7 +103,12 @@ export default function ReportPreferenceSection({
               key={card.id}
             >
               {card.isUnavailable ? (
-                <MonthlyReportUnavailableCard selectedMonth={card.month} />
+                <MonthlyReportUnavailableCard
+                  isActionAvailable={isSelected}
+                  isActionVisible={isCurrentReportActionVisible}
+                  onViewCurrentReport={onViewCurrentReport}
+                  selectedMonth={card.month}
+                />
               ) : (
                 <ReportPreferenceCard
                   description={card.description}
@@ -113,17 +128,22 @@ export default function ReportPreferenceSection({
         <>
           {/* INFO: PNG 변환을 위해 공유용 카드를 display: none 없이 화면 밖에 렌더링한다. */}
           <div aria-hidden className="pointer-events-none fixed top-0 left-[-9999px]">
-            <div ref={captureRef}>
-              <ReportPreferenceSharedCard
+            <div ref={captureRef} style={REPORT_PHOTO_CAPTURE_SIZE}>
+              <ReportPreferenceShareScreen
                 description={selectedCard.description}
-                hasShadow={false}
+                isPhotoCapture
                 metrics={selectedCard.metrics}
+                nickname={nickname}
                 tags={selectedCard.tags}
                 title={selectedCard.title}
                 variant={selectedCard.variant}
               />
             </div>
-            <div ref={thumbnailCaptureRef}>
+            <div
+              className="overflow-hidden rounded-15"
+              ref={thumbnailCaptureRef}
+              style={REPORT_KAKAO_THUMBNAIL_SIZE}
+            >
               <ReportPreferenceCardFront
                 isStandalone
                 tags={selectedCard.tags}
@@ -132,25 +152,32 @@ export default function ReportPreferenceSection({
               />
             </div>
           </div>
-          <div className="mt-6.25 flex items-center gap-3.75">
-            <button
-              className="flex h-9.25 items-center gap-2 rounded-full bg-neutral-200 px-5 text-body-02-medium text-neutral-700"
-              onClick={onShare}
-              type="button"
-            >
-              <ShareIcon aria-hidden className="size-4" />
-              취향 카드 공유하기
-            </button>
-            <button
-              aria-label="취향 카드 뒤집기"
-              className="flex size-10 items-center justify-center rounded-full bg-neutral-200 text-lg text-neutral-600"
-              onClick={onFlip}
-              type="button"
-            >
-              <ReportCardFlipIcon aria-hidden className="h-3.25 w-3" />
-            </button>
-          </div>
         </>
+      )}
+      <div className="mt-6.25 flex items-center gap-3.75">
+        <button
+          className="flex h-9.25 items-center gap-2 rounded-full bg-neutral-200 px-5 text-body-02-medium text-neutral-700 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+          disabled={selectedCard.isUnavailable}
+          onClick={onShare}
+          type="button"
+        >
+          <ShareIcon aria-hidden className="size-4" />
+          취향 카드 공유하기
+        </button>
+        <button
+          aria-label="취향 카드 뒤집기"
+          className="flex size-10 items-center justify-center rounded-full bg-neutral-200 text-lg text-neutral-600 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400 disabled:[&_path]:fill-neutral-200 disabled:[&_path]:stroke-neutral-400"
+          disabled={selectedCard.isUnavailable}
+          onClick={onFlip}
+          type="button"
+        >
+          <ReportCardFlipIcon aria-hidden className="h-3.25 w-3" />
+        </button>
+      </div>
+      {selectedCard.isUnavailable && (
+        <p className="mt-30 text-center text-title-02-semibold text-neutral-400">
+          해당 월에 생성된 리포트가 없어요
+        </p>
       )}
     </section>
   );

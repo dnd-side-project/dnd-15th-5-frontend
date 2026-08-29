@@ -8,13 +8,13 @@ export type GooglePlaceSearchResultResponse = {
 };
 
 export type ReceiptOcrResponse = {
-  receiptImageId: number;
+  receiptImageId?: number;
   storeName?: string | null;
   address?: string | null;
   purchaseDate?: string | null;
   purchaseTime?: string | null;
   amount?: number | null;
-  googlePlaceSearchResult?: GooglePlaceSearchResultResponse;
+  googlePlaceSearchResult?: GooglePlaceSearchResultResponse | null;
 };
 
 export type ConsumptionCreateRequest = {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useConsumptionsInfiniteQuery } from '@/features/report/apis/hooks/useConsumptionsInfiniteQuery';
 import { useFirstAvailableYearMonthQuery } from '@/features/report/apis/hooks/useFirstAvailableYearMonthQuery';
@@ -26,10 +26,11 @@ import SpendingRecordList from './SpendingRecordList';
 import type { ReactNode } from 'react';
 
 type SpendingHistoryProps = {
+  contentBottomPaddingClassName?: string;
   headerDescription?: string;
   headerContent?: ReactNode;
   headerContentGapClassName?: string;
-  initialDate?: string;
+  scrollToDate?: string;
 };
 
 type MonthSelection = {
@@ -52,27 +53,31 @@ const getSupportedMonthFromDate = (
  * 선택한 월의 소비내역을 날짜별로 보여주고 월 이동과 월 선택 시트를 제공합니다.
  *
  * @param props - 소비내역 화면 속성입니다.
+ * @param props.contentBottomPaddingClassName - 소비내역 콘텐츠의 하단 여백 클래스입니다.
  * @param props.headerDescription - 월 선택 영역 대신 표시할 상단 안내 문구입니다.
  * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
  * @param props.headerContentGapClassName - 상단 콘텐츠와 월 선택 영역 사이의 간격 클래스입니다.
- * @param props.initialDate - 처음 표시할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
+ * @param props.scrollToDate - 진입 후 스크롤할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
  */
 export default function SpendingHistory({
+  contentBottomPaddingClassName = 'pb-8',
   headerDescription,
   headerContent,
   headerContentGapClassName = 'mt-5',
-  initialDate,
+  scrollToDate,
 }: SpendingHistoryProps) {
   const currentMonth = getCurrentMonth();
-  const initialMonth = parseSpendingMonthFromDate(initialDate);
-  const initialSelectedMonth = getSupportedMonthFromDate(initialDate, currentMonth) ?? currentMonth;
+  const initialMonth = parseSpendingMonthFromDate(scrollToDate);
+  const initialSelectedMonth =
+    getSupportedMonthFromDate(scrollToDate, currentMonth) ?? currentMonth;
+  const hasScrolledToDateRef = useRef(false);
   const [monthSelection, setMonthSelection] = useState<MonthSelection>(() => ({
-    dateValue: initialDate,
+    dateValue: scrollToDate,
     month: initialSelectedMonth,
   }));
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const requestedMonth =
-    monthSelection.dateValue === initialDate ? monthSelection.month : initialSelectedMonth;
+    monthSelection.dateValue === scrollToDate ? monthSelection.month : initialSelectedMonth;
   const firstAvailableYearMonthQuery = useFirstAvailableYearMonthQuery();
   const selectableMonths = createYearMonthRange(
     currentMonth,
@@ -98,21 +103,38 @@ export default function SpendingHistory({
     [consumptionsQuery.data]
   );
   const recordGroups = useMemo(() => groupConsumptionsByDate(consumptions), [consumptions]);
-  const filteredDate =
-    initialDate && initialMonth && isSameMonth(selectedMonth, initialMonth)
-      ? initialDate
+  const targetDate =
+    scrollToDate && initialMonth && isSameMonth(selectedMonth, initialMonth)
+      ? scrollToDate
       : undefined;
-  const isFilteringInitialDate = filteredDate !== undefined;
-  const visibleRecordGroups = isFilteringInitialDate
-    ? recordGroups.filter(({ purchaseDate }) => purchaseDate === filteredDate)
-    : recordGroups;
+  const hasTargetDate = recordGroups.some(({ purchaseDate }) => purchaseDate === targetDate);
   const lastLoadedDate = consumptions.at(-1)?.purchaseDate;
   const shouldFetchMoreForDate = Boolean(
-    filteredDate &&
+    targetDate &&
+    !hasTargetDate &&
     consumptionsQuery.hasNextPage &&
-    (!lastLoadedDate || lastLoadedDate >= filteredDate)
+    (!lastLoadedDate || lastLoadedDate >= targetDate)
   );
   const { fetchNextPage, isFetchingNextPage } = consumptionsQuery;
+  const isEmpty =
+    !consumptionsQuery.isPending &&
+    !consumptionsQuery.isError &&
+    !shouldFetchMoreForDate &&
+    recordGroups.length === 0;
+
+  useEffect(() => {
+    hasScrolledToDateRef.current = false;
+  }, [scrollToDate]);
+
+  useEffect(() => {
+    if (!targetDate || hasScrolledToDateRef.current) return;
+
+    const targetSection = document.getElementById(`date-${targetDate}`);
+    if (!targetSection) return;
+
+    targetSection.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    hasScrolledToDateRef.current = true;
+  }, [recordGroups, targetDate]);
 
   useEffect(() => {
     if (shouldFetchMoreForDate && !isFetchingNextPage && !consumptionsQuery.isFetchNextPageError) {
@@ -126,7 +148,7 @@ export default function SpendingHistory({
   ]);
 
   const setSelectedMonth = (month: YearMonth) => {
-    setMonthSelection({ dateValue: initialDate, month });
+    setMonthSelection({ dateValue: scrollToDate, month });
   };
 
   const handleMonthSelect = (month: YearMonth) => {
@@ -162,53 +184,51 @@ export default function SpendingHistory({
       {headerDescription && (
         <>
           <h1 className="sr-only">{selectedMonth.month}월 소비 내역</h1>
-          <p
-            className={cn(
-              'text-center text-body-02-medium text-neutral-500 mb-2',
-              headerContent && headerContentGapClassName
-            )}
-          >
-            {headerDescription}
-          </p>
+          {!isEmpty && (
+            <p
+              className={cn(
+                'text-center text-body-02-medium text-neutral-500 mb-2',
+                headerContent && headerContentGapClassName
+              )}
+            >
+              {headerDescription}
+            </p>
+          )}
         </>
       )}
 
-      <div className="flex flex-1 flex-col pb-8">
+      <div className={cn('flex flex-1 flex-col', contentBottomPaddingClassName)}>
         {consumptionsQuery.isPending && <SpendingHistorySkeleton />}
 
-        {!consumptionsQuery.isPending &&
-          consumptionsQuery.isError &&
-          visibleRecordGroups.length === 0 && (
-            <StateView
-              variant="error"
-              title="소비내역을 불러오지 못했어요"
-              description={'잠시 후 다시 시도해주세요.'}
-              actionLabel="다시 불러오기"
-              headingAs="h2"
-              onAction={() =>
-                void (consumptionsQuery.isFetchNextPageError
-                  ? fetchNextPage()
-                  : consumptionsQuery.refetch())
-              }
-              className="my-auto"
-            />
-          )}
+        {!consumptionsQuery.isPending && consumptionsQuery.isError && recordGroups.length === 0 && (
+          <StateView
+            variant="error"
+            title="소비내역을 불러오지 못했어요"
+            description={'잠시 후 다시 시도해주세요.'}
+            actionLabel="다시 불러오기"
+            headingAs="h2"
+            onAction={() =>
+              void (consumptionsQuery.isFetchNextPageError
+                ? fetchNextPage()
+                : consumptionsQuery.refetch())
+            }
+            className="my-auto"
+          />
+        )}
 
-        {!consumptionsQuery.isPending &&
-          !consumptionsQuery.isError &&
-          !shouldFetchMoreForDate &&
-          visibleRecordGroups.length === 0 && (
-            <MonthlyRecordEmptyState isPastMonth={isPastMonth} selectedMonth={selectedMonth} />
-          )}
+        {isEmpty && (
+          <MonthlyRecordEmptyState isPastMonth={isPastMonth} selectedMonth={selectedMonth} />
+        )}
 
-        {!consumptionsQuery.isPending && visibleRecordGroups.length > 0 && (
+        {!consumptionsQuery.isPending && recordGroups.length > 0 && (
           <SpendingRecordList
-            groups={visibleRecordGroups}
-            hasNextPage={!isFilteringInitialDate && consumptionsQuery.hasNextPage}
+            groups={recordGroups}
+            hasNextPage={!shouldFetchMoreForDate && consumptionsQuery.hasNextPage}
             isFetchingNextPage={isFetchingNextPage}
             isLoadMoreError={consumptionsQuery.isFetchNextPageError}
             onLoadMore={() => void fetchNextPage()}
             onRetry={() => void fetchNextPage()}
+            targetDate={targetDate}
           />
         )}
       </div>

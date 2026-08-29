@@ -31,8 +31,8 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
           src={image}
           alt=""
           className={cn(
-            'drop-shadow-sticker transition-[width,height] duration-200',
-            isSelected ? 'size-17.5' : 'size-12.5'
+            'size-17.5 origin-center drop-shadow-sticker transition-transform duration-200',
+            isSelected ? 'scale-100' : 'scale-[0.7143]'
           )}
         />
         {isVisitBadgeVisible && (
