@@ -55,12 +55,15 @@ export default function MonthlyReportPage() {
     selectedMonth,
   } = useMonthlyReport();
   const nickname = accountQuery.data?.data?.nickname?.trim() || '챱챱 사용자';
-  const { isSharing, shareToKakao } = useKakaoReportShare({
-    captureRef: kakaoThumbnailRef,
-    nickname,
-    onShared: handleShareSheetClose,
-    selectedMonth,
-  });
+  const { isKakaoShareReady, isPreparingKakaoShare, isSharing, shareToKakao } = useKakaoReportShare(
+    {
+      captureRef: kakaoThumbnailRef,
+      isEnabled: isShareSheetOpen,
+      nickname,
+      onShared: handleShareSheetClose,
+      selectedMonth,
+    }
+  );
 
   if (hasReportError) {
     return (
@@ -109,6 +112,7 @@ export default function MonthlyReportPage() {
             captureRef={captureRef}
             isCurrentReportActionVisible={hasNewerMonth}
             isFlipped={isCardFlipped}
+            nickname={nickname}
             onCardSelect={handleReportCardSelect}
             onCardTransitionChange={handleCardTransitionChange}
             onFlip={handlePreferenceCardFlip}
@@ -161,6 +165,8 @@ export default function MonthlyReportPage() {
 
               <ReportShareSheet
                 isDownloading={isDownloading}
+                isKakaoShareReady={isKakaoShareReady}
+                isPreparingKakaoShare={isPreparingKakaoShare}
                 isSharing={isSharing}
                 isOpen={isShareSheetOpen}
                 onClose={handleShareSheetClose}

@@ -7,12 +7,14 @@ import './reportPreferenceCard.css';
 import type { ReportPreferenceSharedCardProps } from './ReportPreferenceSharedCard';
 
 type ReportPreferenceShareScreenProps = ReportPreferenceSharedCardProps & {
+  isPhotoCapture?: boolean;
   nickname: string;
 };
 
 /** 이미지 저장용 취향 카드를 공유 페이지 배경과 사용자 문구 안에 배치합니다. */
 export default function ReportPreferenceShareScreen({
   description,
+  isPhotoCapture = false,
   metrics,
   nickname,
   tags,
@@ -25,7 +27,8 @@ export default function ReportPreferenceShareScreen({
     <article
       aria-label={`${nickname}님의 ${title} 취향 카드 공유 화면`}
       className={cn(
-        'report-preference-share relative flex min-h-dvh w-full shrink-0 items-center justify-center overflow-hidden',
+        'report-preference-share relative flex w-full shrink-0 items-center justify-center overflow-hidden',
+        isPhotoCapture ? 'h-full' : 'min-h-dvh',
         variantConfig.shareClassName
       )}
     >

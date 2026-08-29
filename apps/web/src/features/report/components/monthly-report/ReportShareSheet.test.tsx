@@ -14,6 +14,8 @@ function ReportShareSheetHarness() {
       </button>
       <ReportShareSheet
         isDownloading={false}
+        isKakaoShareReady
+        isPreparingKakaoShare={false}
         isSharing={false}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -25,6 +27,26 @@ function ReportShareSheetHarness() {
 }
 
 describe('ReportShareSheet', () => {
+  it('카카오 공유 데이터를 준비하는 동안 공유 버튼을 비활성화한다', () => {
+    render(
+      <ReportShareSheet
+        isDownloading={false}
+        isKakaoShareReady={false}
+        isPreparingKakaoShare
+        isSharing={false}
+        isOpen
+        onClose={jest.fn()}
+        onDownload={jest.fn()}
+        onKakaoShare={jest.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: '카카오톡으로 공유하기' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+  });
+
   it('열릴 때 포커스와 스크롤을 제한하고 Escape로 닫은 뒤 포커스를 복원한다', async () => {
     const user = userEvent.setup();
     render(<ReportShareSheetHarness />);

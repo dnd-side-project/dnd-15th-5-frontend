@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { useIssueShareLink } from '@/features/report/apis/mutations';
 import { captureReportImageBlob, createImageFileList } from '@/features/report/utils/reportImage';
@@ -39,6 +39,8 @@ describe('useKakaoReportShare', () => {
     sendDefault.mockReset();
     uploadImage.mockReset();
     showToast.mockReset();
+    mockedCaptureReportImageBlob.mockReset();
+    mockedCreateImageFileList.mockReset();
     mockedUseIssueShareLink.mockReturnValue({ mutateAsync } as never);
     mockedCaptureReportImageBlob.mockResolvedValue(imageBlob);
     mockedCreateImageFileList.mockReturnValue(imageFiles);
@@ -49,24 +51,29 @@ describe('useKakaoReportShare', () => {
     mockedUseToast.mockReturnValue({ showToast } as never);
   });
 
-  it('선택 월로 공유 토큰을 발급하고 토큰 기반 URL을 Kakao에 전달한다', async () => {
+  it('공유 데이터를 미리 준비하고 사용자 동작에서는 Kakao 공유만 즉시 호출한다', async () => {
     mutateAsync.mockResolvedValue({ data: { shareToken: 'share-token' } });
     sendDefault.mockResolvedValue(undefined);
     const onShared = jest.fn();
     const { result } = renderHook(() =>
       useKakaoReportShare({
         captureRef,
+        isEnabled: true,
         nickname: '이앤더',
         onShared,
         selectedMonth: { year: 2026, month: 8 },
       })
     );
 
-    await act(() => result.current.shareToKakao());
+    await waitFor(() => expect(result.current.isKakaoShareReady).toBe(true));
 
     expect(mutateAsync).toHaveBeenCalledWith({ params: { yearMonth: '2026-08' } });
     expect(mockedCaptureReportImageBlob).toHaveBeenCalledWith(captureRef.current);
     expect(uploadImage).toHaveBeenCalledWith({ file: imageFiles });
+    expect(sendDefault).not.toHaveBeenCalled();
+
+    act(() => result.current.shareToKakao());
+
     expect(sendDefault).toHaveBeenCalledWith({
       objectType: 'feed',
       content: {
@@ -82,7 +89,7 @@ describe('useKakaoReportShare', () => {
       },
       buttonTitle: '취향 카드 보기',
     });
-    expect(onShared).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(onShared).toHaveBeenCalledTimes(1));
   });
 
   it('공유 취소에는 오류 토스트를 표시하지 않는다', async () => {
@@ -91,14 +98,61 @@ describe('useKakaoReportShare', () => {
     const { result } = renderHook(() =>
       useKakaoReportShare({
         captureRef,
+        isEnabled: true,
         nickname: '이앤더',
         selectedMonth: { year: 2026, month: 8 },
       })
     );
 
-    await act(() => result.current.shareToKakao());
+    await waitFor(() => expect(result.current.isKakaoShareReady).toBe(true));
+    act(() => result.current.shareToKakao());
 
+    await waitFor(() => expect(result.current.isSharing).toBe(false));
     expect(showToast).not.toHaveBeenCalled();
+  });
+
+  it('Kakao SDK가 반환값 없이 앱을 실행해도 공유 성공으로 처리한다', async () => {
+    mutateAsync.mockResolvedValue({ data: { shareToken: 'share-token' } });
+    sendDefault.mockReturnValue(undefined);
+    const onShared = jest.fn();
+    const { result } = renderHook(() =>
+      useKakaoReportShare({
+        captureRef,
+        isEnabled: true,
+        nickname: '이앤더',
+        onShared,
+        selectedMonth: { year: 2026, month: 8 },
+      })
+    );
+
+    await waitFor(() => expect(result.current.isKakaoShareReady).toBe(true));
+    act(() => result.current.shareToKakao());
+
+    expect(sendDefault).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(onShared).toHaveBeenCalledTimes(1));
+    expect(showToast).not.toHaveBeenCalled();
+  });
+
+  it('공유 시트를 다시 열면 썸네일을 새로 캡처하고 업로드한다', async () => {
+    mutateAsync.mockResolvedValue({ data: { shareToken: 'share-token' } });
+    const { rerender, result } = renderHook(
+      ({ isEnabled }) =>
+        useKakaoReportShare({
+          captureRef,
+          isEnabled,
+          nickname: '이앤더',
+          selectedMonth: { year: 2026, month: 8 },
+        }),
+      { initialProps: { isEnabled: true } }
+    );
+
+    await waitFor(() => expect(result.current.isKakaoShareReady).toBe(true));
+
+    rerender({ isEnabled: false });
+    rerender({ isEnabled: true });
+
+    await waitFor(() => expect(uploadImage).toHaveBeenCalledTimes(2));
+    expect(mockedCaptureReportImageBlob).toHaveBeenCalledTimes(2);
   });
 
   it('링크 발급이나 SDK 호출 실패를 오류 토스트로 안내한다', async () => {
@@ -106,16 +160,19 @@ describe('useKakaoReportShare', () => {
     const { result } = renderHook(() =>
       useKakaoReportShare({
         captureRef,
+        isEnabled: true,
         nickname: '이앤더',
         selectedMonth: { year: 2026, month: 8 },
       })
     );
 
-    await act(() => result.current.shareToKakao());
-
-    expect(showToast).toHaveBeenCalledWith({
-      message: '카카오톡 공유에 실패했어요. 다시 시도해 주세요.',
-      type: 'error',
-    });
+    await waitFor(() =>
+      expect(showToast).toHaveBeenCalledWith({
+        message: '카카오톡 공유에 실패했어요. 다시 시도해 주세요.',
+        type: 'error',
+      })
+    );
+    expect(result.current.isKakaoShareReady).toBe(false);
+    expect(sendDefault).not.toHaveBeenCalled();
   });
 });

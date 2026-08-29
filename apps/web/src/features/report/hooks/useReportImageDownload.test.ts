@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { domToBlob } from 'modern-screenshot';
 
+import { REPORT_PHOTO_CAPTURE_SCALE } from '@/features/report/constants';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 import { useToast } from '@/shared/ui/toast';
 
@@ -58,7 +59,9 @@ describe('useReportImageDownload', () => {
 
     await act(() => result.current.downloadImage());
 
-    expect(mockDomToBlob).toHaveBeenCalledWith(result.current.captureRef.current, { scale: 2 });
+    expect(mockDomToBlob).toHaveBeenCalledWith(result.current.captureRef.current, {
+      scale: REPORT_PHOTO_CAPTURE_SCALE,
+    });
     expect(mockCreateObjectUrl).toHaveBeenCalledTimes(1);
     expect(clickSpy).toHaveBeenCalledTimes(1);
     expect(mockRequestToNative).not.toHaveBeenCalled();

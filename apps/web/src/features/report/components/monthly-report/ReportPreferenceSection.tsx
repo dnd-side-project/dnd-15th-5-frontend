@@ -1,6 +1,10 @@
 import ReportPreferenceCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCard';
 import ReportPreferenceCardFront from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceCardFront';
-import ReportPreferenceSharedCard from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceSharedCard';
+import ReportPreferenceShareScreen from '@/features/report/components/monthly-report/report-preference-card/ReportPreferenceShareScreen';
+import {
+  REPORT_KAKAO_THUMBNAIL_SIZE,
+  REPORT_PHOTO_CAPTURE_SIZE,
+} from '@/features/report/constants';
 import { useReportPreferenceCarousel } from '@/features/report/hooks/useReportPreferenceCarousel';
 import type { MonthlyReportPreferenceCard } from '@/features/report/types';
 import { ReportCardFlipIcon, ShareIcon } from '@/shared/assets/icons';
@@ -17,6 +21,7 @@ type ReportPreferenceSectionProps = {
   captureRef: Ref<HTMLDivElement>;
   isCurrentReportActionVisible: boolean;
   isFlipped: boolean;
+  nickname: string;
   onCardSelect: (index: number) => void;
   onCardTransitionChange: (isTransitioning: boolean) => void;
   onFlip: () => void;
@@ -32,6 +37,7 @@ export default function ReportPreferenceSection({
   captureRef,
   isCurrentReportActionVisible,
   isFlipped,
+  nickname,
   onCardSelect,
   onCardTransitionChange,
   onFlip,
@@ -122,17 +128,22 @@ export default function ReportPreferenceSection({
         <>
           {/* INFO: PNG 변환을 위해 공유용 카드를 display: none 없이 화면 밖에 렌더링한다. */}
           <div aria-hidden className="pointer-events-none fixed top-0 left-[-9999px]">
-            <div ref={captureRef}>
-              <ReportPreferenceSharedCard
+            <div ref={captureRef} style={REPORT_PHOTO_CAPTURE_SIZE}>
+              <ReportPreferenceShareScreen
                 description={selectedCard.description}
-                hasShadow={false}
+                isPhotoCapture
                 metrics={selectedCard.metrics}
+                nickname={nickname}
                 tags={selectedCard.tags}
                 title={selectedCard.title}
                 variant={selectedCard.variant}
               />
             </div>
-            <div ref={thumbnailCaptureRef}>
+            <div
+              className="overflow-hidden rounded-15"
+              ref={thumbnailCaptureRef}
+              style={REPORT_KAKAO_THUMBNAIL_SIZE}
+            >
               <ReportPreferenceCardFront
                 isStandalone
                 tags={selectedCard.tags}

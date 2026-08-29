@@ -2,21 +2,18 @@ import type { MonthlyReportPersona, ReportPreferenceCardVariant } from '@/featur
 
 import type { SpendingCategory } from '@chapchap/shared/common/types';
 
-/**
- * 백엔드의 4축 페르소나 코드를 카드 디자인 유형으로 변환합니다.
- * 코드는 방문 스타일(R/N) → 활동 범위(H/W) → 소비 시간대(D/M) → 소비 리듬(P/F) 순서입니다.
- *
- * - `RHMP`: 골목 야간반장
- * - `NWMF`: 미식 유목민
- * - `RHDP`: 동네 터줏대감
- * - `NHDF`: 골목 발굴러
- */
-export const REPORT_PERSONA_VARIANTS = {
-  RHMP: 'night-watch',
-  NWMF: 'food-nomad',
-  RHDP: 'local-regular',
-  NHDF: 'alley-explorer',
-} as const satisfies Record<string, ReportPreferenceCardVariant>;
+/** 저장용 세로 사진의 레이아웃 크기와 1080×1440 PNG 출력을 위한 캡처 배율입니다. */
+export const REPORT_PHOTO_CAPTURE_SIZE = {
+  height: 648,
+  width: 486,
+} as const;
+export const REPORT_PHOTO_CAPTURE_SCALE = 1080 / REPORT_PHOTO_CAPTURE_SIZE.width;
+
+/** 카카오 공유 썸네일로 사용하는 카드 앞면의 레이아웃 크기입니다. */
+export const REPORT_KAKAO_THUMBNAIL_SIZE = {
+  height: 375,
+  width: 276,
+} as const;
 
 /** 페르소나 카드 유형별 프론트 표시 카피입니다. */
 export const REPORT_PERSONA_COPY: Record<

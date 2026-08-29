@@ -68,10 +68,10 @@ const firePointerEvent = (element: Element, type: string, clientY: number) => {
   fireEvent(element, event);
 };
 
-const renderSpendingHistory = (initialDate?: string) =>
+const renderSpendingHistory = (scrollToDate?: string) =>
   render(
     <MemoryRouter>
-      <SpendingHistory initialDate={initialDate} />
+      <SpendingHistory scrollToDate={scrollToDate} />
     </MemoryRouter>
   );
 
@@ -216,13 +216,28 @@ describe('SpendingHistory', () => {
     expect(refetch).not.toHaveBeenCalled();
   });
 
-  it('초기 날짜가 있으면 해당 날짜의 소비 기록만 보여준다', () => {
+  it('이동할 날짜가 있으면 전체 기록을 유지하고 해당 날짜로 스크롤한다', () => {
+    const scrollIntoView = jest.fn();
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
     renderSpendingHistory('2026-08-21');
 
     expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '21일 금요일' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: '22일 토요일' })).not.toBeInTheDocument();
-    expect(screen.getAllByText('투썸플레이스')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: '22일 토요일' })).toBeInTheDocument();
+    expect(screen.getAllByText('투썸플레이스')).toHaveLength(7);
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+
+    const targetSection = screen.getByRole('heading', { name: '21일 금요일' }).closest('section');
+    const otherSection = screen.getByRole('heading', { name: '22일 토요일' }).closest('section');
+
+    expect(targetSection).toHaveAttribute('aria-current', 'date');
+    expect(targetSection).toHaveClass('bg-primary-50', 'p-3');
+    expect(otherSection).not.toHaveAttribute('aria-current');
+    expect(otherSection).not.toHaveClass('bg-primary-50', 'p-3');
   });
 
   it('날짜 링크로 진입한 뒤 다른 월을 선택하면 다음 페이지를 불러온다', async () => {
@@ -290,7 +305,7 @@ describe('SpendingHistory', () => {
 
     rerender(
       <MemoryRouter>
-        <SpendingHistory initialDate="2026-07-01" />
+        <SpendingHistory scrollToDate="2026-07-01" />
       </MemoryRouter>
     );
 
@@ -307,7 +322,7 @@ describe('SpendingHistory', () => {
     mockUseFirstAvailableYearMonthQuery.mockReturnValue({ data: { year: 2026, month: 5 } });
     rerender(
       <MemoryRouter>
-        <SpendingHistory initialDate="2026-04-01" />
+        <SpendingHistory scrollToDate="2026-04-01" />
       </MemoryRouter>
     );
 

@@ -16,9 +16,27 @@ const renderHomeLayout = () =>
     </MemoryRouter>
   );
 
+const renderReportLayout = () =>
+  render(
+    <MemoryRouter initialEntries={['/report']}>
+      <Routes>
+        <Route element={<AppMainLayout />}>
+          <Route path="/report" element={<main>리포트 화면</main>} />
+        </Route>
+      </Routes>
+    </MemoryRouter>
+  );
+
 describe('AppMainLayout', () => {
   beforeEach(() => {
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
+  });
+
+  it('리포트에서 하단 탭바를 표시하고 리포트 탭을 활성화한다', () => {
+    renderReportLayout();
+
+    expect(screen.getByRole('navigation', { name: '주요 메뉴' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '리포트' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('홈에서 스티커를 선택하면 하단 탭바를 완전히 제거한다', () => {

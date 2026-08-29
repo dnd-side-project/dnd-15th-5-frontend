@@ -77,10 +77,6 @@ export const router = createSentryBrowserRouter([
             element: <OnboardingPage />,
           },
           {
-            path: ROUTE_PATHS.report,
-            element: <ReportPage />,
-          },
-          {
             path: ROUTE_PATHS.monthlyReport,
             element: <MonthlyReportPage />,
           },
@@ -92,6 +88,10 @@ export const router = createSentryBrowserRouter([
               {
                 path: ROUTE_PATHS.home,
                 element: <HomePage />,
+              },
+              {
+                path: ROUTE_PATHS.report,
+                element: <ReportPage />,
               },
             ],
           },
