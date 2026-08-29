@@ -24,6 +24,7 @@ export type RecommendedPlaceItem = {
   liked?: boolean;
   thumbnailUrl?: string;
   googleMapsUri?: string;
+  googlePlaceId?: string;
 };
 
 export type NearbyPlacesResponse = {

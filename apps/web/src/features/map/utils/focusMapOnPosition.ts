@@ -3,10 +3,18 @@ import { BOTTOM_SHEET_HEIGHT_RATIO } from '@/shared/ui/bottom-sheet';
 
 const MARKER_VERTICAL_OFFSET_DIVISOR = 2.4;
 
-/** 핀이 바텀시트 위로 남는 지도 영역의 중앙에 오도록 적용할 세로 오프셋입니다. */
-export const getFocusedMarkerVerticalOffset = () =>
+/**
+ * 핀이 바텀시트 위로 남는 지도 영역의 중앙에 오도록 적용할 세로 오프셋입니다.
+ *
+ * `sheetHeightPx`를 넘기면 그 값을 기준으로 계산하고, 생략하면 `medium` 스냅 포인트 비율로
+ * 추정한다. 시트가 `fitContent`로 콘텐츠 높이에 맞춰지는 경우(예: 가게 추천 캐러셀) 실제 높이가
+ * `medium` 비율보다 커서 추정치만으로는 핀이 시트에 가려질 수 있으므로, 가능하면 호출 측이
+ * 바텀시트의 실측 높이(`visibleHeightPx`)를 전달해야 한다.
+ */
+export const getFocusedMarkerVerticalOffset = (sheetHeightPx?: number) =>
   Math.round(
-    window.innerHeight * (BOTTOM_SHEET_HEIGHT_RATIO.medium / MARKER_VERTICAL_OFFSET_DIVISOR)
+    (sheetHeightPx ?? window.innerHeight * BOTTOM_SHEET_HEIGHT_RATIO.medium) /
+      MARKER_VERTICAL_OFFSET_DIVISOR
   );
 
 /**
@@ -14,7 +22,12 @@ export const getFocusedMarkerVerticalOffset = () =>
  * 지도가 막 마운트돼 투영이 아직 준비되지 않았으면(또는 테스트 등에서 투영을 제공하지 않으면)
  * `null`을 반환해 호출 측이 idle 이후 보정하는 방식으로 대체하도록 한다.
  */
-const getOffsetCenter = (map: google.maps.Map, position: MapPosition, zoom: number) => {
+const getOffsetCenter = (
+  map: google.maps.Map,
+  position: MapPosition,
+  zoom: number,
+  sheetHeightPx?: number
+) => {
   const projection = map.getProjection?.();
   if (!projection) return null;
 
@@ -26,7 +39,7 @@ const getOffsetCenter = (map: google.maps.Map, position: MapPosition, zoom: numb
   const scale = 2 ** zoom;
   const offsetWorldPoint = new google.maps.Point(
     worldPoint.x,
-    worldPoint.y + getFocusedMarkerVerticalOffset() / scale
+    worldPoint.y + getFocusedMarkerVerticalOffset(sheetHeightPx) / scale
   );
 
   return projection.fromPointToLatLng(offsetWorldPoint);
@@ -45,9 +58,15 @@ const getOffsetCenter = (map: google.maps.Map, position: MapPosition, zoom: numb
  * 같은 effect가 중복 실행되면 idle 리스너가 두 번 등록되어 오프셋이 두 번 적용될 수 있으므로,
  * 호출 측 effect의 cleanup에서 반드시 이 함수를 반환해 정리해야 한다.
  */
-export const focusMapOnPosition = (map: google.maps.Map, position: MapPosition, zoom?: number) => {
+export const focusMapOnPosition = (
+  map: google.maps.Map,
+  position: MapPosition,
+  zoom?: number,
+  sheetHeightPx?: number
+) => {
   const targetZoom = zoom ?? map.getZoom?.();
-  const offsetCenter = targetZoom !== undefined ? getOffsetCenter(map, position, targetZoom) : null;
+  const offsetCenter =
+    targetZoom !== undefined ? getOffsetCenter(map, position, targetZoom, sheetHeightPx) : null;
 
   if (offsetCenter) {
     map.moveCamera({ center: offsetCenter, ...(zoom === undefined ? {} : { zoom }) });
@@ -58,7 +77,7 @@ export const focusMapOnPosition = (map: google.maps.Map, position: MapPosition, 
   // NOTE: 지도가 막 마운트된 직후에는 투영이 없어 위 계산이 불가능하므로, moveCamera가 실제로
   // 반영되어 지도가 안정된(idle) 다음 panBy로 오프셋을 적용한다.
   const idleListener = google.maps.event.addListenerOnce(map, 'idle', () => {
-    map.panBy(0, getFocusedMarkerVerticalOffset());
+    map.panBy(0, getFocusedMarkerVerticalOffset(sheetHeightPx));
   });
   return () => google.maps.event.removeListener(idleListener);
 };

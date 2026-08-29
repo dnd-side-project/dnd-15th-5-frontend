@@ -51,9 +51,15 @@ pnpm preview       # 웹 빌드 결과 미리보기
 
 - 브랜치: `타입/기능명-이슈번호` (예: `feat/login-ui-10`), `develop`에서 생성해서 `develop`으로 PR.
 - 커밋: `깃모지 Type: 작업 내용` (예: `✨ Feat: 로그인 기능 추가`), 한글, 마침표 없음.
-- Squash merge, 승인 후 merge, merge 후 브랜치 삭제.
+- 일반 작업 PR과 `main` 동기화 브랜치 PR은 `develop`을 대상으로 하고, 배포 PR은
+  `develop`에서 `main` 방향으로 생성한다.
+- 일반 작업 브랜치는 Squash merge하고, `main` 동기화 브랜치와 `develop` → `main` 배포는
+  부모 이력을 보존하도록 Create a merge commit을 사용한다.
+- 승인 후 PR을 merge하고 병합된 일반 작업 브랜치와 동기화 브랜치만 삭제한다.
+  장기 브랜치인 `main`과 `develop`은 삭제하지 않는다.
+- `main`과 `develop`에는 직접 push하지 않는다. 변경 사항은 반드시 위 PR 흐름으로 반영한다.
 - 커밋 메시지와 PR 본문은 [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md)를 따른다.
-- 사용자가 명시적으로 요청하지 않으면 `git commit`, `git push`, PR 생성을 실행하지 않는다.
+- 사용자가 명시적으로 요청하지 않으면 `git commit`, 작업 브랜치로의 `git push`, PR 생성을 실행하지 않는다.
 
 ## Testing
 

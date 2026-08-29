@@ -17,10 +17,7 @@ export default function AgreementPage() {
         약관에 동의해주세요
       </h1>
 
-      <TermsAgreementForm
-        isLoading={isLoading}
-        onSubmit={({ serviceTermsAgreed }) => submitTermsAgreement({ serviceTermsAgreed })}
-      />
+      <TermsAgreementForm isLoading={isLoading} onSubmit={submitTermsAgreement} />
     </main>
   );
 }

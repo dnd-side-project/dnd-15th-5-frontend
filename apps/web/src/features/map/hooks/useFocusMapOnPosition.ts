@@ -21,13 +21,13 @@ export const useFocusMapOnPosition = (map: google.maps.Map | null | undefined) =
   );
 
   return useCallback(
-    (position: MapPosition, zoom?: number) => {
+    (position: MapPosition, zoom?: number, sheetHeightPx?: number) => {
       if (!map) {
         return;
       }
 
       cancelPendingFocusRef.current?.();
-      cancelPendingFocusRef.current = focusMapOnPosition(map, position, zoom);
+      cancelPendingFocusRef.current = focusMapOnPosition(map, position, zoom, sheetHeightPx);
     },
     [map]
   );

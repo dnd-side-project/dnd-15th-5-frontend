@@ -1,3 +1,4 @@
+export { default as ContactButton } from './components/ContactButton';
 export { default as LogoutButton } from './components/LogoutButton';
 export { default as WithdrawAccountButton } from './components/WithdrawAccountButton';
 export { default as MyPageMenuItem } from './components/MyPageMenuItem';

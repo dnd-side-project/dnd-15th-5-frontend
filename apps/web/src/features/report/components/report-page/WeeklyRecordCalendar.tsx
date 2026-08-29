@@ -69,7 +69,8 @@ export default function WeeklyRecordCalendar({
                   cellClassName,
                   'group hover:bg-primary-100 active:bg-primary-100 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset focus-visible:outline-none'
                 )}
-                to={`${historyPath}?date=${dateValue}`}
+                state={{ scrollToDate: dateValue }}
+                to={historyPath}
               >
                 <WeeklyRecordCellContent record={record} />
               </Link>

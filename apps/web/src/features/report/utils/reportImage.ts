@@ -4,10 +4,13 @@ const OBJECT_URL_REVOKE_DELAY_MS = 1_000;
 const REPORT_IMAGE_CAPTURE_SCALE = 2;
 
 /** 이미지 저장과 카카오톡 공유에 사용할 리포트 카드 PNG를 생성합니다. */
-export const captureReportImageBlob = async (element: HTMLElement) => {
+export const captureReportImageBlob = async (
+  element: HTMLElement,
+  scale = REPORT_IMAGE_CAPTURE_SCALE
+) => {
   await document.fonts.ready;
 
-  return domToBlob(element, { scale: REPORT_IMAGE_CAPTURE_SCALE });
+  return domToBlob(element, { scale });
 };
 
 /** Kakao 이미지 업로드 API가 요구하는 FileList 형태로 PNG Blob을 변환합니다. */

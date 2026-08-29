@@ -6,6 +6,8 @@ import MobileLayout from '@/app/layouts/MobileLayout';
 import { AuthenticatedRoute, GuestOnlyRoute, TermsAgreementRoute } from '@/app/routes/AuthRoute';
 import RouteErrorPage from '@/app/routes/RouteErrorPage';
 import AgreementPage from '@/pages/agreement/AgreementPage';
+import PrivacyPolicyPage from '@/pages/agreement/PrivacyPolicyPage';
+import TermsOfServicePage from '@/pages/agreement/TermsOfServicePage';
 import AuthCallbackPage from '@/pages/auth-callback/AuthCallbackPage';
 import HomePage from '@/pages/home/HomePage';
 import MapSearchPage from '@/pages/home/search/MapSearchPage';
@@ -54,7 +56,11 @@ export const router = createSentryBrowserRouter([
           },
           {
             element: <TermsAgreementRoute />,
-            children: [{ path: ROUTE_PATHS.agreement, element: <AgreementPage /> }],
+            children: [
+              { path: ROUTE_PATHS.agreement, element: <AgreementPage /> },
+              { path: ROUTE_PATHS.agreementPrivacyPolicy, element: <PrivacyPolicyPage /> },
+              { path: ROUTE_PATHS.agreementTermsOfService, element: <TermsOfServicePage /> },
+            ],
           },
         ],
       },
@@ -71,10 +77,6 @@ export const router = createSentryBrowserRouter([
             element: <OnboardingPage />,
           },
           {
-            path: ROUTE_PATHS.report,
-            element: <ReportPage />,
-          },
-          {
             path: ROUTE_PATHS.monthlyReport,
             element: <MonthlyReportPage />,
           },
@@ -86,6 +88,10 @@ export const router = createSentryBrowserRouter([
               {
                 path: ROUTE_PATHS.home,
                 element: <HomePage />,
+              },
+              {
+                path: ROUTE_PATHS.report,
+                element: <ReportPage />,
               },
             ],
           },
