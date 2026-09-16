@@ -24,18 +24,19 @@ export const createMonthlyReportCarouselCards = ({
 
   const selectedYearMonth = formatYearMonth(selectedMonth);
   const cardsByYearMonth = new Map<string, MonthlyReportAdjacentCard>();
-  const reportCards: MonthlyReportAdjacentCard[] = [reportData, ...adjacentReportData].flatMap(
-    (monthlyReport) => [
-      ...monthlyReport.adjacentCards,
+  const monthlyReports = [reportData, ...adjacentReportData];
+  const reportCards: MonthlyReportAdjacentCard[] = [
+    ...monthlyReports.flatMap((monthlyReport) => monthlyReport.adjacentCards),
+    ...monthlyReports.map((monthlyReport) =>
       'isUnavailable' in monthlyReport
         ? { isUnavailable: true as const, month: monthlyReport.month }
         : {
             ...monthlyReport.persona,
             isUnavailable: false as const,
             month: monthlyReport.month,
-          },
-    ]
-  );
+          }
+    ),
+  ];
 
   reportCards.forEach((card) => {
     const yearMonth = formatYearMonth(card.month);

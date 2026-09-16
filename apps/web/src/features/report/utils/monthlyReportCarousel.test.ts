@@ -99,6 +99,44 @@ describe('createMonthlyReportCarouselCards', () => {
     expect(cards.find(({ id }) => id === '2026-06')?.isUnavailable).toBe(false);
   });
 
+  it('같은 월의 인접 생성 카드보다 직접 조회한 상세 카드를 우선한다', () => {
+    const metrics = [{ leftLabel: '신규 탐색형', rightLabel: '단골 반복형', value: 70 }];
+    const cards = createMonthlyReportCarouselCards({
+      adjacentReportData: [
+        {
+          ...report,
+          adjacentCards: [
+            {
+              description: '인접 카드',
+              isUnavailable: false,
+              metrics: [],
+              month: { month: 6, year: 2026 },
+              tags: [],
+              title: '인접 카드',
+              variant: 'food-nomad',
+            },
+          ],
+          month: { month: 5, year: 2026 },
+        },
+      ],
+      reportData: {
+        ...report,
+        persona: { ...report.persona, metrics },
+      },
+      selectableMonths: [
+        { month: 6, year: 2026 },
+        { month: 5, year: 2026 },
+      ],
+      selectedMonth: { month: 6, year: 2026 },
+    });
+
+    expect(cards.find(({ id }) => id === '2026-06')).toMatchObject({
+      isUnavailable: false,
+      metrics,
+      title: '제목',
+    });
+  });
+
   it('응답에 선택한 달 카드가 없으면 빈 카드를 추가한다', () => {
     const cards = createMonthlyReportCarouselCards({
       reportData: report,
