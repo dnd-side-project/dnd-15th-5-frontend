@@ -111,6 +111,7 @@ describe('ReportPreferenceSection', () => {
 
   it('empty 카드에서는 공유와 뒤집기 버튼을 비활성화하고 키보드 월 이동은 유지한다', () => {
     const onCardSelect = jest.fn();
+    const onCardTransitionChange = jest.fn();
 
     render(
       <ReportPreferenceSection
@@ -131,7 +132,7 @@ describe('ReportPreferenceSection', () => {
         isFlipped={false}
         nickname="이앤더"
         onCardSelect={onCardSelect}
-        onCardTransitionChange={jest.fn()}
+        onCardTransitionChange={onCardTransitionChange}
         onFlip={jest.fn()}
         onShare={jest.fn()}
         onViewCurrentReport={jest.fn()}
@@ -156,5 +157,7 @@ describe('ReportPreferenceSection', () => {
 
     expect(carousel).toHaveFocus();
     expect(onCardSelect).toHaveBeenCalledWith(1);
+    expect(onCardTransitionChange).toHaveBeenNthCalledWith(1, true);
+    expect(onCardTransitionChange).toHaveBeenNthCalledWith(2, false);
   });
 });

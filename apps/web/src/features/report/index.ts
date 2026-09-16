@@ -7,6 +7,7 @@ export { default as MonthlyReportEmptyState } from './components/monthly-report/
 export { default as MonthlyReportUnavailableCard } from './components/monthly-report/MonthlyReportUnavailableCard';
 export { default as ReportActivitySummary } from './components/monthly-report/ReportActivitySummary';
 export { default as ReportPreferenceSection } from './components/monthly-report/ReportPreferenceSection';
+export type { ReportPreferenceSectionNavigation } from './components/monthly-report/ReportPreferenceSection';
 export { default as ReportShareSheet } from './components/monthly-report/ReportShareSheet';
 export { default as ReportTopShops } from './components/monthly-report/ReportTopShops';
 export { default as WeekdaySpendingChart } from './components/monthly-report/WeekdaySpendingChart';
