@@ -18,7 +18,7 @@ jest.mock('@/features/report/apis/hooks/useFirstAvailableYearMonthQuery', () => 
 }));
 
 jest.mock('@/features/report/apis/hooks/useAdjacentMonthlyReportPrefetch', () => ({
-  useAdjacentMonthlyReportPrefetch: jest.fn(),
+  useAdjacentMonthlyReportPrefetch: jest.fn(() => []),
 }));
 
 jest.mock('@/features/report/apis/hooks/useMonthlyReportQuery', () => ({

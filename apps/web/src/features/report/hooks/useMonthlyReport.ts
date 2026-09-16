@@ -48,7 +48,7 @@ export const useMonthlyReport = () => {
   const monthlyReportQuery = useMonthlyReportQuery(selectedMonth);
   const reportData = monthlyReportQuery.data;
   const report = reportData && !('isUnavailable' in reportData) ? reportData : undefined;
-  useAdjacentMonthlyReportPrefetch(reportData?.adjacentCards);
+  const adjacentReportData = useAdjacentMonthlyReportPrefetch(reportData?.adjacentCards);
   const selectedYearMonth = formatYearMonth(selectedMonth);
   const { captureRef, downloadImage, hasDownloadError, isDownloading } = useReportImageDownload(
     `${selectedMonth.month}월-취향카드.png`
@@ -57,6 +57,7 @@ export const useMonthlyReport = () => {
   const hasNewerMonth = selectedMonthIndex > 0;
   const hasOlderMonth = selectedMonthIndex < selectableMonths.length - 1;
   const reportCards = createMonthlyReportCarouselCards({
+    adjacentReportData,
     reportData,
     selectableMonths,
     selectedMonth,
@@ -152,7 +153,6 @@ export const useMonthlyReport = () => {
     hasOlderMonth,
     hasReportError,
     isCardFlipped,
-    isCardTransitioning,
     isDownloading,
     isMonthPickerOpen,
     isPending,

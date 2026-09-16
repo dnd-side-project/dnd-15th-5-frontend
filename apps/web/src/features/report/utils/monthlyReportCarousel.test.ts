@@ -39,6 +39,65 @@ describe('createMonthlyReportCarouselCards', () => {
     expect(cards[1]?.isUnavailable).toBe(false);
   });
 
+  it('API가 여러 해에 걸쳐 제공한 인접 카드를 개수 제한 없이 모두 정렬한다', () => {
+    const cards = createMonthlyReportCarouselCards({
+      reportData: {
+        ...report,
+        adjacentCards: [
+          { isUnavailable: true, month: { month: 3, year: 2026 } },
+          { isUnavailable: true, month: { month: 10, year: 2025 } },
+          { isUnavailable: true, month: { month: 2, year: 2026 } },
+          { isUnavailable: true, month: { month: 12, year: 2025 } },
+          { isUnavailable: true, month: { month: 11, year: 2025 } },
+        ],
+        month: { month: 1, year: 2026 },
+      },
+      selectableMonths: [
+        { month: 3, year: 2026 },
+        { month: 2, year: 2026 },
+        { month: 1, year: 2026 },
+        { month: 12, year: 2025 },
+        { month: 11, year: 2025 },
+        { month: 10, year: 2025 },
+      ],
+      selectedMonth: { month: 1, year: 2026 },
+    });
+
+    expect(cards.map(({ id }) => id)).toEqual([
+      '2025-10',
+      '2025-11',
+      '2025-12',
+      '2026-01',
+      '2026-02',
+      '2026-03',
+    ]);
+  });
+
+  it('미리 조회한 인접 월의 바깥쪽 카드도 이동 전에 목록에 합친다', () => {
+    const cards = createMonthlyReportCarouselCards({
+      adjacentReportData: [
+        {
+          ...report,
+          adjacentCards: [
+            { isUnavailable: true, month: { month: 4, year: 2026 } },
+            { isUnavailable: true, month: { month: 6, year: 2026 } },
+          ],
+          month: { month: 5, year: 2026 },
+        },
+      ],
+      reportData: report,
+      selectableMonths: [
+        { month: 7, year: 2026 },
+        { month: 6, year: 2026 },
+        { month: 5, year: 2026 },
+        { month: 4, year: 2026 },
+      ],
+      selectedMonth: { month: 6, year: 2026 },
+    });
+
+    expect(cards.map(({ id }) => id)).toEqual(['2026-04', '2026-05', '2026-06', '2026-07']);
+  });
+
   it('응답에 선택한 달 카드가 없으면 빈 카드를 추가한다', () => {
     const cards = createMonthlyReportCarouselCards({
       reportData: report,
