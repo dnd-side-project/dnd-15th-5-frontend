@@ -37,14 +37,14 @@ export default function MonthlyReportPage() {
     captureRef,
     downloadImage,
     handleCardTransitionChange,
-    handleCurrentReportSelect,
-    handleNewerMonth,
-    handleOlderMonth,
+    handleCurrentReportSelect: selectCurrentReport,
+    handleNewerMonth: selectNewerMonth,
+    handleOlderMonth: selectOlderMonth,
     handleMonthPickerClose,
     handleMonthPickerOpen,
-    handleMonthSelect,
+    handleMonthSelect: selectMonth,
     handlePreferenceCardFlip,
-    handleReportCardSelect,
+    handleReportCardSelect: selectReportCard,
     handleShareSheetClose,
     handleShareSheetOpen,
     hasNewerMonth,
@@ -77,13 +77,30 @@ export default function MonthlyReportPage() {
   const handleOlderReportMonth = () => {
     if (preferenceCardNavigationRef.current?.showOlderMonth()) return;
 
-    handleOlderMonth();
+    setPreviewMonth(null);
+    selectOlderMonth();
   };
 
   const handleNewerReportMonth = () => {
     if (preferenceCardNavigationRef.current?.showNewerMonth()) return;
 
-    handleNewerMonth();
+    setPreviewMonth(null);
+    selectNewerMonth();
+  };
+
+  const handleMonthSelect = (month: YearMonth) => {
+    setPreviewMonth(null);
+    selectMonth(month);
+  };
+
+  const handleReportCardSelect = (index: number) => {
+    setPreviewMonth(null);
+    selectReportCard(index);
+  };
+
+  const handleCurrentReportSelect = () => {
+    setPreviewMonth(null);
+    selectCurrentReport();
   };
 
   const handleReportCardPreview = (index: number) => {

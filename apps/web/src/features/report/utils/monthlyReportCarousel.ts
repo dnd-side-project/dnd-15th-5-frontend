@@ -37,7 +37,14 @@ export const createMonthlyReportCarouselCards = ({
     ]
   );
 
-  reportCards.forEach((card) => cardsByYearMonth.set(formatYearMonth(card.month), card));
+  reportCards.forEach((card) => {
+    const yearMonth = formatYearMonth(card.month);
+    const existingCard = cardsByYearMonth.get(yearMonth);
+
+    if (existingCard && !existingCard.isUnavailable && card.isUnavailable) return;
+
+    cardsByYearMonth.set(yearMonth, card);
+  });
 
   if (!cardsByYearMonth.has(selectedYearMonth)) {
     cardsByYearMonth.set(selectedYearMonth, { isUnavailable: true, month: selectedMonth });

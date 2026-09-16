@@ -96,6 +96,7 @@ describe('createMonthlyReportCarouselCards', () => {
     });
 
     expect(cards.map(({ id }) => id)).toEqual(['2026-04', '2026-05', '2026-06', '2026-07']);
+    expect(cards.find(({ id }) => id === '2026-06')?.isUnavailable).toBe(false);
   });
 
   it('응답에 선택한 달 카드가 없으면 빈 카드를 추가한다', () => {
