@@ -25,9 +25,11 @@ export default function HomePage() {
   const { hasUnreadNotification } = useHasUnreadNotificationQuery();
   const { stickers } = useVisitedPlaceStickersQuery();
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
-  const createdPlace =
-    (location.state as { createdPlace?: CreatedConsumptionPlace } | null)?.createdPlace ??
-    parseCreatedConsumptionPlace(searchParams);
+  const stateCreatedPlace = (location.state as { createdPlace?: CreatedConsumptionPlace } | null)
+    ?.createdPlace;
+  const receiptCreatedPlace = parseCreatedConsumptionPlace(searchParams);
+  const createdPlace = stateCreatedPlace ?? receiptCreatedPlace;
+  const recordMethod = stateCreatedPlace ? 'manual' : receiptCreatedPlace ? 'receipt' : undefined;
   const handleCreatedConsumptionResult = useCallback(() => {
     navigate(ROUTE_PATHS.home, { replace: true, state: null });
   }, [navigate]);
@@ -40,6 +42,7 @@ export default function HomePage() {
 
   useCreatedConsumptionResult({
     createdPlace,
+    recordMethod,
     onHandled: handleCreatedConsumptionResult,
   });
 

@@ -1,7 +1,10 @@
+import { ANALYTICS_EVENTS, NATIVE_ANALYTICS_EVENT } from '@chapchap/shared/analytics';
 import { act, render } from '@testing-library/react-native';
 import { AppState, BackHandler, Linking } from 'react-native';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
+import { trackNativeAnalyticsEvent } from '@/shared/lib/analytics';
+import { resetNativeAnalyticsForTest } from '@/shared/lib/analytics/nativeAnalytics';
 
 import HomeScreen from './HomeScreen';
 
@@ -63,6 +66,8 @@ jest.mock('@/bridge', () => ({
   },
   getUrlOrigin: (url: string) => new URL(url).origin,
   isTrustedBridgeUrl: (url: string, trustedOrigin: string) => new URL(url).origin === trustedOrigin,
+  isBridgeEvent: (message: { kind?: string }) => message?.kind === 'event',
+  parseBridgeMessage: (message: string) => JSON.parse(message),
   respondToBridgeRequest: async (
     message: { kind?: string },
     trustedOrigin: string,
@@ -80,6 +85,7 @@ describe('<HomeScreen />', () => {
   const originalWebUrl = process.env.EXPO_PUBLIC_WEB_URL;
 
   beforeEach(() => {
+    resetNativeAnalyticsForTest();
     hardwareBackHandler = undefined;
     appStateChangeHandler = undefined;
     mockGoBack.mockReset();
@@ -102,6 +108,7 @@ describe('<HomeScreen />', () => {
   });
 
   afterEach(() => {
+    resetNativeAnalyticsForTest();
     jest.restoreAllMocks();
     process.env.EXPO_PUBLIC_WEB_URL = originalWebUrl;
   });
@@ -140,6 +147,65 @@ describe('<HomeScreen />', () => {
 
     expect(mockCreateAppActiveScript).toHaveBeenCalledWith('https://chapchap.example.com');
     expect(mockInjectJavaScript).toHaveBeenCalledWith('app-active;');
+  });
+
+  it('네이티브 화면의 분석 이벤트를 메인 WebView에 전달한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { getByTestId } = await render(<HomeScreen />);
+
+    await act(async () => {
+      trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepCompleted, {
+        screen_name: 'REC_ReceiptScan',
+      });
+    });
+    expect(mockInjectJavaScript).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await getByTestId('home-webview').props.onMessage({
+        nativeEvent: {
+          data: JSON.stringify({ kind: 'event', type: 'analyticsReady', payload: {} }),
+          url: 'https://chapchap.example.com/',
+        },
+      });
+    });
+
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      expect.stringContaining(`new CustomEvent(${JSON.stringify(NATIVE_ANALYTICS_EVENT)}`)
+    );
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      expect.stringContaining('"screen_name":"REC_ReceiptScan"')
+    );
+  });
+
+  it('WebView가 새 문서를 로드하면 다음 준비 신호까지 분석 이벤트를 보관한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { getByTestId } = await render(<HomeScreen />);
+
+    await act(async () => {
+      await getByTestId('home-webview').props.onMessage({
+        nativeEvent: {
+          data: JSON.stringify({ kind: 'event', type: 'analyticsReady', payload: {} }),
+          url: 'https://chapchap.example.com/',
+        },
+      });
+      getByTestId('home-webview').props.onLoadStart();
+      trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepAttempted, { attempt_number: 1 });
+    });
+
+    expect(mockInjectJavaScript).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await getByTestId('home-webview').props.onMessage({
+        nativeEvent: {
+          data: JSON.stringify({ kind: 'event', type: 'analyticsReady', payload: {} }),
+          url: 'https://chapchap.example.com/home',
+        },
+      });
+    });
+
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      expect.stringContaining('"attempt_number":1')
+    );
   });
 
   it('지도 홈은 전체 화면, 다른 웹 경로는 하단 배경만 edge-to-edge로 표시한다', async () => {

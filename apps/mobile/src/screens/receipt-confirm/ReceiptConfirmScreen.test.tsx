@@ -1,8 +1,10 @@
+import { ANALYTICS_EVENTS } from '@chapchap/shared/analytics';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import { createConsumption } from '@/features/record/apis/clients';
+import { trackNativeAnalyticsEvent } from '@/shared/lib/analytics';
 
 import ReceiptConfirmScreen from './ReceiptConfirmScreen';
 
@@ -28,6 +30,13 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/features/record/apis/clients', () => ({ createConsumption: jest.fn() }));
 jest.mock('@/bridge/webViewNavigation', () => ({ requestWebViewNavigation: jest.fn() }));
+jest.mock('@/shared/lib/analytics', () => ({
+  NATIVE_ANALYTICS_SCREENS: {
+    receiptConfirm: { screenName: 'REC_ReceiptConfirm', screenPath: '/receipt-confirm' },
+  },
+  trackNativeAnalyticsEvent: jest.fn(),
+  useNativeScreenAnalytics: jest.fn(),
+}));
 jest.mock('@/shared/ui/toast', () => ({
   useToast: () => ({ showToast: mockShowToast, closeToast: jest.fn() }),
 }));
@@ -125,7 +134,57 @@ describe('<ReceiptConfirmScreen />', () => {
     expect(requestWebViewNavigation).toHaveBeenCalledWith(
       '/home?createdPlaceName=%EC%B9%B4%ED%8E%98+%EC%B0%A8%EC%B0%A8&createdPlaceLat=37.506481&createdPlaceLng=127.024551'
     );
+    expect(trackNativeAnalyticsEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.stepAttempted, {
+      step_name: 'REC_ReceiptConfirm',
+      screen_name: 'REC_ReceiptConfirm',
+      screen_path: '/receipt-confirm',
+      attempt_outcome: 'submitted',
+      attempt_number: 1,
+      retry_count: 0,
+      is_retry: false,
+    });
+    expect(trackNativeAnalyticsEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.stepCompleted, {
+      step_name: 'REC_ReceiptConfirm',
+      screen_name: 'REC_ReceiptConfirm',
+      screen_path: '/receipt-confirm',
+      completion_reason: 'record_created',
+      attempt_number: 1,
+    });
     expect(mockShowToast).not.toHaveBeenCalled();
     expect(router.dismissTo).toHaveBeenCalledWith('/');
+  });
+
+  it('저장 실패 뒤 다시 기록하면 재시도 횟수를 누적한다', async () => {
+    jest
+      .mocked(createConsumption)
+      .mockRejectedValueOnce(new Error('저장할 수 없습니다.'))
+      .mockResolvedValueOnce({ consumptionId: 31 });
+    const { getByRole } = await render(<ReceiptConfirmScreen />);
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '기록하기' }));
+    });
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '기록하기' }));
+    });
+
+    expect(trackNativeAnalyticsEvent).toHaveBeenNthCalledWith(1, ANALYTICS_EVENTS.stepAttempted, {
+      step_name: 'REC_ReceiptConfirm',
+      screen_name: 'REC_ReceiptConfirm',
+      screen_path: '/receipt-confirm',
+      attempt_outcome: 'submitted',
+      attempt_number: 1,
+      retry_count: 0,
+      is_retry: false,
+    });
+    expect(trackNativeAnalyticsEvent).toHaveBeenNthCalledWith(2, ANALYTICS_EVENTS.stepAttempted, {
+      step_name: 'REC_ReceiptConfirm',
+      screen_name: 'REC_ReceiptConfirm',
+      screen_path: '/receipt-confirm',
+      attempt_outcome: 'submitted',
+      attempt_number: 2,
+      retry_count: 1,
+      is_retry: true,
+    });
   });
 });

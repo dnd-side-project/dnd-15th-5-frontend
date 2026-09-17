@@ -18,6 +18,7 @@ import type { ComponentType, SVGProps } from 'react';
 export const BOTTOM_TAB_BAR_HEIGHT_CSS = 'calc(6.5rem + env(safe-area-inset-bottom))';
 
 type TabNavLinkProps = {
+  analyticsId: string;
   to: string;
   end?: boolean;
   label: string;
@@ -26,9 +27,15 @@ type TabNavLinkProps = {
 };
 
 /** 활성 탭 아이콘 뒤에 알약 모양 배경을, 라벨 색과 굵기를 애니메이션으로 전환하는 탭 링크입니다. */
-function TabNavLink({ to, end, label, Icon, onClick }: TabNavLinkProps) {
+function TabNavLink({ analyticsId, to, end, label, Icon, onClick }: TabNavLinkProps) {
   return (
-    <NavLink to={to} end={end} onClick={onClick} className="flex min-w-0 justify-center">
+    <NavLink
+      to={to}
+      end={end}
+      onClick={onClick}
+      data-analytics-id={analyticsId}
+      className="flex min-w-0 justify-center"
+    >
       {({ isActive }) => (
         <span
           className={cn(
@@ -79,6 +86,7 @@ export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
       className="mobile-frame fixed right-0 bottom-0 left-0 z-bottom-navigation grid grid-cols-3 items-start rounded-t-30 border-x border-t border-neutral-200 bg-neutral-00 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
     >
       <TabNavLink
+        analyticsId="bottom-navigation-home"
         to={ROUTE_PATHS.home}
         end
         label="홈"
@@ -94,11 +102,17 @@ export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
         </span>
       </div>
 
-      <TabNavLink to={ROUTE_PATHS.report} label="리포트" Icon={NavigationReportIcon} />
+      <TabNavLink
+        analyticsId="bottom-navigation-report"
+        to={ROUTE_PATHS.report}
+        label="리포트"
+        Icon={NavigationReportIcon}
+      />
 
       <NavLink
         to={ROUTE_PATHS.record}
         aria-label="기록하기"
+        data-analytics-id="bottom-navigation-record"
         className="absolute left-1/2 -top-5 flex size-15 -translate-x-1/2 items-center justify-center rounded-full bg-primary-400 shadow-record transition-transform duration-150 active:scale-95"
       >
         <NavigationRecordIcon aria-hidden="true" />

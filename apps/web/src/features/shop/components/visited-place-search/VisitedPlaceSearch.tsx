@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react';
+import { ANALYTICS_EVENTS, createStepAttemptProperties } from '@chapchap/shared/analytics';
+import { useMemo, useRef, useState } from 'react';
 
 import { useVisitedPlaceSearchInfiniteQuery } from '@/features/shop/apis/hooks/useVisitedPlaceSearchInfiniteQuery';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
+import { trackAnalyticsEvent } from '@/shared/lib/analytics/mixpanel';
+import { UT_MISSION_IDS } from '@/shared/lib/analytics/screens';
 import { Button } from '@/shared/ui/button';
 import { PlaceSearchInput, PlaceSearchResultList } from '@/shared/ui/place-search';
 import type { PlaceSearchItem } from '@/shared/ui/place-search';
@@ -21,11 +24,27 @@ type VisitedPlaceSearchItem = PlaceSearchItem & {
 /** 소비 기록이 있는 장소만 매장명과 주소로 검색합니다. */
 export default function VisitedPlaceSearch({ onSelectPlace }: VisitedPlaceSearchProps) {
   const [keyword, setKeyword] = useState('');
+  const attemptCountRef = useRef(0);
   const [appliedKeyword, setAppliedKeyword] = useState<{ keyword: string }>();
   const { addRecentSearch, recentSearches, removeRecentSearch } = useRecentSearches();
   const searchQuery = useVisitedPlaceSearchInfiniteQuery(keyword);
   const { fetchNextPage, hasNextPage, isFetchNextPageError, isFetchingNextPage } = searchQuery;
   const hasKeyword = keyword.trim().length > 0;
+
+  const handleSearch = (nextKeyword: string) => {
+    setKeyword(nextKeyword);
+
+    if (!nextKeyword.trim()) return;
+
+    attemptCountRef.current += 1;
+    trackAnalyticsEvent(ANALYTICS_EVENTS.stepAttempted, {
+      mission_id: UT_MISSION_IDS.placeDetail,
+      step_name: 'MAP_VisitedPlaceSearch',
+      screen_name: 'MAP_Search',
+      screen_path: '/home/search',
+      ...createStepAttemptProperties(attemptCountRef.current),
+    });
+  };
 
   const handleSelectPlace = (placeId: string) => {
     addRecentSearch(keyword);
@@ -62,7 +81,7 @@ export default function VisitedPlaceSearch({ onSelectPlace }: VisitedPlaceSearch
     <>
       <PlaceSearchInput
         placeholder="검색어를 입력해주세요"
-        onSearch={setKeyword}
+        onSearch={handleSearch}
         appliedKeyword={appliedKeyword}
       />
       {!hasKeyword && (

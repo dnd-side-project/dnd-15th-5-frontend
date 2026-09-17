@@ -9,6 +9,10 @@ import MobileLayout from './MobileLayout';
 jest.mock('@/shared/lib/bridge', () => ({
   notifyNative: jest.fn(),
 }));
+jest.mock('@/app/providers/AnalyticsIdentity', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 
 const mockNotifyNative = jest.mocked(notifyNative);
 

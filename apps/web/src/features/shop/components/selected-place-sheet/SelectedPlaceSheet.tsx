@@ -111,6 +111,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
         <LinkButton
           to={ROUTE_PATHS.shopDetail(String(place.placeId))}
           state={recordLocationState}
+          data-analytics-id="selected-place-detail"
           size="large"
           className="min-w-0 flex-1"
         >
@@ -119,6 +120,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
         <LinkButton
           to={ROUTE_PATHS.record}
           state={recordLocationState}
+          data-analytics-id="selected-place-add-record"
           variant="icon-primary"
           size="large"
           aria-label={`${place.placeName} 소비 기록 추가`}
