@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 
+import QueryProvider from '@/app/providers/QueryProvider';
 import { ToastProvider } from '@/shared/ui/toast';
 
 import App from './App';
@@ -13,9 +14,11 @@ jest.mock('@/shared/assets/images/logo-login.png', () => 'logo-login.png');
 describe('App', () => {
   it('정상적으로 렌더링된다', () => {
     render(
-      <ToastProvider>
-        <App />
-      </ToastProvider>
+      <QueryProvider>
+        <ToastProvider>
+          <App />
+        </ToastProvider>
+      </QueryProvider>
     );
 
     expect(screen.getByRole('img', { name: 'ChapChap' })).toHaveAttribute('src', 'logo-login.png');
