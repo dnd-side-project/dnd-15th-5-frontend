@@ -44,6 +44,24 @@ describe('<AnalyticsIdentity />', () => {
     await waitFor(() => expect(mockIdentifyAnalyticsUser).toHaveBeenCalledWith(123));
   });
 
+  it('초기 익명 마운트에서는 Mixpanel 식별자를 초기화하지 않는다', async () => {
+    useAuthStore.setState({ accessToken: null, isAuthenticated: false });
+    mockUseGetMyAccount.mockReturnValue({
+      data: undefined,
+      isFetching: false,
+    } as ReturnType<typeof useGetMyAccount>);
+    const queryClient = new QueryClient();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AnalyticsIdentity />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => expect(mockUseGetMyAccount).toHaveBeenCalled());
+    expect(mockResetAnalyticsUser).not.toHaveBeenCalled();
+  });
+
   it('로그아웃하면 Mixpanel 식별자와 이전 계정 조회 캐시를 초기화한다', async () => {
     const queryClient = new QueryClient();
     queryClient.setQueryData(getGetMyAccountQueryKey(), { data: { userId: 123 } });

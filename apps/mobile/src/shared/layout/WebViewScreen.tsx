@@ -48,6 +48,7 @@ type WebViewScreenProps = {
   safeAreaMode?: WebViewSafeAreaMode;
   allowsBackForwardNavigationGestures: boolean;
   onMessage?: WebViewProps['onMessage'];
+  onLoadStart?: WebViewProps['onLoadStart'];
   onNavigationStateChange?: WebViewProps['onNavigationStateChange'];
   onShouldStartLoadWithRequest?: WebViewProps['onShouldStartLoadWithRequest'];
 };
@@ -94,6 +95,7 @@ export function WebViewScreen({
   safeAreaMode = 'all',
   allowsBackForwardNavigationGestures,
   onMessage,
+  onLoadStart,
   onNavigationStateChange,
   onShouldStartLoadWithRequest,
 }: WebViewScreenProps) {
@@ -143,6 +145,7 @@ export function WebViewScreen({
           onNavigationStateChange={onNavigationStateChange}
           onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
           onMessage={onMessage}
+          onLoadStart={onLoadStart}
           startInLoadingState
           onContentProcessDidTerminate={() => webViewRef.current?.reload()}
           renderLoading={() => <ActivityIndicator className="flex-1" size="large" />}

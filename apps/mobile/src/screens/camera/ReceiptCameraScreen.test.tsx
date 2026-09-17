@@ -379,6 +379,23 @@ describe('<ReceiptCameraScreen />', () => {
     });
   });
 
+  it('사진 보관함 선택을 취소하면 분석 시도 횟수를 증가시키지 않는다', async () => {
+    mockPickReceiptImageFromLibrary.mockResolvedValue({ status: 'cancelled' });
+    const { getByRole } = await render(<ReceiptCameraScreen />);
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '사진 보관함에서 선택' }));
+      await Promise.resolve();
+    });
+
+    expect(trackNativeAnalyticsEvent).not.toHaveBeenCalledWith(
+      ANALYTICS_EVENTS.stepAttempted,
+      expect.anything()
+    );
+    expect(mockNormalizeReceiptImage).not.toHaveBeenCalled();
+    expect(getByRole('button', { name: '영수증 촬영' })).toBeEnabled();
+  });
+
   it('서버가 영수증 인식 오류 메시지를 반환하면 카메라를 유지하고 안내 Toast를 띄운다', async () => {
     const picture = { uri: 'file://captured.jpg', width: 3000, height: 4000 };
     const message = '주요 정보를 중앙에 배치시켜 촬영해주세요';

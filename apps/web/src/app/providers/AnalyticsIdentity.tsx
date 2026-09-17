@@ -11,18 +11,22 @@ export default function AnalyticsIdentity() {
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const lastIdentityRef = useRef<string | null>(null);
+  const wasAuthenticatedRef = useRef(isAuthenticated);
   const accountQuery = useGetMyAccount({
     query: { enabled: isAuthenticated },
   });
   const userId = accountQuery.data?.data?.userId;
 
   useEffect(() => {
+    const wasAuthenticated = wasAuthenticatedRef.current;
+    wasAuthenticatedRef.current = isAuthenticated;
+
     if (!isAuthenticated) {
-      if (lastIdentityRef.current !== 'anonymous') {
+      if (wasAuthenticated) {
         resetAnalyticsUser();
-        lastIdentityRef.current = 'anonymous';
       }
 
+      lastIdentityRef.current = null;
       queryClient.removeQueries({ queryKey: getGetMyAccountQueryKey() });
       return;
     }

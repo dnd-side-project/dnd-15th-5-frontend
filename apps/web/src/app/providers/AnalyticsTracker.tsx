@@ -8,6 +8,7 @@ import {
   trackUtTaskCompleted,
 } from '@/shared/lib/analytics/mixpanel';
 import { getScreenMetadata } from '@/shared/lib/analytics/screens';
+import { notifyNative } from '@/shared/lib/bridge';
 
 const MILLISECONDS_PER_SECOND = 1000;
 
@@ -26,6 +27,7 @@ export default function AnalyticsTracker() {
     };
 
     window.addEventListener(NATIVE_ANALYTICS_EVENT, handleNativeAnalytics);
+    notifyNative('analyticsReady', {});
 
     return () => window.removeEventListener(NATIVE_ANALYTICS_EVENT, handleNativeAnalytics);
   }, []);
@@ -33,10 +35,12 @@ export default function AnalyticsTracker() {
   useEffect(() => {
     const screen = getScreenMetadata(pathname);
     let startedAt = performance.now();
-    let isActive = true;
+    let hasTrackedView = false;
+    let isActive = false;
 
     const trackScreenView = (entryReason: 'route_entered' | 'visibility_restored') => {
       startedAt = performance.now();
+      hasTrackedView = true;
       isActive = true;
       trackAnalyticsEvent(ANALYTICS_EVENTS.screenViewed, {
         screen_name: screen.screenName,
@@ -72,11 +76,13 @@ export default function AnalyticsTracker() {
       if (document.visibilityState === 'hidden') {
         trackScreenExit('page_hidden');
       } else if (!isActive) {
-        trackScreenView('visibility_restored');
+        trackScreenView(hasTrackedView ? 'visibility_restored' : 'route_entered');
       }
     };
 
-    trackScreenView('route_entered');
+    if (document.visibilityState !== 'hidden') {
+      trackScreenView('route_entered');
+    }
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {

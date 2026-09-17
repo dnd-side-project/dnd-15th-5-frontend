@@ -250,8 +250,6 @@ export default function ReceiptCameraScreen() {
       return;
     }
 
-    trackReceiptScanAttempt('photo_library');
-
     try {
       const picked = await pickReceiptImageFromLibrary();
 
@@ -260,6 +258,7 @@ export default function ReceiptCameraScreen() {
         return;
       }
 
+      trackReceiptScanAttempt('photo_library');
       showScanLoading(picked.uri);
       const processedReceipt = await processReceiptImage(picked);
 

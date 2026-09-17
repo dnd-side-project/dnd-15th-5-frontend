@@ -3,6 +3,7 @@ import { act, render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { trackAnalyticsEvent } from '@/shared/lib/analytics/mixpanel';
+import { notifyNative } from '@/shared/lib/bridge';
 
 import AnalyticsTracker from './AnalyticsTracker';
 
@@ -11,8 +12,10 @@ jest.mock('@/shared/lib/analytics/mixpanel', () => ({
   trackAnalyticsEvent: jest.fn(),
   trackUtTaskCompleted: jest.fn(),
 }));
+jest.mock('@/shared/lib/bridge', () => ({ notifyNative: jest.fn() }));
 
 const mockedTrackAnalyticsEvent = jest.mocked(trackAnalyticsEvent);
+const mockedNotifyNative = jest.mocked(notifyNative);
 
 describe('<AnalyticsTracker />', () => {
   beforeEach(() => {
@@ -25,6 +28,7 @@ describe('<AnalyticsTracker />', () => {
         <AnalyticsTracker />
       </MemoryRouter>
     );
+    expect(mockedNotifyNative).toHaveBeenCalledWith('analyticsReady', {});
     mockedTrackAnalyticsEvent.mockClear();
 
     act(() => {
@@ -46,6 +50,34 @@ describe('<AnalyticsTracker />', () => {
       completion_reason: 'record_created',
       app: 'mobile',
     });
+  });
+
+  it('숨겨진 문서에서는 진입을 기록하지 않고 처음 보일 때부터 체류시간을 측정한다', () => {
+    const visibilityState = jest
+      .spyOn(document, 'visibilityState', 'get')
+      .mockReturnValue('hidden');
+
+    render(
+      <MemoryRouter initialEntries={['/home']}>
+        <AnalyticsTracker />
+      </MemoryRouter>
+    );
+
+    expect(mockedTrackAnalyticsEvent).not.toHaveBeenCalledWith(
+      ANALYTICS_EVENTS.screenViewed,
+      expect.anything()
+    );
+
+    visibilityState.mockReturnValue('visible');
+    act(() => document.dispatchEvent(new Event('visibilitychange')));
+
+    expect(mockedTrackAnalyticsEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.screenViewed, {
+      screen_name: 'MAP_Main',
+      screen_path: '/home',
+      entry_reason: 'route_entered',
+    });
+
+    visibilityState.mockRestore();
   });
 
   it('허용하지 않은 네이티브 이벤트는 무시한다', () => {
