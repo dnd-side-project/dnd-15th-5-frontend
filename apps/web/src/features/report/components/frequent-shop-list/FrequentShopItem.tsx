@@ -55,6 +55,7 @@ export default function FrequentShopItem({
         <span
           aria-label={`${visibleVisitCount}회 방문`}
           className="flex shrink-0 items-end gap-1 px-1 text-neutral-700"
+          data-mp-mask=""
         >
           <strong className="text-heading-03-semibold tabular-nums">{visibleVisitCount}</strong>
           <span className="pb-0.5 text-body-01-semibold">회</span>

@@ -26,6 +26,7 @@ export default function MyPageProfileSection({
               className="size-full rounded-full object-cover"
               src={profileImageUrl}
               alt="프로필"
+              data-mp-block=""
             />
           ) : (
             <DefaultProfile className="size-full" />
@@ -34,7 +35,11 @@ export default function MyPageProfileSection({
             <EditIcon className="size-full" aria-hidden="true" />
           </span>
         </div>
-        <h1 id="my-page-nickname" className="text-title-02-semibold text-neutral-700">
+        <h1
+          id="my-page-nickname"
+          className="text-title-02-semibold text-neutral-700"
+          data-mp-mask=""
+        >
           {nickname || '닉네임'}
         </h1>
       </div>

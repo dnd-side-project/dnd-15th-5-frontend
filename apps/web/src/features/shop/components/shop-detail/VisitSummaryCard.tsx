@@ -34,7 +34,11 @@ export default function VisitSummaryCard({
           celebration.title
         ) : (
           <>
-            총 <span className="text-primary-500">{normalizedVisitCount}번</span> 방문하셨네요!
+            총{' '}
+            <span className="text-primary-500" data-mp-mask="">
+              {normalizedVisitCount}번
+            </span>{' '}
+            방문하셨네요!
           </>
         )}
       </h2>
@@ -45,17 +49,21 @@ export default function VisitSummaryCard({
       <dl className="mt-4 grid grid-cols-3 gap-2">
         <div className="flex min-w-0 flex-col items-center justify-center rounded-16 bg-neutral-00 py-3.5">
           <dt className="text-caption-01-medium text-neutral-700">첫 방문</dt>
-          <dd className="mt-2 truncate text-title-02-semibold text-neutral-700">
+          <dd className="mt-2 truncate text-title-02-semibold text-neutral-700" data-mp-mask="">
             {formatFirstVisitedDate(firstVisitedDate)}
           </dd>
         </div>
         <div className="flex min-w-0 flex-col items-center justify-center rounded-16 bg-neutral-00 py-3.5">
           <dt className="text-caption-01-medium text-neutral-500">이번 달</dt>
-          <dd className="mt-2 text-title-02-semibold text-neutral-700">{monthlyVisitCount}번</dd>
+          <dd className="mt-2 text-title-02-semibold text-neutral-700" data-mp-mask="">
+            {monthlyVisitCount}번
+          </dd>
         </div>
         <div className="flex min-w-0 flex-col items-center justify-center rounded-16 bg-neutral-00 py-3.5">
           <dt className="text-caption-01-medium text-neutral-500">누적 방문</dt>
-          <dd className="mt-2 text-title-02-semibold text-neutral-700">{normalizedVisitCount}번</dd>
+          <dd className="mt-2 text-title-02-semibold text-neutral-700" data-mp-mask="">
+            {normalizedVisitCount}번
+          </dd>
         </div>
       </dl>
 

@@ -71,7 +71,7 @@ export default function ReportTopShops({ shops }: ReportTopShopsProps) {
             >
               <div className="flex w-full items-center gap-3 p-4 text-left">
                 <RankIcon aria-label={`${shop.rank}위`} className="h-10 w-9.5 shrink-0" />
-                <span className="min-w-0 flex-1">
+                <span className="min-w-0 flex-1" data-mp-mask="">
                   <strong className="block truncate text-title-02-semibold text-neutral-900">
                     {shop.name}
                   </strong>

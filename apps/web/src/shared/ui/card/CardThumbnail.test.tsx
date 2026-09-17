@@ -10,6 +10,7 @@ describe('<CardThumbnail />', () => {
     const { container } = render(<CardThumbnail src={THUMBNAIL_SRC} />);
 
     expect(container.querySelector('img')).toHaveAttribute('src', THUMBNAIL_SRC);
+    expect(container.querySelector('img')).toHaveAttribute('data-mp-block');
     expect(container.querySelector('svg')).not.toBeInTheDocument();
   });
 

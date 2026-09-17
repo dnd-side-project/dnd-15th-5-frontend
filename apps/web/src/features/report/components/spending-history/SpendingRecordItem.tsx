@@ -20,12 +20,12 @@ export default function SpendingRecordItem({ consumption }: SpendingRecordItemPr
         <CardTitle weight="semibold">
           {consumption.placeName?.trim() || '알 수 없는 장소'}
         </CardTitle>
-        <p className="mt-1 truncate text-caption-01-regular text-neutral-500">
+        <p className="mt-1 truncate text-caption-01-regular text-neutral-500" data-mp-mask="">
           {formatPurchaseDateTimeLabel(consumption.purchaseDate, consumption.purchaseTime)} ·{' '}
           {consumption.category?.trim() || '기타'}
         </p>
       </div>
-      <strong className="shrink-0 text-body-01-semibold text-neutral-900">
+      <strong className="shrink-0 text-body-01-semibold text-neutral-900" data-mp-mask="">
         {formatAmount(consumption.amount)}
       </strong>
     </>
