@@ -26,7 +26,7 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
       title={`${label} 스티커${isSelected ? ', 선택됨' : ''}`}
       onClick={onSelect}
     >
-      <div className="relative">
+      <div className="relative" data-analytics-id="map-place-sticker">
         <img
           src={image}
           alt=""

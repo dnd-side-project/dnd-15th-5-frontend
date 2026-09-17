@@ -1,16 +1,21 @@
+import { ANALYTICS_EVENTS } from '@chapchap/shared/analytics';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useVisitedPlaceSearchInfiniteQuery } from '@/features/shop/apis/hooks/useVisitedPlaceSearchInfiniteQuery';
+import { trackAnalyticsEvent } from '@/shared/lib/analytics/mixpanel';
+import { UT_MISSION_IDS } from '@/shared/lib/analytics/screens';
 
 import VisitedPlaceSearch from './VisitedPlaceSearch';
 
 jest.mock('@/features/shop/apis/hooks/useVisitedPlaceSearchInfiniteQuery');
+jest.mock('@/shared/lib/analytics/mixpanel', () => ({ trackAnalyticsEvent: jest.fn() }));
 
 const mockedUseVisitedPlaceSearchInfiniteQuery = jest.mocked(useVisitedPlaceSearchInfiniteQuery);
 
 describe('VisitedPlaceSearch', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     window.localStorage.clear();
     mockedUseVisitedPlaceSearchInfiniteQuery.mockImplementation(
       (keyword) =>
@@ -41,6 +46,37 @@ describe('VisitedPlaceSearch', () => {
           fetchNextPage: jest.fn(),
         }) as unknown as ReturnType<typeof useVisitedPlaceSearchInfiniteQuery>
     );
+  });
+
+  it('검색을 다시 실행하면 재시도 횟수를 누적한다', async () => {
+    const user = userEvent.setup();
+    render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);
+    const input = screen.getByPlaceholderText('검색어를 입력해주세요');
+
+    await user.type(input, '투썸');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+    await user.clear(input);
+    await user.type(input, '스타벅스');
+    await user.click(screen.getByRole('button', { name: '검색' }));
+
+    expect(trackAnalyticsEvent).toHaveBeenNthCalledWith(1, ANALYTICS_EVENTS.stepAttempted, {
+      mission_id: UT_MISSION_IDS.placeDetail,
+      step_name: 'MAP_VisitedPlaceSearch',
+      screen_name: 'MAP_Search',
+      screen_path: '/home/search',
+      attempt_number: 1,
+      retry_count: 0,
+      is_retry: false,
+    });
+    expect(trackAnalyticsEvent).toHaveBeenNthCalledWith(2, ANALYTICS_EVENTS.stepAttempted, {
+      mission_id: UT_MISSION_IDS.placeDetail,
+      step_name: 'MAP_VisitedPlaceSearch',
+      screen_name: 'MAP_Search',
+      screen_path: '/home/search',
+      attempt_number: 2,
+      retry_count: 1,
+      is_retry: true,
+    });
   });
 
   it('서버 검색 결과를 공통 장소 카드로 표시하고 장소 ID를 전달한다', async () => {

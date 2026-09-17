@@ -13,6 +13,12 @@ import {
 import { getKakaoTalkShareTarget } from '@/bridge/kakaoTalkShare';
 import { subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
+import {
+  createNativeAnalyticsScript,
+  markNativeAnalyticsNotReady,
+  markNativeAnalyticsReady,
+  subscribeNativeAnalytics,
+} from '@/shared/lib/analytics';
 
 import { useWebViewNavigationState } from './useWebViewNavigationState';
 
@@ -80,6 +86,18 @@ export default function HomeScreen() {
     });
   }, [trustedWebOrigin]);
 
+  useEffect(() => {
+    markNativeAnalyticsNotReady();
+    const unsubscribe = subscribeNativeAnalytics((event) => {
+      webViewRef.current?.injectJavaScript(createNativeAnalyticsScript(event));
+    });
+
+    return () => {
+      markNativeAnalyticsNotReady();
+      unsubscribe();
+    };
+  }, []);
+
   const handleBridgeMessage = async (event: WebViewMessageEvent) => {
     if (!trustedWebOrigin || !isTrustedBridgeUrl(event.nativeEvent.url, trustedWebOrigin)) {
       return;
@@ -88,7 +106,9 @@ export default function HomeScreen() {
     const message = parseBridgeMessage(event.nativeEvent.data);
 
     if (isBridgeEvent(message)) {
-      if (message.type === 'routeChanged') {
+      if (message.type === 'analyticsReady') {
+        markNativeAnalyticsReady();
+      } else if (message.type === 'routeChanged') {
         handleRouteChange(message.payload.pathname);
       }
       return;
@@ -148,6 +168,7 @@ export default function HomeScreen() {
       }
       onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
       onMessage={handleBridgeMessage}
+      onLoadStart={markNativeAnalyticsNotReady}
     />
   );
 }

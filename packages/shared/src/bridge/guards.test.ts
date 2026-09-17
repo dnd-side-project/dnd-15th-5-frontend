@@ -2,6 +2,16 @@ import { isBridgeEvent, isBridgeRequest, isBridgeResponse } from './guards';
 import { BRIDGE_MESSAGE_KIND } from './types';
 
 describe('auth bridge guards', () => {
+  it('웹 분석 수신 준비 이벤트를 허용한다', () => {
+    expect(
+      isBridgeEvent({
+        kind: BRIDGE_MESSAGE_KIND.EVENT,
+        type: 'analyticsReady',
+        payload: {},
+      })
+    ).toBe(true);
+  });
+
   it('영수증 기록 종료 이벤트를 허용한다', () => {
     expect(
       isBridgeEvent({

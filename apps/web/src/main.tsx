@@ -11,9 +11,11 @@ import AuthProvider from '@/app/providers/AuthProvider';
 import GoogleMapsProvider from '@/app/providers/GoogleMapsProvider';
 import QueryProvider from '@/app/providers/QueryProvider';
 import '@/app/styles/index.css';
+import { initializeAnalytics } from '@/shared/lib/analytics/mixpanel';
 import { ToastProvider } from '@/shared/ui/toast';
 
 configureAxiosAuth();
+initializeAnalytics();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -1,4 +1,6 @@
+import { ANALYTICS_EVENTS, createStepAttemptProperties } from '@chapchap/shared/analytics';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useRef } from 'react';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import {
@@ -10,6 +12,11 @@ import {
   useSubmitReceiptConsumption,
 } from '@/features/record';
 import type { ReceiptReviewRouteParams } from '@/features/record';
+import {
+  NATIVE_ANALYTICS_SCREENS,
+  trackNativeAnalyticsEvent,
+  useNativeScreenAnalytics,
+} from '@/shared/lib/analytics';
 
 import type { CreatedConsumptionPlace } from '@chapchap/shared/record';
 
@@ -28,6 +35,9 @@ const parseRouteNumber = (value: string | undefined) => {
  * OCR 연동 후에는 같은 라우트 파라미터 경계로 인식 결과를 초기값에 전달한다.
  */
 export default function ReceiptConfirmScreen() {
+  useNativeScreenAnalytics(NATIVE_ANALYTICS_SCREENS.receiptConfirm);
+  const attemptCountRef = useRef(0);
+
   const {
     uri = '',
     receiptImageId,
@@ -53,6 +63,13 @@ export default function ReceiptConfirmScreen() {
   };
 
   const handleSubmitSuccess = (createdPlace: CreatedConsumptionPlace) => {
+    trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepCompleted, {
+      step_name: NATIVE_ANALYTICS_SCREENS.receiptConfirm.screenName,
+      screen_name: NATIVE_ANALYTICS_SCREENS.receiptConfirm.screenName,
+      screen_path: NATIVE_ANALYTICS_SCREENS.receiptConfirm.screenPath,
+      completion_reason: 'record_created',
+      attempt_number: attemptCountRef.current,
+    });
     requestWebViewNavigation(createRecordCreatedHomePath(createdPlace));
     router.dismissTo('/');
   };
@@ -63,6 +80,17 @@ export default function ReceiptConfirmScreen() {
 
   const handleBack = () => {
     router.replace('/camera');
+  };
+
+  const handleSubmitAttempt = (outcome: 'submitted' | 'validation_failed') => {
+    attemptCountRef.current += 1;
+    trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepAttempted, {
+      step_name: NATIVE_ANALYTICS_SCREENS.receiptConfirm.screenName,
+      screen_name: NATIVE_ANALYTICS_SCREENS.receiptConfirm.screenName,
+      screen_path: NATIVE_ANALYTICS_SCREENS.receiptConfirm.screenPath,
+      attempt_outcome: outcome,
+      ...createStepAttemptProperties(attemptCountRef.current),
+    });
   };
 
   return (
@@ -82,6 +110,7 @@ export default function ReceiptConfirmScreen() {
       isSubmitting={isSubmitting}
       onBack={handleBack}
       onClose={handleClose}
+      onSubmitAttempt={handleSubmitAttempt}
       onSubmit={submitReceiptConsumption}
       onChangeShop={(state) =>
         router.push({

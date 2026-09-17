@@ -4,6 +4,13 @@ import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisit
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useMapFocusStore } from '@/features/map/stores/mapFocusStore';
 import { findCreatedConsumptionSticker } from '@/features/map/utils/findCreatedConsumptionSticker';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import {
+  ANALYTICS_EVENTS,
+  trackAnalyticsEvent,
+  trackUtTaskCompleted,
+} from '@/shared/lib/analytics/mixpanel';
+import { UT_MISSION_IDS, UT_SCREEN_NAMES } from '@/shared/lib/analytics/screens';
 import { useToast } from '@/shared/ui/toast';
 
 import type { CreatedConsumptionPlace } from '@chapchap/shared/record';
@@ -13,6 +20,7 @@ const REVISIT_MESSAGE = '방문기록이 등록되었어요';
 
 type UseCreatedConsumptionResultOptions = {
   createdPlace?: CreatedConsumptionPlace;
+  recordMethod?: 'manual' | 'receipt';
   onHandled: () => void;
 };
 
@@ -27,6 +35,7 @@ const getCreatedPlaceKey = ({ placeName, latitude, longitude }: CreatedConsumpti
  */
 export const useCreatedConsumptionResult = ({
   createdPlace,
+  recordMethod,
   onHandled,
 }: UseCreatedConsumptionResultOptions) => {
   const { refetchStickers, stickers } = useVisitedPlaceStickersQuery();
@@ -67,13 +76,32 @@ export const useCreatedConsumptionResult = ({
       handledKeyRef.current = createdPlaceKey;
 
       if (matchedSticker) {
+        const isFirstVisit = matchedSticker.visitCount === 1;
         setSelectedPlaceFocus(matchedSticker.position);
         showSelectedPlace(matchedSticker.id);
         showToast({
           type: 'success',
-          message: matchedSticker.visitCount === 1 ? FIRST_VISIT_MESSAGE : REVISIT_MESSAGE,
+          message: isFirstVisit ? FIRST_VISIT_MESSAGE : REVISIT_MESSAGE,
           placement: 'above-bottom-sheet',
         });
+
+        if (isFirstVisit) {
+          const resolvedRecordMethod = recordMethod ?? 'manual';
+          const missionId =
+            resolvedRecordMethod === 'receipt'
+              ? UT_MISSION_IDS.receiptFirstVisit
+              : UT_MISSION_IDS.manualFirstVisit;
+          trackAnalyticsEvent(ANALYTICS_EVENTS.uiStateViewed, {
+            screen_name: UT_SCREEN_NAMES.mapPlaceDetailFirstVisitToast,
+            screen_path: ROUTE_PATHS.home,
+            mission_id: missionId,
+            record_method: resolvedRecordMethod,
+          });
+          trackUtTaskCompleted(UT_SCREEN_NAMES.mapPlaceDetailFirstVisitToast, {
+            mission_id: missionId,
+            record_method: resolvedRecordMethod,
+          });
+        }
       } else {
         showToast({ type: 'success', message: REVISIT_MESSAGE });
       }
@@ -96,6 +124,7 @@ export const useCreatedConsumptionResult = ({
   }, [
     createdPlace,
     onHandled,
+    recordMethod,
     refetchStickers,
     setSelectedPlaceFocus,
     showSelectedPlace,

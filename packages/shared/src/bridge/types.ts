@@ -26,6 +26,8 @@ export const NATIVE_APP_ACTIVE_EVENT = 'chapchap:native-app-active';
 
 /** 웹이 응답을 기다리지 않고 네이티브에 알리는 이벤트와 payload 타입. */
 export type BridgeEventMap = {
+  // 웹의 분석 이벤트 수신 리스너가 준비되었음을 알려 네이티브 대기 이벤트를 전달한다.
+  analyticsReady: Record<string, never>;
   // 모바일이 /home의 WebView만 edge-to-edge로 표시할 수 있도록 현재 웹 경로를 전달한다.
   routeChanged: {
     pathname: string;

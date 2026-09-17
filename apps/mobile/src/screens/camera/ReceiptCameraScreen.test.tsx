@@ -1,3 +1,4 @@
+import { ANALYTICS_EVENTS } from '@chapchap/shared/analytics';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
@@ -5,6 +6,7 @@ import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import { recognizeReceipt } from '@/features/record/apis/clients';
 import { normalizeReceiptImage } from '@/native/normalizeReceiptImage';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
+import { trackNativeAnalyticsEvent } from '@/shared/lib/analytics';
 
 import ReceiptCameraScreen from './ReceiptCameraScreen';
 
@@ -37,6 +39,13 @@ jest.mock('@/native/normalizeReceiptImage', () => ({ normalizeReceiptImage: jest
 jest.mock('@/features/record/apis/clients', () => ({ recognizeReceipt: jest.fn() }));
 jest.mock('@/native/pickReceiptImageFromLibrary', () => ({
   pickReceiptImageFromLibrary: jest.fn(),
+}));
+jest.mock('@/shared/lib/analytics', () => ({
+  NATIVE_ANALYTICS_SCREENS: {
+    receiptScan: { screenName: 'REC_ReceiptScan', screenPath: '/camera' },
+  },
+  trackNativeAnalyticsEvent: jest.fn(),
+  useNativeScreenAnalytics: jest.fn(),
 }));
 jest.mock('@/shared/ui/toast', () => ({
   useToast: () => ({ showToast: mockShowToast, closeToast: jest.fn() }),
@@ -104,6 +113,15 @@ describe('<ReceiptCameraScreen />', () => {
     });
 
     expect(mockNormalizeReceiptImage).toHaveBeenCalledWith(picture);
+    expect(trackNativeAnalyticsEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.stepAttempted, {
+      step_name: 'REC_ReceiptScan',
+      screen_name: 'REC_ReceiptScan',
+      screen_path: '/camera',
+      input_method: 'camera',
+      attempt_number: 1,
+      retry_count: 0,
+      is_retry: false,
+    });
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/receipt-confirm',
       params: {
@@ -119,6 +137,14 @@ describe('<ReceiptCameraScreen />', () => {
         visitedAt: String(new Date(2026, 6, 25, 11, 20).getTime()),
         visitPeriod: 'afternoon',
       },
+    });
+    expect(trackNativeAnalyticsEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.stepCompleted, {
+      step_name: 'REC_ReceiptScan',
+      screen_name: 'REC_ReceiptScan',
+      screen_path: '/camera',
+      completion_reason: 'ocr_succeeded',
+      input_method: 'camera',
+      attempt_number: 1,
     });
   });
 
@@ -330,10 +356,44 @@ describe('<ReceiptCameraScreen />', () => {
     });
 
     expect(mockNormalizeReceiptImage).toHaveBeenCalledWith(picked);
+    expect(trackNativeAnalyticsEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.stepAttempted, {
+      step_name: 'REC_ReceiptScan',
+      screen_name: 'REC_ReceiptScan',
+      screen_path: '/camera',
+      input_method: 'photo_library',
+      attempt_number: 1,
+      retry_count: 0,
+      is_retry: false,
+    });
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/receipt-confirm',
       params: { uri: 'file://normalized-picked.jpg', receiptImageId: '15' },
     });
+    expect(trackNativeAnalyticsEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.stepCompleted, {
+      step_name: 'REC_ReceiptScan',
+      screen_name: 'REC_ReceiptScan',
+      screen_path: '/camera',
+      completion_reason: 'ocr_succeeded',
+      input_method: 'photo_library',
+      attempt_number: 1,
+    });
+  });
+
+  it('사진 보관함 선택을 취소하면 분석 시도 횟수를 증가시키지 않는다', async () => {
+    mockPickReceiptImageFromLibrary.mockResolvedValue({ status: 'cancelled' });
+    const { getByRole } = await render(<ReceiptCameraScreen />);
+
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '사진 보관함에서 선택' }));
+      await Promise.resolve();
+    });
+
+    expect(trackNativeAnalyticsEvent).not.toHaveBeenCalledWith(
+      ANALYTICS_EVENTS.stepAttempted,
+      expect.anything()
+    );
+    expect(mockNormalizeReceiptImage).not.toHaveBeenCalled();
+    expect(getByRole('button', { name: '영수증 촬영' })).toBeEnabled();
   });
 
   it('서버가 영수증 인식 오류 메시지를 반환하면 카메라를 유지하고 안내 Toast를 띄운다', async () => {
