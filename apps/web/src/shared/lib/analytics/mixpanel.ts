@@ -8,12 +8,22 @@ import {
   MIXPANEL_SESSION_REPLAY_PERCENT,
 } from '@/shared/lib/env';
 
+import { getOrCreateAnalyticsDeviceId } from './deviceIdentity';
+
 import type { AnalyticsEventName } from '@chapchap/shared/analytics';
 import type { Dict, RequestOptions } from 'mixpanel-browser';
 
 export { ANALYTICS_EVENTS };
 
 let isInitialized = false;
+
+const registerDefaultProperties = () => {
+  mixpanel.register({
+    app: 'web',
+    analytics_environment: APP_ENVIRONMENT,
+    device_id: getOrCreateAnalyticsDeviceId(),
+  });
+};
 
 /** 프로젝트 토큰이 있는 환경에서만 개인정보 보호 설정과 함께 Mixpanel을 시작합니다. */
 export const initializeAnalytics = () => {
@@ -44,8 +54,21 @@ export const initializeAnalytics = () => {
     track_pageview: false,
   });
 
-  mixpanel.register({ app: 'web', analytics_environment: APP_ENVIRONMENT });
+  registerDefaultProperties();
   isInitialized = true;
+};
+
+/** 로그인 계정의 서버 식별자를 Mixpanel distinct_id로 연결합니다. */
+export const identifyAnalyticsUser = (userId: number) => {
+  if (!isInitialized) return;
+  mixpanel.identify(String(userId));
+};
+
+/** 로그아웃·인증 만료 시 이전 계정 식별자를 제거하고 기본 속성을 복원합니다. */
+export const resetAnalyticsUser = () => {
+  if (!isInitialized) return;
+  mixpanel.reset();
+  registerDefaultProperties();
 };
 
 export const trackAnalyticsEvent = (

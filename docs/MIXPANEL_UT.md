@@ -29,6 +29,15 @@
 OCR 성공과 소비기록 저장 성공은 각각 `Step Completed`로 수집한다. `app = mobile` 속성으로 웹
 이벤트와 구분할 수 있다.
 
+로그인 사용자는 `/accounts/me`의 `userId`를 Mixpanel `distinct_id`로 사용한다. 웹 이벤트와
+WebView로 전달된 네이티브 이벤트가 같은 사용자에게 연결되며, 로그아웃·인증 만료 시에는
+Mixpanel 식별 상태를 초기화해 다음 로그인 계정과 데이터가 섞이지 않도록 한다.
+
+모든 이벤트에는 브라우저 프로필 또는 앱 WebView 설치 단위의 익명 `device_id`를 공통 속성으로
+등록한다. 동일 계정이 일반 웹사이트와 TestFlight 앱에서 접속하면 `distinct_id`는 같고
+`device_id`는 환경별로 다르므로 사용자 기준과 접속 환경 기준을 각각 분석할 수 있다. 브라우저
+저장소 삭제 또는 앱 재설치 후에는 새로운 `device_id`가 생성된다.
+
 영수증 OCR, 영수증 저장, 방문 가게 검색은 실행할 때마다 `Step Attempted`를 전송한다. 첫 시도는
 `attempt_number = 1`, `retry_count = 0`, `is_retry = false`이며 두 번째 시도부터
 `is_retry = true`가 된다. 사용자가 해당 단계에서 헤맨 정도는 사용자별 `retry_count`의 최댓값이나

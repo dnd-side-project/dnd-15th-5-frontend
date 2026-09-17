@@ -2,7 +2,9 @@ import mixpanel from 'mixpanel-browser';
 
 import {
   ANALYTICS_EVENTS,
+  identifyAnalyticsUser,
   initializeAnalytics,
+  resetAnalyticsUser,
   resetAnalyticsForTest,
   trackAnalyticsEvent,
   trackUtTaskCompleted,
@@ -12,7 +14,9 @@ jest.mock('mixpanel-browser', () => ({
   __esModule: true,
   default: {
     init: jest.fn(),
+    identify: jest.fn(),
     register: jest.fn(),
+    reset: jest.fn(),
     track: jest.fn(),
   },
 }));
@@ -21,6 +25,9 @@ jest.mock('@/shared/lib/env', () => ({
   IS_DEVELOPMENT: false,
   MIXPANEL_PROJECT_TOKEN: 'test-project-token',
   MIXPANEL_SESSION_REPLAY_PERCENT: 100,
+}));
+jest.mock('./deviceIdentity', () => ({
+  getOrCreateAnalyticsDeviceId: () => 'test-device-id',
 }));
 
 const mockedMixpanel = jest.mocked(mixpanel);
@@ -54,6 +61,7 @@ describe('Mixpanel analytics', () => {
     expect(mockedMixpanel.register).toHaveBeenCalledWith({
       app: 'web',
       analytics_environment: 'test',
+      device_id: 'test-device-id',
     });
   });
 
@@ -75,5 +83,27 @@ describe('Mixpanel analytics', () => {
       { target_screen: 'REP02' },
       undefined
     );
+  });
+
+  it('로그인 사용자를 서버 userId로 식별한다', () => {
+    initializeAnalytics();
+
+    identifyAnalyticsUser(123);
+
+    expect(mockedMixpanel.identify).toHaveBeenCalledWith('123');
+  });
+
+  it('사용자 식별을 초기화한 뒤 공통 이벤트 속성을 다시 등록한다', () => {
+    initializeAnalytics();
+    mockedMixpanel.register.mockClear();
+
+    resetAnalyticsUser();
+
+    expect(mockedMixpanel.reset).toHaveBeenCalledTimes(1);
+    expect(mockedMixpanel.register).toHaveBeenCalledWith({
+      app: 'web',
+      analytics_environment: 'test',
+      device_id: 'test-device-id',
+    });
   });
 });

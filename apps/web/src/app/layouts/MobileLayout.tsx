@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { matchPath, Outlet, useLocation } from 'react-router-dom';
 
+import AnalyticsIdentity from '@/app/providers/AnalyticsIdentity';
 import AnalyticsTracker from '@/app/providers/AnalyticsTracker';
 import ScrollToTop from '@/app/routes/ScrollToTop';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
@@ -32,6 +33,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
 
   return (
     <>
+      <AnalyticsIdentity />
       <AnalyticsTracker />
       <ScrollToTop />
 
