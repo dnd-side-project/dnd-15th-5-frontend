@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { matchPath, Outlet, useLocation } from 'react-router-dom';
 
+import AnalyticsTracker from '@/app/providers/AnalyticsTracker';
 import ScrollToTop from '@/app/routes/ScrollToTop';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import { notifyNative } from '@/shared/lib/bridge';
@@ -31,6 +32,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
 
   return (
     <>
+      <AnalyticsTracker />
       <ScrollToTop />
 
       <div className="flex min-h-screen justify-center bg-neutral-100">

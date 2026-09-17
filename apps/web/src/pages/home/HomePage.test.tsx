@@ -9,6 +9,12 @@ import {
 } from '@/features/map';
 import { TEST_MAP_STICKERS } from '@/features/map/testFixtures';
 import { useHasUnreadNotificationQuery } from '@/features/notification';
+import {
+  ANALYTICS_EVENTS,
+  trackAnalyticsEvent,
+  trackUtTaskCompleted,
+} from '@/shared/lib/analytics/mixpanel';
+import { UT_MISSION_IDS, UT_SCREEN_NAMES } from '@/shared/lib/analytics/screens';
 import { useToast } from '@/shared/ui/toast';
 
 import HomePage from './HomePage';
@@ -26,6 +32,11 @@ jest.mock('@/features/map', () => ({
   }) => renderFrequentShops(null),
 }));
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
+jest.mock('@/shared/lib/analytics/mixpanel', () => ({
+  ...jest.requireActual('@/shared/lib/analytics/mixpanel'),
+  trackAnalyticsEvent: jest.fn(),
+  trackUtTaskCompleted: jest.fn(),
+}));
 jest.mock('@/features/notification', () => ({
   useHasUnreadNotificationQuery: jest.fn(),
 }));
@@ -44,6 +55,8 @@ jest.mock('@/shared/ui/toast', () => ({ useToast: jest.fn() }));
 
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 const mockedUseHasUnreadNotificationQuery = jest.mocked(useHasUnreadNotificationQuery);
+const mockedTrackAnalyticsEvent = jest.mocked(trackAnalyticsEvent);
+const mockedTrackUtTaskCompleted = jest.mocked(trackUtTaskCompleted);
 const mockedUseToast = jest.mocked(useToast);
 const mockShowToast = jest.fn().mockReturnValue('toast-1');
 
@@ -99,6 +112,19 @@ describe('<HomePage />', () => {
       type: 'selectedPlace',
       stickerId: firstVisitSticker.id,
     });
+    expect(mockedTrackAnalyticsEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.uiStateViewed, {
+      screen_name: UT_SCREEN_NAMES.mapPlaceDetailFirstVisitToast,
+      screen_path: '/home',
+      mission_id: UT_MISSION_IDS.manualFirstVisit,
+      record_method: 'manual',
+    });
+    expect(mockedTrackUtTaskCompleted).toHaveBeenCalledWith(
+      UT_SCREEN_NAMES.mapPlaceDetailFirstVisitToast,
+      {
+        mission_id: UT_MISSION_IDS.manualFirstVisit,
+        record_method: 'manual',
+      }
+    );
   });
 
   it('기존 마커 캐시에 없어도 저장 직후 다시 조회한 장소로 상세 시트를 연다', async () => {
@@ -164,6 +190,13 @@ describe('<HomePage />', () => {
       type: 'selectedPlace',
       stickerId: firstVisitSticker.id,
     });
+    expect(mockedTrackUtTaskCompleted).toHaveBeenCalledWith(
+      UT_SCREEN_NAMES.mapPlaceDetailFirstVisitToast,
+      {
+        mission_id: UT_MISSION_IDS.receiptFirstVisit,
+        record_method: 'receipt',
+      }
+    );
   });
 
   it('일치하는 장소를 찾지 못해도 등록 완료 Toast로 안내한다', async () => {
