@@ -1,3 +1,4 @@
+import { ANALYTICS_EVENTS } from '@chapchap/shared/analytics';
 import mixpanel from 'mixpanel-browser';
 
 import {
@@ -7,16 +8,10 @@ import {
   MIXPANEL_SESSION_REPLAY_PERCENT,
 } from '@/shared/lib/env';
 
+import type { AnalyticsEventName } from '@chapchap/shared/analytics';
 import type { Dict, RequestOptions } from 'mixpanel-browser';
 
-export const ANALYTICS_EVENTS = {
-  screenViewed: 'Screen Viewed',
-  screenExited: 'Screen Exited',
-  uiStateViewed: 'UI State Viewed',
-  utTaskCompleted: 'UT Task Completed',
-} as const;
-
-export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];
+export { ANALYTICS_EVENTS };
 
 let isInitialized = false;
 

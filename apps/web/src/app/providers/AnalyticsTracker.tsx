@@ -1,3 +1,4 @@
+import { isNativeAnalyticsEvent, NATIVE_ANALYTICS_EVENT } from '@chapchap/shared/analytics';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -13,6 +14,21 @@ const MILLISECONDS_PER_SECOND = 1000;
 /** SPA 라우트 진입·이탈과 포그라운드 체류시간을 공통 이벤트로 수집합니다. */
 export default function AnalyticsTracker() {
   const { pathname } = useLocation();
+
+  useEffect(() => {
+    const handleNativeAnalytics = (event: Event) => {
+      if (!(event instanceof CustomEvent) || !isNativeAnalyticsEvent(event.detail)) return;
+
+      trackAnalyticsEvent(event.detail.eventName, {
+        ...event.detail.properties,
+        app: 'mobile',
+      });
+    };
+
+    window.addEventListener(NATIVE_ANALYTICS_EVENT, handleNativeAnalytics);
+
+    return () => window.removeEventListener(NATIVE_ANALYTICS_EVENT, handleNativeAnalytics);
+  }, []);
 
   useEffect(() => {
     const screen = getScreenMetadata(pathname);

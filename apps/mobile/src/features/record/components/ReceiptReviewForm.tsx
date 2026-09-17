@@ -47,6 +47,7 @@ type ReceiptReviewFormProps = {
   onBack: () => void;
   onClose: () => void;
   onChangeShop?: (state: ReceiptReviewState) => void;
+  onSubmitAttempt?: (outcome: 'submitted' | 'validation_failed') => void;
   onSubmit?: (draft: ReceiptDraft) => void;
   isSubmitting?: boolean;
 };
@@ -86,6 +87,7 @@ export default function ReceiptReviewForm({
   onBack,
   onClose,
   onChangeShop,
+  onSubmitAttempt,
   onSubmit,
   isSubmitting = false,
 }: ReceiptReviewFormProps) {
@@ -119,6 +121,10 @@ export default function ReceiptReviewForm({
 
   const handleSubmit = () => {
     setHasAttemptedSubmit(true);
+
+    if (!isSubmitting) {
+      onSubmitAttempt?.(canSubmit && onSubmit ? 'submitted' : 'validation_failed');
+    }
 
     if (!canSubmit || !onSubmit || isSubmitting) {
       return;

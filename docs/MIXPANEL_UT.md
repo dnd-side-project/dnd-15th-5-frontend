@@ -2,7 +2,7 @@
 
 ## 적용 범위
 
-웹 앱의 Mixpanel 프로젝트 토큰이 설정된 환경에서 아래 데이터를 수집한다.
+웹 앱의 Mixpanel 프로젝트 토큰이 설정된 환경에서 웹과 네이티브 영수증 화면의 아래 데이터를 수집한다.
 
 | 요구 데이터 | Mixpanel 데이터 | 분석 방법 |
 | --- | --- | --- |
@@ -10,6 +10,8 @@
 | 퍼널 전환율/이탈 | `Screen Viewed`, `UI State Viewed`, `UT Task Completed` | Funnels에서 미션별 순서 지정 |
 | 클릭·탭/히트맵 | `$mp_click`, Heatmap, Session Replay | Autocapture 클릭 이벤트와 Heatmaps |
 | 과업 완료율 | `UT Task Completed` | 시작 이벤트 사용자 대비 완료 이벤트 사용자 비율 |
+| 네이티브 영수증 단계 완료 | `Step Completed` | `step_name`, `completion_reason`, `input_method`로 단계별 성공 분석 |
+| 단계 시도·재시도 | `Step Attempted` | `attempt_number`, `retry_count`, `is_retry`로 시도 및 재시도 분석 |
 
 화면 코드 매핑은 다음과 같다.
 
@@ -19,6 +21,18 @@
 | `MAP_PlaceDetail_FirstVisitToast` | 첫 방문 소비기록 생성 후 홈의 장소 시트와 Toast가 표시된 상태 |
 | `MAP_PlaceDetail_02` | `/home/shop/:shopId` |
 | `REP02` | `/report` |
+| `REC_ReceiptScan` | 네이티브 영수증 촬영·사진 선택 및 OCR 화면 |
+| `REC_ReceiptConfirm` | 네이티브 영수증 인식 결과 확인·저장 화면 |
+
+네이티브 화면은 메인 WebView의 Mixpanel 세션으로 이벤트를 전달한다. 화면 포커스와 앱 활성 상태를
+기준으로 `Screen Viewed`/`Screen Exited`를 수집하며, 이탈 이벤트에는 `duration_seconds`가 포함된다.
+OCR 성공과 소비기록 저장 성공은 각각 `Step Completed`로 수집한다. `app = mobile` 속성으로 웹
+이벤트와 구분할 수 있다.
+
+영수증 OCR, 영수증 저장, 방문 가게 검색은 실행할 때마다 `Step Attempted`를 전송한다. 첫 시도는
+`attempt_number = 1`, `retry_count = 0`, `is_retry = false`이며 두 번째 시도부터
+`is_retry = true`가 된다. 사용자가 해당 단계에서 헤맨 정도는 사용자별 `retry_count`의 최댓값이나
+`is_retry = true`인 이벤트 수로 집계한다. 검색어와 영수증 입력값은 이벤트 속성에 포함하지 않는다.
 
 첫 방문 완료 화면은 동일하지만 입력 방식에 따라 아래처럼 구분한다.
 

@@ -1,3 +1,4 @@
+import { ANALYTICS_EVENTS, createStepAttemptProperties } from '@chapchap/shared/analytics';
 import { CameraView } from 'expo-camera';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -15,6 +16,11 @@ import {
 } from '@/features/record';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
 import { CloseIcon, GalleryIcon } from '@/shared/assets/icons';
+import {
+  NATIVE_ANALYTICS_SCREENS,
+  trackNativeAnalyticsEvent,
+  useNativeScreenAnalytics,
+} from '@/shared/lib/analytics';
 import { BackButton } from '@/shared/ui/back-button';
 import { useToast } from '@/shared/ui/toast';
 
@@ -42,9 +48,12 @@ const getTouchDistance = (touches: GestureResponderEvent['nativeEvent']['touches
  * 393x852는 상단바·하단바가 노치·홈 인디케이터를 감안해 그려진 크기라 안전영역을 더하지 않는다.
  */
 export default function ReceiptCameraScreen() {
+  useNativeScreenAnalytics(NATIVE_ANALYTICS_SCREENS.receiptScan);
+
   const insets = useSafeAreaInsets();
   const { showToast } = useToast();
   const cameraRef = useRef<CameraView>(null);
+  const attemptCountRef = useRef(0);
   const isProcessingRef = useRef(false);
   const isScanVisibleRef = useRef(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
@@ -185,16 +194,38 @@ export default function ReceiptCameraScreen() {
     return true;
   };
 
+  const trackReceiptScanAttempt = (inputMethod: 'camera' | 'photo_library') => {
+    attemptCountRef.current += 1;
+    trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepAttempted, {
+      step_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
+      screen_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
+      screen_path: NATIVE_ANALYTICS_SCREENS.receiptScan.screenPath,
+      input_method: inputMethod,
+      ...createStepAttemptProperties(attemptCountRef.current),
+    });
+  };
+
   const handleCapture = async () => {
     if (!cameraRef.current || !isCameraReady || !startProcessing()) {
       return;
     }
+
+    trackReceiptScanAttempt('camera');
 
     try {
       // NOTE: 압축은 normalizeReceiptImage가 백엔드 제약에 맞춰 처리하므로 최대 화질로 촬영한다.
       const picture = await cameraRef.current.takePictureAsync();
       showScanLoading(picture.uri);
       const processedReceipt = await processReceiptImage(picture);
+
+      trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepCompleted, {
+        step_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
+        screen_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
+        screen_path: NATIVE_ANALYTICS_SCREENS.receiptScan.screenPath,
+        completion_reason: 'ocr_succeeded',
+        input_method: 'camera',
+        attempt_number: attemptCountRef.current,
+      });
 
       router.replace({
         pathname: '/receipt-confirm',
@@ -219,6 +250,8 @@ export default function ReceiptCameraScreen() {
       return;
     }
 
+    trackReceiptScanAttempt('photo_library');
+
     try {
       const picked = await pickReceiptImageFromLibrary();
 
@@ -229,6 +262,15 @@ export default function ReceiptCameraScreen() {
 
       showScanLoading(picked.uri);
       const processedReceipt = await processReceiptImage(picked);
+
+      trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepCompleted, {
+        step_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
+        screen_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
+        screen_path: NATIVE_ANALYTICS_SCREENS.receiptScan.screenPath,
+        completion_reason: 'ocr_succeeded',
+        input_method: 'photo_library',
+        attempt_number: attemptCountRef.current,
+      });
 
       router.replace({
         pathname: '/receipt-confirm',

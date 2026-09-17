@@ -13,6 +13,7 @@ import {
 import { getKakaoTalkShareTarget } from '@/bridge/kakaoTalkShare';
 import { subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
+import { createNativeAnalyticsScript, subscribeNativeAnalytics } from '@/shared/lib/analytics';
 
 import { useWebViewNavigationState } from './useWebViewNavigationState';
 
@@ -79,6 +80,14 @@ export default function HomeScreen() {
       );
     });
   }, [trustedWebOrigin]);
+
+  useEffect(
+    () =>
+      subscribeNativeAnalytics((event) => {
+        webViewRef.current?.injectJavaScript(createNativeAnalyticsScript(event));
+      }),
+    []
+  );
 
   const handleBridgeMessage = async (event: WebViewMessageEvent) => {
     if (!trustedWebOrigin || !isTrustedBridgeUrl(event.nativeEvent.url, trustedWebOrigin)) {

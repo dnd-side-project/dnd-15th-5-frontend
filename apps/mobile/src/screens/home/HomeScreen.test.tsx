@@ -1,7 +1,9 @@
+import { ANALYTICS_EVENTS, NATIVE_ANALYTICS_EVENT } from '@chapchap/shared/analytics';
 import { act, render } from '@testing-library/react-native';
 import { AppState, BackHandler, Linking } from 'react-native';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
+import { trackNativeAnalyticsEvent } from '@/shared/lib/analytics';
 
 import HomeScreen from './HomeScreen';
 
@@ -140,6 +142,24 @@ describe('<HomeScreen />', () => {
 
     expect(mockCreateAppActiveScript).toHaveBeenCalledWith('https://chapchap.example.com');
     expect(mockInjectJavaScript).toHaveBeenCalledWith('app-active;');
+  });
+
+  it('네이티브 화면의 분석 이벤트를 메인 WebView에 전달한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    await render(<HomeScreen />);
+
+    await act(async () => {
+      trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepCompleted, {
+        screen_name: 'REC_ReceiptScan',
+      });
+    });
+
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      expect.stringContaining(`new CustomEvent(${JSON.stringify(NATIVE_ANALYTICS_EVENT)}`)
+    );
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      expect.stringContaining('"screen_name":"REC_ReceiptScan"')
+    );
   });
 
   it('지도 홈은 전체 화면, 다른 웹 경로는 하단 배경만 edge-to-edge로 표시한다', async () => {
