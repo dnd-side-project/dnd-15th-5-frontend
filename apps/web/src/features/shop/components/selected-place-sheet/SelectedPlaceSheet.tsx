@@ -82,13 +82,14 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
         <h1
           id={`selected-place-${place.placeId}`}
           className="min-w-0 truncate text-title-02-semibold text-neutral-700"
+          data-mp-mask=""
         >
           {place.placeName}
         </h1>
         {place.isRegular === true && <RegularShopBadge />}
       </div>
 
-      <div className="mt-2 flex min-w-0 items-center gap-2">
+      <div className="mt-2 flex min-w-0 items-center gap-2" data-mp-mask="">
         <Chip>{place.category ?? '기타'}</Chip>
         <span aria-hidden="true" className="text-caption-01-medium text-neutral-500">
           |
@@ -123,7 +124,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
           data-analytics-id="selected-place-add-record"
           variant="icon-primary"
           size="large"
-          aria-label={`${place.placeName} 소비 기록 추가`}
+          aria-label="소비 기록 추가"
           className="size-13.5"
         >
           <AddIcon aria-hidden="true" />

@@ -49,6 +49,7 @@ export function CardThumbnail({ src, radius = 'small', size = 'default' }: CardT
     <img
       src={src}
       alt=""
+      data-mp-block=""
       loading="lazy"
       className={cn('object-cover', className)}
       onError={() => setIsError(true)}

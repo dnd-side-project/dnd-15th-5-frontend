@@ -100,13 +100,13 @@ export default function ShopDetail({
 
       <div className="relative z-10 -mt-8.25 flex min-h-0 flex-1 flex-col rounded-t-30 bg-neutral-00 px-4 pt-8">
         <div className="flex min-w-0 items-center gap-2">
-          <h1 className="min-w-0 truncate text-title-01-semibold text-neutral-700">
+          <h1 className="min-w-0 truncate text-title-01-semibold text-neutral-700" data-mp-mask="">
             {place.placeName}
           </h1>
           {place.isRegular && <RegularShopBadge />}
         </div>
 
-        <div className="mt-2 flex min-w-0 items-center gap-2">
+        <div className="mt-2 flex min-w-0 items-center gap-2" data-mp-mask="">
           <Chip>{place.category ?? '기타'}</Chip>
           <span aria-hidden="true" className="text-caption-01-regular text-neutral-300">
             |
