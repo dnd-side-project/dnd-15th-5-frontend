@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useGetMyAccount } from '@/features/my-page';
@@ -16,25 +16,35 @@ import {
   useKakaoReportShare,
   useMonthlyReport,
 } from '@/features/report';
+import type { ReportPreferenceSectionNavigation } from '@/features/report';
+import type { YearMonth } from '@/shared/types/yearMonth';
 import { StateView } from '@/shared/ui/state-view';
+import { formatYearMonth } from '@/shared/utils/yearMonth';
+
+type PreviewMonth = {
+  baseMonthId: string;
+  month: YearMonth;
+};
 
 /** 선택한 월의 상세 리포트를 보여주는 페이지입니다. */
 export default function MonthlyReportPage() {
   const navigate = useNavigate();
   const kakaoThumbnailRef = useRef<HTMLDivElement>(null);
+  const preferenceCardNavigationRef = useRef<ReportPreferenceSectionNavigation>(null);
+  const [previewMonth, setPreviewMonth] = useState<PreviewMonth | null>(null);
   const accountQuery = useGetMyAccount();
   const {
     captureRef,
     downloadImage,
     handleCardTransitionChange,
-    handleCurrentReportSelect,
-    handleNewerMonth,
-    handleOlderMonth,
+    handleCurrentReportSelect: selectCurrentReport,
+    handleNewerMonth: selectNewerMonth,
+    handleOlderMonth: selectOlderMonth,
     handleMonthPickerClose,
     handleMonthPickerOpen,
-    handleMonthSelect,
+    handleMonthSelect: selectMonth,
     handlePreferenceCardFlip,
-    handleReportCardSelect,
+    handleReportCardSelect: selectReportCard,
     handleShareSheetClose,
     handleShareSheetOpen,
     hasNewerMonth,
@@ -63,6 +73,50 @@ export default function MonthlyReportPage() {
       selectedMonth,
     }
   );
+
+  const handleOlderReportMonth = () => {
+    if (preferenceCardNavigationRef.current?.showOlderMonth()) return;
+
+    setPreviewMonth(null);
+    selectOlderMonth();
+  };
+
+  const handleNewerReportMonth = () => {
+    if (preferenceCardNavigationRef.current?.showNewerMonth()) return;
+
+    setPreviewMonth(null);
+    selectNewerMonth();
+  };
+
+  const handleMonthSelect = (month: YearMonth) => {
+    setPreviewMonth(null);
+    selectMonth(month);
+  };
+
+  const handleReportCardSelect = (index: number) => {
+    setPreviewMonth(null);
+    selectReportCard(index);
+  };
+
+  const handleCurrentReportSelect = () => {
+    setPreviewMonth(null);
+    selectCurrentReport();
+  };
+
+  const handleReportCardPreview = (index: number) => {
+    const card = reportCards[index];
+    if (!card) return;
+
+    setPreviewMonth({
+      baseMonthId: formatYearMonth(selectedMonth),
+      month: card.month,
+    });
+  };
+
+  const displayedMonth =
+    previewMonth?.baseMonthId === formatYearMonth(selectedMonth)
+      ? previewMonth.month
+      : selectedMonth;
 
   if (hasReportError) {
     return (
@@ -100,10 +154,10 @@ export default function MonthlyReportPage() {
           onMonthPickerClose={handleMonthPickerClose}
           onMonthPickerOpen={handleMonthPickerOpen}
           onMonthSelect={handleMonthSelect}
-          onNewerMonth={handleNewerMonth}
-          onOlderMonth={handleOlderMonth}
+          onNewerMonth={handleNewerReportMonth}
+          onOlderMonth={handleOlderReportMonth}
           selectableMonths={selectableMonths}
-          selectedMonth={selectedMonth}
+          selectedMonth={displayedMonth}
         />
         {reportCards.length > 0 && (
           <ReportPreferenceSection
@@ -111,7 +165,9 @@ export default function MonthlyReportPage() {
             captureRef={captureRef}
             isCurrentReportActionVisible={hasNewerMonth}
             isFlipped={isCardFlipped}
+            navigationRef={preferenceCardNavigationRef}
             nickname={nickname}
+            onCardPreview={handleReportCardPreview}
             onCardSelect={handleReportCardSelect}
             onCardTransitionChange={handleCardTransitionChange}
             onFlip={handlePreferenceCardFlip}

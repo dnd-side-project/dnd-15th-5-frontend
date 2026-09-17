@@ -1,15 +1,23 @@
 import { renderHook } from '@testing-library/react';
 
-import { MONTHLY_REPORT_QUERY_CACHE_OPTIONS } from '@/features/report/apis/cacheOptions';
 import { getGetMonthlyReportQueryOptions } from '@/features/report/apis/queries';
+import type { MonthlyReportData } from '@/features/report/types';
 
 import { useAdjacentMonthlyReportPrefetch } from './useAdjacentMonthlyReportPrefetch';
 
-const mockPrefetchQuery = jest.fn();
+const prefetchedReport: MonthlyReportData = {
+  adjacentCards: [],
+  isUnavailable: true,
+  month: { month: 6, year: 2026 },
+};
+const mockUseQueries = jest.fn((_options?: unknown) => [
+  { data: prefetchedReport },
+  { data: undefined },
+]);
 
 jest.mock('@tanstack/react-query', () => ({
   ...jest.requireActual('@tanstack/react-query'),
-  useQueryClient: () => ({ prefetchQuery: mockPrefetchQuery }),
+  useQueries: (options: unknown) => mockUseQueries(options),
 }));
 
 jest.mock('@/features/report/apis/queries', () => ({
@@ -18,11 +26,12 @@ jest.mock('@/features/report/apis/queries', () => ({
 
 describe('useAdjacentMonthlyReportPrefetch', () => {
   beforeEach(() => {
-    mockPrefetchQuery.mockClear();
+    mockUseQueries.mockClear();
+    jest.mocked(getGetMonthlyReportQueryOptions).mockClear();
   });
 
-  it('리포트가 존재하는 양옆 달만 미리 조회한다', () => {
-    renderHook(() =>
+  it('빈 달을 포함한 양옆 달을 미리 조회하고 완료된 응답을 반환한다', () => {
+    const { result } = renderHook(() =>
       useAdjacentMonthlyReportPrefetch([
         {
           description: '설명',
@@ -40,9 +49,15 @@ describe('useAdjacentMonthlyReportPrefetch', () => {
     expect(getGetMonthlyReportQueryOptions).toHaveBeenCalledWith(
       { yearMonth: '2026-06' },
       {
-        query: MONTHLY_REPORT_QUERY_CACHE_OPTIONS,
+        query: expect.objectContaining({ select: expect.any(Function) }),
       }
     );
-    expect(mockPrefetchQuery).toHaveBeenCalledTimes(1);
+    expect(getGetMonthlyReportQueryOptions).toHaveBeenCalledWith(
+      { yearMonth: '2026-08' },
+      {
+        query: expect.objectContaining({ select: expect.any(Function) }),
+      }
+    );
+    expect(result.current).toEqual([prefetchedReport]);
   });
 });

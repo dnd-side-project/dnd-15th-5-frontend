@@ -1,29 +1,30 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useQueries } from '@tanstack/react-query';
 
 import { MONTHLY_REPORT_QUERY_CACHE_OPTIONS } from '@/features/report/apis/cacheOptions';
 import { getGetMonthlyReportQueryOptions } from '@/features/report/apis/queries';
-import type { MonthlyReportAdjacentCard } from '@/features/report/types';
+import type { MonthlyReportAdjacentCard, MonthlyReportData } from '@/features/report/types';
+import { mapMonthlyReportResponse } from '@/features/report/utils/monthlyReport';
 import { formatYearMonth } from '@/shared/utils/yearMonth';
 
-/** 실제 리포트가 존재하는 양옆 달을 미리 조회해 월 이동 대기 시간을 줄입니다. */
+/** 양옆 달을 미리 조회하고, 그 응답의 바깥쪽 카드까지 캐러셀에 제공할 수 있게 반환합니다. */
 export const useAdjacentMonthlyReportPrefetch = (
   adjacentCards: readonly MonthlyReportAdjacentCard[] | undefined
 ) => {
-  const queryClient = useQueryClient();
+  const queries = useQueries({
+    queries: (adjacentCards ?? []).map((card) => {
+      const month = card.month;
 
-  useEffect(() => {
-    adjacentCards?.forEach((card) => {
-      if (card.isUnavailable) return;
-
-      void queryClient.prefetchQuery(
-        getGetMonthlyReportQueryOptions(
-          { yearMonth: formatYearMonth(card.month) },
-          {
-            query: MONTHLY_REPORT_QUERY_CACHE_OPTIONS,
-          }
-        )
+      return getGetMonthlyReportQueryOptions<MonthlyReportData | undefined>(
+        { yearMonth: formatYearMonth(month) },
+        {
+          query: {
+            ...MONTHLY_REPORT_QUERY_CACHE_OPTIONS,
+            select: ({ data }) => mapMonthlyReportResponse(data, month),
+          },
+        }
       );
-    });
-  }, [adjacentCards, queryClient]);
+    }),
+  });
+
+  return queries.flatMap(({ data }) => (data ? [data] : []));
 };
