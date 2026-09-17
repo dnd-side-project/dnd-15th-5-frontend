@@ -23,10 +23,7 @@ const WEIGHT_CLASS: Record<CardTitleWeight, string> = {
  */
 export function CardTitle({ children, className, weight }: CardTitleProps) {
   return (
-    <span
-      className={cn('block truncate text-neutral-900', WEIGHT_CLASS[weight], className)}
-      data-mp-mask=""
-    >
+    <span className={cn('block truncate text-neutral-900', WEIGHT_CLASS[weight], className)}>
       {children}
     </span>
   );

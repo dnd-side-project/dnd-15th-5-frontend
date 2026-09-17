@@ -16,11 +16,11 @@ export default function SpendingRecordItem({ consumption }: SpendingRecordItemPr
   const content = (
     <>
       <CardThumbnail src={consumption.thumbnailUrl ?? null} />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1" data-mp-mask="">
         <CardTitle weight="semibold">
           {consumption.placeName?.trim() || '알 수 없는 장소'}
         </CardTitle>
-        <p className="mt-1 truncate text-caption-01-regular text-neutral-500" data-mp-mask="">
+        <p className="mt-1 truncate text-caption-01-regular text-neutral-500">
           {formatPurchaseDateTimeLabel(consumption.purchaseDate, consumption.purchaseTime)} ·{' '}
           {consumption.category?.trim() || '기타'}
         </p>

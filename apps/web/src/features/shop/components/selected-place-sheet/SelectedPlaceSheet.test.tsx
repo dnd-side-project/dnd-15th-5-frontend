@@ -109,7 +109,7 @@ describe('SelectedPlaceSheet', () => {
       </MemoryRouter>
     );
 
-    await user.click(screen.getByRole('link', { name: '투썸플레이스 소비 기록 추가' }));
+    await user.click(screen.getByRole('link', { name: '소비 기록 추가' }));
 
     expect(
       screen.getByText('ChIJ-twosome-101|투썸플레이스|서울특별시 강남구 봉은사로 125 1층|카페')

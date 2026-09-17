@@ -9,9 +9,7 @@ export function CardLocation({ children }: CardLocationProps) {
   return (
     <span className="flex items-center gap-0.5 text-body-02-regular text-neutral-500">
       <LocationPinIcon className="size-3 shrink-0 text-neutral-400" aria-hidden="true" />
-      <span className="min-w-0 flex-1 truncate" data-mp-mask="">
-        {children}
-      </span>
+      <span className="min-w-0 flex-1 truncate">{children}</span>
     </span>
   );
 }

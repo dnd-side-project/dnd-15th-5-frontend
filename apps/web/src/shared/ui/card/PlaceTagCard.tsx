@@ -58,7 +58,7 @@ export function PlaceTagCard({
   return (
     <span className="flex w-full items-center gap-4">
       <CardThumbnail src={thumbnailSrc} size={thumbnailSize} />
-      <span className="flex min-w-0 flex-col" data-mp-mask="">
+      <span className="flex min-w-0 flex-col">
         <CardTitle weight="semibold">{title}</CardTitle>
         <span className="mt-2 flex flex-wrap gap-1">
           {tags.map(({ label, icon }) => (

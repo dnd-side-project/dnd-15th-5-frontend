@@ -124,7 +124,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
           data-analytics-id="selected-place-add-record"
           variant="icon-primary"
           size="large"
-          aria-label={`${place.placeName} 소비 기록 추가`}
+          aria-label="소비 기록 추가"
           className="size-13.5"
         >
           <AddIcon aria-hidden="true" />
