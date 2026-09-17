@@ -44,25 +44,27 @@ export default function CategoryChart({ categories }: CategoryChartProps) {
                     aria-hidden
                     className={`absolute inset-0 ${colorClassName} ${index === 0 ? 'rounded-l-lg' : ''} ${index === visibleCategories.length - 1 ? 'rounded-r-lg' : ''} group-focus-visible:ring-2 group-focus-visible:ring-inset group-focus-visible:ring-neutral-900`}
                   />
-                  <ReportChartTooltip
-                    alignment={
-                      index === 0
-                        ? 'start'
-                        : index === visibleCategories.length - 1
-                          ? 'end'
-                          : 'center'
-                    }
-                    markerClassName={colorClassName}
-                  >
-                    {category.category} {category.percentage}%
-                  </ReportChartTooltip>
+                  <span data-mp-mask="">
+                    <ReportChartTooltip
+                      alignment={
+                        index === 0
+                          ? 'start'
+                          : index === visibleCategories.length - 1
+                            ? 'end'
+                            : 'center'
+                      }
+                      markerClassName={colorClassName}
+                    >
+                      {category.category} {category.percentage}%
+                    </ReportChartTooltip>
+                  </span>
                 </button>
               );
             })}
           </div>
           <ul className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-body-02-medium text-neutral-600">
             {visibleCategories.map((category) => (
-              <li className="flex items-center gap-1.5" key={category.category}>
+              <li className="flex items-center gap-1.5" data-mp-mask="" key={category.category}>
                 <span
                   aria-hidden
                   className={`size-5 rounded-full ${REPORT_CATEGORY_COLOR_CLASS_NAMES[category.category]}`}

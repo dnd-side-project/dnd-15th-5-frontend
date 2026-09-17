@@ -87,7 +87,7 @@ describe('VisitHistoryList', () => {
       />
     );
 
-    expect(screen.getByText('8월 23일')).toBeInTheDocument();
+    expect(screen.getByText('8월 23일')).not.toHaveAttribute('datetime');
     expect(screen.queryByText('방문 기록을 불러오지 못했어요.')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: '다시 불러오기' }));

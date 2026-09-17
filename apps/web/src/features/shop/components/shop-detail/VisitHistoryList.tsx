@@ -70,11 +70,10 @@ export default function VisitHistoryList({
             <li
               key={`${visit.visitedAt ?? 'visit'}-${visit.amount ?? 'amount'}-${index}`}
               className="flex items-center gap-4 text-body-01-medium text-neutral-700"
+              data-mp-mask=""
             >
               <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-neutral-500" />
-              <time className="min-w-0 flex-1" dateTime={visit.visitedAt}>
-                {formatVisitDate(visit.visitedAt)}
-              </time>
+              <time className="min-w-0 flex-1">{formatVisitDate(visit.visitedAt)}</time>
               <span className="shrink-0 tabular-nums">{formatVisitAmount(visit.amount)}</span>
             </li>
           ))}

@@ -50,10 +50,11 @@ describe('Mixpanel analytics', () => {
           capture_text_content: false,
           capture_extra_attrs: ['data-analytics-id'],
         }),
-        record_block_selector: 'img, video, canvas, [data-mp-block]',
+        record_block_selector: 'video, canvas, [data-mp-block]',
         record_heatmap_data: true,
         record_mask_all_inputs: true,
-        record_mask_all_text: true,
+        record_mask_all_text: false,
+        record_mask_text_selector: '[data-mp-mask]',
         record_network: false,
         record_sessions_percent: 100,
       })

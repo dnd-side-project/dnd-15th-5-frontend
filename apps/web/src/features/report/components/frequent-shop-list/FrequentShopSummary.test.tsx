@@ -51,7 +51,8 @@ describe('FrequentShopSummary', () => {
     expect(screen.getByLabelText('1위')).toBeInTheDocument();
     expect(screen.getByLabelText('7위')).toBeInTheDocument();
     expect(screen.queryByLabelText('8위')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('12회 방문')).toBeInTheDocument();
+    expect(screen.getAllByText('방문 횟수')).toHaveLength(7);
+    expect(screen.getByText('12')).toHaveAttribute('data-mp-mask');
     expect(screen.getAllByText('용산구')).toHaveLength(7);
   });
 

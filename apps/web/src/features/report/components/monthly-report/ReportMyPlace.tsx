@@ -23,7 +23,7 @@ export default function ReportMyPlace({ districts }: ReportMyPlaceProps) {
           <span className="w-fit rounded-full bg-primary-400 px-3 py-1.75 text-label-01-semibold text-neutral-00/90">
             이달의 본거지
           </span>
-          <p>
+          <p data-mp-mask="">
             <span className="block text-body-02-medium text-primary-400">
               {topDistrict.visits}회 방문
             </span>
@@ -42,6 +42,7 @@ export default function ReportMyPlace({ districts }: ReportMyPlaceProps) {
               {otherDistricts.slice(0, 2).map((district) => (
                 <article
                   className="flex h-18.75 flex-col justify-center rounded-16 bg-neutral-100 p-4"
+                  data-mp-mask=""
                   key={district.name}
                 >
                   <span className="text-label-01-medium text-neutral-500">

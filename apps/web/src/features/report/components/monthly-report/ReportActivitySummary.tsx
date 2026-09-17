@@ -15,7 +15,9 @@ export default function ReportActivitySummary({ items }: ReportActivitySummaryPr
         {items.map((item, index) => (
           <div className={index === 0 ? '' : 'border-l border-neutral-300'} key={item.label}>
             <dt className="text-body-02-medium text-neutral-500">{item.label}</dt>
-            <dd className="mt-2 text-title-01-semibold text-neutral-900">{item.value}</dd>
+            <dd className="mt-2 text-title-01-semibold text-neutral-900" data-mp-mask="">
+              {item.value}
+            </dd>
           </div>
         ))}
       </dl>

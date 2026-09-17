@@ -96,7 +96,7 @@ describe('FrequentShopList', () => {
     expect(screen.getByLabelText('1위')).toBeInTheDocument();
     expect(screen.getByLabelText('2위')).toBeInTheDocument();
     expect(screen.getByLabelText('3위')).toBeInTheDocument();
-    expect(screen.getByLabelText('12회 방문')).toBeInTheDocument();
+    expect(screen.getByText('12')).toHaveAttribute('data-mp-mask');
     expect(screen.getByText('한강로동')).toBeInTheDocument();
     expect(container.querySelector('img')).toHaveAttribute(
       'src',
@@ -155,7 +155,7 @@ describe('FrequentShopList', () => {
       period: GetFrequentPlacesPeriod.ALL_TIME,
     });
     expect(screen.queryByRole('dialog', { name: '기간' })).not.toBeInTheDocument();
-    expect(screen.getByLabelText('28회 방문')).toBeInTheDocument();
+    expect(screen.getByText('28')).toHaveAttribute('data-mp-mask');
   });
 
   it('필터 바깥을 누르면 바텀시트를 닫고 포커스를 복원한다', async () => {

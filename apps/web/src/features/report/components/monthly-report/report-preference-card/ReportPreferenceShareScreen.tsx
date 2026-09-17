@@ -45,7 +45,7 @@ export default function ReportPreferenceShareScreen({
           <span aria-hidden className="report-preference-share-title-sparkle--left">
             ✦
           </span>
-          {nickname}님의 취향 카드
+          <span data-mp-mask="">{nickname}</span>님의 취향 카드
           <span aria-hidden className="report-preference-share-title-sparkle--right">
             ✦
           </span>
