@@ -22,6 +22,8 @@ type ScreenMetadata = {
   utCompletionTarget?: string;
 };
 
+const NOT_FOUND_SCREEN = 'ETC_NotFound';
+
 const STATIC_SCREEN_NAMES: Record<string, string> = {
   [ROUTE_PATHS.login]: 'AUTH_Login',
   [ROUTE_PATHS.agreement]: 'AUTH_Agreement',
@@ -41,9 +43,14 @@ const STATIC_SCREEN_NAMES: Record<string, string> = {
   [ROUTE_PATHS.myPage]: 'MY_MyPage',
 };
 
+const normalizePathname = (pathname: string) =>
+  pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+
 /** URL의 식별자와 쿼리 문자열을 분석 이벤트에 싣지 않고 안정적인 화면 코드로 바꿉니다. */
 export const getScreenMetadata = (pathname: string): ScreenMetadata => {
-  if (matchPath(ROUTE_PATTERNS.shopDetail, pathname)) {
+  const normalizedPathname = normalizePathname(pathname);
+
+  if (matchPath(ROUTE_PATTERNS.shopDetail, normalizedPathname)) {
     return {
       screenName: UT_SCREEN_NAMES.mapPlaceDetail02,
       screenPath: ROUTE_PATTERNS.shopDetail,
@@ -51,14 +58,20 @@ export const getScreenMetadata = (pathname: string): ScreenMetadata => {
     };
   }
 
-  if (matchPath(ROUTE_PATTERNS.sharedReport, pathname)) {
+  if (matchPath(ROUTE_PATTERNS.sharedReport, normalizedPathname)) {
     return { screenName: 'REP_Shared', screenPath: ROUTE_PATTERNS.sharedReport };
   }
 
-  const screenName = STATIC_SCREEN_NAMES[pathname] ?? 'ETC_NotFound';
+  const screenName = STATIC_SCREEN_NAMES[normalizedPathname];
+
+  if (!screenName) {
+    return { screenName: NOT_FOUND_SCREEN, screenPath: NOT_FOUND_SCREEN };
+  }
+
   return {
     screenName,
-    screenPath: pathname,
-    utCompletionTarget: pathname === ROUTE_PATHS.report ? UT_SCREEN_NAMES.report02 : undefined,
+    screenPath: normalizedPathname,
+    utCompletionTarget:
+      normalizedPathname === ROUTE_PATHS.report ? UT_SCREEN_NAMES.report02 : undefined,
   };
 };
