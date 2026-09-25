@@ -25,3 +25,8 @@ export { default as SpendingHistory } from './components/spending-history/Spendi
 export { default as MonthlyStickerRecordList } from './components/monthly-record-list/MonthlyStickerRecordList';
 export { useMonthlyReport } from './hooks/useMonthlyReport';
 export { useCurrentReportQuery } from './apis/hooks/useCurrentReportQuery';
+export {
+  createFrequentShopListPath,
+  getFrequentShopPeriod,
+  updateFrequentShopPeriodSearchParams,
+} from './utils/frequentShopNavigation';

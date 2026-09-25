@@ -20,6 +20,8 @@ import type { ReactNode } from 'react';
 
 type FrequentShopListProps = {
   headerContent?: ReactNode;
+  onPeriodChange?: (period: FrequentShopPeriod) => void;
+  period?: FrequentShopPeriod;
 };
 
 const CATEGORY_FILTERS = ['모두', ...RECORD_CATEGORIES] as const;
@@ -31,10 +33,15 @@ const PERIOD_PARAM_BY_FILTER = {
 } as const satisfies Record<FrequentShopPeriod, GetFrequentPlacesPeriod>;
 
 /** 카테고리와 기간을 기준으로 단골 가게의 방문 순위를 보여줍니다. */
-export default function FrequentShopList({ headerContent }: FrequentShopListProps) {
+export default function FrequentShopList({
+  headerContent,
+  onPeriodChange,
+  period,
+}: FrequentShopListProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('모두');
-  const [selectedPeriod, setSelectedPeriod] = useState<FrequentShopPeriod>('currentMonth');
+  const [internalPeriod, setInternalPeriod] = useState<FrequentShopPeriod>('currentMonth');
   const [isPeriodFilterOpen, setIsPeriodFilterOpen] = useState(false);
+  const selectedPeriod = period ?? internalPeriod;
   const category = useMemo(
     () => (selectedCategory === '모두' ? undefined : [selectedCategory]),
     [selectedCategory]
@@ -57,8 +64,12 @@ export default function FrequentShopList({ headerContent }: FrequentShopListProp
     onLoadMore: fetchNextPage,
   });
 
-  const handlePeriodSelect = (period: FrequentShopPeriod) => {
-    setSelectedPeriod(period);
+  const handlePeriodSelect = (nextPeriod: FrequentShopPeriod) => {
+    if (period === undefined) {
+      setInternalPeriod(nextPeriod);
+    }
+
+    onPeriodChange?.(nextPeriod);
     setIsPeriodFilterOpen(false);
   };
 
