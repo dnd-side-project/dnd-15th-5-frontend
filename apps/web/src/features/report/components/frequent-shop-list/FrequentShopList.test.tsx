@@ -75,6 +75,13 @@ const renderFrequentShopList = () =>
     </MemoryRouter>
   );
 
+const renderAllPeriodFrequentShopList = () =>
+  render(
+    <MemoryRouter>
+      <FrequentShopList period="all" />
+    </MemoryRouter>
+  );
+
 describe('FrequentShopList', () => {
   beforeEach(() => {
     fetchNextPage.mockReset();
@@ -106,6 +113,16 @@ describe('FrequentShopList', () => {
       category: undefined,
       period: GetFrequentPlacesPeriod.THIS_MONTH,
     });
+  });
+
+  it('초기 기간이 전체이면 전체 기간으로 조회한다', () => {
+    renderAllPeriodFrequentShopList();
+
+    expect(mockedUseFrequentPlacesInfiniteQuery).toHaveBeenCalledWith({
+      category: undefined,
+      period: GetFrequentPlacesPeriod.ALL_TIME,
+    });
+    expect(screen.getByText('28')).toHaveAttribute('data-mp-mask');
   });
 
   it('첫 조회 중에는 목록 스켈레톤을 보여준다', () => {
@@ -156,6 +173,22 @@ describe('FrequentShopList', () => {
     });
     expect(screen.queryByRole('dialog', { name: '기간' })).not.toBeInTheDocument();
     expect(screen.getByText('28')).toHaveAttribute('data-mp-mask');
+  });
+
+  it('기간 필터를 선택하면 변경된 기간을 전달한다', async () => {
+    const user = userEvent.setup();
+    const onPeriodChange = jest.fn();
+
+    render(
+      <MemoryRouter>
+        <FrequentShopList onPeriodChange={onPeriodChange} />
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '기간 필터' }));
+    await user.click(screen.getByRole('button', { name: '전체' }));
+
+    expect(onPeriodChange).toHaveBeenCalledWith('all');
   });
 
   it('필터 바깥을 누르면 바텀시트를 닫고 포커스를 복원한다', async () => {
