@@ -10,6 +10,9 @@ jest.mock('@/features/auth/apis/clients', () => ({
   logoutWeb: jest.fn(),
 }));
 jest.mock('@/features/notification/apis/clients', () => ({ unregisterDeviceToken: jest.fn() }));
+jest.mock('@/features/notification/hooks/pushTokenSyncLifecycle', () => ({
+  stopPushTokenSyncAndDrain: jest.fn(),
+}));
 jest.mock('@/shared/apis', () => ({ configureLogoutAuthentication: jest.fn() }));
 
 const mockConfigureSharedLogoutAuthentication = jest.mocked(configureSharedLogoutAuthentication);
@@ -22,10 +25,12 @@ describe('configureLogoutAuthentication', () => {
 
     await dependencies.logoutApp('refresh-token');
     await dependencies.logoutWeb();
+    await dependencies.stopPushTokenSyncAndDrain();
     await dependencies.unregisterDeviceToken();
 
     expect(logoutApp).toHaveBeenCalledWith({ refreshToken: 'refresh-token' });
     expect(logoutWeb).toHaveBeenCalledWith();
     expect(unregisterDeviceToken).toHaveBeenCalledWith();
+    expect(dependencies.stopPushTokenSyncAndDrain).toBeDefined();
   });
 });

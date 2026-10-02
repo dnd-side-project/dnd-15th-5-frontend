@@ -10,11 +10,11 @@ const mockCreatePushTokenSynchronizer = jest.mocked(createPushTokenSynchronizer)
 
 describe('usePushTokenSync', () => {
   const sync = jest.fn(async () => undefined);
-  const dispose = jest.fn();
+  const stopAndDrain = jest.fn(async () => undefined);
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockCreatePushTokenSynchronizer.mockReturnValue({ dispose, sync });
+    mockCreatePushTokenSynchronizer.mockReturnValue({ stopAndDrain, sync });
   });
 
   it('활성화되면 즉시 동기화하고 app-active 때 다시 동기화한다', () => {
@@ -26,7 +26,7 @@ describe('usePushTokenSync', () => {
     expect(sync).toHaveBeenCalledTimes(2);
 
     unmount();
-    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(stopAndDrain).toHaveBeenCalledTimes(1);
   });
 
   it('비활성화 상태에서는 synchronizer를 만들지 않는다', () => {

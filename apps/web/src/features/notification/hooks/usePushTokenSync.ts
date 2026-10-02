@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 
 import { registerDeviceToken } from '@/features/notification/apis/clients';
 import { createPushTokenSynchronizer } from '@/features/notification/hooks/createPushTokenSynchronizer';
+import { registerPushTokenSynchronizer } from '@/features/notification/hooks/pushTokenSyncLifecycle';
 import { useNativeAppActive } from '@/shared/hooks/useNativeAppActive';
 import { requestToNative } from '@/shared/lib/bridge';
 
@@ -26,13 +27,14 @@ export const usePushTokenSync = (isEnabled: boolean) => {
       requestPushToken: () => requestToNative('getPushToken', {}),
     });
 
+    const unregisterSynchronizer = registerPushTokenSynchronizer(synchronizer);
     syncRef.current = synchronizer.sync;
     void synchronizer.sync();
 
     return () => {
-      // 로그아웃 또는 unmount 이후 진행 중인 재시도가 서버 등록으로 이어지지 않게 정리합니다.
       syncRef.current = null;
-      synchronizer.dispose();
+      unregisterSynchronizer();
+      void synchronizer.stopAndDrain();
     };
   }, [isEnabled]);
 };

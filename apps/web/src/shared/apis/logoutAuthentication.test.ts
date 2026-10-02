@@ -13,6 +13,7 @@ const createDependencies = (
   isNativeApp: jest.fn(() => false),
   logoutApp: jest.fn(async () => undefined),
   logoutWeb: jest.fn(async () => undefined),
+  stopPushTokenSyncAndDrain: jest.fn(async () => undefined),
   unregisterDeviceToken: jest.fn(async () => undefined),
   ...overrides,
 });
@@ -25,6 +26,7 @@ describe('logoutAuthentication', () => {
 
     expect(dependencies.logoutWeb).toHaveBeenCalledTimes(1);
     expect(dependencies.logoutApp).not.toHaveBeenCalled();
+    expect(dependencies.stopPushTokenSyncAndDrain).not.toHaveBeenCalled();
     expect(dependencies.unregisterDeviceToken).not.toHaveBeenCalled();
     expect(dependencies.clearAuthenticationTokens).toHaveBeenCalledTimes(1);
   });
@@ -35,6 +37,7 @@ describe('logoutAuthentication', () => {
     await performLogoutAuthentication(dependencies);
 
     expect(dependencies.logoutApp).toHaveBeenCalledWith('refresh-token');
+    expect(dependencies.stopPushTokenSyncAndDrain).toHaveBeenCalledTimes(1);
     expect(dependencies.unregisterDeviceToken).toHaveBeenCalledTimes(1);
     expect(dependencies.logoutWeb).not.toHaveBeenCalled();
     expect(dependencies.clearAuthenticationTokens).toHaveBeenCalledTimes(1);
@@ -52,6 +55,36 @@ describe('logoutAuthentication', () => {
     expect(dependencies.logoutApp).toHaveBeenCalledWith('refresh-token');
     expect(dependencies.captureException).toHaveBeenCalledWith(unregisterError);
     expect(dependencies.clearAuthenticationTokens).toHaveBeenCalledTimes(1);
+  });
+
+  it('푸시 동기화 중지와 drain이 끝난 뒤 디바이스 토큰을 삭제한다', async () => {
+    const calls: string[] = [];
+    let finishDrain: (() => void) | undefined;
+    const dependencies = createDependencies({
+      isNativeApp: jest.fn(() => true),
+      stopPushTokenSyncAndDrain: jest.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            finishDrain = () => {
+              calls.push('drained');
+              resolve();
+            };
+          })
+      ),
+      unregisterDeviceToken: jest.fn(async () => {
+        calls.push('unregistered');
+      }),
+    });
+
+    const logout = performLogoutAuthentication(dependencies);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(dependencies.unregisterDeviceToken).not.toHaveBeenCalled();
+    finishDrain?.();
+    await logout;
+
+    expect(calls).toEqual(['drained', 'unregistered']);
   });
 
   it('Refresh Token 조회가 실패해도 디바이스 토큰 삭제와 로컬 인증 정리를 계속한다', async () => {

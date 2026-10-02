@@ -129,10 +129,37 @@ describe('createPushTokenSynchronizer', () => {
     const pendingSync = synchronizer.sync();
     await Promise.resolve();
     await Promise.resolve();
-    synchronizer.dispose();
+    void synchronizer.stopAndDrain();
     releaseRetry?.();
     await pendingSync;
 
+    expect(dependencies.requestPushToken).toHaveBeenCalledTimes(1);
+  });
+
+  it('등록 요청이 진행 중이면 stopAndDrain은 요청 완료까지 기다린다', async () => {
+    const dependencies = createDependencies();
+    let finishRegistration: (() => void) | undefined;
+    dependencies.registerDeviceToken.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishRegistration = resolve;
+        })
+    );
+    const synchronizer = createPushTokenSynchronizer(dependencies);
+
+    const pendingSync = synchronizer.sync();
+    await Promise.resolve();
+    const drained = synchronizer.stopAndDrain();
+    let isDrained = false;
+    void drained.then(() => {
+      isDrained = true;
+    });
+
+    expect(isDrained).toBe(false);
+    finishRegistration?.();
+    await Promise.all([pendingSync, drained]);
+
+    expect(isDrained).toBe(true);
     expect(dependencies.requestPushToken).toHaveBeenCalledTimes(1);
   });
 });

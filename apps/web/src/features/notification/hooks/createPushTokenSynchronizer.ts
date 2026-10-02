@@ -104,12 +104,14 @@ export const createPushTokenSynchronizer = ({
     return pendingSync;
   };
 
-  const dispose = () => {
-    // 이미 시작된 네이티브 요청은 취소할 수 없으므로 결과 반영과 다음 재시도만 중단합니다.
+  const stopAndDrain = () => {
+    // 이미 시작된 요청은 취소하지 않고, 끝날 때까지 기다려 로그아웃 요청과 순서를 보장합니다.
     isActive = false;
     retryController?.abort();
     retryController = null;
+
+    return pendingSync ?? Promise.resolve();
   };
 
-  return { dispose, sync };
+  return { stopAndDrain, sync };
 };

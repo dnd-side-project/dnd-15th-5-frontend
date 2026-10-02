@@ -8,6 +8,7 @@ import { getNativeRefreshToken } from './nativeAuthToken';
 export type LogoutServerDependencies = {
   logoutApp: (refreshToken: string) => Promise<void>;
   logoutWeb: () => Promise<void>;
+  stopPushTokenSyncAndDrain: () => Promise<void>;
   unregisterDeviceToken: () => Promise<void>;
 };
 
@@ -40,12 +41,20 @@ export const performLogoutAuthentication = async (
 
   try {
     if (resolvedDependencies.isNativeApp()) {
+      let canUnregisterDeviceToken = true;
+      try {
+        await resolvedDependencies.stopPushTokenSyncAndDrain();
+      } catch (error) {
+        canUnregisterDeviceToken = false;
+        resolvedDependencies.captureException(error);
+      }
+
       const [refreshTokenResult, unregisterDeviceTokenResult] = await Promise.allSettled([
         resolvedDependencies.getNativeRefreshToken(),
-        resolvedDependencies.unregisterDeviceToken(),
+        canUnregisterDeviceToken ? resolvedDependencies.unregisterDeviceToken() : Promise.resolve(),
       ]);
 
-      if (unregisterDeviceTokenResult.status === 'rejected') {
+      if (canUnregisterDeviceToken && unregisterDeviceTokenResult.status === 'rejected') {
         resolvedDependencies.captureException(unregisterDeviceTokenResult.reason);
       }
 
