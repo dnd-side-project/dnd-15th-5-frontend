@@ -1,7 +1,6 @@
 /** 푸시 payload의 `data.url`에서 허용할 정적 경로입니다. 알림 종류별 목적지는 아래 매핑에서 별도로 관리합니다. */
 export const NOTIFICATION_ALLOWED_PATHS = {
   notifications: '/notifications',
-  record: '/record',
   report: '/report',
   spendingHistory: '/report/history',
   frequentShopList: '/report/frequent-shops',
@@ -11,7 +10,7 @@ export const NOTIFICATION_ALLOWED_PATHS = {
 
 export const NOTIFICATION_TYPE_PATHS = {
   REPORT_COMPLETED: NOTIFICATION_ALLOWED_PATHS.monthlyReport,
-  FRIDAY_REMINDER: NOTIFICATION_ALLOWED_PATHS.record,
+  FRIDAY_REMINDER: '/record',
 } as const;
 
 /** 푸시 payload에서 허용하는 동적 경로 패턴입니다. */
