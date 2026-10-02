@@ -8,6 +8,7 @@ import {
   startSocialLogin,
 } from '@/native/auth';
 import { getCurrentPosition } from '@/native/location';
+import { clearPushNotifications, getPushToken } from '@/native/notifications';
 import { openReceiptCamera } from '@/native/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/save-image';
 
@@ -49,7 +50,9 @@ export const BRIDGE_HANDLERS: BridgeHandlerMap = {
   clearRefreshToken: async () => {
     clearAccessToken();
     await clearRefreshToken();
+    await clearPushNotifications();
 
     return { cleared: true };
   },
+  getPushToken: () => getPushToken(),
 };

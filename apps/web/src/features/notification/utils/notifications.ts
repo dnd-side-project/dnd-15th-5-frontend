@@ -1,3 +1,5 @@
+import { resolveNotificationTypePath } from '@chapchap/shared/notification';
+
 import type { NotificationResponse } from '@/features/notification/apis/dto';
 import type { NotificationItem } from '@/features/notification/types';
 
@@ -35,4 +37,5 @@ export const toNotificationItems = (
     description: notification.body ?? '',
     elapsedTime: formatNotificationElapsedTime(notification.createdAt, now),
     isRead: notification.read ?? false,
+    path: resolveNotificationTypePath(notification.type),
   }));

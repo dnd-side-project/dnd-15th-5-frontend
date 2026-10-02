@@ -12,7 +12,6 @@ import type {
   ApiResponseListNotificationResponse,
   ApiResponseVoid,
   DeviceTokenRegisterRequest,
-  GetNotificationsParams,
   SecondParameter,
 } from '@/features/notification/apis/dto';
 
@@ -51,12 +50,11 @@ export const registerDeviceToken = (
  * @summary 알림 목록 조회
  */
 export const getNotifications = (
-  params?: GetNotificationsParams,
   options?: SecondParameter<typeof apiClient>,
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseListNotificationResponse>(
-    { url: `/notifications`, method: 'GET', params, signal },
+    { url: `/notifications`, method: 'GET', signal },
     options
   );
 };

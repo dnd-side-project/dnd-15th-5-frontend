@@ -11,20 +11,12 @@ export type ApiResponseVoid = {
 
 export type DeviceTokenRegisterRequest = {
   /** @minLength 1 */
-  fcmToken: string;
+  pushToken: string;
 };
-
-export type NotificationResponseType =
-  (typeof NotificationResponseType)[keyof typeof NotificationResponseType];
-
-export const NotificationResponseType = {
-  REPORT_COMPLETED: 'REPORT_COMPLETED',
-  FRIDAY_REMINDER: 'FRIDAY_REMINDER',
-} as const;
 
 export type NotificationResponse = {
   id?: number;
-  type?: NotificationResponseType;
+  type?: string;
   title?: string;
   body?: string;
   read?: boolean;
@@ -41,11 +33,6 @@ export type ApiResponseBoolean = {
   code?: string;
   message?: string;
   data?: boolean;
-};
-
-export type GetNotificationsParams = {
-  cursorId?: number;
-  size?: number;
 };
 
 export type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
