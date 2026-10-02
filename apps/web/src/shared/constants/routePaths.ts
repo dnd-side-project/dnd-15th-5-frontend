@@ -1,6 +1,6 @@
 import {
-  NOTIFICATION_ROUTE_PATHS,
-  NOTIFICATION_ROUTE_PATTERNS,
+  NOTIFICATION_ALLOWED_PATHS,
+  NOTIFICATION_ALLOWED_PATH_PATTERNS,
 } from '@chapchap/shared/notification';
 import { generatePath } from 'react-router-dom';
 
@@ -12,7 +12,7 @@ import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
  */
 export const ROUTE_PATTERNS = {
   sharedReport: '/share/:shareToken',
-  shopDetail: NOTIFICATION_ROUTE_PATTERNS.shopDetail,
+  shopDetail: NOTIFICATION_ALLOWED_PATH_PATTERNS.shopDetail,
 } as const;
 
 /**
@@ -32,19 +32,19 @@ export const ROUTE_PATHS = {
   homeSearch: '/home/search',
   shopDetail: (shopId: string) => generatePath(ROUTE_PATTERNS.shopDetail, { shopId }),
 
-  record: '/record',
+  record: NOTIFICATION_ALLOWED_PATHS.record,
   manualRecord: '/record/manual',
   recordShopSearch: '/record/shop/search',
   receiptCamera: '/record/receipt/camera',
 
-  report: NOTIFICATION_ROUTE_PATHS.report,
-  spendingHistory: NOTIFICATION_ROUTE_PATHS.spendingHistory,
-  frequentShopList: NOTIFICATION_ROUTE_PATHS.frequentShopList,
-  monthlyRecordList: NOTIFICATION_ROUTE_PATHS.monthlyRecordList,
-  monthlyReport: NOTIFICATION_ROUTE_PATHS.monthlyReport,
+  report: NOTIFICATION_ALLOWED_PATHS.report,
+  spendingHistory: NOTIFICATION_ALLOWED_PATHS.spendingHistory,
+  frequentShopList: NOTIFICATION_ALLOWED_PATHS.frequentShopList,
+  monthlyRecordList: NOTIFICATION_ALLOWED_PATHS.monthlyRecordList,
+  monthlyReport: NOTIFICATION_ALLOWED_PATHS.monthlyReport,
   sharedReport: (shareToken: string) => generatePath(ROUTE_PATTERNS.sharedReport, { shareToken }),
 
-  notifications: NOTIFICATION_ROUTE_PATHS.notifications,
+  notifications: NOTIFICATION_ALLOWED_PATHS.notifications,
   myPage: '/my-page',
 } as const;
 

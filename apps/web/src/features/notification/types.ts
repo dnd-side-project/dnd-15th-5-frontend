@@ -4,4 +4,5 @@ export type NotificationItem = {
   description: string;
   elapsedTime: string;
   isRead: boolean;
+  path?: string;
 };

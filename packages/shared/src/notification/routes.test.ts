@@ -1,4 +1,4 @@
-import { NOTIFICATION_ROUTE_PATHS, resolveNotificationPath } from './routes';
+import { NOTIFICATION_ALLOWED_PATHS, resolveNotificationPath } from './routes';
 
 describe('resolveNotificationPath', () => {
   it.each([
@@ -20,6 +20,6 @@ describe('resolveNotificationPath', () => {
     '/home/shop/',
     '/home/shop/123/edit',
   ])('허용되지 않은 값은 알림 목록으로 폴백한다: %s', (value) => {
-    expect(resolveNotificationPath(value)).toBe(NOTIFICATION_ROUTE_PATHS.notifications);
+    expect(resolveNotificationPath(value)).toBe(NOTIFICATION_ALLOWED_PATHS.notifications);
   });
 });
