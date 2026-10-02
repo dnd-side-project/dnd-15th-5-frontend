@@ -87,6 +87,20 @@ describe('logoutAuthentication', () => {
     expect(calls).toEqual(['drained', 'unregistered']);
   });
 
+  it('drain에서 오류가 나도 오류를 기록하고 디바이스 토큰 삭제를 시도한다', async () => {
+    const drainError = new Error('drain failed');
+    const dependencies = createDependencies({
+      isNativeApp: jest.fn(() => true),
+      stopPushTokenSyncAndDrain: jest.fn(async () => Promise.reject(drainError)),
+    });
+
+    await expect(performLogoutAuthentication(dependencies)).resolves.toBeUndefined();
+
+    expect(dependencies.captureException).toHaveBeenCalledWith(drainError);
+    expect(dependencies.unregisterDeviceToken).toHaveBeenCalledTimes(1);
+    expect(dependencies.clearAuthenticationTokens).toHaveBeenCalledTimes(1);
+  });
+
   it('Refresh Token 조회가 실패해도 디바이스 토큰 삭제와 로컬 인증 정리를 계속한다', async () => {
     const refreshTokenError = new Error('refresh token failed');
     const dependencies = createDependencies({

@@ -41,20 +41,19 @@ export const performLogoutAuthentication = async (
 
   try {
     if (resolvedDependencies.isNativeApp()) {
-      let canUnregisterDeviceToken = true;
       try {
         await resolvedDependencies.stopPushTokenSyncAndDrain();
       } catch (error) {
-        canUnregisterDeviceToken = false;
+        // drain은 모든 진행 작업이 끝난 뒤 실패를 알리므로 토큰 삭제는 계속 시도합니다.
         resolvedDependencies.captureException(error);
       }
 
       const [refreshTokenResult, unregisterDeviceTokenResult] = await Promise.allSettled([
         resolvedDependencies.getNativeRefreshToken(),
-        canUnregisterDeviceToken ? resolvedDependencies.unregisterDeviceToken() : Promise.resolve(),
+        resolvedDependencies.unregisterDeviceToken(),
       ]);
 
-      if (canUnregisterDeviceToken && unregisterDeviceTokenResult.status === 'rejected') {
+      if (unregisterDeviceTokenResult.status === 'rejected') {
         resolvedDependencies.captureException(unregisterDeviceTokenResult.reason);
       }
 

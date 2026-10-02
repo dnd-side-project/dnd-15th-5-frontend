@@ -1,5 +1,6 @@
 import { logoutApp, logoutWeb } from '@/features/auth/apis/clients';
 import { unregisterDeviceToken } from '@/features/notification/apis/clients';
+import { stopPushTokenSyncAndDrain } from '@/features/notification/hooks/pushTokenSyncLifecycle';
 import { configureLogoutAuthentication as configureSharedLogoutAuthentication } from '@/shared/apis';
 import type { LogoutServerDependencies } from '@/shared/apis/logoutAuthentication';
 
@@ -16,6 +17,7 @@ jest.mock('@/features/notification/hooks/pushTokenSyncLifecycle', () => ({
 jest.mock('@/shared/apis', () => ({ configureLogoutAuthentication: jest.fn() }));
 
 const mockConfigureSharedLogoutAuthentication = jest.mocked(configureSharedLogoutAuthentication);
+const mockStopPushTokenSyncAndDrain = jest.mocked(stopPushTokenSyncAndDrain);
 
 describe('configureLogoutAuthentication', () => {
   it('생성된 로그아웃 API를 공통 로그아웃 흐름에 연결한다', async () => {
@@ -31,6 +33,6 @@ describe('configureLogoutAuthentication', () => {
     expect(logoutApp).toHaveBeenCalledWith({ refreshToken: 'refresh-token' });
     expect(logoutWeb).toHaveBeenCalledWith();
     expect(unregisterDeviceToken).toHaveBeenCalledWith();
-    expect(dependencies.stopPushTokenSyncAndDrain).toBeDefined();
+    expect(mockStopPushTokenSyncAndDrain).toHaveBeenCalledTimes(1);
   });
 });
