@@ -95,4 +95,56 @@ describe('auth bridge guards', () => {
     expect(isBridgeResponse(response)).toBe(true);
     expect(isBridgeResponse({ ...response, result: { cleared: false } })).toBe(false);
   });
+
+  it('푸시 토큰 조회 요청과 응답을 검증한다', () => {
+    const request = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-push-01',
+      type: 'getPushToken',
+      payload: {},
+    };
+    const response = {
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { status: 'success', pushToken: 'ExponentPushToken[test-token]' },
+    };
+
+    expect(isBridgeRequest(request)).toBe(true);
+    expect(isBridgeResponse(response)).toBe(true);
+    expect(isBridgeResponse({ ...response, result: { status: 'success', pushToken: '' } })).toBe(
+      false
+    );
+    expect(isBridgeResponse({ ...response, result: { status: 'permissionDenied' } })).toBe(true);
+    expect(isBridgeResponse({ ...response, result: { status: 'unsupportedDevice' } })).toBe(true);
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: {
+          status: 'error',
+          reason: 'network',
+          message: 'network failed',
+        },
+      })
+    ).toBe(true);
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: { status: 'error', reason: 'invalid', message: 'failed' },
+      })
+    ).toBe(false);
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: { status: 'error', reason: 'server', message: 'failed' },
+      })
+    ).toBe(true);
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: { status: 'error', reason: 'server', message: '' },
+      })
+    ).toBe(false);
+  });
 });

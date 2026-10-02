@@ -1,40 +1,89 @@
+import * as Sentry from '@sentry/react';
+
 import { isNativeApp } from '@/shared/lib/bridge';
 
 import { clearAuthenticationTokens } from './authTokenLifecycle';
-import { axiosInstance } from './axiosInstance';
 import { getNativeRefreshToken } from './nativeAuthToken';
 
-type LogoutAuthenticationDependencies = {
+export type LogoutServerDependencies = {
+  logoutApp: (refreshToken: string) => Promise<void>;
+  logoutWeb: () => Promise<void>;
+  unregisterDeviceToken: () => Promise<void>;
+};
+
+type LogoutRuntimeDependencies = {
+  captureException: (error: unknown) => void;
   clearAuthenticationTokens: () => Promise<void>;
   getNativeRefreshToken: () => Promise<string | null>;
   isNativeApp: () => boolean;
-  logoutApp: (refreshToken: string) => Promise<void>;
-  logoutWeb: () => Promise<void>;
 };
 
-const DEFAULT_DEPENDENCIES: LogoutAuthenticationDependencies = {
+export type LogoutAuthenticationDependencies = LogoutServerDependencies &
+  Partial<LogoutRuntimeDependencies>;
+
+let configuredServerDependencies: LogoutServerDependencies | null = null;
+
+const DEFAULT_RUNTIME_DEPENDENCIES: LogoutRuntimeDependencies = {
+  captureException: (error) => {
+    Sentry.captureException(error);
+  },
   clearAuthenticationTokens,
   getNativeRefreshToken,
   isNativeApp,
-  logoutApp: async (refreshToken) => {
-    await axiosInstance.post('/auth/logout', { refreshToken });
-  },
-  logoutWeb: async () => {
-    await axiosInstance.post('/auth/logout/web');
-  },
 };
 
 /** 현재 환경의 Refresh Token을 서버에서 폐기한 뒤 로컬 인증 정보를 정리합니다. */
-export const logoutAuthentication = async (dependencies = DEFAULT_DEPENDENCIES) => {
-  if (dependencies.isNativeApp()) {
-    const refreshToken = await dependencies.getNativeRefreshToken();
+export const performLogoutAuthentication = async (
+  dependencies: LogoutAuthenticationDependencies
+) => {
+  const resolvedDependencies = { ...DEFAULT_RUNTIME_DEPENDENCIES, ...dependencies };
 
-    if (refreshToken) {
-      await dependencies.logoutApp(refreshToken);
+  try {
+    if (resolvedDependencies.isNativeApp()) {
+      const [refreshTokenResult, unregisterDeviceTokenResult] = await Promise.allSettled([
+        resolvedDependencies.getNativeRefreshToken(),
+        resolvedDependencies.unregisterDeviceToken(),
+      ]);
+
+      if (unregisterDeviceTokenResult.status === 'rejected') {
+        resolvedDependencies.captureException(unregisterDeviceTokenResult.reason);
+      }
+
+      if (refreshTokenResult.status === 'rejected') {
+        resolvedDependencies.captureException(refreshTokenResult.reason);
+      } else if (refreshTokenResult.value) {
+        try {
+          await resolvedDependencies.logoutApp(refreshTokenResult.value);
+        } catch (error) {
+          resolvedDependencies.captureException(error);
+        }
+      }
+    } else {
+      try {
+        await resolvedDependencies.logoutWeb();
+      } catch (error) {
+        resolvedDependencies.captureException(error);
+      }
     }
-  } else {
-    await dependencies.logoutWeb();
+  } finally {
+    try {
+      await resolvedDependencies.clearAuthenticationTokens();
+    } catch (error) {
+      resolvedDependencies.captureException(error);
+    }
+  }
+};
+
+/** 앱 계층에서 생성된 로그아웃 API 구현을 연결합니다. */
+export const configureLogoutAuthentication = (dependencies: LogoutServerDependencies) => {
+  configuredServerDependencies = dependencies;
+};
+
+/** 앱 시작 시 연결된 생성 API를 사용해 로그아웃합니다. */
+export const logoutAuthentication = async () => {
+  if (!configuredServerDependencies) {
+    throw new Error('로그아웃 API가 설정되지 않았습니다');
   }
 
-  await dependencies.clearAuthenticationTokens();
+  await performLogoutAuthentication(configuredServerDependencies);
 };

@@ -11,6 +11,7 @@
     "./common/types": "./src/common/types.ts",
     "./design/*.css": "./design/*.css",
     "./location": "./src/location/types.ts",
+    "./notification": "./src/notification/index.ts",
     "./record": "./src/record/index.ts",
     "./shop": "./src/shop/index.ts",
     "./toast": "./src/toast/index.ts"

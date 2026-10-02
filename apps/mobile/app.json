@@ -41,6 +41,7 @@
     "plugins": [
       "./plugins/withKakaoTalkPackageVisibility.cjs",
       "expo-router",
+      "expo-notifications",
       [
         "expo-location",
         {

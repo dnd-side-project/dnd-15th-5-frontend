@@ -14,6 +14,7 @@ const BRIDGE_MESSAGE_TYPES: BridgeMessageType[] = [
   'getRefreshToken',
   'saveRefreshToken',
   'clearRefreshToken',
+  'getPushToken',
 ];
 
 const isBridgeMessageType = (value: unknown): value is BridgeMessageType =>
@@ -120,6 +121,27 @@ export const isBridgeResponse = (value: unknown): value is BridgeResponse => {
 
   if (value.type === 'clearRefreshToken') {
     return value.result.cleared === true;
+  }
+
+  if (value.type === 'getPushToken') {
+    if (value.result.status === 'permissionDenied' || value.result.status === 'unsupportedDevice') {
+      return true;
+    }
+
+    if (value.result.status === 'error') {
+      return (
+        typeof value.result.reason === 'string' &&
+        ['network', 'server', 'configuration', 'unknown'].includes(value.result.reason) &&
+        typeof value.result.message === 'string' &&
+        value.result.message.length > 0
+      );
+    }
+
+    return (
+      value.result.status === 'success' &&
+      typeof value.result.pushToken === 'string' &&
+      value.result.pushToken.length > 0
+    );
   }
 
   if (value.result.status === 'permissionDenied' || value.result.status === 'servicesDisabled') {
