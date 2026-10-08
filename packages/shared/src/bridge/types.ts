@@ -85,6 +85,13 @@ export type BridgeMessageMap = {
     payload: { base64: string; fileName: string };
     result: { saved: true };
   };
+  captureStickerPhoto: {
+    payload: Record<string, never>;
+    result:
+      | { status: 'success'; base64: string; mimeType: 'image/jpeg' }
+      | { status: 'cancelled' }
+      | { status: 'permissionDenied' };
+  };
   // NOTE: 영수증 촬영·검토는 앱에서만 제공하는 기능이라, 이 요청은 네이티브 카메라
   // 화면을 여는 데까지만 관여한다. 촬영 결과는 웹으로 돌아오지 않고 네이티브 화면 안에서 이어진다.
   captureReceipt: {
