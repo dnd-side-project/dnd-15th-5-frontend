@@ -8,6 +8,9 @@ import { resetNativeAnalyticsForTest } from '@/shared/lib/analytics/nativeAnalyt
 
 import HomeScreen from './HomeScreen';
 
+let mockNativePathname = '/';
+jest.mock('expo-router', () => ({ usePathname: () => mockNativePathname }));
+
 const mockCreateBridgeResponse = jest.fn();
 const mockCreateResponseScript = jest.fn((_response: unknown, _trustedOrigin: string) => 'true;');
 const mockCreateAppActiveScript = jest.fn((_trustedOrigin: string) => 'app-active;');
@@ -94,6 +97,7 @@ describe('<HomeScreen />', () => {
   const originalWebUrl = process.env.EXPO_PUBLIC_WEB_URL;
 
   beforeEach(() => {
+    mockNativePathname = '/';
     resetNativeAnalyticsForTest();
     hardwareBackHandler = undefined;
     appStateChangeHandler = undefined;
