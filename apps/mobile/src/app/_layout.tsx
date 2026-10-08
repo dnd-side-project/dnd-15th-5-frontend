@@ -13,7 +13,7 @@ const NEUTRAL_00_COLOR = '#ffffff';
 
 function RootLayout() {
   const pathname = usePathname();
-  const isReceiptCamera = pathname === '/camera';
+  const isReceiptCamera = pathname === '/camera' || pathname === '/sticker-camera';
 
   return (
     <ToastProvider
