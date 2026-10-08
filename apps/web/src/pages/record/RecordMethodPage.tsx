@@ -36,6 +36,12 @@ export default function RecordMethodPage() {
       <div className="mt-10 flex flex-col gap-4">
         <ReceiptMethodLink to={ROUTE_PATHS.receiptCamera} />
         <RecordMethodLink
+          title="사진 스티커 만들기 (PoC)"
+          description="사진의 배경을 지우고 스티커로 기록해요"
+          to={ROUTE_PATHS.stickerPoc}
+          variant="secondary"
+        />
+        <RecordMethodLink
           title="직접 작성"
           description="영수증이 없다면 직접 기록해요"
           to={manualRecordSearchPath}

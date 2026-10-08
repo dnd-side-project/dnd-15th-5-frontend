@@ -1,0 +1,269 @@
+.sticker-poc {
+  --sticker-primary: var(--color-primary-500);
+  --sticker-surface: var(--color-primary-50);
+  min-height: 100dvh;
+  background: var(--color-neutral-00);
+  color: var(--color-neutral-700);
+  display: flex;
+  flex-direction: column;
+}
+.sticker-poc button {
+  cursor: pointer;
+}
+.sticker-poc button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.sticker-poc button:focus-visible {
+  outline: 2px solid var(--sticker-primary);
+  outline-offset: 4px;
+}
+.sticker-poc__header {
+  position: relative;
+  height: 112px;
+  flex-shrink: 0;
+}
+.sticker-poc__close {
+  position: absolute;
+  top: 77px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+}
+.sticker-poc__close svg {
+  width: 16px;
+  height: 16px;
+}
+.sticker-poc__method {
+  padding: 8px 16px 32px;
+}
+.sticker-poc__title {
+  font-size: 24px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.sticker-poc__choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 33px;
+}
+.sticker-poc__choices--web {
+  grid-template-columns: 1fr;
+}
+.sticker-poc__choice {
+  height: 160px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--sticker-surface);
+  color: var(--sticker-primary);
+  font-size: 16px;
+  font-weight: 500;
+}
+.sticker-poc__choice--camera {
+  background: var(--sticker-primary);
+  color: var(--color-neutral-00);
+}
+.sticker-poc__choice svg {
+  width: 36px;
+  height: 32px;
+}
+.sticker-poc__divider {
+  display: flex;
+  align-items: center;
+  gap: 23px;
+  margin: 16px 0;
+  color: var(--color-neutral-500);
+  font-size: 12px;
+  line-height: 14px;
+}
+.sticker-poc__divider::before,
+.sticker-poc__divider::after {
+  content: '';
+  height: 1px;
+  background: var(--color-neutral-300);
+  flex: 1;
+}
+.sticker-poc__default {
+  width: 100%;
+  height: 73px;
+  border-radius: 16px;
+  background: var(--sticker-surface);
+  color: var(--sticker-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.sticker-poc__default svg {
+  width: 24px;
+  height: 24px;
+}
+.sticker-poc--dark {
+  background: var(--color-neutral-700);
+  color: var(--color-neutral-00);
+}
+.sticker-poc--dark .sticker-poc__header {
+  height: 134px;
+}
+.sticker-poc__header h1 {
+  position: absolute;
+  top: 77px;
+  inset-inline: 56px;
+  text-align: center;
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 600;
+}
+.sticker-poc__photo {
+  position: relative;
+  min-height: 320px;
+  height: calc(100dvh - 312px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.sticker-poc__original {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sticker-poc__shade {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 60%);
+}
+.sticker-poc__result {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+.sticker-poc__footer {
+  min-height: 178px;
+  padding: 20px 16px max(32px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 16px;
+}
+.sticker-poc__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.sticker-poc__actions button {
+  height: 54px;
+  border-radius: 999px;
+  color: var(--color-neutral-00);
+  background: var(--sticker-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+.sticker-poc__actions button:first-child {
+  background: var(--color-neutral-600);
+}
+.sticker-poc__back {
+  position: absolute;
+  top: 77px;
+  left: 16px;
+}
+.sticker-poc__confirm {
+  position: absolute;
+  top: 77px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+}
+.sticker-poc__confirm svg {
+  width: 17px;
+  height: 14px;
+}
+.sticker-poc__crop-area {
+  position: relative;
+  flex: 1;
+  min-height: 240px;
+  /* NOTE: 화면 가장자리 모서리의 터치 영역이 가로 스크롤을 만들지 않게 자른다. */
+  overflow: hidden;
+}
+/* NOTE: flex로 늘어난 높이는 컨테이너 단위(cqh)에 반영되지 않아 절대 위치 영역을 컨테이너로 쓴다. */
+.sticker-poc__crop-stage {
+  position: absolute;
+  inset: 36px 16px 0;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* NOTE: 사진 비율을 유지한 채 남은 영역 안에 가장 크게 맞추려고 컨테이너 단위를 사용한다. */
+.sticker-poc__crop-image {
+  position: relative;
+  aspect-ratio: var(--crop-ratio);
+  width: min(100cqw, 100cqh * var(--crop-ratio));
+  touch-action: none;
+  user-select: none;
+}
+.sticker-poc__crop-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.sticker-poc__crop-shade {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sticker-poc__crop-shade div {
+  position: absolute;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 50%);
+}
+.sticker-poc__crop-frame {
+  position: absolute;
+  border: 1px solid var(--color-neutral-00);
+}
+.sticker-poc__crop-handle {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  touch-action: none;
+}
+.sticker-poc__crop-handle--top-left {
+  top: -22px;
+  left: -22px;
+}
+.sticker-poc__crop-handle--top-right {
+  top: -22px;
+  right: -22px;
+}
+.sticker-poc__crop-handle--bottom-left {
+  bottom: -22px;
+  left: -22px;
+}
+.sticker-poc__crop-handle--bottom-right {
+  right: -22px;
+  bottom: -22px;
+}
+.sticker-poc__crop-guide {
+  min-height: 178px;
+  padding: 15px 16px max(32px, env(safe-area-inset-bottom));
+  text-align: center;
+  color: var(--color-neutral-500);
+  font-size: 14px;
+  line-height: 17px;
+}
