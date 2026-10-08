@@ -7,6 +7,7 @@ import {
   setRefreshToken,
   startSocialLogin,
 } from '@/native/auth';
+import { captureStickerPhoto } from '@/native/captureStickerPhoto';
 import { getCurrentPosition } from '@/native/location';
 import { clearPushNotifications, getPushToken } from '@/native/notifications';
 import { openReceiptCamera } from '@/native/openReceiptCamera';
@@ -15,6 +16,8 @@ import { saveImageToLibrary } from '@/native/save-image';
 import { createBridgeResponse } from './createBridgeResponse';
 
 import type { BridgeRequest } from '@chapchap/shared/bridge';
+
+jest.mock('@/native/captureStickerPhoto', () => ({ captureStickerPhoto: jest.fn() }));
 
 jest.mock('@/native/location', () => ({ getCurrentPosition: jest.fn() }));
 jest.mock('@/native/api', () => ({ clearAccessToken: jest.fn() }));
@@ -370,5 +373,20 @@ describe('createBridgeResponse', () => {
       ok: true,
       result: { cleared: true },
     });
+  });
+});
+
+it('스티커 촬영 결과를 요청 식별자와 함께 웹으로 반환한다', async () => {
+  jest
+    .mocked(captureStickerPhoto)
+    .mockResolvedValue({ status: 'success', base64: 'cGhvdG8=', mimeType: 'image/jpeg' });
+  await expect(
+    createBridgeResponse(createRequest({ type: 'captureStickerPhoto', payload: {} }))
+  ).resolves.toEqual({
+    kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+    id: 'request-01',
+    type: 'captureStickerPhoto',
+    ok: true,
+    result: { status: 'success', base64: 'cGhvdG8=', mimeType: 'image/jpeg' },
   });
 });

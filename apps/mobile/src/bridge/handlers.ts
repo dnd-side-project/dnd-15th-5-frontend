@@ -7,6 +7,7 @@ import {
   setRefreshToken,
   startSocialLogin,
 } from '@/native/auth';
+import { captureStickerPhoto } from '@/native/captureStickerPhoto';
 import { getCurrentPosition } from '@/native/location';
 import { clearPushNotifications, getPushToken } from '@/native/notifications';
 import { openReceiptCamera } from '@/native/openReceiptCamera';
@@ -40,6 +41,7 @@ export const BRIDGE_HANDLERS: BridgeHandlerMap = {
     return { saved: true };
   },
   captureReceipt: () => openReceiptCamera(),
+  captureStickerPhoto: () => captureStickerPhoto(),
   getRefreshToken: async () => ({ refreshToken: await getRefreshToken() }),
   saveRefreshToken: async ({ refreshToken }) => {
     clearAccessToken();
