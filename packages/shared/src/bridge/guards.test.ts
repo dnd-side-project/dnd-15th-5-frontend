@@ -148,3 +148,42 @@ describe('auth bridge guards', () => {
     ).toBe(false);
   });
 });
+
+describe('스티커 촬영 응답', () => {
+  const response = {
+    kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+    id: 'sticker-01',
+    type: 'captureStickerPhoto',
+    ok: true,
+  };
+  it('촬영 성공·취소·권한 거부를 구분한다', () => {
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: { status: 'success', base64: 'cGhvdG8=', mimeType: 'image/jpeg' },
+      })
+    ).toBe(true);
+    expect(isBridgeResponse({ ...response, result: { status: 'cancelled' } })).toBe(true);
+    expect(isBridgeResponse({ ...response, result: { status: 'permissionDenied' } })).toBe(true);
+  });
+  it('파일 URI나 잘못된 이미지 데이터가 전달되면 거부한다', () => {
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: { status: 'success', base64: 'file://photo.jpg', mimeType: 'image/jpeg' },
+      })
+    ).toBe(false);
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: { status: 'success', base64: '', mimeType: 'image/jpeg' },
+      })
+    ).toBe(false);
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: { status: 'success', base64: 'cGhvdG8=', mimeType: 'image/png' },
+      })
+    ).toBe(false);
+  });
+});

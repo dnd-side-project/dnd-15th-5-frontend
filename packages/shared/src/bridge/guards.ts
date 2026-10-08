@@ -11,6 +11,7 @@ const BRIDGE_MESSAGE_TYPES: BridgeMessageType[] = [
   'ping',
   'saveImage',
   'captureReceipt',
+  'captureStickerPhoto',
   'getRefreshToken',
   'saveRefreshToken',
   'clearRefreshToken',
@@ -93,6 +94,19 @@ export const isBridgeResponse = (value: unknown): value is BridgeResponse => {
 
   if (value.type === 'saveImage') {
     return value.result.saved === true;
+  }
+
+  if (value.type === 'captureStickerPhoto') {
+    if (value.result.status === 'cancelled' || value.result.status === 'permissionDenied')
+      return true;
+    return (
+      value.result.status === 'success' &&
+      value.result.mimeType === 'image/jpeg' &&
+      typeof value.result.base64 === 'string' &&
+      value.result.base64.length > 0 &&
+      value.result.base64.length <= 4 * 1024 * 1024 &&
+      /^[A-Za-z0-9+/]+={0,2}$/.test(value.result.base64)
+    );
   }
 
   if (value.type === 'captureReceipt') {
