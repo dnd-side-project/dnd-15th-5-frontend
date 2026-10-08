@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
+    worker: { format: 'es' },
     build: {
       sourcemap: isSentryUploadEnabled ? 'hidden' : false,
     },
