@@ -7,14 +7,15 @@
     "api:validate": "node ./scripts/check-openapi-mapping.mjs",
     "api:generate": "pnpm api:validate && orval --config ./orval.config.ts",
     "api:watch": "pnpm api:validate && orval --config ./orval.config.ts --watch",
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "pnpm sticker:prepare && vite",
+    "build": "pnpm sticker:prepare && tsc -b && vite build",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "sticker:prepare": "node ./scripts/prepare-imgly-runtime.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
