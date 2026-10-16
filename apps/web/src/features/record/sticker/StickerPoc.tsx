@@ -143,6 +143,11 @@ export default function StickerPoc({ onClose }: StickerPocProps) {
             )}
           </div>
           <div className="sticker-poc__footer">
+            {result && (
+              <p role="status" className="text-center text-body-02-regular">
+                생성 시간: {(result.elapsed / 1000).toFixed(2)}초
+              </p>
+            )}
             {error && (
               <div role="alert" className="text-body-02-regular">
                 <p>{error}</p>

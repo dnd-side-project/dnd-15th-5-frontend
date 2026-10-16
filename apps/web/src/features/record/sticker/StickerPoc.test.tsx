@@ -2,7 +2,11 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
-import { removeStickerBackground } from './removeStickerBackground';
+import {
+  disposeStickerBackground,
+  prepareStickerBackground,
+  removeStickerBackground,
+} from './removeStickerBackground';
 import {
   composeSticker,
   cropStickerImage,
@@ -13,7 +17,11 @@ import StickerPoc from './StickerPoc';
 
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn(), requestToNative: jest.fn() }));
 
-jest.mock('./removeStickerBackground', () => ({ removeStickerBackground: jest.fn() }));
+jest.mock('./removeStickerBackground', () => ({
+  removeStickerBackground: jest.fn(),
+  prepareStickerBackground: jest.fn(),
+  disposeStickerBackground: jest.fn(),
+}));
 jest.mock('./stickerImage', () => ({
   ...jest.requireActual('./stickerImage'),
   prepareStickerImage: jest.fn(),
@@ -47,6 +55,7 @@ const expectAllUrlsReleased = () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.spyOn(console, 'info').mockImplementation(() => {});
   jest.mocked(isNativeApp).mockReturnValue(false);
   let nextUrl = 0;
   URL.createObjectURL = jest.fn(() => 'blob:photo-' + nextUrl++);
@@ -56,6 +65,8 @@ beforeEach(() => {
   jest.mocked(cropStickerImage).mockResolvedValue(croppedPhoto);
   mockRemove.mockResolvedValue(new Blob());
 });
+
+afterEach(() => jest.restoreAllMocks());
 
 it('사진 선택부터 기록 미리보기와 PNG 다운로드까지 이어진다', async () => {
   render(<StickerPoc onClose={mockClose} />);
@@ -207,4 +218,12 @@ it('기본 스티커로 기록하기는 배경 제거 없이 기록 화면을 �
   fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
   expect(screen.getByAltText('기록에 적용한 스티커')).toBeInTheDocument();
   expect(mockRemove).not.toHaveBeenCalled();
+});
+
+it('화면 진입 시 미리 준비하고 화면 이탈 시 Worker를 정리한다', () => {
+  const { unmount } = render(<StickerPoc onClose={mockClose} />);
+  expect(prepareStickerBackground).toHaveBeenCalledTimes(1);
+  expect(mockRemove).not.toHaveBeenCalled();
+  unmount();
+  expect(disposeStickerBackground).toHaveBeenCalledTimes(1);
 });

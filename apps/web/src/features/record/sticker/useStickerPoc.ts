@@ -2,8 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import defaultSticker from '@/shared/assets/images/stickers/img-sticker-coffee.png';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
+import { IS_DEVELOPMENT } from '@/shared/lib/env';
 
-import { removeStickerBackground } from './removeStickerBackground';
+import {
+  disposeStickerBackground,
+  prepareStickerBackground,
+  removeStickerBackground,
+} from './removeStickerBackground';
 import {
   composeSticker,
   cropStickerImage,
@@ -36,14 +41,15 @@ export const useStickerPoc = () => {
     urls.current.forEach(URL.revokeObjectURL);
     urls.current = [];
   };
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    prepareStickerBackground();
+    return () => {
       inputRequest.current += 1;
       controller.current?.abort();
+      disposeStickerBackground();
       releaseUrls();
-    },
-    []
-  );
+    };
+  }, []);
 
   const selectImage = async (file: File) => {
     inputRequest.current += 1;
@@ -71,18 +77,31 @@ export const useStickerPoc = () => {
     try {
       const image = await prepareStickerImage(file);
       if (request.signal.aborted) return;
+      const preparedAt = performance.now();
       setMessage('사진에서 배경을 지우고 있어요');
       const foreground = await removeStickerBackground(image, request.signal, setMessage);
       if (request.signal.aborted) return;
+      const removedAt = performance.now();
       setMessage('흰색 테두리를 만들고 있어요');
       const sticker = await composeSticker(foreground);
       if (request.signal.aborted) return;
+      const completedAt = performance.now();
+      if (IS_DEVELOPMENT) {
+        // eslint-disable-next-line no-console -- PC 실측에서 느린 단계를 구분하기 위한 개발용 시간 로그입니다.
+        console.info('[스티커 처리 시간]', {
+          unit: 'ms',
+          prepare: Math.round(preparedAt - startedAt),
+          backgroundRemoval: Math.round(removedAt - preparedAt),
+          compose: Math.round(completedAt - removedAt),
+          total: Math.round(completedAt - startedAt),
+        });
+      }
       const stickerUrl = URL.createObjectURL(sticker);
       urls.current.push(stickerUrl);
       setResult({
         original: originalUrl,
         sticker: stickerUrl,
-        elapsed: performance.now() - startedAt,
+        elapsed: completedAt - startedAt,
       });
     } catch (cause) {
       if (!request.signal.aborted)
@@ -105,6 +124,7 @@ export const useStickerPoc = () => {
       return;
     }
     controller.current?.abort();
+    prepareStickerBackground();
     releaseUrls();
     const url = URL.createObjectURL(file);
     urls.current.push(url);
@@ -136,6 +156,7 @@ export const useStickerPoc = () => {
     if (!isNativeApp() || isCapturing) return;
     const requestId = ++inputRequest.current;
     setIsCapturing(true);
+    prepareStickerBackground();
     setError('');
     try {
       const photo = await requestToNative('captureStickerPhoto', {});
@@ -159,6 +180,7 @@ export const useStickerPoc = () => {
     inputRequest.current += 1;
     setIsCapturing(false);
     controller.current?.abort();
+    if (isProcessing) disposeStickerBackground();
     releaseUrls();
     lastFile.current = null;
     setCropSource(null);
