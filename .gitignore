@@ -42,3 +42,6 @@ dist-ssr
 # storybook
 *storybook.log
 storybook-static
+
+# Generated ONNX runtime modules used by IMG.LY
+/apps/web/public/imgly-runtime/
