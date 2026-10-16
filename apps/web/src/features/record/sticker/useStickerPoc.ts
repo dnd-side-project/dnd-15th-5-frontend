@@ -3,7 +3,11 @@ import { useEffect, useRef, useState } from 'react';
 import defaultSticker from '@/shared/assets/images/stickers/img-sticker-coffee.png';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
-import { removeStickerBackground } from './removeStickerBackground';
+import {
+  disposeStickerBackground,
+  prepareStickerBackground,
+  removeStickerBackground,
+} from './removeStickerBackground';
 import {
   composeSticker,
   cropStickerImage,
@@ -36,14 +40,15 @@ export const useStickerPoc = () => {
     urls.current.forEach(URL.revokeObjectURL);
     urls.current = [];
   };
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    prepareStickerBackground();
+    return () => {
       inputRequest.current += 1;
       controller.current?.abort();
+      disposeStickerBackground();
       releaseUrls();
-    },
-    []
-  );
+    };
+  }, []);
 
   const selectImage = async (file: File) => {
     inputRequest.current += 1;
@@ -105,6 +110,7 @@ export const useStickerPoc = () => {
       return;
     }
     controller.current?.abort();
+    prepareStickerBackground();
     releaseUrls();
     const url = URL.createObjectURL(file);
     urls.current.push(url);
@@ -136,6 +142,7 @@ export const useStickerPoc = () => {
     if (!isNativeApp() || isCapturing) return;
     const requestId = ++inputRequest.current;
     setIsCapturing(true);
+    prepareStickerBackground();
     setError('');
     try {
       const photo = await requestToNative('captureStickerPhoto', {});
@@ -159,6 +166,7 @@ export const useStickerPoc = () => {
     inputRequest.current += 1;
     setIsCapturing(false);
     controller.current?.abort();
+    if (isProcessing) disposeStickerBackground();
     releaseUrls();
     lastFile.current = null;
     setCropSource(null);
