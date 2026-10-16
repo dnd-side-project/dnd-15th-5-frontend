@@ -75,9 +75,11 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: true,
           // 개발 API의 경로와 쿠키 범위를 브라우저가 요청하는 `/api`에 맞춘다.
-          rewrite: (path) => path.replace(/^\/api/, '/dev/api'),
+          // TODO: 운영 API에도 `/v1`이 반영되면 API 코드를 재생성하고 이 경로 보정을 제거한다.
+          rewrite: (path) => path.replace(/^\/api/, '/dev/api/v1'),
           cookieDomainRewrite: '',
           cookiePathRewrite: {
+            '/dev/api/v1': '/api',
             '/dev/api': '/api',
           },
         },
