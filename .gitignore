@@ -42,3 +42,8 @@ dist-ssr
 # storybook
 *storybook.log
 storybook-static
+
+# Downloaded background removal model (pnpm --filter @chapchap/web sticker:download-model)
+/apps/web/public/models/*.onnx
+/apps/web/public/models/*.download
+/apps/web/public/isnet-runtime/
