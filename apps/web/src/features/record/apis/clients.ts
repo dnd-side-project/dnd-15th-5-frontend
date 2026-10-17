@@ -9,11 +9,72 @@ import type { BodyType } from '@/shared/apis/orvalMutator';
 
 import type {
   ApiResponseConsumptionCreateResponse,
+  ApiResponseConsumptionDetailResponse,
+  ApiResponseConsumptionImageUploadResponse,
+  ApiResponseListStickerItemResponse,
   ApiResponseReceiptOcrResponse,
-  ConsumptionCreateRequest,
+  ApiResponseVoid,
+  ConsumptionImageUploadRequest,
+  ConsumptionSaveRequest,
   ReceiptOcrRequest,
   SecondParameter,
 } from '@/features/record/apis/dto';
+
+/**
+ * 본인의 소비기록을 조회합니다. 수정 화면에 필요한 장소·스티커·사진·입력값을 반환합니다.
+ * @summary 소비기록 한 건 조회
+ */
+export const getConsumption = (
+  consumptionId: number,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseConsumptionDetailResponse>(
+    { url: `/v1/consumptions/${consumptionId}`, method: 'GET', signal },
+    options
+  );
+};
+
+/**
+ * 본인의 소비기록을 등록과 같은 입력 항목으로 수정합니다. 사진과 스티커 사이의 전환은 지원하지 않습니다.
+ * 같은 imageId는 유지하고, 새 imageId는 검증 후 교체합니다.
+ * receiptImageId를 생략하거나 null로 보내면 기존 영수증을 유지합니다.
+ * amount와 memo를 생략하거나 null로 보내면 기존 값을 지웁니다.
+ * 교체한 사진·영수증은 수정 확정 후 정리하며, 이미 생성된 월간 리포트는 갱신하지 않습니다.
+ * @summary 소비기록 수정
+ */
+export const updateConsumption = (
+  consumptionId: number,
+  consumptionSaveRequest: BodyType<ConsumptionSaveRequest>,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseVoid>(
+    {
+      url: `/v1/consumptions/${consumptionId}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: consumptionSaveRequest,
+      signal,
+    },
+    options
+  );
+};
+
+/**
+ * 본인의 소비기록을 삭제합니다. 연결된 사진과 영수증도 삭제하며, 파일 삭제 실패 시 재시도합니다.
+ * @summary 소비기록 삭제
+ */
+export const deleteConsumption = (
+  consumptionId: number,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseVoid>(
+    { url: `/v1/consumptions/${consumptionId}`, method: 'DELETE', signal },
+    options
+  );
+};
 
 /**
  * 사용자가 확인한 장소와 소비 정보를 최종 저장합니다.
@@ -22,20 +83,22 @@ import type {
  *
  * 신규 장소라면 도로명주소를 SGIS로 조회해 행정동을 저장합니다.
  *
- * receiptImageId는 영수증 OCR을 사용한 경우에만 전달합니다.
+ * stickerItemId와 imageId 중 하나만 전달합니다. 스티커와 category는 일치해야 합니다.
+ * amount와 memo는 생략할 수 있으며, 메모는 최대 1,000자입니다.
+ * receiptImageId는 영수증 OCR을 사용한 경우에만 전달하며, 사진·스티커 선택과 별개입니다.
  * @summary 소비 기록 등록
  */
 export const createConsumption = (
-  consumptionCreateRequest: BodyType<ConsumptionCreateRequest>,
+  consumptionSaveRequest: BodyType<ConsumptionSaveRequest>,
   options?: SecondParameter<typeof apiClient>,
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseConsumptionCreateResponse>(
     {
-      url: `/consumptions`,
+      url: `/v1/consumptions`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: consumptionCreateRequest,
+      data: consumptionSaveRequest,
       signal,
     },
     options
@@ -60,12 +123,50 @@ export const recognizeReceipt = (
 
   return apiClient<ApiResponseReceiptOcrResponse>(
     {
-      url: `/consumptions/receipt-ocr`,
+      url: `/v1/consumptions/receipt-ocr`,
       method: 'POST',
       headers: { 'Content-Type': 'multipart/form-data' },
       data: formData,
       signal,
     },
+    options
+  );
+};
+
+/**
+ * 프론트에서 가공한 사진을 임시 저장합니다. JPEG·PNG, 최대 5MB·4096x4096을 지원합니다.
+ * 반환한 imageId를 소비기록 등록 시 전달합니다. 24시간 내 연결하지 않은 이미지는 정리됩니다.
+ * 잘못된 이미지·형식·해상도는 400, 용량 초과는 413, 저장소 연동 실패는 502를 반환합니다.
+ * @summary 소비기록 이미지 업로드
+ */
+export const upload = (
+  consumptionImageUploadRequest?: BodyType<ConsumptionImageUploadRequest>,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  const formData = new FormData();
+  if (consumptionImageUploadRequest?.image !== undefined) {
+    formData.append(`image`, consumptionImageUploadRequest.image);
+  }
+
+  return apiClient<ApiResponseConsumptionImageUploadResponse>(
+    {
+      url: `/v1/consumptions/images`,
+      method: 'POST',
+      headers: { 'Content-Type': 'multipart/form-data' },
+      data: formData,
+      signal,
+    },
+    options
+  );
+};
+
+/**
+ * @summary 등록용 스티커 목록 조회
+ */
+export const findStickers = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
+  return apiClient<ApiResponseListStickerItemResponse>(
+    { url: `/v1/consumptions/stickers`, method: 'GET', signal },
     options
   );
 };

@@ -32,7 +32,7 @@ export const issueShareLink = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseShareLinkResponse>(
-    { url: `/reports/monthly/share`, method: 'POST', params, signal },
+    { url: `/v1/reports/monthly/share`, method: 'POST', params, signal },
     options
   );
 };
@@ -47,7 +47,7 @@ export const aggregateMonthlyReport = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseMonthlyReportAggregationResultInfo>(
-    { url: `/reports/batch`, method: 'POST', params, signal },
+    { url: `/v1/reports/batch`, method: 'POST', params, signal },
     options
   );
 };
@@ -62,7 +62,7 @@ export const getConsumptions = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseConsumptionScrollResponse>(
-    { url: `/consumptions`, method: 'GET', params, signal },
+    { url: `/v1/consumptions`, method: 'GET', params, signal },
     options
   );
 };
@@ -77,7 +77,7 @@ export const getSharedPersonaCard = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponsePersonaCardResponse>(
-    { url: `/reports/share/${shareToken}`, method: 'GET', signal },
+    { url: `/v1/reports/share/${shareToken}`, method: 'GET', signal },
     options
   );
 };
@@ -92,7 +92,7 @@ export const getMonthlyReport = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseMonthlyReportResponse>(
-    { url: `/reports/monthly`, method: 'GET', params, signal },
+    { url: `/v1/reports/monthly`, method: 'GET', params, signal },
     options
   );
 };
@@ -107,7 +107,7 @@ export const getCurrentStatus = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseCurrentStatusResponse>(
-    { url: `/reports/current`, method: 'GET', params, signal },
+    { url: `/v1/reports/current`, method: 'GET', params, signal },
     options
   );
 };
@@ -122,7 +122,7 @@ export const getFrequentPlaces = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseFrequentPlaceResponse>(
-    { url: `/consumptions/places/rank`, method: 'GET', params, signal },
+    { url: `/v1/consumptions/places/rank`, method: 'GET', params, signal },
     options
   );
 };

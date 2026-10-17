@@ -4,11 +4,83 @@
  */
 
 /**
- * 소비 기록 등록 요청
+ * 소비기록 한 건 조회 결과
  */
-export type ConsumptionCreateRequest = {
+export type ConsumptionDetailResponse = {
+  /** 소비기록 ID */
+  consumptionId?: number;
+  /** 장소 ID */
+  placeId?: number;
+  /** Google Place ID */
+  googlePlaceId?: string;
+  /** 장소명 */
+  placeName?: string;
+  /** 도로명주소 */
+  roadAddress?: string;
+  /** 위도 */
+  latitude?: number;
+  /** 경도 */
+  longitude?: number;
   /**
-   * OCR에서 발급받은 임시 영수증 이미지 ID
+   * Google Places 장소 썸네일 URL, 없거나 조회 실패 시 null
+   * @nullable
+   */
+  thumbnailUrl?: string | null;
+  /** 소비 날짜 */
+  purchaseDate?: string;
+  /** 소비 시간 */
+  purchaseTime?: string;
+  /**
+   * 소비 금액, 미입력 시 null
+   * @nullable
+   */
+  amount?: number | null;
+  /** 소비 카테고리 */
+  category?: string;
+  /**
+   * 선택한 스티커 ID, 사진 기록이면 null
+   * @nullable
+   */
+  stickerItemId?: number | null;
+  /**
+   * 스티커 카테고리, 사진 기록이면 null
+   * @nullable
+   */
+  stickerCategory?: string | null;
+  /**
+   * 스티커 이름, 사진 기록이면 null
+   * @nullable
+   */
+  stickerName?: string | null;
+  /**
+   * 업로드한 사진 ID, 스티커 기록이면 null
+   * @nullable
+   */
+  imageId?: number | null;
+  /**
+   * 업로드한 사진의 2분간 유효한 조회 URL, 스티커 기록이면 null
+   * @nullable
+   */
+  imageUrl?: string | null;
+  /**
+   * 메모, 미입력 시 null
+   * @nullable
+   */
+  memo?: string | null;
+};
+
+export type ApiResponseConsumptionDetailResponse = {
+  code?: string;
+  message?: string;
+  data?: ConsumptionDetailResponse;
+};
+
+/**
+ * 소비기록 등록·수정 요청
+ */
+export type ConsumptionSaveRequest = {
+  /**
+   * OCR에서 발급받은 영수증 이미지 ID. 수정 시 생략하거나 null이면 기존 영수증 유지
    * @nullable
    */
   receiptImageId?: number | null;
@@ -46,15 +118,41 @@ export type ConsumptionCreateRequest = {
   purchaseDate: string;
   /** 소비 시간 */
   purchaseTime: string;
-  /** 소비 금액(원) */
-  amount: number;
+  /**
+   * 소비 금액(원), 미입력 가능. 수정 시 생략하거나 null이면 기존 금액 삭제
+   * @nullable
+   */
+  amount?: number | null;
   /**
    * 소비 카테고리
    * @minLength 0
    * @maxLength 40
-   * @pattern ^(카페|운동|편의점/마트|취미/놀거리|음식점|미용/뷰티|기타)$
+   * @pattern ^(카페|운동|편의점/마트|취미/놀거리|음식점|미용/뷰티|쇼핑|기타)$
    */
   category: string;
+  /**
+   * 선택한 스티커 ID. imageId와 둘 중 하나만 전달
+   * @nullable
+   */
+  stickerItemId?: number | null;
+  /**
+   * 이미지 업로드 API에서 받은 ID. 수정 시 유지할 기존 ID 또는 교체할 새 ID. stickerItemId와 둘 중 하나만 전달
+   * @nullable
+   */
+  imageId?: number | null;
+  /**
+   * 메모, 최대 1,000자. 수정 시 생략하거나 null·공백이면 기존 메모 삭제
+   * @minLength 0
+   * @maxLength 1000
+   * @nullable
+   */
+  memo?: string | null;
+};
+
+export type ApiResponseVoid = {
+  code?: string;
+  message?: string;
+  data?: unknown;
 };
 
 /**
@@ -63,10 +161,16 @@ export type ConsumptionCreateRequest = {
 export type ConsumptionCreateResponse = {
   /** 생성된 소비 기록 ID */
   consumptionId?: number;
-  /** 획득한 스티커 카테고리 */
-  stickerCategory?: string;
-  /** 획득한 스티커 이름 */
-  stickerName?: string;
+  /**
+   * 선택한 스티커 카테고리, 사진 등록이면 null
+   * @nullable
+   */
+  stickerCategory?: string | null;
+  /**
+   * 선택한 스티커 이름, 사진 등록이면 null
+   * @nullable
+   */
+  stickerName?: string | null;
 };
 
 export type ApiResponseConsumptionCreateResponse = {
@@ -149,6 +253,42 @@ export type ApiResponseReceiptOcrResponse = {
   code?: string;
   message?: string;
   data?: ReceiptOcrResponse;
+};
+
+/**
+ * 소비기록 이미지 업로드 요청
+ */
+export type ConsumptionImageUploadRequest = {
+  /** 프론트에서 가공한 소비기록 이미지 (JPEG, PNG, 최대 5MB, 최대 4096x4096) */
+  image: Blob;
+};
+
+export type ConsumptionImageUploadResponse = {
+  /** 소비기록 등록 시 전달할 이미지 ID */
+  imageId?: number;
+  /** 임시 이미지 만료 시각. 업로드 후 24시간, 소비기록에 연결하면 만료되지 않음 */
+  expiresAt?: string;
+};
+
+export type ApiResponseConsumptionImageUploadResponse = {
+  code?: string;
+  message?: string;
+  data?: ConsumptionImageUploadResponse;
+};
+
+export type StickerItemResponse = {
+  /** 소비기록 등록 시 전달할 스티커 ID */
+  stickerItemId?: number;
+  /** 스티커 선택 시 함께 지정할 소비 카테고리 */
+  category?: string;
+  /** 스티커 이름 */
+  name?: string;
+};
+
+export type ApiResponseListStickerItemResponse = {
+  code?: string;
+  message?: string;
+  data?: StickerItemResponse[];
 };
 
 export type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];

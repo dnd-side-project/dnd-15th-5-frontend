@@ -24,7 +24,7 @@ export const toggleLike = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponsePlaceLikeResponse>(
-    { url: `/places/${placeId}/likes`, method: 'PUT', signal },
+    { url: `/v1/places/${placeId}/likes`, method: 'PUT', signal },
     options
   );
 };
@@ -39,7 +39,7 @@ export const getNearbyPlaces = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseNearbyPlacesResponse>(
-    { url: `/recommendations/nearby-places`, method: 'GET', params, signal },
+    { url: `/v1/recommendations/nearby-places`, method: 'GET', params, signal },
     options
   );
 };
@@ -54,7 +54,7 @@ export const getVisitedPlaceMarkers = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseVisitedPlaceMarkerResponse>(
-    { url: `/consumptions/visited-places`, method: 'GET', params, signal },
+    { url: `/v1/consumptions/visited-places`, method: 'GET', params, signal },
     options
   );
 };

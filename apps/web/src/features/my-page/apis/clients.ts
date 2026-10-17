@@ -11,16 +11,17 @@ import type {
   AccountUpdateRequest,
   ApiResponseAccountResponse,
   ApiResponseVoid,
+  ProfileUpdateRequest,
   SecondParameter,
 } from '@/features/my-page/apis/dto';
 
 /**
- * Access Token으로 인증된 사용자의 기본 정보를 조회합니다.
+ * Access Token으로 인증된 사용자의 기본 정보를 조회합니다. 프로필 사진은 profileImageCode로 표시합니다.
  * @summary 내 정보 조회
  */
 export const getMyAccount = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
   return apiClient<ApiResponseAccountResponse>(
-    { url: `/accounts/me`, method: 'GET', signal },
+    { url: `/v1/accounts/me`, method: 'GET', signal },
     options
   );
 };
@@ -41,17 +42,41 @@ export const withdrawMyAccount = (
   options?: SecondParameter<typeof apiClient>,
   signal?: AbortSignal
 ) => {
-  return apiClient<ApiResponseVoid>({ url: `/accounts/me`, method: 'DELETE', signal }, options);
+  return apiClient<ApiResponseVoid>({ url: `/v1/accounts/me`, method: 'DELETE', signal }, options);
 };
 
 /**
+ * 이름과 6종 중 선택한 이미지 코드를 함께 저장합니다. 기존 S3 이미지는 변경하지 않습니다.
+ * @summary 이름과 기본 프로필 이미지 수정
+ */
+export const updateMyProfile = (
+  profileUpdateRequest: BodyType<ProfileUpdateRequest>,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseAccountResponse>(
+    {
+      url: `/v1/accounts/me`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: profileUpdateRequest,
+      signal,
+    },
+    options
+  );
+};
+
+/**
+ * 2026-10-09 사용 중단 - 기존S3 업로드 구현 보존용 API
+ *
  * 닉네임과 프로필 이미지를 선택적으로 수정합니다.
  *
  * - `profileImage` 전달: 프로필 이미지를 등록하거나 교체합니다.
  * - `deleteProfileImage=true`: 기존 프로필 이미지를 삭제합니다.
  * - 이미지 관련 값을 전달하지 않으면 기존 프로필 이미지를 유지합니다.
  * - 이미지 파일과 삭제 요청은 동시에 사용할 수 없습니다.
- * @summary 내 정보 수정
+ * @deprecated
+ * @summary 내 정보 수정 (기존 파일 업로드 방식 · 사용 중단)
  */
 export const updateMyAccount = (
   accountUpdateRequest?: BodyType<AccountUpdateRequest>,
@@ -74,7 +99,7 @@ export const updateMyAccount = (
 
   return apiClient<ApiResponseAccountResponse>(
     {
-      url: `/accounts/me`,
+      url: `/v1/accounts/me/profile-upload`,
       method: 'PATCH',
       headers: { 'Content-Type': 'multipart/form-data' },
       data: formData,
