@@ -41,6 +41,7 @@ export default function MyPage() {
       <MyPageProfileSection
         nickname={account?.nickname}
         profileImageUrl={account?.profileImageUrl}
+        profileImageCode={account?.profileImageCode}
         onBack={() => navigate(-1)}
         onEdit={() => navigate(ROUTE_PATHS.myPageProfile)}
       />

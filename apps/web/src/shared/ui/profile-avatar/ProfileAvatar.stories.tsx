@@ -1,10 +1,10 @@
-import { DefaultProfile } from '.';
+import { ProfileAvatar } from '.';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
-  title: 'Shared/DefaultProfile',
-  component: DefaultProfile,
+  title: 'Shared/ProfileAvatar',
+  component: ProfileAvatar,
   args: {
     className: 'size-25',
   },
@@ -14,7 +14,7 @@ const meta = {
       description: '프로필의 너비와 높이를 지정하는 Tailwind CSS 클래스',
     },
   },
-} satisfies Meta<typeof DefaultProfile>;
+} satisfies Meta<typeof ProfileAvatar>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -27,15 +27,15 @@ export const Sizes: Story = {
   render: () => (
     <div className="flex items-end gap-6">
       <div className="flex flex-col items-center gap-2">
-        <DefaultProfile className="size-10" />
+        <ProfileAvatar className="size-10" />
         <span className="text-caption-01-regular text-neutral-500">40px</span>
       </div>
       <div className="flex flex-col items-center gap-2">
-        <DefaultProfile className="size-16" />
+        <ProfileAvatar className="size-16" />
         <span className="text-caption-01-regular text-neutral-500">64px</span>
       </div>
       <div className="flex flex-col items-center gap-2">
-        <DefaultProfile className="size-25" />
+        <ProfileAvatar className="size-25" />
         <span className="text-caption-01-regular text-neutral-500">100px</span>
       </div>
     </div>
