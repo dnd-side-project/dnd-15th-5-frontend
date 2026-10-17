@@ -5,7 +5,6 @@ export { default as MyPageMenuItem } from './components/MyPageMenuItem';
 export { default as MyPageMenuSection } from './components/MyPageMenuSection';
 export { default as MyPageProfileSection } from './components/MyPageProfileSection';
 export { default as MyPageShortcutMenu } from './components/MyPageShortcutMenu';
-export { default as ProfileEditCancelDialog } from './components/profile-edit/ProfileEditCancelDialog';
 export { default as ProfileImageSelector } from './components/profile-edit/ProfileImageSelector';
 export { useGetMyAccount } from './apis/queries';
 export { useProfileEditor } from './hooks/useProfileEditor';

@@ -1,10 +1,7 @@
-import {
-  ProfileEditCancelDialog,
-  ProfileImageSelector,
-  useProfileEditor,
-} from '@/features/my-page';
+import { ProfileImageSelector, useProfileEditor } from '@/features/my-page';
 import { BackButton } from '@/shared/ui/back-button';
 import { Button } from '@/shared/ui/button';
+import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 import { StateView } from '@/shared/ui/state-view';
 
 /** 프로필 수정 페이지입니다. */
@@ -99,8 +96,12 @@ export default function MyProfileEditPage() {
       </div>
 
       {isCancelDialogOpen && (
-        <ProfileEditCancelDialog
-          onCancel={handleDiscardChanges}
+        <UnsavedChangesDialog
+          title="수정을 그만할까요?"
+          description="지금까지 수정한 내용은 저장되지 않아요"
+          exitLabel="그만하기"
+          continueLabel="계속 수정하기"
+          onExit={handleDiscardChanges}
           onContinue={handleContinueEditing}
         />
       )}
