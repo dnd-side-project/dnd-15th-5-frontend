@@ -1,6 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
-import { useBlocker, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 import type { ProfileUpdateRequest } from '@/features/my-page/apis/dto';
 import { useUpdateMyProfile } from '@/features/my-page/apis/mutations';
@@ -8,17 +7,15 @@ import { useGetMyAccount } from '@/features/my-page/apis/queries';
 import { getGetMyAccountQueryKey } from '@/features/my-page/apis/queryKeys';
 import type { ProfileImageCode } from '@/features/my-page/constants/profileImageOptions';
 import { getProfileImageOption } from '@/features/my-page/constants/profileImageOptions';
+import { useProfileEditNavigationGuard } from '@/features/my-page/hooks/useProfileEditNavigationGuard';
 import { NICKNAME_MAX_LENGTH, nicknameSchema } from '@/features/my-page/nicknameSchema';
-import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 
 /** 프로필 수정 화면의 조회·편집·저장·이탈 확인 상태를 관리합니다. */
 export const useProfileEditor = () => {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const accountQuery = useGetMyAccount();
   const account = accountQuery.data?.data;
   const updateProfile = useUpdateMyProfile();
-  const allowNavigationRef = useRef(false);
   const [editedNickname, setEditedNickname] = useState<string>();
   const [nicknameLengthExceeded, setNicknameLengthExceeded] = useState(false);
   const [editedCode, setEditedCode] = useState<ProfileImageCode>();
@@ -46,17 +43,7 @@ export const useProfileEditor = () => {
     : undefined;
   const canSave =
     hasChanges && isNicknameValid && !nicknameLengthExceeded && !updateProfile.isPending;
-  const blocker = useBlocker(() => hasChanges && !allowNavigationRef.current);
-
-  const handleBack = () => navigate(-1);
-
-  const handleDiscardChanges = () => {
-    if (blocker.state === 'blocked') blocker.proceed();
-  };
-
-  const handleContinueEditing = () => {
-    if (blocker.state === 'blocked') blocker.reset();
-  };
+  const navigationGuard = useProfileEditNavigationGuard(hasChanges);
 
   const handleSave = () => {
     if (!account || !canSave) return;
@@ -74,8 +61,7 @@ export const useProfileEditor = () => {
             await queryClient.invalidateQueries({ queryKey: getGetMyAccountQueryKey() });
           }
 
-          allowNavigationRef.current = true;
-          navigate(ROUTE_PATHS.myPage, { replace: true });
+          navigationGuard.navigateToMyPage();
         },
       }
     );
@@ -91,11 +77,7 @@ export const useProfileEditor = () => {
     account,
     accountQuery,
     canSave,
-    handleBack,
-    handleContinueEditing,
-    handleDiscardChanges,
     handleSave,
-    isCancelDialogOpen: blocker.state === 'blocked',
     isSaving: updateProfile.isPending,
     isSaveError: updateProfile.isError,
     nickname,
@@ -104,5 +86,6 @@ export const useProfileEditor = () => {
     setNickname: handleNicknameChange,
     setProfileImageCode: setEditedCode,
     showNicknameError,
+    ...navigationGuard,
   };
 };

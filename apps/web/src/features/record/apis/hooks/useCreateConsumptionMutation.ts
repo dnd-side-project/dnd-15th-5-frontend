@@ -12,6 +12,10 @@ import type { AxiosError } from 'axios';
 const CREATE_CONSUMPTION_ERROR_MESSAGE =
   '소비 기록을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.';
 
+type UseCreateConsumptionMutationOptions = {
+  onBeforeNavigate?: () => void;
+};
+
 /**
  * 소비 기록을 저장하고 관련 서버 상태를 갱신한 뒤 지도 홈으로 이동한다.
  *
@@ -19,7 +23,7 @@ const CREATE_CONSUMPTION_ERROR_MESSAGE =
  * 홈 라우트 state로 함께 전달한다. 완료 안내는 지도 홈이 해당 장소의 방문 횟수를
  * 확인한 뒤 표시하므로 여기서는 Toast를 띄우지 않는다.
  */
-export const useCreateConsumptionMutation = () => {
+export const useCreateConsumptionMutation = (options: UseCreateConsumptionMutationOptions = {}) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -29,6 +33,7 @@ export const useCreateConsumptionMutation = () => {
         await queryClient.invalidateQueries({
           predicate: isConsumptionRelatedQuery,
         });
+        options.onBeforeNavigate?.();
         navigate(ROUTE_PATHS.home, {
           replace: true,
           state: {
