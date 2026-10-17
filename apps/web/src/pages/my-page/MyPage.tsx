@@ -42,6 +42,7 @@ export default function MyPage() {
         nickname={account?.nickname}
         profileImageUrl={account?.profileImageUrl}
         onBack={() => navigate(-1)}
+        onEdit={() => navigate(ROUTE_PATHS.myPageProfile)}
       />
 
       <section className="min-h-[calc(100dvh-211px)] rounded-t-30 bg-neutral-00 shadow-my-page-sheet">

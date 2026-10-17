@@ -14,6 +14,7 @@ import MapSearchPage from '@/pages/home/search/MapSearchPage';
 import ShopDetailPage from '@/pages/home/shop/ShopDetailPage';
 import LoginPage from '@/pages/login/LoginPage';
 import MyPage from '@/pages/my-page/MyPage';
+import MyProfileEditPage from '@/pages/my-page/MyProfileEditPage';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import NotificationPage from '@/pages/notifications/NotificationPage';
 import OnboardingPage from '@/pages/onboarding/OnboardingPage';
@@ -115,6 +116,10 @@ export const router = createSentryBrowserRouter([
               {
                 path: ROUTE_PATHS.myPage,
                 element: <MyPage />,
+              },
+              {
+                path: ROUTE_PATHS.myPageProfile,
+                element: <MyProfileEditPage />,
               },
               {
                 path: ROUTE_PATTERNS.shopDetail,
