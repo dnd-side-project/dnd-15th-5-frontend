@@ -35,7 +35,7 @@ export default function ProfileImageSelector({
             aria-label={`${option.label} 프로필 선택`}
             aria-pressed={selectedCode === option.code}
             onClick={() => onSelect(option.code)}
-            className={`flex aspect-square w-full min-w-0 max-w-13 items-center justify-center justify-self-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${selectedCode === option.code ? 'ring-2 ring-primary-500 ring-offset-1' : ''}`}
+            className={`flex aspect-square w-full min-w-0 max-w-13 items-center justify-center justify-self-center rounded-full focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${selectedCode === option.code ? 'outline-2 outline-primary-500 outline-offset-1' : 'outline-none'}`}
             style={{ backgroundColor: option.color }}
           >
             <img className="size-[76%] object-contain" src={StickerEyesImage} alt="" />
