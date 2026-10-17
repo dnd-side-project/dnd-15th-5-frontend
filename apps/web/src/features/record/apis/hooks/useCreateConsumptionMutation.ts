@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
-import type { ApiResponse, ConsumptionCreateRequest } from '@/features/record/apis/dto';
+import type { ApiResponse, ConsumptionSaveRequest } from '@/features/record/apis/dto';
 import { useCreateConsumption } from '@/features/record/apis/mutations';
 import { isConsumptionRelatedQuery } from '@/shared/apis/isConsumptionRelatedQuery';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
@@ -50,7 +50,7 @@ export const useCreateConsumptionMutation = () => {
   });
 
   return {
-    createConsumption: (request: ConsumptionCreateRequest) => mutation.mutate({ data: request }),
+    createConsumption: (request: ConsumptionSaveRequest) => mutation.mutate({ data: request }),
     isCreatingConsumption: mutation.isPending,
   };
 };
