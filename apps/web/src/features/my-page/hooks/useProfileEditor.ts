@@ -7,7 +7,7 @@ import { useUpdateMyProfile } from '@/features/my-page/apis/mutations';
 import { useGetMyAccount } from '@/features/my-page/apis/queries';
 import { getGetMyAccountQueryKey } from '@/features/my-page/apis/queryKeys';
 import type { ProfileImageCode } from '@/features/my-page/constants/profileImageOptions';
-import { PROFILE_IMAGE_OPTIONS } from '@/features/my-page/constants/profileImageOptions';
+import { getProfileImageOption } from '@/features/my-page/constants/profileImageOptions';
 import { NICKNAME_MAX_LENGTH, nicknameSchema } from '@/features/my-page/nicknameSchema';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 
@@ -24,9 +24,7 @@ export const useProfileEditor = () => {
   const [editedCode, setEditedCode] = useState<ProfileImageCode>();
 
   const initialNickname = account?.nickname ?? '';
-  const initialCode =
-    PROFILE_IMAGE_OPTIONS.find((option) => option.code === account?.profileImageCode)?.code ??
-    PROFILE_IMAGE_OPTIONS[0].code;
+  const initialCode = getProfileImageOption(account?.profileImageCode).code;
   const nickname = editedNickname ?? initialNickname;
   const profileImageCode = editedCode ?? initialCode;
   const nicknameResult = nicknameSchema.safeParse(nickname);

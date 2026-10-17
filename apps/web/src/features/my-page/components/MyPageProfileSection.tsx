@@ -1,4 +1,4 @@
-import { PROFILE_IMAGE_OPTIONS } from '@/features/my-page/constants/profileImageOptions';
+import { getProfileImageOption } from '@/features/my-page/constants/profileImageOptions';
 import { EditIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
 import { ProfileAvatar } from '@/shared/ui/profile-avatar';
@@ -18,9 +18,7 @@ export default function MyPageProfileSection({
   onBack,
   onEdit,
 }: MyPageProfileSectionProps) {
-  const profileImageOption = PROFILE_IMAGE_OPTIONS.find(
-    (option) => option.code === profileImageCode
-  );
+  const profileImageOption = getProfileImageOption(profileImageCode);
 
   return (
     <section className="h-52.75" aria-labelledby="my-page-nickname">
@@ -43,10 +41,7 @@ export default function MyPageProfileSection({
               data-mp-block=""
             />
           ) : (
-            <ProfileAvatar
-              className="size-full"
-              backgroundColor={profileImageOption?.color ?? PROFILE_IMAGE_OPTIONS[0].color}
-            />
+            <ProfileAvatar className="size-full" backgroundColor={profileImageOption.color} />
           )}
           <span className="absolute right-0 bottom-0 flex size-7 items-center justify-center rounded-full bg-neutral-00">
             <EditIcon className="size-full" aria-hidden="true" />

@@ -1,4 +1,7 @@
-import { PROFILE_IMAGE_OPTIONS } from '@/features/my-page/constants/profileImageOptions';
+import {
+  getProfileImageOption,
+  PROFILE_IMAGE_OPTIONS,
+} from '@/features/my-page/constants/profileImageOptions';
 import type { ProfileImageCode } from '@/features/my-page/constants/profileImageOptions';
 import { StickerEyesImage } from '@/shared/assets/images/stickers';
 
@@ -12,14 +15,14 @@ export default function ProfileImageSelector({
   selectedCode,
   onSelect,
 }: ProfileImageSelectorProps) {
-  const selectedOption = PROFILE_IMAGE_OPTIONS.find((option) => option.code === selectedCode);
+  const selectedOption = getProfileImageOption(selectedCode);
 
   return (
     <section className="shrink-0 border-b border-neutral-100 pb-7" aria-label="프로필 아이콘 선택">
       <div className="flex justify-center pt-1">
         <span
           className="inline-flex size-25 items-center justify-center rounded-full"
-          style={{ backgroundColor: selectedOption?.color ?? PROFILE_IMAGE_OPTIONS[0].color }}
+          style={{ backgroundColor: selectedOption.color }}
         >
           <img className="h-[76%] w-[86%] object-contain" src={StickerEyesImage} alt="" />
         </span>

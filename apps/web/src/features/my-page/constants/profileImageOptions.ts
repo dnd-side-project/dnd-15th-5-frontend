@@ -10,3 +10,7 @@ export const PROFILE_IMAGE_OPTIONS = [
 ] as const;
 
 export type ProfileImageCode = (typeof PROFILE_IMAGE_OPTIONS)[number]['code'];
+
+/** 서버 프로필 코드에 해당하는 옵션을 반환하고, 알 수 없는 값은 기본 옵션으로 처리합니다. */
+export const getProfileImageOption = (code?: string) =>
+  PROFILE_IMAGE_OPTIONS.find((option) => option.code === code) ?? PROFILE_IMAGE_OPTIONS[0];
