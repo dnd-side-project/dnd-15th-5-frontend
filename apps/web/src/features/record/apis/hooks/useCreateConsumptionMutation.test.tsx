@@ -86,12 +86,12 @@ describe('useCreateConsumptionMutation', () => {
       predicate: (query: { queryKey: unknown[] }) => boolean;
     };
 
-    expect(predicate({ queryKey: ['/consumptions/visited-places'] })).toBe(true);
-    expect(predicate({ queryKey: ['/consumptions/places/rank'] })).toBe(true);
-    expect(predicate({ queryKey: ['/reports/current'] })).toBe(true);
-    expect(predicate({ queryKey: ['/reports/monthly'] })).toBe(false);
-    expect(predicate({ queryKey: ['/accounts/me'] })).toBe(false);
-    expect(predicate({ queryKey: ['/oauth/kakao/callback'] })).toBe(false);
+    expect(predicate({ queryKey: ['/v1/consumptions/visited-places'] })).toBe(true);
+    expect(predicate({ queryKey: ['/v1/consumptions/places/rank'] })).toBe(true);
+    expect(predicate({ queryKey: ['/v1/reports/current'] })).toBe(true);
+    expect(predicate({ queryKey: ['/v1/reports/monthly'] })).toBe(false);
+    expect(predicate({ queryKey: ['/v1/accounts/me'] })).toBe(false);
+    expect(predicate({ queryKey: ['/v1/oauth/kakao/callback'] })).toBe(false);
   });
 
   it('등록에 실패하면 서버 오류 메시지를 보여준다', () => {
