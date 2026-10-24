@@ -1,10 +1,8 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import type { ProfileUpdateRequest } from '@/features/my-page/apis/dto';
-import { useUpdateMyProfile } from '@/features/my-page/apis/mutations';
+import { useUpdateMyProfileMutation } from '@/features/my-page/apis/hooks/useUpdateMyProfileMutation';
 import { useGetMyAccount } from '@/features/my-page/apis/queries';
-import { getGetMyAccountQueryKey } from '@/features/my-page/apis/queryKeys';
 import type { ProfileImageCode } from '@/features/my-page/constants/profileImageOptions';
 import { getProfileImageOption } from '@/features/my-page/constants/profileImageOptions';
 import { useProfileEditNavigationGuard } from '@/features/my-page/hooks/useProfileEditNavigationGuard';
@@ -12,10 +10,9 @@ import { NICKNAME_MAX_LENGTH, nicknameSchema } from '@/features/my-page/nickname
 
 /** 프로필 수정 화면의 조회·편집·저장·이탈 확인 상태를 관리합니다. */
 export const useProfileEditor = () => {
-  const queryClient = useQueryClient();
   const accountQuery = useGetMyAccount();
   const account = accountQuery.data?.data;
-  const updateProfile = useUpdateMyProfile();
+  const updateProfile = useUpdateMyProfileMutation();
   const [editedNickname, setEditedNickname] = useState<string>();
   const [nicknameLengthExceeded, setNicknameLengthExceeded] = useState(false);
   const [editedCode, setEditedCode] = useState<ProfileImageCode>();
@@ -51,18 +48,7 @@ export const useProfileEditor = () => {
     updateProfile.mutate(
       { data: { nickname: normalizedNickname, profileImageCode } satisfies ProfileUpdateRequest },
       {
-        onSuccess: async (response) => {
-          if (response.data) {
-            queryClient.setQueryData(getGetMyAccountQueryKey(), {
-              ...accountQuery.data,
-              data: response.data,
-            });
-          } else {
-            await queryClient.invalidateQueries({ queryKey: getGetMyAccountQueryKey() });
-          }
-
-          navigationGuard.navigateToMyPage();
-        },
+        onSuccess: () => navigationGuard.navigateToMyPage(),
       }
     );
   };
