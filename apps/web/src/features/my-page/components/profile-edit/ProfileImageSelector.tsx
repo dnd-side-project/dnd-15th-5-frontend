@@ -3,7 +3,7 @@ import {
   PROFILE_IMAGE_OPTIONS,
 } from '@/features/my-page/constants/profileImageOptions';
 import type { ProfileImageCode } from '@/features/my-page/constants/profileImageOptions';
-import { StickerEyesImage } from '@/shared/assets/images/stickers';
+import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 
 type ProfileImageSelectorProps = {
   selectedCode: ProfileImageCode;
@@ -20,12 +20,7 @@ export default function ProfileImageSelector({
   return (
     <section className="shrink-0 border-b border-neutral-100 pb-7" aria-label="프로필 아이콘 선택">
       <div className="flex justify-center pt-1">
-        <span
-          className="inline-flex size-25 items-center justify-center rounded-full"
-          style={{ backgroundColor: selectedOption.color }}
-        >
-          <img className="h-[76%] w-[86%] object-contain" src={StickerEyesImage} alt="" />
-        </span>
+        <ProfileAvatar className="size-25" backgroundColor={selectedOption.color} />
       </div>
       <div className="mt-7 grid grid-cols-6 gap-2 px-4">
         {PROFILE_IMAGE_OPTIONS.map((option) => (
@@ -36,9 +31,8 @@ export default function ProfileImageSelector({
             aria-pressed={selectedCode === option.code}
             onClick={() => onSelect(option.code)}
             className={`flex aspect-square w-full min-w-0 max-w-13 items-center justify-center justify-self-center rounded-full focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${selectedCode === option.code ? 'outline-2 outline-primary-500 outline-offset-1' : 'outline-none'}`}
-            style={{ backgroundColor: option.color }}
           >
-            <img className="size-[76%] object-contain" src={StickerEyesImage} alt="" />
+            <ProfileAvatar className="size-full" backgroundColor={option.color} />
           </button>
         ))}
       </div>
