@@ -3,6 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { REPORT_LIST_QUERY_CACHE_OPTIONS } from '@/features/report/apis/cacheOptions';
 import { getConsumptions } from '@/features/report/apis/clients';
 import type { GetConsumptionsParams } from '@/features/report/apis/dto';
+import { getGetConsumptionsQueryKey } from '@/features/report/apis/queryKeys';
 
 const CONSUMPTION_PAGE_SIZE = 15;
 
@@ -28,7 +29,7 @@ const getNextCursor = (
 /** 선택한 월의 소비내역을 서버 커서가 끝날 때까지 불러오는 무한 조회 훅입니다. */
 export const useConsumptionsInfiniteQuery = (yearMonth: string) =>
   useInfiniteQuery({
-    queryKey: ['/consumptions', 'infinite', { yearMonth }],
+    queryKey: [...getGetConsumptionsQueryKey(), 'infinite', { yearMonth }],
     queryFn: ({ pageParam, signal }) =>
       getConsumptions({ ...pageParam, yearMonth, size: CONSUMPTION_PAGE_SIZE }, undefined, signal),
     initialPageParam: {} as ConsumptionCursor,
