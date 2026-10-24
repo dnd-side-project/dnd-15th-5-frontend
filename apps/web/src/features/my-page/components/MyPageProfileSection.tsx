@@ -33,7 +33,9 @@ export default function MyPageProfileSection({
           onClick={onEdit}
           className="relative size-25 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
-          {profileImageUrl ? (
+          {profileImageCode ? (
+            <ProfileAvatar className="size-full" backgroundColor={profileImageOption.color} />
+          ) : profileImageUrl ? (
             <img
               className="size-full rounded-full object-cover"
               src={profileImageUrl}
