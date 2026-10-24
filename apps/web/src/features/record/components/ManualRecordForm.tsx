@@ -6,7 +6,6 @@ import {
   MAX_RECORD_AMOUNT,
   RECORD_CATEGORIES,
   sanitizeAmount,
-  RECORD_EXIT_CONFIRM_TEXT,
   validateRecordRequiredFields,
 } from '@chapchap/shared/record';
 import { useState } from 'react';
@@ -15,11 +14,9 @@ import { useCreateConsumptionMutation } from '@/features/record/apis/hooks/useCr
 import type { ManualRecordDraft } from '@/features/record/types';
 import { createConsumptionRequest } from '@/features/record/utils/createConsumptionRequest';
 import { CalendarIcon } from '@/shared/assets/icons';
-import { useUnsavedChangesBlocker } from '@/shared/hooks/useUnsavedChangesBlocker';
 import { Button } from '@/shared/ui/button';
 import { PlaceCard } from '@/shared/ui/card';
 import { CategoryChip } from '@/shared/ui/category-chip';
-import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 
 import RecordNavigationHeader from './RecordNavigationHeader';
 import VisitDateTimeSheet from './visit-date-time-sheet/VisitDateTimeSheet';
@@ -107,10 +104,7 @@ export default function ManualRecordForm({
     category !== initialDraft.category ||
     visitDateTime.period !== initialDraft.visitDateTime.period ||
     !isSameDate(visitDateTime.date, initialDraft.visitDateTime.date);
-  const navigationBlocker = useUnsavedChangesBlocker(isDraftDirty);
-  const { createConsumption, isCreatingConsumption } = useCreateConsumptionMutation({
-    onBeforeNavigate: navigationBlocker.allowNextNavigation,
-  });
+  const { createConsumption, isCreatingConsumption } = useCreateConsumptionMutation();
   // NOTE: 아직 아무것도 입력하지 않은 빈 금액은 오류로 안내하지 않고, 잘못된 값을 입력했을 때만 안내한다.
   const showAmountError = amount !== '' && !isAmountValid;
   const showShopLocationError = hasSelectedShop && !hasShopLocation;
@@ -138,7 +132,13 @@ export default function ManualRecordForm({
 
   return (
     <div className="min-h-screen-safe-bottom flex flex-col">
-      <RecordNavigationHeader onBack={onBack} onClose={onClose} />
+      {/* TODO: 브라우저·앱 뒤로가기 제스처의 미저장 변경 확인 정책을 정한다. */}
+      <RecordNavigationHeader
+        onBack={onBack}
+        onClose={onClose}
+        confirmBeforeBack={isDraftDirty}
+        confirmBeforeClose={isDraftDirty}
+      />
 
       <h1 className="mt-6 text-heading-01-bold text-neutral-700">소비 정보를 입력해주세요</h1>
 
@@ -153,10 +153,7 @@ export default function ManualRecordForm({
           </div>
           <button
             type="button"
-            onClick={() => {
-              navigationBlocker.allowNextNavigation();
-              onChangeShop({ visitDateTime, amount, category });
-            }}
+            onClick={() => onChangeShop({ visitDateTime, amount, category })}
             aria-describedby={
               showShopLocationError ? 'manual-record-shop-location-error' : undefined
             }
@@ -168,10 +165,7 @@ export default function ManualRecordForm({
       ) : (
         <button
           type="button"
-          onClick={() => {
-            navigationBlocker.allowNextNavigation();
-            onSelectShop({ visitDateTime, amount, category }, isDraftDirty);
-          }}
+          onClick={() => onSelectShop({ visitDateTime, amount, category }, isDraftDirty)}
           className="mt-6 h-19 rounded-16 border border-neutral-300 text-body-01-medium text-primary-500 outline-none hover:bg-primary-50 focus-visible:ring-2 focus-visible:ring-primary-300"
         >
           가게를 선택해주세요
@@ -259,17 +253,6 @@ export default function ManualRecordForm({
           value={visitDateTime}
           onClose={() => setIsVisitDateTimeSheetOpen(false)}
           onConfirm={handleVisitDateTimeConfirm}
-        />
-      )}
-
-      {navigationBlocker.isBlocked && (
-        <UnsavedChangesDialog
-          title={RECORD_EXIT_CONFIRM_TEXT.title}
-          description={RECORD_EXIT_CONFIRM_TEXT.description}
-          exitLabel={RECORD_EXIT_CONFIRM_TEXT.exit}
-          continueLabel={RECORD_EXIT_CONFIRM_TEXT.continue}
-          onExit={navigationBlocker.proceed}
-          onContinue={navigationBlocker.reset}
         />
       )}
     </div>
