@@ -3,4 +3,6 @@
  * Do not edit manually.
  */
 
-export {};
+export const getGetConsumptionQueryKey = (consumptionId: number) => {
+  return [`/v1/consumptions/${consumptionId}`] as const;
+};

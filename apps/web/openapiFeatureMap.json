@@ -16,12 +16,12 @@
     },
     "map": {
       "tags": ["Consumption", "Recommendation", "Place"],
-      "operationIds": ["getVisitedPlaceMarkers", "getNearbyPlaces", "toggleLike"]
+      "operationIds": ["getVisitedPlaceMarkers", "getNearbyPlaces", "toggleLike", "findStickers"]
     },
     "myPage": {
       "directory": "my-page",
       "tags": ["Account"],
-      "operationIds": ["getMyAccount", "updateMyAccount", "withdrawMyAccount"]
+      "operationIds": ["getMyAccount", "updateMyAccount", "withdrawMyAccount", "updateMyProfile"]
     },
     "notification": {
       "tags": ["notification-controller", "Account"],
@@ -34,7 +34,14 @@
     },
     "record": {
       "tags": ["Consumption"],
-      "operationIds": ["createConsumption", "recognizeReceipt"]
+      "operationIds": [
+        "createConsumption",
+        "recognizeReceipt",
+        "getConsumption",
+        "updateConsumption",
+        "deleteConsumption",
+        "upload"
+      ]
     },
     "report": {
       "tags": ["Consumption", "Report"],

@@ -22,7 +22,11 @@ export type RecommendedPlaceItem = {
   longitude?: number;
   visitCount?: number;
   liked?: boolean;
-  thumbnailUrl?: string;
+  /**
+   * Google Places 대표 사진의 단기 URL(장소당 최대 1장). 사진이 없거나 조회에 실패하면 null
+   * @nullable
+   */
+  thumbnailUrl?: string | null;
   googleMapsUri?: string;
   googlePlaceId?: string;
 };
@@ -61,6 +65,21 @@ export type ApiResponseVisitedPlaceMarkerResponse = {
   code?: string;
   message?: string;
   data?: VisitedPlaceMarkerResponse;
+};
+
+export type StickerItemResponse = {
+  /** 소비기록 등록 시 전달할 스티커 ID */
+  stickerItemId?: number;
+  /** 스티커 선택 시 함께 지정할 소비 카테고리 */
+  category?: string;
+  /** 스티커 이름 */
+  name?: string;
+};
+
+export type ApiResponseListStickerItemResponse = {
+  code?: string;
+  message?: string;
+  data?: StickerItemResponse[];
 };
 
 export type GetNearbyPlacesParams = {

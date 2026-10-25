@@ -4,5 +4,5 @@
  */
 
 export const getGetMyAccountQueryKey = () => {
-  return [`/accounts/me`] as const;
+  return [`/v1/accounts/me`] as const;
 };

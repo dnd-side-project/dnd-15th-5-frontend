@@ -4,9 +4,9 @@
  */
 
 export const getGetNotificationsQueryKey = () => {
-  return [`/notifications`] as const;
+  return [`/v1/notifications`] as const;
 };
 
 export const getHasUnreadQueryKey = () => {
-  return [`/notifications/unread-exists`] as const;
+  return [`/v1/notifications/unread-exists`] as const;
 };

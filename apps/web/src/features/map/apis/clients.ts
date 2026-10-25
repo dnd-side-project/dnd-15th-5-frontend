@@ -6,6 +6,7 @@
 import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type {
+  ApiResponseListStickerItemResponse,
   ApiResponseNearbyPlacesResponse,
   ApiResponsePlaceLikeResponse,
   ApiResponseVisitedPlaceMarkerResponse,
@@ -24,7 +25,7 @@ export const toggleLike = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponsePlaceLikeResponse>(
-    { url: `/places/${placeId}/likes`, method: 'PUT', signal },
+    { url: `/v1/places/${placeId}/likes`, method: 'PUT', signal },
     options
   );
 };
@@ -39,7 +40,7 @@ export const getNearbyPlaces = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseNearbyPlacesResponse>(
-    { url: `/recommendations/nearby-places`, method: 'GET', params, signal },
+    { url: `/v1/recommendations/nearby-places`, method: 'GET', params, signal },
     options
   );
 };
@@ -54,7 +55,17 @@ export const getVisitedPlaceMarkers = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseVisitedPlaceMarkerResponse>(
-    { url: `/consumptions/visited-places`, method: 'GET', params, signal },
+    { url: `/v1/consumptions/visited-places`, method: 'GET', params, signal },
+    options
+  );
+};
+
+/**
+ * @summary 등록용 스티커 목록 조회
+ */
+export const findStickers = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
+  return apiClient<ApiResponseListStickerItemResponse>(
+    { url: `/v1/consumptions/stickers`, method: 'GET', signal },
     options
   );
 };

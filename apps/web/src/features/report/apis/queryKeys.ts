@@ -11,21 +11,21 @@ import type {
 } from '@/features/report/apis/dto';
 
 export const getGetConsumptionsQueryKey = (params?: GetConsumptionsParams) => {
-  return [`/consumptions`, ...(params ? [params] : [])] as const;
+  return [`/v1/consumptions`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetSharedPersonaCardQueryKey = (shareToken: string) => {
-  return [`/reports/share/${shareToken}`] as const;
+  return [`/v1/reports/share/${shareToken}`] as const;
 };
 
 export const getGetMonthlyReportQueryKey = (params?: GetMonthlyReportParams) => {
-  return [`/reports/monthly`, ...(params ? [params] : [])] as const;
+  return [`/v1/reports/monthly`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetCurrentStatusQueryKey = (params?: GetCurrentStatusParams) => {
-  return [`/reports/current`, ...(params ? [params] : [])] as const;
+  return [`/v1/reports/current`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetFrequentPlacesQueryKey = (params?: GetFrequentPlacesParams) => {
-  return [`/consumptions/places/rank`, ...(params ? [params] : [])] as const;
+  return [`/v1/consumptions/places/rank`, ...(params ? [params] : [])] as const;
 };

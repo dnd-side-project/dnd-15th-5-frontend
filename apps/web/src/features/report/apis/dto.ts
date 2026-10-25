@@ -35,7 +35,11 @@ export type ConsumptionResponse = {
   amount?: number;
   purchaseDate?: string;
   purchaseTime?: string;
-  thumbnailUrl?: string;
+  /**
+   * Google Places 대표 사진의 단기 URL(장소당 최대 1장). 사진이 없거나 조회에 실패하면 null
+   * @nullable
+   */
+  thumbnailUrl?: string | null;
 };
 
 export type ConsumptionScrollResponse = {
@@ -175,7 +179,11 @@ export type FrequentPlaceItem = {
   category?: string;
   dongname?: string;
   visitCount?: number;
-  thumbnailUrl?: string;
+  /**
+   * Google Places 대표 사진의 단기 URL(장소당 최대 1장). 사진이 없거나 조회에 실패하면 null
+   * @nullable
+   */
+  thumbnailUrl?: string | null;
 };
 
 export type FrequentPlaceResponse = {

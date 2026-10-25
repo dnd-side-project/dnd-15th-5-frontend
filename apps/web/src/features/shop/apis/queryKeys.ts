@@ -6,13 +6,13 @@
 import type { GetPlaceVisitsParams, SearchVisitedPlacesParams } from '@/features/shop/apis/dto';
 
 export const getSearchVisitedPlacesQueryKey = (params?: SearchVisitedPlacesParams) => {
-  return [`/places/visited/search`, ...(params ? [params] : [])] as const;
+  return [`/v1/places/visited/search`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetPlaceDetailQueryKey = (placeId: number) => {
-  return [`/consumptions/places/${placeId}`] as const;
+  return [`/v1/consumptions/places/${placeId}`] as const;
 };
 
 export const getGetPlaceVisitsQueryKey = (placeId: number, params?: GetPlaceVisitsParams) => {
-  return [`/consumptions/places/${placeId}/visits`, ...(params ? [params] : [])] as const;
+  return [`/v1/consumptions/places/${placeId}/visits`, ...(params ? [params] : [])] as const;
 };

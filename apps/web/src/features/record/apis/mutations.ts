@@ -18,12 +18,151 @@ import type { ErrorType, BodyType } from '@/shared/apis/orvalMutator';
 
 import type {
   ApiResponse,
-  ConsumptionCreateRequest,
+  ConsumptionImageUploadRequest,
+  ConsumptionSaveRequest,
   ReceiptOcrRequest,
   SecondParameter,
 } from '@/features/record/apis/dto';
 
-import { createConsumption, recognizeReceipt } from '@/features/record/apis/clients';
+import {
+  createConsumption,
+  deleteConsumption,
+  recognizeReceipt,
+  updateConsumption,
+  upload,
+} from '@/features/record/apis/clients';
+
+export const getUpdateConsumptionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateConsumption>>,
+    TError,
+    { consumptionId: number; data: BodyType<ConsumptionSaveRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateConsumption>>,
+  TError,
+  { consumptionId: number; data: BodyType<ConsumptionSaveRequest> },
+  TContext
+> => {
+  const mutationKey = ['updateConsumption'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateConsumption>>,
+    { consumptionId: number; data: BodyType<ConsumptionSaveRequest> }
+  > = (props) => {
+    const { consumptionId, data } = props ?? {};
+
+    return updateConsumption(consumptionId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateConsumptionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateConsumption>>
+>;
+
+export type UpdateConsumptionMutationBody = BodyType<ConsumptionSaveRequest>;
+
+export type UpdateConsumptionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 소비기록 수정
+ */
+export const useUpdateConsumption = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateConsumption>>,
+      TError,
+      { consumptionId: number; data: BodyType<ConsumptionSaveRequest> },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateConsumption>>,
+  TError,
+  { consumptionId: number; data: BodyType<ConsumptionSaveRequest> },
+  TContext
+> => {
+  return useMutation(getUpdateConsumptionMutationOptions(options), queryClient);
+};
+
+export const getDeleteConsumptionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteConsumption>>,
+    TError,
+    { consumptionId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteConsumption>>,
+  TError,
+  { consumptionId: number },
+  TContext
+> => {
+  const mutationKey = ['deleteConsumption'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteConsumption>>,
+    { consumptionId: number }
+  > = (props) => {
+    const { consumptionId } = props ?? {};
+
+    return deleteConsumption(consumptionId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteConsumptionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteConsumption>>
+>;
+
+export type DeleteConsumptionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 소비기록 삭제
+ */
+export const useDeleteConsumption = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteConsumption>>,
+      TError,
+      { consumptionId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteConsumption>>,
+  TError,
+  { consumptionId: number },
+  TContext
+> => {
+  return useMutation(getDeleteConsumptionMutationOptions(options), queryClient);
+};
 
 export const getCreateConsumptionMutationOptions = <
   TError = ErrorType<ApiResponse>,
@@ -32,14 +171,14 @@ export const getCreateConsumptionMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createConsumption>>,
     TError,
-    { data: BodyType<ConsumptionCreateRequest> },
+    { data: BodyType<ConsumptionSaveRequest> },
     TContext
   >;
   request?: SecondParameter<typeof apiClient>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createConsumption>>,
   TError,
-  { data: BodyType<ConsumptionCreateRequest> },
+  { data: BodyType<ConsumptionSaveRequest> },
   TContext
 > => {
   const mutationKey = ['createConsumption'];
@@ -51,7 +190,7 @@ export const getCreateConsumptionMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createConsumption>>,
-    { data: BodyType<ConsumptionCreateRequest> }
+    { data: BodyType<ConsumptionSaveRequest> }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -65,7 +204,7 @@ export type CreateConsumptionMutationResult = NonNullable<
   Awaited<ReturnType<typeof createConsumption>>
 >;
 
-export type CreateConsumptionMutationBody = BodyType<ConsumptionCreateRequest>;
+export type CreateConsumptionMutationBody = BodyType<ConsumptionSaveRequest>;
 
 export type CreateConsumptionMutationError = ErrorType<ApiResponse>;
 
@@ -77,7 +216,7 @@ export const useCreateConsumption = <TError = ErrorType<ApiResponse>, TContext =
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof createConsumption>>,
       TError,
-      { data: BodyType<ConsumptionCreateRequest> },
+      { data: BodyType<ConsumptionSaveRequest> },
       TContext
     >;
     request?: SecondParameter<typeof apiClient>;
@@ -86,7 +225,7 @@ export const useCreateConsumption = <TError = ErrorType<ApiResponse>, TContext =
 ): UseMutationResult<
   Awaited<ReturnType<typeof createConsumption>>,
   TError,
-  { data: BodyType<ConsumptionCreateRequest> },
+  { data: BodyType<ConsumptionSaveRequest> },
   TContext
 > => {
   return useMutation(getCreateConsumptionMutationOptions(options), queryClient);
@@ -157,4 +296,69 @@ export const useRecognizeReceipt = <TError = ErrorType<ApiResponse>, TContext = 
   TContext
 > => {
   return useMutation(getRecognizeReceiptMutationOptions(options), queryClient);
+};
+
+export const getUploadMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof upload>>,
+    TError,
+    { data?: BodyType<ConsumptionImageUploadRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof upload>>,
+  TError,
+  { data?: BodyType<ConsumptionImageUploadRequest> },
+  TContext
+> => {
+  const mutationKey = ['upload'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof upload>>,
+    { data?: BodyType<ConsumptionImageUploadRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return upload(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UploadMutationResult = NonNullable<Awaited<ReturnType<typeof upload>>>;
+
+export type UploadMutationBody = BodyType<ConsumptionImageUploadRequest> | undefined;
+
+export type UploadMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 소비기록 이미지 업로드
+ */
+export const useUpload = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof upload>>,
+      TError,
+      { data?: BodyType<ConsumptionImageUploadRequest> },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof upload>>,
+  TError,
+  { data?: BodyType<ConsumptionImageUploadRequest> },
+  TContext
+> => {
+  return useMutation(getUploadMutationOptions(options), queryClient);
 };
