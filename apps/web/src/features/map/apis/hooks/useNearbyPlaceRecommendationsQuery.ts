@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { useGetNearbyPlaces } from '@/features/map/apis/queries';
+import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { toShopRecommendations } from '@/features/map/utils/placeAdapters';
 
 const RECOMMENDATION_RADIUS_METERS = 1_000;
@@ -9,11 +10,13 @@ const TALK_HERE_RECOMMENDATION_CENTER = {
   lng: 126.9759403,
 } as const;
 
-/** 지도 위치와 무관하게 이수역 토크히어를 중심으로 추천 가게를 조회합니다. */
+/** 확정한 위치를 중심으로 추천 가게를 조회하고, 선택 전에는 PoC 기본 좌표를 사용합니다. */
 export const useNearbyPlaceRecommendationsQuery = () => {
+  const confirmedPosition = useLocationSelectionStore((state) => state.confirmedPosition);
+  const center = confirmedPosition ?? TALK_HERE_RECOMMENDATION_CENTER;
   const query = useGetNearbyPlaces({
-    lat: TALK_HERE_RECOMMENDATION_CENTER.lat,
-    lng: TALK_HERE_RECOMMENDATION_CENTER.lng,
+    lat: center.lat,
+    lng: center.lng,
     radiusMeters: RECOMMENDATION_RADIUS_METERS,
   });
   const response = query.data?.data;

@@ -1,6 +1,7 @@
 export { default as GoogleMapView } from './components/map-view/GoogleMapView';
 export { default as HomeBottomSheet } from './components/HomeBottomSheet';
 export { default as HomeMapOverlay } from './components/home-overlay/HomeMapOverlay';
+export { default as LocationSelectionOverlay } from './components/LocationSelectionOverlay';
 export { useVisitedPlaceStickersQuery } from './apis/hooks/useVisitedPlaceStickersQuery';
 export { useCreatedConsumptionResult } from './hooks/useCreatedConsumptionResult';
 export { useOpenVisitedPlaceOnMap } from './hooks/useOpenVisitedPlaceOnMap';

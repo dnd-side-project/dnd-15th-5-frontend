@@ -5,12 +5,14 @@ import {
   GoogleMapView,
   HomeBottomSheet,
   HomeMapOverlay,
+  LocationSelectionOverlay,
   parseCreatedConsumptionPlace,
   toShopSearchResult,
   useCreatedConsumptionResult,
   useOpenVisitedPlaceOnMap,
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useHasUnreadNotificationQuery } from '@/features/notification';
 import { FrequentShopSummary, SpendingHistory } from '@/features/report';
 import { SelectedPlaceSheet } from '@/features/shop';
@@ -22,6 +24,9 @@ export default function HomePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const isSelectingLocation = useHomeBottomSheetStore(
+    (state) => state.activeSheet.type === 'locationSelection'
+  );
   const { hasUnreadNotification } = useHasUnreadNotificationQuery();
   const { stickers } = useVisitedPlaceStickersQuery();
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
@@ -50,28 +55,32 @@ export default function HomePage() {
     <div className="mobile-frame fixed inset-0 z-0 flex flex-col">
       <GoogleMapView />
       <HomeMapOverlay hasUnreadNotification={hasUnreadNotification} />
-      <HomeBottomSheet
-        renderFrequentShops={(headerContent) => (
-          <FrequentShopSummary
-            headerContent={headerContent}
-            onShopSelect={handleFrequentShopSelect}
-          />
-        )}
-        renderSelectedPlace={(placeId) => (
-          <SelectedPlaceSheet
-            placeId={placeId}
-            recordShop={toShopSearchResult(stickers.find(({ id }) => id === placeId))}
-          />
-        )}
-        renderSpendingHistory={(headerContent) => (
-          <SpendingHistory
-            contentBottomPaddingClassName="pb-28"
-            headerContent={headerContent}
-            headerContentGapClassName="mt-2"
-            headerDescription="이번달 작성한 소비기록을 확인해보세요"
-          />
-        )}
-      />
+      {isSelectingLocation ? (
+        <LocationSelectionOverlay />
+      ) : (
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => (
+            <FrequentShopSummary
+              headerContent={headerContent}
+              onShopSelect={handleFrequentShopSelect}
+            />
+          )}
+          renderSelectedPlace={(placeId) => (
+            <SelectedPlaceSheet
+              placeId={placeId}
+              recordShop={toShopSearchResult(stickers.find(({ id }) => id === placeId))}
+            />
+          )}
+          renderSpendingHistory={(headerContent) => (
+            <SpendingHistory
+              contentBottomPaddingClassName="pb-28"
+              headerContent={headerContent}
+              headerContentGapClassName="mt-2"
+              headerDescription="이번달 작성한 소비기록을 확인해보세요"
+            />
+          )}
+        />
+      )}
     </div>
   );
 }

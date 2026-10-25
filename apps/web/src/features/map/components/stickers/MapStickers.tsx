@@ -23,6 +23,10 @@ export default function MapStickers() {
     : stickers;
 
   const handleStickerSelect = (sticker: MapStickerData) => {
+    if (activeSheet.type === 'locationSelection') {
+      return;
+    }
+
     showSelectedPlace(sticker.id);
     focusMap(sticker.position, SELECTED_PLACE_MAP_ZOOM);
   };

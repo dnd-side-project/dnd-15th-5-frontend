@@ -4,11 +4,13 @@ import { useState } from 'react';
 import CurrentLocationButton from '@/features/map/components/current-location/CurrentLocationButton';
 import CurrentLocationCameraController from '@/features/map/components/current-location/CurrentLocationCameraController';
 import CurrentLocationMarker from '@/features/map/components/current-location/CurrentLocationMarker';
+import LocationSelectionMarker from '@/features/map/components/LocationSelectionMarker';
 import RecommendationMapMarkers from '@/features/map/components/RecommendationMapMarkers';
 import MapStickers from '@/features/map/components/stickers/MapStickers';
 import { MAP_DEFAULT_ZOOM } from '@/features/map/constants';
 import { useCurrentPosition } from '@/features/map/hooks/useCurrentPosition';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { useMapViewportStore } from '@/features/map/stores/mapViewportStore';
 import { GOOGLE_MAPS_MAP_ID } from '@/shared/lib/env';
 
@@ -27,9 +29,15 @@ export default function GoogleMapView() {
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
   const mapCenter = useMapViewportStore((state) => state.center);
   const setMapCenter = useMapViewportStore((state) => state.setCenter);
+  const setSelectedPosition = useLocationSelectionStore((state) => state.setSelectedPosition);
 
-  const handleMapClick = () => {
+  const handleMapClick = (position: google.maps.LatLngLiteral | null) => {
     setShowLocationError(false);
+    if (activeSheetType === 'locationSelection' && position) {
+      setSelectedPosition(position);
+      return;
+    }
+
     if (activeSheetType === 'selectedPlace' || activeSheetType === 'likedRecommendation') {
       showHome();
     }
@@ -51,7 +59,7 @@ export default function GoogleMapView() {
       gestureHandling="greedy"
       disableDefaultUI
       clickableIcons={false}
-      onClick={handleMapClick}
+      onClick={(event) => handleMapClick(event.detail.latLng)}
       onIdle={(event) => {
         const center = event.map.getCenter();
         if (center) setMapCenter({ lat: center.lat(), lng: center.lng() });
@@ -63,6 +71,7 @@ export default function GoogleMapView() {
       />
       <CurrentLocationMarker position={position} />
       <MapFocusController />
+      {activeSheetType === 'locationSelection' && <LocationSelectionMarker />}
       <MapStickers />
       <RecommendationMapMarkers />
       <CurrentLocationButton

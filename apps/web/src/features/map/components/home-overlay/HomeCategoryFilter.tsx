@@ -2,6 +2,7 @@ import { CategoryChip } from '@/shared/ui/category-chip';
 
 import { HOME_CATEGORIES } from '../../constants';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
+import { useLocationSelectionStore } from '../../stores/locationSelectionStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 
 /** 지도 홈 상단에 한 줄로 표시하는 가게 추천·카테고리 칩입니다. */
@@ -10,12 +11,14 @@ export default function HomeCategoryFilter() {
   const setSelectedCategory = useMapCategoryFilterStore((state) => state.setSelectedCategory);
   const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const showRecommendation = useHomeBottomSheetStore((state) => state.showRecommendation);
+  const showLocationSelection = useHomeBottomSheetStore((state) => state.showLocationSelection);
+  const resetLocationSelection = useLocationSelectionStore((state) => state.resetSelection);
 
   const handleRecommendationSelection = (isSelected: boolean) => {
     if (isSelected) {
       setSelectedCategory(null);
-      showRecommendation();
+      resetLocationSelection();
+      showLocationSelection();
       return;
     }
 
@@ -40,7 +43,7 @@ export default function HomeCategoryFilter() {
         <CategoryChip
           variant="compact"
           hasRecommendationIcon
-          selected={activeSheetType === 'recommendation'}
+          selected={activeSheetType === 'locationSelection'}
           onSelectedChange={handleRecommendationSelection}
         >
           가게 추천
