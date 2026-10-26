@@ -25,6 +25,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   const isSharedReport = Boolean(matchPath(ROUTE_PATTERNS.sharedReport, pathname));
   const usesOwnBottomSafeArea =
     pathname === ROUTE_PATHS.home ||
+    pathname === ROUTE_PATHS.record ||
     pathname === ROUTE_PATHS.stickerPoc ||
     isShopDetail ||
     isSharedReport;

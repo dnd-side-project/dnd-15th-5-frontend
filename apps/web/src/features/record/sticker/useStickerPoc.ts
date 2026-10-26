@@ -1,93 +1,108 @@
 import { useEffect, useRef, useState } from 'react';
 
-import defaultSticker from '@/shared/assets/images/stickers/img-sticker-coffee.png';
+import type { StickerPhotoSource } from '@/features/record/types';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
-import {
-  disposeStickerBackground,
-  prepareStickerBackground,
-  removeStickerBackground,
-} from './removeStickerBackground';
-import {
-  composeSticker,
-  cropStickerImage,
-  prepareStickerImage,
-  validateStickerFile,
-} from './stickerImage';
+import { createPhotoSticker } from './createPhotoSticker';
+import { disposeStickerBackground, prepareStickerBackground } from './removeStickerBackground';
+import { cropStickerImage, validateStickerFile } from './stickerImage';
 
 import type { StickerCrop } from './stickerImage';
 
 type Stage = 'select' | 'crop' | 'preview' | 'record';
-type Result = { original: string; sticker: string; elapsed: number };
+type PendingAction = 'capture' | 'crop' | 'process' | null;
+type Result = {
+  original: string;
+  sticker: string;
+};
 
 export const useStickerPoc = () => {
-  const [isCapturing, setIsCapturing] = useState(false);
-  // NOTE: 카메라 대기·자르기 중 화면을 초기화하거나 나가면 늦게 끝난 요청을 무시하기 위한 식별자다.
-  const inputRequest = useRef(0);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [cropSource, setCropSource] = useState<{ file: File; url: string } | null>(null);
-  const [isCropping, setIsCropping] = useState(false);
   const [stage, setStage] = useState<Stage>('select');
   const [result, setResult] = useState<Result | null>(null);
+  const [recordResult, setRecordResult] = useState<Result | null>(null);
   const [original, setOriginal] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [photoSource, setPhotoSource] = useState<StickerPhotoSource>('gallery');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const controller = useRef<AbortController | null>(null);
   const urls = useRef<string[]>([]);
   const lastFile = useRef<File | null>(null);
+  const isCapturing = pendingAction === 'capture';
+  const isCropping = pendingAction === 'crop';
+  const isProcessing = pendingAction === 'process';
 
-  const releaseUrls = () => {
-    urls.current.forEach(URL.revokeObjectURL);
-    urls.current = [];
+  // NOTE: 촬영·자르기·합성을 하나의 취소 신호로 이어 늦은 결과가 새 화면을 덮지 않도록 한다.
+  const startRequest = (action: PendingAction = null) => {
+    controller.current?.abort();
+    const request = new AbortController();
+    controller.current = request;
+    setPendingAction(action);
+    setError('');
+    setMessage('');
+    return request;
+  };
+  const finishRequest = (request: AbortController) => {
+    if (!request.signal.aborted) setPendingAction(null);
+  };
+  const createUrl = (blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    urls.current.push(url);
+    return url;
+  };
+  const releaseUrls = (keep: string[] = []) => {
+    urls.current = urls.current.filter((url) => {
+      if (keep.includes(url)) return true;
+      URL.revokeObjectURL(url);
+      return false;
+    });
+  };
+  const keepRecordUrls = () =>
+    releaseUrls(recordResult ? [recordResult.original, recordResult.sticker] : []);
+  const commitResult = (next: Result) => {
+    releaseUrls([next.original, next.sticker]);
+    setRecordResult(next);
+    setResult(next);
+    setStage('record');
   };
   useEffect(() => {
     prepareStickerBackground();
     return () => {
-      inputRequest.current += 1;
       controller.current?.abort();
       disposeStickerBackground();
       releaseUrls();
     };
   }, []);
 
-  const selectImage = async (file: File) => {
-    inputRequest.current += 1;
-    setIsCapturing(false);
+  const validateImage = (file: File) => {
     try {
       validateStickerFile(file);
+      return true;
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : '사진을 확인해주세요.');
-      return;
+      return false;
     }
-    controller.current?.abort();
-    const request = new AbortController();
-    controller.current = request;
+  };
+
+  const processImage = async (file: File, request: AbortController, source: StickerPhotoSource) => {
     lastFile.current = file;
-    releaseUrls();
-    const originalUrl = URL.createObjectURL(file);
-    urls.current.push(originalUrl);
+    setPhotoSource(source);
+    keepRecordUrls();
+    const originalUrl = createUrl(file);
+    setCropSource(null);
+    setPendingAction('process');
     setOriginal(originalUrl);
     setResult(null);
-    setError('');
     setStage('preview');
-    setIsProcessing(true);
-    setMessage('사진을 준비하고 있어요');
-    const startedAt = performance.now();
     try {
-      const image = await prepareStickerImage(file);
+      const sticker = await createPhotoSticker(file, request.signal, (progress) => {
+        if (!request.signal.aborted) setMessage(progress);
+      });
       if (request.signal.aborted) return;
-      setMessage('사진에서 배경을 지우고 있어요');
-      const foreground = await removeStickerBackground(image, request.signal, setMessage);
-      if (request.signal.aborted) return;
-      setMessage('흰색 테두리를 만들고 있어요');
-      const sticker = await composeSticker(foreground);
-      if (request.signal.aborted) return;
-      const stickerUrl = URL.createObjectURL(sticker);
-      urls.current.push(stickerUrl);
       setResult({
         original: originalUrl,
-        sticker: stickerUrl,
-        elapsed: performance.now() - startedAt,
+        sticker: createUrl(sticker),
       });
     } catch (cause) {
       if (!request.signal.aborted)
@@ -95,87 +110,97 @@ export const useStickerPoc = () => {
           cause instanceof Error ? cause.message : '스티커를 만들지 못했어요. 다시 시도해주세요.'
         );
     } finally {
-      if (!request.signal.aborted) setIsProcessing(false);
+      finishRequest(request);
     }
   };
 
   /** 가져온 사진은 바로 스티커로 만들지 않고 자르기 화면을 먼저 보여준다. */
   const openCrop = (file: File) => {
-    inputRequest.current += 1;
-    setIsCapturing(false);
-    try {
-      validateStickerFile(file);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : '사진을 확인해주세요.');
-      return;
-    }
-    controller.current?.abort();
+    if (!validateImage(file)) return;
+    startRequest();
     prepareStickerBackground();
-    releaseUrls();
-    const url = URL.createObjectURL(file);
-    urls.current.push(url);
-    setCropSource({ file, url });
+    keepRecordUrls();
+    setCropSource({ file, url: createUrl(file) });
+    setOriginal('');
     setResult(null);
-    setError('');
     setStage('crop');
   };
 
   const confirmCrop = async (crop: StickerCrop) => {
     if (!cropSource || isCropping) return;
-    const requestId = ++inputRequest.current;
-    setIsCropping(true);
-    setError('');
+    const request = startRequest('crop');
     try {
       const file = await cropStickerImage(cropSource.file, crop);
-      if (requestId !== inputRequest.current) return;
-      setCropSource(null);
-      void selectImage(file);
+      if (request.signal.aborted) return;
+      await processImage(file, request, 'gallery');
     } catch (cause) {
-      if (requestId === inputRequest.current)
+      if (!request.signal.aborted)
         setError(cause instanceof Error ? cause.message : '사진을 자르지 못했어요.');
     } finally {
-      if (requestId === inputRequest.current) setIsCropping(false);
+      finishRequest(request);
     }
   };
 
   const capturePhoto = async () => {
     if (!isNativeApp() || isCapturing) return;
-    const requestId = ++inputRequest.current;
-    setIsCapturing(true);
+    const request = startRequest('capture');
     prepareStickerBackground();
-    setError('');
     try {
       const photo = await requestToNative('captureStickerPhoto', {});
-      if (requestId !== inputRequest.current) return;
+      if (request.signal.aborted) return;
       if (photo.status === 'cancelled') return;
       if (photo.status === 'permissionDenied') {
         setError('앱 설정에서 카메라 권한을 허용한 뒤 다시 촬영해주세요.');
         return;
       }
       const bytes = Uint8Array.from(atob(photo.base64), (character) => character.charCodeAt(0));
-      await selectImage(new File([bytes], 'sticker-photo.jpg', { type: photo.mimeType }));
+      await processImage(
+        new File([bytes], 'sticker-photo.jpg', { type: photo.mimeType }),
+        request,
+        'camera'
+      );
     } catch (cause) {
-      if (requestId === inputRequest.current)
+      if (!request.signal.aborted)
         setError(cause instanceof Error ? cause.message : '카메라를 열지 못했어요.');
     } finally {
-      if (requestId === inputRequest.current) setIsCapturing(false);
+      finishRequest(request);
     }
   };
 
   const reset = () => {
-    inputRequest.current += 1;
-    setIsCapturing(false);
     controller.current?.abort();
+    controller.current = null;
+    setPendingAction(null);
     if (isProcessing) disposeStickerBackground();
     releaseUrls();
     lastFile.current = null;
     setCropSource(null);
-    setIsCropping(false);
     setOriginal('');
     setResult(null);
+    setRecordResult(null);
+    setPhotoSource('gallery');
     setError('');
-    setIsProcessing(false);
+    setMessage('');
     setStage('select');
+  };
+
+  const cancelImageSelection = () => {
+    if (!recordResult) {
+      reset();
+      return;
+    }
+    startRequest();
+    if (isProcessing) disposeStickerBackground();
+    keepRecordUrls();
+    setCropSource(null);
+    setOriginal(recordResult.original);
+    setResult(recordResult);
+    setStage('record');
+  };
+
+  const retry = () => {
+    const file = lastFile.current;
+    if (file && validateImage(file)) void processImage(file, startRequest(), photoSource);
   };
 
   return {
@@ -187,22 +212,17 @@ export const useStickerPoc = () => {
     confirmCrop,
     capturePhoto,
     result,
+    recordResult,
     original,
+    photoSource,
     isProcessing,
     message,
     error,
-    selectImage,
     reset,
-    retry: () => {
-      if (lastFile.current) void selectImage(lastFile.current);
-    },
-    selectDefaultSticker: () => {
-      reset();
-      setResult({ original: '', sticker: defaultSticker, elapsed: 0 });
-      setStage('record');
-    },
+    cancelImageSelection,
+    retry,
     confirm: () => {
-      if (result) setStage('record');
+      if (result) commitResult(result);
     },
   };
 };

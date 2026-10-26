@@ -1,32 +1,52 @@
-import CameraIcon from '@chapchap/shared/assets/icons/ic-sticker-camera.svg?react';
-import DefaultStickerIcon from '@chapchap/shared/assets/icons/ic-sticker-default.svg?react';
-import GalleryIcon from '@chapchap/shared/assets/icons/ic-sticker-gallery.svg?react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { CloseIcon } from '@/shared/assets/icons';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 
+import ImageChangeSheet from './ImageChangeSheet';
 import StickerCropper from './StickerCropper';
+import StickerGenerationPreview from './StickerGenerationPreview';
 import StickerRecordPreview from './StickerRecordPreview';
+import StickerSourcePicker from './StickerSourcePicker';
 import { useStickerPoc } from './useStickerPoc';
-import './StickerPoc.css';
 
+import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
+import type { ShopSearchResult } from '@chapchap/shared/shop';
 import type { ChangeEvent } from 'react';
 
 type StickerPocProps = {
   onClose: () => void;
+  onSearchShop?: () => void;
+  onScanReceipt?: () => void;
+  selectedShop?: ShopSearchResult | null;
+  initialCategory?: RecordCategory;
+  initialVisitDateTime?: VisitDateTimeValue;
+  isOpeningReceipt?: boolean;
+  receiptError?: string;
 };
 
-export default function StickerPoc({ onClose }: StickerPocProps) {
+export default function StickerPoc({
+  onClose,
+  onSearchShop,
+  onScanReceipt,
+  selectedShop,
+  initialCategory,
+  initialVisitDateTime,
+  isOpeningReceipt,
+  receiptError,
+}: StickerPocProps) {
   const isApp = isNativeApp();
   const galleryInput = useRef<HTMLInputElement>(null);
+  const [isImageChangeOpen, setIsImageChangeOpen] = useState(false);
   const {
     stage,
     isCapturing,
     capturePhoto,
     result,
+    recordResult,
     original,
+    photoSource,
     isProcessing,
     message,
     error,
@@ -35,9 +55,9 @@ export default function StickerPoc({ onClose }: StickerPocProps) {
     openCrop,
     confirmCrop,
     reset,
+    cancelImageSelection,
     retry,
     confirm,
-    selectDefaultSticker,
   } = useStickerPoc();
   const isPreview = stage === 'preview';
   const isDark = isPreview || stage === 'crop';
@@ -46,14 +66,17 @@ export default function StickerPoc({ onClose }: StickerPocProps) {
     event.target.value = '';
     if (file) openCrop(file);
   };
-  const handleRetake = () => {
-    reset();
-    if (isApp) void capturePhoto();
-    else galleryInput.current?.click();
-  };
+  const handleImportImage = () => galleryInput.current?.click();
+  const handleCapturePhoto = () => void capturePhoto();
+  const handleRetake = photoSource === 'camera' ? handleCapturePhoto : handleImportImage;
 
   return (
-    <main className={cn('sticker-poc', isDark && 'sticker-poc--dark')}>
+    <main
+      className={cn(
+        'flex min-h-dvh flex-col [--sticker-primary:var(--color-primary-500)] [&_button:disabled:not([data-disabled])]:cursor-default [&_button:disabled:not([data-disabled])]:opacity-45 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-4 [&_button:focus-visible]:outline-primary-500',
+        isDark ? 'bg-neutral-700 text-neutral-00' : 'bg-neutral-00 text-neutral-700'
+      )}
+    >
       <input
         ref={galleryInput}
         type="file"
@@ -62,11 +85,20 @@ export default function StickerPoc({ onClose }: StickerPocProps) {
         className="hidden"
         aria-label="사진 가져오기"
       />
-      {stage !== 'crop' && (
-        <header className="sticker-poc__header">
-          {stage !== 'select' && <h1>{isPreview ? '스티커 생성' : '기록하기'}</h1>}
-          <button type="button" className="sticker-poc__close" aria-label="닫기" onClick={onClose}>
-            <CloseIcon aria-hidden="true" />
+      {(stage === 'select' || isPreview) && (
+        <header className={cn('relative shrink-0', isPreview ? 'h-33.5' : 'h-28')}>
+          {isPreview && (
+            <h1 className="absolute inset-x-14 top-19.25 text-center text-title-02-semibold leading-6.25">
+              스티커 생성
+            </h1>
+          )}
+          <button
+            type="button"
+            className="absolute top-19.25 right-4 grid size-6 place-items-center"
+            aria-label="닫기"
+            onClick={onClose}
+          >
+            <CloseIcon className="size-4" aria-hidden="true" />
           </button>
         </header>
       )}
@@ -75,97 +107,59 @@ export default function StickerPoc({ onClose }: StickerPocProps) {
           key={cropSource.url}
           src={cropSource.url}
           isCropping={isCropping}
-          onCancel={reset}
+          onCancel={cancelImageSelection}
           onConfirm={(crop) => void confirmCrop(crop)}
         />
       )}
       {stage === 'select' && (
-        <section className="sticker-poc__method">
-          <h1 className="sticker-poc__title">오늘의 방문을 사진으로 남겨요</h1>
-          <div className={cn('sticker-poc__choices', !isApp && 'sticker-poc__choices--web')}>
-            {isApp && (
-              <button
-                type="button"
-                className="sticker-poc__choice sticker-poc__choice--camera"
-                disabled={isCapturing}
-                onClick={() => void capturePhoto()}
-              >
-                <CameraIcon aria-hidden="true" />
-                촬영하기
-              </button>
-            )}
-            <button
-              type="button"
-              className="sticker-poc__choice"
-              disabled={isCapturing}
-              onClick={() => galleryInput.current?.click()}
-            >
-              <GalleryIcon aria-hidden="true" />
-              이미지 가져오기
-            </button>
-          </div>
-          <div className="sticker-poc__divider">빠른 추가</div>
-          <button
-            type="button"
-            className="sticker-poc__default"
-            disabled={isCapturing}
-            onClick={selectDefaultSticker}
-          >
-            <DefaultStickerIcon aria-hidden="true" />
-            기본 스티커로 기록하기
-          </button>
-          {isCapturing && (
-            <p role="status" className="mt-4 text-center text-body-02-regular text-neutral-500">
-              카메라를 열고 있어요
-            </p>
-          )}
-        </section>
+        <StickerSourcePicker
+          isCapturing={isCapturing}
+          onCapture={isApp ? handleCapturePhoto : undefined}
+          onImportImage={handleImportImage}
+        />
       )}
       {isPreview && (
-        <>
-          <div className="sticker-poc__photo">
-            {original && (
-              <img src={original} alt="선택한 원본 사진" className="sticker-poc__original" />
-            )}
-            <div className="sticker-poc__shade" />
-            {result && (
-              <img
-                src={result.sticker}
-                alt="흰색 테두리가 적용된 스티커"
-                className="sticker-poc__result"
-              />
-            )}
-            {isProcessing && (
-              <div role="status" className="relative px-8 text-center">
-                <div className="mx-auto mb-5 size-8 animate-spin rounded-full border-2 border-neutral-00 border-t-transparent" />
-                <p>{message}</p>
-              </div>
-            )}
-          </div>
-          <div className="sticker-poc__footer">
-            {error && (
-              <div role="alert" className="text-body-02-regular">
-                <p>{error}</p>
-                <button type="button" className="mt-2 underline" onClick={retry}>
-                  다시 시도
-                </button>
-              </div>
-            )}
-            <div className="sticker-poc__actions">
-              <button type="button" onClick={isProcessing ? reset : handleRetake}>
-                {isProcessing ? '취소' : isApp ? '다시 찍기' : '다른 사진 선택'}
-              </button>
-              <button type="button" disabled={!result || isProcessing} onClick={confirm}>
-                이 스티커 사용
-              </button>
-            </div>
-          </div>
-        </>
+        <StickerGenerationPreview
+          original={original}
+          sticker={result?.sticker}
+          photoSource={photoSource}
+          isProcessing={isProcessing}
+          isCapturing={isCapturing}
+          message={message}
+          error={error}
+          onCancel={cancelImageSelection}
+          onRetry={retry}
+          onReselect={handleRetake}
+          onConfirm={confirm}
+        />
       )}
-      {stage === 'record' && result && (
-        <StickerRecordPreview sticker={result.sticker} onChangeImage={reset} />
+      {recordResult && (
+        <div hidden={stage !== 'record'} inert={isImageChangeOpen}>
+          <StickerRecordPreview
+            sticker={recordResult.sticker}
+            onChangeImage={() => setIsImageChangeOpen(true)}
+            onBack={reset}
+            onClose={onClose}
+            onSearchShop={onSearchShop}
+            onScanReceipt={onScanReceipt}
+            selectedShop={selectedShop}
+            initialCategory={initialCategory}
+            initialVisitDateTime={initialVisitDateTime}
+            isOpeningReceipt={isOpeningReceipt}
+            receiptError={receiptError}
+            imageError={stage === 'record' ? error : ''}
+            isCapturing={isCapturing}
+          />
+        </div>
       )}
-      {!isPreview && error && (
+      {isImageChangeOpen && stage === 'record' && (
+        <ImageChangeSheet
+          onClose={() => setIsImageChangeOpen(false)}
+          onTakePhoto={isApp ? handleCapturePhoto : undefined}
+          onImportImage={handleImportImage}
+        />
+      )}
+      {(stage === 'select' || stage === 'crop') && error && (
         <p role="alert" className="px-4 pb-5 text-body-02-regular text-notification">
           {error}
         </p>

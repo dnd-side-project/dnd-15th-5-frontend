@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import { CheckIcon } from '@/shared/assets/icons';
+import { cn } from '@/shared/lib/cn';
 import { BackButton } from '@/shared/ui/back-button';
 
 import { FULL_STICKER_CROP, moveCropCorner } from './stickerImage';
@@ -15,11 +16,11 @@ type StickerCropperProps = {
   onConfirm: (crop: StickerCrop) => void;
 };
 
-const CROP_CORNERS: { corner: StickerCropCorner; label: string }[] = [
-  { corner: 'top-left', label: '왼쪽 위' },
-  { corner: 'top-right', label: '오른쪽 위' },
-  { corner: 'bottom-left', label: '왼쪽 아래' },
-  { corner: 'bottom-right', label: '오른쪽 아래' },
+const CROP_CORNERS: { corner: StickerCropCorner; label: string; positionClassName: string }[] = [
+  { corner: 'top-left', label: '왼쪽 위', positionClassName: '-top-5.5 -left-5.5' },
+  { corner: 'top-right', label: '오른쪽 위', positionClassName: '-top-5.5 -right-5.5' },
+  { corner: 'bottom-left', label: '왼쪽 아래', positionClassName: '-bottom-5.5 -left-5.5' },
+  { corner: 'bottom-right', label: '오른쪽 아래', positionClassName: '-bottom-5.5 -right-5.5' },
 ];
 // NOTE: 모서리 두 개가 겹쳐 더 이상 잡을 수 없게 되지 않도록 화면 기준 최소 크기를 유지한다.
 const MIN_CROP_SIZE = 48;
@@ -67,49 +68,59 @@ export default function StickerCropper({
 
   return (
     <>
-      <header className="sticker-poc__header">
+      <header className="relative h-33.5 shrink-0">
         <BackButton
           variant="light"
           onClick={onCancel}
           aria-label="사진 다시 선택"
-          className="sticker-poc__back mt-0"
+          className="absolute top-19.25 left-4 mt-0"
         />
-        <h1>사진 자르기</h1>
+        <h1 className="absolute inset-x-14 top-19.25 text-center text-title-02-semibold leading-6.25">
+          사진 자르기
+        </h1>
         <button
           type="button"
-          className="sticker-poc__confirm"
+          className="absolute top-19.25 right-4 grid size-6 place-items-center"
           aria-label="자르기 완료"
           disabled={!ratio || isCropping}
           onClick={() => onConfirm(crop)}
         >
-          <CheckIcon aria-hidden="true" />
+          <CheckIcon className="h-3.5 w-4.25" aria-hidden="true" />
         </button>
       </header>
-      <div className="sticker-poc__crop-area">
-        <div className="sticker-poc__crop-stage">
+      {/* NOTE: 모서리 터치 영역의 가로 넘침을 막고, 절대 위치 영역으로 컨테이너 높이를 확정한다. */}
+      <div className="relative min-h-60 flex-1 overflow-hidden">
+        <div className="absolute inset-x-4 top-9 bottom-0 flex items-center justify-center [container-type:size]">
           <div
             ref={imageBox}
-            className="sticker-poc__crop-image"
+            className="relative w-[min(100cqw,100cqh*var(--crop-ratio))] touch-none select-none [aspect-ratio:var(--crop-ratio)]"
             style={{ '--crop-ratio': ratio ?? 1 } as CSSProperties}
           >
             <img
               src={src}
               alt="자를 사진"
               draggable={false}
+              className="pointer-events-none block size-full"
               onLoad={(event) =>
                 setRatio(event.currentTarget.naturalWidth / event.currentTarget.naturalHeight)
               }
             />
             {/* NOTE: 바깥 어둡게 처리는 이미지 영역으로 잘라야 해서, 모서리 터치 영역과 분리한다. */}
-            <div className="sticker-poc__crop-shade" aria-hidden="true">
-              <div style={frameStyle} />
+            <div
+              className="pointer-events-none absolute inset-0 overflow-hidden"
+              aria-hidden="true"
+            >
+              <div
+                className="absolute shadow-[0_0_0_100vmax] shadow-neutral-900/50"
+                style={frameStyle}
+              />
             </div>
-            <div className="sticker-poc__crop-frame" style={frameStyle}>
-              {CROP_CORNERS.map(({ corner, label }) => (
+            <div className="absolute border border-neutral-00" style={frameStyle}>
+              {CROP_CORNERS.map(({ corner, label, positionClassName }) => (
                 <span
                   key={corner}
                   aria-label={`${label} 모서리`}
-                  className={`sticker-poc__crop-handle sticker-poc__crop-handle--${corner}`}
+                  className={cn('absolute size-11 touch-none', positionClassName)}
                   onPointerDown={handlePointerDown(corner)}
                   onPointerMove={handlePointerMove}
                   onPointerUp={handlePointerEnd}
@@ -120,7 +131,7 @@ export default function StickerCropper({
           </div>
         </div>
       </div>
-      <p className="sticker-poc__crop-guide">
+      <p className="min-h-44.5 px-4 pt-3.75 pb-[max(32px,env(safe-area-inset-bottom))] text-center text-body-02-regular leading-4.25 text-neutral-500">
         {isCropping ? '사진을 자르고 있어요' : '모서리를 드래그하여 자르기'}
       </p>
     </>

@@ -150,7 +150,7 @@ pages/
 │   └── shop/
 │       └── ShopDetailPage.tsx
 ├── record/
-│   ├── RecordMethodPage.tsx
+│   ├── RecordPage.tsx
 │   ├── manual/
 │   │   └── ManualRecordPage.tsx
 │   ├── shop/

@@ -1,8 +1,11 @@
 import { RECEIPT_SHOP_SEARCH_SOURCE } from '@chapchap/shared/bridge';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 
-import { RecordNavigationHeader } from '@/features/record';
-import type { ShopSearchLocationState } from '@/features/record';
+import RecordNavigationHeader from '@/features/record/components/RecordNavigationHeader';
+import type {
+  ShopSearchLocationState,
+  StickerRecordShopSearchContext,
+} from '@/features/record/types';
 import { ShopSearch } from '@/features/shop';
 import type { ShopSearchResult } from '@/features/shop';
 import { createYearMonthPath, ROUTE_PATHS } from '@/shared/constants/routePaths';
@@ -14,9 +17,14 @@ export default function ShopSearchPage() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const shopSearchState = location.state as ShopSearchLocationState | null;
+  const stickerRecord = useOutletContext<StickerRecordShopSearchContext | null>();
+  const isStickerRecordSearch = Boolean(
+    shopSearchState?.isStickerRecordShopSearch && stickerRecord
+  );
   const isReceiptNativeSearch = searchParams.get('source') === RECEIPT_SHOP_SEARCH_SOURCE;
   const shouldConfirmClose =
     isReceiptNativeSearch ||
+    isStickerRecordSearch ||
     Boolean(shopSearchState?.isChangingManualRecordShop || shopSearchState?.manualRecordDraftDirty);
   const manualRecordPath = createYearMonthPath(
     ROUTE_PATHS.manualRecord,
@@ -25,6 +33,12 @@ export default function ShopSearchPage() {
 
   const handleSelectShop = (shop: ShopSearchResult) => {
     if (isReceiptNativeSearch && notifyNative('receiptShopSelected', { shop })) {
+      return;
+    }
+
+    if (isStickerRecordSearch && stickerRecord) {
+      stickerRecord.onSelectStickerShop(shop);
+      navigate(-1);
       return;
     }
 
@@ -64,7 +78,7 @@ export default function ShopSearchPage() {
   };
 
   return (
-    <main className="flex min-h-full flex-col">
+    <main className="flex min-h-full flex-col px-4">
       <RecordNavigationHeader
         onBack={handleBack}
         onClose={handleClose}

@@ -9,6 +9,8 @@ import RecordExitConfirmDialog from './RecordExitConfirmDialog';
 type PendingExitAction = 'back' | 'close' | null;
 
 type RecordNavigationHeaderProps = {
+  /** 버튼 사이 가운데에 표시할 화면 제목입니다. */
+  title?: string;
   onBack: () => void;
   onClose: () => void;
   /** 뒤로가기 전에 확인창을 띄울지 여부입니다. 기본값은 `false`입니다. */
@@ -19,6 +21,7 @@ type RecordNavigationHeaderProps = {
 
 /** 기록 플로우에서 이전 화면 이동과 홈으로 나가기를 제공하는 공통 헤더. */
 export default function RecordNavigationHeader({
+  title,
   onBack,
   onClose,
   confirmBeforeBack = false,
@@ -58,8 +61,13 @@ export default function RecordNavigationHeader({
 
   return (
     <>
-      <div className="flex items-start justify-between">
+      <div className="relative flex items-start justify-between">
         <BackButton onClick={handleBackClick} />
+        {title && (
+          <h1 className="pointer-events-none absolute inset-x-10 top-4 flex h-6 items-center justify-center text-title-02-semibold text-neutral-700">
+            {title}
+          </h1>
+        )}
         <Button
           variant="icon"
           aria-label="기록 닫고 홈으로 이동"
