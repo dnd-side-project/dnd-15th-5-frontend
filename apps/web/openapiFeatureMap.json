@@ -21,7 +21,7 @@
     "myPage": {
       "directory": "my-page",
       "tags": ["Account"],
-      "operationIds": ["getMyAccount", "updateMyAccount", "withdrawMyAccount"]
+      "operationIds": ["getMyAccount", "updateMyAccount", "updateMyProfile", "withdrawMyAccount"]
     },
     "notification": {
       "tags": ["notification-controller", "Account"],
@@ -34,7 +34,15 @@
     },
     "record": {
       "tags": ["Consumption"],
-      "operationIds": ["createConsumption", "recognizeReceipt"]
+      "operationIds": [
+        "createConsumption",
+        "recognizeReceipt",
+        "getConsumption",
+        "updateConsumption",
+        "deleteConsumption",
+        "upload",
+        "findStickers"
+      ]
     },
     "report": {
       "tags": ["Consumption", "Report"],

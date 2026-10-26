@@ -14,7 +14,7 @@ export type VisitedPlaceItem = {
   /** 도로명주소 */
   roadAddress?: string;
   /**
-   * 목록에 표시할 Google Places 단기 사진 URL, 사진이 없거나 조회에 실패하면 null
+   * Google Places 대표 사진의 단기 URL(장소당 최대 1장). 사진이 없거나 조회에 실패하면 null
    * @nullable
    */
   thumbnailUrl?: string | null;
@@ -89,6 +89,7 @@ export type ApiResponsePlaceDetailResponse = {
 };
 
 export type PlaceVisitResponse = {
+  consumptionId?: number;
   visitedAt?: string;
   amount?: number;
 };

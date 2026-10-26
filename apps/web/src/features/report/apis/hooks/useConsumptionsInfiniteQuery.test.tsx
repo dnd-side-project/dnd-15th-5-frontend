@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { getConsumptions } from '@/features/report/apis/clients';
+import { getGetConsumptionsQueryKey } from '@/features/report/apis/queryKeys';
 
 import { useConsumptionsInfiniteQuery } from './useConsumptionsInfiniteQuery';
 
@@ -45,7 +46,7 @@ describe('useConsumptionsInfiniteQuery', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     const consumptionQuery = queryClient.getQueryCache().find({
-      queryKey: ['/consumptions', 'infinite', { yearMonth: '2026-08' }],
+      queryKey: [...getGetConsumptionsQueryKey(), 'infinite', { yearMonth: '2026-08' }],
     });
     const cacheOptions = consumptionQuery?.options as
       { gcTime?: number; refetchOnWindowFocus?: boolean; staleTime?: number } | undefined;

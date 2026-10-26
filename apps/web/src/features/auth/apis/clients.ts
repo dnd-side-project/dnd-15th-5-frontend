@@ -33,7 +33,7 @@ export const refreshApp = (
 ) => {
   return apiClient<ApiResponseAuthenticationResponse>(
     {
-      url: `/auth/token/refresh`,
+      url: `/v1/auth/token/refresh`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: refreshTokenRequest,
@@ -53,7 +53,7 @@ export const refreshApp = (
  */
 export const refreshWeb = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
   return apiClient<ApiResponseAuthenticationResponse>(
-    { url: `/auth/token/refresh/web`, method: 'POST', signal },
+    { url: `/v1/auth/token/refresh/web`, method: 'POST', signal },
     options
   );
 };
@@ -75,7 +75,7 @@ export const exchangeSocialLoginCode = (
 ) => {
   return apiClient<ApiResponseAuthenticationResponse>(
     {
-      url: `/auth/social/exchange`,
+      url: `/v1/auth/social/exchange`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: loginCodeExchangeRequest,
@@ -100,7 +100,7 @@ export const agree = (
 ) => {
   return apiClient<ApiResponseAuthenticationResponse>(
     {
-      url: `/auth/signup/terms`,
+      url: `/v1/auth/signup/terms`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: termsAgreementRequest,
@@ -125,7 +125,7 @@ export const logoutApp = (
 ) => {
   return apiClient<ApiResponseVoid>(
     {
-      url: `/auth/logout`,
+      url: `/v1/auth/logout`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: refreshTokenRequest,
@@ -142,7 +142,10 @@ export const logoutApp = (
  * @summary 웹 로그아웃
  */
 export const logoutWeb = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
-  return apiClient<ApiResponseVoid>({ url: `/auth/logout/web`, method: 'POST', signal }, options);
+  return apiClient<ApiResponseVoid>(
+    { url: `/v1/auth/logout/web`, method: 'POST', signal },
+    options
+  );
 };
 
 /**
@@ -158,7 +161,7 @@ export const start = (
   signal?: AbortSignal
 ) => {
   return apiClient<unknown>(
-    { url: `/oauth/${provider}/start`, method: 'GET', params, signal },
+    { url: `/v1/oauth/${provider}/start`, method: 'GET', params, signal },
     options
   );
 };
@@ -176,7 +179,7 @@ export const completeSocialOAuth = (
   signal?: AbortSignal
 ) => {
   return apiClient<unknown>(
-    { url: `/oauth/${provider}/callback`, method: 'GET', params, signal },
+    { url: `/v1/oauth/${provider}/callback`, method: 'GET', params, signal },
     options
   );
 };
