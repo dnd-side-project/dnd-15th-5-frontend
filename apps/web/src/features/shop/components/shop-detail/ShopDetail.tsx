@@ -1,20 +1,15 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 
 import { usePlaceVisitsInfiniteQuery } from '@/features/shop/apis/hooks/usePlaceVisitsInfiniteQuery';
 import { useGetPlaceDetail } from '@/features/shop/apis/queries';
-import { LocationPinIcon } from '@/shared/assets/icons';
 import { getStickerImages } from '@/shared/assets/images/stickers';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import { Chip } from '@/shared/ui/chip';
-import { RegularShopBadge } from '@/shared/ui/regular-shop-badge';
 import { StateView } from '@/shared/ui/state-view';
 
 import { createShopRecordLocationState } from '../../utils/createShopRecordLocationState';
 
 import ShopDetailSkeleton from './ShopDetailSkeleton';
-import ShopStickerHero from './ShopStickerHero';
-import VisitHistoryList from './VisitHistoryList';
-import VisitSummaryCard from './VisitSummaryCard';
+import ShopDetailView from './ShopDetailView';
 
 import type { ShopSearchResult } from '../../types';
 import type { ReactNode } from 'react';
@@ -33,7 +28,6 @@ export default function ShopDetail({
   recordShop,
 }: ShopDetailProps) {
   const isValidPlaceId = Number.isSafeInteger(placeId) && placeId > 0;
-  const scrollRootRef = useRef<HTMLDivElement>(null);
   const placeDetailQuery = useGetPlaceDetail(placeId, {
     query: { enabled: isValidPlaceId },
   });
@@ -80,7 +74,6 @@ export default function ShopDetail({
   }
 
   const visits = placeVisitsQuery.data?.pages.flatMap((page) => page.data?.visits ?? []) ?? [];
-  const totalVisitCount = place.stats?.totalVisitCount ?? visits.length;
   const stickerImages = getStickerImages(place.stickerSummary ?? place.recentStickers ?? []);
   const recordLocationState = createShopRecordLocationState({
     address: place.address,
@@ -90,60 +83,23 @@ export default function ShopDetail({
   });
 
   return (
-    <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
-      <ShopStickerHero
-        key={placeId}
-        headerContent={headerContent}
-        placeId={placeId}
-        stickerImages={stickerImages}
-      />
-
-      <div className="relative z-10 -mt-8.25 flex min-h-0 flex-1 flex-col rounded-t-30 bg-neutral-00 px-4 pt-8">
-        <div className="flex min-w-0 items-center gap-2">
-          <h1 className="min-w-0 truncate text-title-01-semibold text-neutral-700" data-mp-mask="">
-            {place.placeName}
-          </h1>
-          {place.isRegular && <RegularShopBadge />}
-        </div>
-
-        <div className="mt-2 flex min-w-0 items-center gap-2" data-mp-mask="">
-          <Chip>{place.category ?? '기타'}</Chip>
-          <span aria-hidden="true" className="text-caption-01-regular text-neutral-300">
-            |
-          </span>
-          <p className="flex min-w-0 items-start gap-1 text-caption-01-regular text-neutral-500">
-            <LocationPinIcon aria-hidden="true" className="mt-0.5 shrink-0" />
-            <span className="line-clamp-2">{place.address}</span>
-          </p>
-        </div>
-
-        <div
-          ref={scrollRootRef}
-          role="region"
-          aria-label="방문 요약과 방문 기록"
-          className="scrollbar-hidden pb-safe-bottom -mx-4 mt-6 min-h-0 flex-1 overflow-y-auto px-4"
-        >
-          <VisitSummaryCard
-            firstVisitedDate={place.stats?.firstVisitedDate}
-            monthlyVisitCount={place.stats?.monthlyVisitCount ?? 0}
-            onViewOnMap={onViewOnMap}
-            placeId={placeId}
-            recordLocationState={recordLocationState}
-            totalVisitCount={totalVisitCount}
-          />
-          <VisitHistoryList
-            visits={visits}
-            isLoading={placeVisitsQuery.isPending}
-            isError={placeVisitsQuery.isError && !placeVisitsQuery.isFetchNextPageError}
-            isFetchNextPageError={placeVisitsQuery.isFetchNextPageError}
-            hasNextPage={Boolean(placeVisitsQuery.hasNextPage)}
-            isFetchingNextPage={placeVisitsQuery.isFetchingNextPage}
-            onLoadMore={handleVisitHistoryLoadMore}
-            onRetry={handleVisitHistoryRetry}
-            scrollRootRef={scrollRootRef}
-          />
-        </div>
-      </div>
-    </article>
+    <ShopDetailView
+      headerContent={headerContent}
+      onViewOnMap={onViewOnMap}
+      placeId={placeId}
+      place={place}
+      recordLocationState={recordLocationState}
+      stickerImages={stickerImages}
+      visitHistory={{
+        visits,
+        isLoading: placeVisitsQuery.isPending,
+        isError: placeVisitsQuery.isError && !placeVisitsQuery.isFetchNextPageError,
+        isFetchNextPageError: placeVisitsQuery.isFetchNextPageError,
+        hasNextPage: Boolean(placeVisitsQuery.hasNextPage),
+        isFetchingNextPage: placeVisitsQuery.isFetchingNextPage,
+        onLoadMore: handleVisitHistoryLoadMore,
+        onRetry: handleVisitHistoryRetry,
+      }}
+    />
   );
 }
