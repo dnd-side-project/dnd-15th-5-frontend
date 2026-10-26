@@ -26,9 +26,11 @@ type PickerSheetProps = {
   contentClassName?: string;
   dialogClassName?: string;
   fitContent?: boolean;
+  showHandle?: boolean;
   initialFocusSelector?: string;
   onClose: () => void;
   onSnapPointChange?: (snapPoint: VisibleBottomSheetSnapPoint) => void;
+  overlayClassName?: string;
   snapPoint: VisibleBottomSheetSnapPoint;
   snapPoints?: BottomSheetSnapPoints;
 };
@@ -44,9 +46,11 @@ export function PickerSheet({
   contentClassName,
   dialogClassName,
   fitContent = false,
+  showHandle = true,
   initialFocusSelector,
   onClose,
   onSnapPointChange,
+  overlayClassName,
   snapPoint,
   snapPoints,
 }: PickerSheetProps) {
@@ -73,12 +77,14 @@ export function PickerSheet({
       <Overlay
         className={cn(
           animated && 'transition-opacity duration-300',
-          isVisible ? 'opacity-100' : 'pointer-events-none opacity-0'
+          isVisible ? 'opacity-100' : 'pointer-events-none opacity-0',
+          overlayClassName
         )}
       />
       <BottomSheet
         contentClassName={contentClassName}
         fitContent={fitContent}
+        showHandle={showHandle}
         onSnapPointChange={handleSnapPointChange}
         rootRef={sheetRef}
         snapPoint={isVisible ? snapPoint : 'hidden'}
