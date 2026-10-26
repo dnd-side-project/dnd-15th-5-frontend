@@ -83,7 +83,7 @@ export function PlaceSearchInput({
         aria-label="검색"
         className="flex size-6 shrink-0 items-center justify-center"
       >
-        <SearchIcon className="size-6 text-neutral-500" aria-hidden="true" />
+        <SearchIcon className="size-6 text-neutral-600" aria-hidden="true" />
       </button>
     </form>
   );
