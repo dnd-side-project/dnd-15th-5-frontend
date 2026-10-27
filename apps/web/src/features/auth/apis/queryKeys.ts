@@ -6,12 +6,12 @@
 import type { CompleteSocialOAuthParams, StartParams } from '@/features/auth/apis/dto';
 
 export const getStartQueryKey = (provider: 'kakao' | 'google', params?: StartParams) => {
-  return [`/oauth/${provider}/start`, ...(params ? [params] : [])] as const;
+  return [`/v1/oauth/${provider}/start`, ...(params ? [params] : [])] as const;
 };
 
 export const getCompleteSocialOAuthQueryKey = (
   provider: string,
   params?: CompleteSocialOAuthParams
 ) => {
-  return [`/oauth/${provider}/callback`, ...(params ? [params] : [])] as const;
+  return [`/v1/oauth/${provider}/callback`, ...(params ? [params] : [])] as const;
 };

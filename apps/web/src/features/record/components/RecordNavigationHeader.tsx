@@ -1,10 +1,10 @@
+import { RECORD_EXIT_CONFIRM_TEXT } from '@chapchap/shared/record';
 import { useState } from 'react';
 
 import { CloseIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
 import { Button } from '@/shared/ui/button';
-
-import RecordExitConfirmDialog from './RecordExitConfirmDialog';
+import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 
 type PendingExitAction = 'back' | 'close' | null;
 
@@ -79,7 +79,11 @@ export default function RecordNavigationHeader({
       </div>
 
       {pendingExitAction && (
-        <RecordExitConfirmDialog
+        <UnsavedChangesDialog
+          title={RECORD_EXIT_CONFIRM_TEXT.title}
+          description={RECORD_EXIT_CONFIRM_TEXT.description}
+          exitLabel={RECORD_EXIT_CONFIRM_TEXT.exit}
+          continueLabel={RECORD_EXIT_CONFIRM_TEXT.continue}
           onExit={handleExit}
           onContinue={() => setPendingExitAction(null)}
         />

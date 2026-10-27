@@ -3,6 +3,10 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { toggleLike } from '@/features/map/apis/clients';
 import type { ApiResponseNearbyPlacesResponse } from '@/features/map/apis/dto';
+import {
+  getGetNearbyPlacesQueryKey,
+  getGetVisitedPlaceMarkersQueryKey,
+} from '@/features/map/apis/queryKeys';
 import { useToast } from '@/shared/ui/toast';
 
 import { useTogglePlaceLikeMutation } from './useTogglePlaceLikeMutation';
@@ -34,14 +38,15 @@ describe('useTogglePlaceLikeMutation', () => {
   it('추천과 방문 장소 캐시를 즉시 변경한다', async () => {
     mockedToggleLike.mockResolvedValue({ data: { liked: true } });
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
-    const recommendationKey = ['/recommendations/nearby-places', { lat: 37.5, lng: 127 }] as const;
+    const recommendationKey = getGetNearbyPlacesQueryKey({ lat: 37.5, lng: 127 });
+    const visitedPlacesKey = getGetVisitedPlaceMarkersQueryKey();
     queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
       data: {
         sameCategoryPlaces: [{ placeId: 101, name: '투썸플레이스', liked: false }],
         myTownPlaces: [],
       },
     });
-    queryClient.setQueryData(['/consumptions/visited-places'], {
+    queryClient.setQueryData(visitedPlacesKey, {
       data: { places: [{ placeId: 101, placeName: '투썸플레이스', liked: false }] },
     });
     const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
@@ -57,16 +62,15 @@ describe('useTogglePlaceLikeMutation', () => {
         ?.sameCategoryPlaces?.[0]?.liked
     ).toBe(true);
     expect(
-      queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>([
-        '/consumptions/visited-places',
-      ])?.data.places[0]?.liked
+      queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)
+        ?.data.places[0]?.liked
     ).toBe(true);
   });
 
   it('요청이 실패하면 이전 캐시를 복구하고 오류 토스트를 표시한다', async () => {
     mockedToggleLike.mockRejectedValue(new Error('network error'));
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
-    const recommendationKey = ['/recommendations/nearby-places', { lat: 37.5, lng: 127 }] as const;
+    const recommendationKey = getGetNearbyPlacesQueryKey({ lat: 37.5, lng: 127 });
     queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
       data: { sameCategoryPlaces: [{ placeId: 101, liked: false }] },
     });
@@ -106,7 +110,7 @@ describe('useTogglePlaceLikeMutation', () => {
       });
     });
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
-    const recommendationKey = ['/recommendations/nearby-places', { lat: 37.5, lng: 127 }] as const;
+    const recommendationKey = getGetNearbyPlacesQueryKey({ lat: 37.5, lng: 127 });
     queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
       data: {
         sameCategoryPlaces: [

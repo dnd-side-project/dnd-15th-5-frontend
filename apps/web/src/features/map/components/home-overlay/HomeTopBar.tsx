@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { NotificationDefaultIcon, NotificationUnreadIcon, SearchIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import { DefaultProfile } from '@/shared/ui/default-profile';
+import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 
 import HomePreferenceBanner from './HomePreferenceBanner';
 
@@ -79,7 +79,7 @@ export default function HomeTopBar({ hasUnreadNotification, recordedShopCount }:
           title="마이페이지"
           className="flex size-8 items-center justify-center overflow-hidden rounded-full border-2 border-neutral-00 shadow-current-location-button transition-transform active:scale-95"
         >
-          <DefaultProfile className="size-full" />
+          <ProfileAvatar className="size-full" />
         </Link>
       </div>
     </div>

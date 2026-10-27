@@ -30,7 +30,7 @@ export const searchVisitedPlaces = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseVisitedPlaceSearchResponse>(
-    { url: `/places/visited/search`, method: 'GET', params, signal },
+    { url: `/v1/places/visited/search`, method: 'GET', params, signal },
     options
   );
 };
@@ -45,7 +45,7 @@ export const getPlaceDetail = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponsePlaceDetailResponse>(
-    { url: `/consumptions/places/${placeId}`, method: 'GET', signal },
+    { url: `/v1/consumptions/places/${placeId}`, method: 'GET', signal },
     options
   );
 };
@@ -61,7 +61,7 @@ export const getPlaceVisits = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponsePlaceVisitScrollResponse>(
-    { url: `/consumptions/places/${placeId}/visits`, method: 'GET', params, signal },
+    { url: `/v1/consumptions/places/${placeId}/visits`, method: 'GET', params, signal },
     options
   );
 };

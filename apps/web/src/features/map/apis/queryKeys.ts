@@ -6,9 +6,9 @@
 import type { GetNearbyPlacesParams, GetVisitedPlaceMarkersParams } from '@/features/map/apis/dto';
 
 export const getGetNearbyPlacesQueryKey = (params?: GetNearbyPlacesParams) => {
-  return [`/recommendations/nearby-places`, ...(params ? [params] : [])] as const;
+  return [`/v1/recommendations/nearby-places`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetVisitedPlaceMarkersQueryKey = (params?: GetVisitedPlaceMarkersParams) => {
-  return [`/consumptions/visited-places`, ...(params ? [params] : [])] as const;
+  return [`/v1/consumptions/visited-places`, ...(params ? [params] : [])] as const;
 };

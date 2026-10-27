@@ -83,7 +83,6 @@ export default function ManualRecordForm({
     selectedShop !== null &&
     Number.isFinite(selectedShop.latitude) &&
     Number.isFinite(selectedShop.longitude);
-  const { createConsumption, isCreatingConsumption } = useCreateConsumptionMutation();
   const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(
     () => initialVisitDateTime ?? createInitialVisitDateTime()
   );
@@ -105,6 +104,7 @@ export default function ManualRecordForm({
     category !== initialDraft.category ||
     visitDateTime.period !== initialDraft.visitDateTime.period ||
     !isSameDate(visitDateTime.date, initialDraft.visitDateTime.date);
+  const { createConsumption, isCreatingConsumption } = useCreateConsumptionMutation();
   // NOTE: 아직 아무것도 입력하지 않은 빈 금액은 오류로 안내하지 않고, 잘못된 값을 입력했을 때만 안내한다.
   const showAmountError = amount !== '' && !isAmountValid;
   const showShopLocationError = hasSelectedShop && !hasShopLocation;
@@ -132,6 +132,7 @@ export default function ManualRecordForm({
 
   return (
     <div className="min-h-screen-safe-bottom flex flex-col">
+      {/* TODO: 브라우저·앱 뒤로가기 제스처의 미저장 변경 확인 정책을 정한다. */}
       <RecordNavigationHeader
         onBack={onBack}
         onClose={onClose}

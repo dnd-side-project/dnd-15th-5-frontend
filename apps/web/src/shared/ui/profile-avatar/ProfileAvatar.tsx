@@ -1,8 +1,9 @@
 import { StickerEyesImage } from '@/shared/assets/images/stickers';
 import { cn } from '@/shared/lib/cn';
 
-type DefaultProfileProps = {
+type ProfileAvatarProps = {
   className?: string;
+  backgroundColor?: string;
 };
 
 /**
@@ -10,16 +11,17 @@ type DefaultProfileProps = {
  *
  * @example
  * ```tsx
- * <DefaultProfile className="size-25" />
+ * <ProfileAvatar className="size-25" />
  * ```
  */
-export default function DefaultProfile({ className }: DefaultProfileProps) {
+export default function ProfileAvatar({ className, backgroundColor }: ProfileAvatarProps) {
   return (
     <span
       className={cn(
         'inline-flex aspect-square items-center justify-center rounded-full bg-primary-500',
         className
       )}
+      style={backgroundColor ? { backgroundColor } : undefined}
     >
       <img className="h-[76%] w-[86%] object-contain" src={StickerEyesImage} alt="" />
     </span>

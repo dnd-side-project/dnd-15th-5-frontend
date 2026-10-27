@@ -22,7 +22,11 @@ export type RecommendedPlaceItem = {
   longitude?: number;
   visitCount?: number;
   liked?: boolean;
-  thumbnailUrl?: string;
+  /**
+   * Google Places 대표 사진의 단기 URL(장소당 최대 1장). 사진이 없거나 조회에 실패하면 null
+   * @nullable
+   */
+  thumbnailUrl?: string | null;
   googleMapsUri?: string;
   googlePlaceId?: string;
 };
