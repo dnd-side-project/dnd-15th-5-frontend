@@ -27,9 +27,9 @@ import HobbyPinActiveIcon from './ic-hobby-pin-active.svg?react';
 import HobbyPinIcon from './ic-hobby-pin.svg?react';
 import ImageDownloadIcon from './ic-image-download.svg?react';
 import KakaoIcon from './ic-kakao.svg?react';
-import LikePinActiveIcon from './ic-like-pin-active.svg?react';
-import LikePinIcon from './ic-like-pin.svg?react';
 import LikeIcon from './ic-like.svg?react';
+import LikedPlacePinActiveIcon from './ic-liked-place-pin-active.svg?react';
+import LikedPlacePinIcon from './ic-liked-place-pin.svg?react';
 import LogoutIcon from './ic-logout.svg?react';
 import MapIcon from './ic-map.svg?react';
 import NavigationHomeIcon from './ic-navigation-home.svg?react';
@@ -76,8 +76,8 @@ export {
   ImageDownloadIcon,
   KakaoIcon,
   LikeIcon,
-  LikePinActiveIcon,
-  LikePinIcon,
+  LikedPlacePinActiveIcon,
+  LikedPlacePinIcon,
   LocationPinIcon,
   LogoutIcon,
   MapIcon,
