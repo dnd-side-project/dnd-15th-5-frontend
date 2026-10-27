@@ -57,6 +57,45 @@ export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =
     ];
   });
 
+/** 방문 횟수와 관계없이 좋아요한 장소를 지도 하트 마커 모델로 변환합니다. */
+export const toLikedPlaceRecommendations = (
+  places?: VisitedPlaceMarkerItem[]
+): ShopRecommendation[] =>
+  (places ?? []).flatMap((place) => {
+    if (
+      !place.liked ||
+      place.placeId === undefined ||
+      !place.placeName ||
+      place.latitude === undefined ||
+      place.longitude === undefined
+    ) {
+      return [];
+    }
+
+    const id = String(place.placeId);
+    const category = normalizeHomeCategory(place.category);
+
+    return [
+      {
+        googleMapsUri: null,
+        id,
+        isLiked: true,
+        place: {
+          id,
+          name: place.placeName,
+          category,
+          address: '',
+          isRegular: false,
+          stickerImages: [],
+        },
+        position: { lat: place.latitude, lng: place.longitude },
+        reason: '내 동네에서 많이 방문한 곳' as const,
+        thumbnailSrc: null,
+        visitCount: place.visitCount ?? 0,
+      },
+    ];
+  });
+
 /** 지도 스티커를 소비 기록 폼이 사용하는 가게 모델로 변환합니다. */
 export const toShopSearchResult = (sticker?: MapSticker): ShopSearchResult | undefined => {
   const googlePlaceId = sticker?.googlePlaceId?.trim();

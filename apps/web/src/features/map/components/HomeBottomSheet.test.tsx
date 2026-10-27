@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
+import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import { TEST_MAP_STICKERS, TEST_SHOP_RECOMMENDATIONS } from '@/features/map/testFixtures';
@@ -19,10 +20,12 @@ import HomeBottomSheet from './HomeBottomSheet';
 jest.mock('@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery');
 jest.mock('@/features/map/apis/hooks/useRecommendationRecordShopQuery');
 jest.mock('@/features/map/apis/hooks/useTogglePlaceLikeMutation');
+jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 
 const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
 const mockedUseRecommendationRecordShopQuery = jest.mocked(useRecommendationRecordShopQuery);
 const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation);
+const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 const mutateLike = jest.fn();
 const recommendationRecordShop = {
   id: TEST_MAP_STICKERS[0]!.googlePlaceId!,
@@ -83,6 +86,12 @@ describe('HomeBottomSheet', () => {
       mutate: mutateLike,
       isPending: false,
     } as unknown as ReturnType<typeof useTogglePlaceLikeMutation>);
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      likedRecommendations: [],
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
   });
 
   it('최대 높이에서 마이페이지 버튼 아래에 12px 간격을 유지한다', () => {

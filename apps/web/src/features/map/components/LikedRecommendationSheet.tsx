@@ -1,6 +1,7 @@
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
+import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { getDistrict, getGoogleMapsPlaceUrl } from '@/features/map/utils/recommendation';
 import { BlueLocationPinIcon, LikeIcon } from '@/shared/assets/icons';
@@ -20,16 +21,19 @@ export default function LikedRecommendationSheet({
   recommendationId,
 }: LikedRecommendationSheetProps) {
   const { recommendations, isPending, isError, refetch } = useNearbyPlaceRecommendationsQuery();
+  const visitedPlacesQuery = useVisitedPlaceStickersQuery();
   const likeMutation = useTogglePlaceLikeMutation();
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const recommendation = recommendations.find(({ id }) => id === recommendationId);
+  const recommendation =
+    recommendations.find(({ id }) => id === recommendationId) ??
+    visitedPlacesQuery.likedRecommendations.find(({ id }) => id === recommendationId);
   const {
     query: recordShopQuery,
     isLibraryLoading,
     isLibraryError,
   } = useRecommendationRecordShopQuery(recommendation);
 
-  if (isPending) {
+  if (!recommendation && (isPending || visitedPlacesQuery.isPending)) {
     return (
       <div
         role="status"
@@ -41,7 +45,7 @@ export default function LikedRecommendationSheet({
     );
   }
 
-  if (isError) {
+  if (isError && visitedPlacesQuery.isError) {
     return (
       <StateView
         variant="error"
@@ -49,7 +53,10 @@ export default function LikedRecommendationSheet({
         title="가게 정보를 불러오지 못했어요"
         description="잠시 후 다시 시도해주세요."
         actionLabel="다시 불러오기"
-        onAction={() => void refetch()}
+        onAction={() => {
+          void refetch();
+          void visitedPlacesQuery.refetch();
+        }}
         className="py-6"
       />
     );
@@ -116,7 +123,7 @@ export default function LikedRecommendationSheet({
           aria-label={`${place.name} 좋아요 해제`}
           onClick={handleUnlike}
           disabled={likeMutation.isPending}
-          className="absolute top-0 right-1 flex size-8 items-center justify-center rounded-full text-primary-500 outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+          className="absolute top-0 right-1 flex size-8 items-center justify-center rounded-full text-red outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
         >
           <LikeIcon aria-hidden="true" className="size-5" />
         </button>

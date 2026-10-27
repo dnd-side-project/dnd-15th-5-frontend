@@ -2,6 +2,7 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useNearbyPlaceRecommendationsQuery } from '../apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { useVisitedPlaceStickersQuery } from '../apis/hooks/useVisitedPlaceStickersQuery';
 import { mockGoogleMapsIdleEvent } from '../googleMapsEventMock';
 import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
 import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
@@ -16,6 +17,7 @@ const moveCamera = jest.fn();
 const panBy = jest.fn();
 
 jest.mock('../apis/hooks/useNearbyPlaceRecommendationsQuery');
+jest.mock('../apis/hooks/useVisitedPlaceStickersQuery');
 
 jest.mock('@/shared/assets/icons', () => ({
   CafePinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
@@ -30,10 +32,10 @@ jest.mock('@/shared/assets/icons', () => ({
   HobbyPinIcon: (props: SVGProps<SVGSVGElement>) => (
     <svg data-marker-icon="hobby-default" {...props} />
   ),
-  LikePinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
+  LikedPlacePinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
     <svg data-marker-icon="like-active" {...props} />
   ),
-  LikePinIcon: (props: SVGProps<SVGSVGElement>) => (
+  LikedPlacePinIcon: (props: SVGProps<SVGSVGElement>) => (
     <svg data-marker-icon="like-default" {...props} />
   ),
   RestaurantPinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
@@ -45,6 +47,7 @@ jest.mock('@/shared/assets/icons', () => ({
 }));
 
 const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
+const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 
 jest.mock('@vis.gl/react-google-maps', () => ({
   AdvancedMarker: ({
@@ -71,6 +74,9 @@ describe('RecommendationMapMarkers', () => {
     mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
       recommendations: TEST_SHOP_RECOMMENDATIONS,
     } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      likedRecommendations: [],
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
   });
 
   it('좋아요하지 않은 추천 가게는 지원하는 카테고리만 마커를 표시한다', () => {

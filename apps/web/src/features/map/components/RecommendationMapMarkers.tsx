@@ -2,6 +2,7 @@ import { AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { useEffect, useRef } from 'react';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useFocusMapOnPosition } from '@/features/map/hooks/useFocusMapOnPosition';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
@@ -11,8 +12,8 @@ import {
   CafePinIcon,
   HobbyPinActiveIcon,
   HobbyPinIcon,
-  LikePinActiveIcon,
-  LikePinIcon,
+  LikedPlacePinActiveIcon,
+  LikedPlacePinIcon,
   RestaurantPinActiveIcon,
   RestaurantPinIcon,
 } from '@/shared/assets/icons';
@@ -30,8 +31,8 @@ type RecommendationMarkerIcons = {
 };
 
 const LIKE_MARKER_ICONS: RecommendationMarkerIcons = {
-  active: LikePinActiveIcon,
-  default: LikePinIcon,
+  active: LikedPlacePinActiveIcon,
+  default: LikedPlacePinIcon,
 };
 
 const CATEGORY_MARKER_ICONS: Partial<Record<HomeCategory, RecommendationMarkerIcons>> = {
@@ -63,7 +64,6 @@ export default function RecommendationMapMarkers() {
   );
   const isRecommendationOpen = activeSheet.type === 'recommendation';
   const isLikedRecommendationOpen = activeSheet.type === 'likedRecommendation';
-  const areMarkersVisible = isRecommendationOpen || isLikedRecommendationOpen;
   const selectedRecommendationId = isLikedRecommendationOpen
     ? activeSheet.recommendationId
     : isRecommendationOpen
@@ -71,6 +71,18 @@ export default function RecommendationMapMarkers() {
       : null;
   const visibleHeightPx = useHomeBottomSheetStore((state) => state.visibleHeightPx) || undefined;
   const { recommendations } = useNearbyPlaceRecommendationsQuery();
+  const { likedRecommendations } = useVisitedPlaceStickersQuery();
+  const likedRecommendationById = new Map(
+    likedRecommendations.map((recommendation) => [recommendation.id, recommendation])
+  );
+  recommendations.forEach((recommendation) => {
+    if (recommendation.isLiked) {
+      likedRecommendationById.set(recommendation.id, recommendation);
+    }
+  });
+  const visibleRecommendations = isRecommendationOpen
+    ? recommendations
+    : [...likedRecommendationById.values()];
   const recommendationsRef = useRef(recommendations);
   const lastFocusedRecommendationIdRef = useRef<string | null>(null);
   const lastFocusedVisibleHeightPxRef = useRef<number | undefined>(undefined);
@@ -120,13 +132,9 @@ export default function RecommendationMapMarkers() {
     showRecommendation();
   };
 
-  if (!areMarkersVisible) {
-    return null;
-  }
-
   return (
     <>
-      {recommendations.map((recommendation) => {
+      {visibleRecommendations.map((recommendation) => {
         const markerIcons = getRecommendationMarkerIcons(recommendation);
         if (!markerIcons) {
           return null;
@@ -140,7 +148,7 @@ export default function RecommendationMapMarkers() {
             key={recommendation.id}
             position={recommendation.position}
             anchorLeft="-50%"
-            anchorTop="-50%"
+            anchorTop={isActive ? '-100%' : '-50%'}
             zIndex={isActive ? 2 : 1}
             title={`${recommendation.place.name} 추천 마커${isActive ? ', 선택됨' : ''}`}
             onClick={() => handleMarkerSelect(recommendation)}
@@ -154,7 +162,7 @@ export default function RecommendationMapMarkers() {
               // 키워서 실제 보이는 배지 크기를 카테고리 아이콘과 맞춘다.
               className={cn(
                 'recommendation-marker-icon',
-                isActive ? 'h-18 w-14' : recommendation.isLiked ? 'size-14' : 'size-9'
+                isActive ? 'h-18 w-14' : recommendation.isLiked ? 'size-7' : 'size-9'
               )}
             />
           </AdvancedMarker>
