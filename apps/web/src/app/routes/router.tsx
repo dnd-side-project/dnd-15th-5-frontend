@@ -39,14 +39,6 @@ export const router = createSentryBrowserRouter([
     errorElement: <RouteErrorPage />,
     children: [
       {
-        path: ROUTE_PATHS.shopStickerPreview,
-        lazy: async () => {
-          const { default: Component } =
-            await import('@/pages/shop/sticker-preview/ShopStickerPreviewPage');
-          return { Component };
-        },
-      },
-      {
         // INFO: 로그인 및 약관 화면에 좌우 여백을 적용한다.
         element: <PaddedLayout />,
         children: [

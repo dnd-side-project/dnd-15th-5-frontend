@@ -177,6 +177,8 @@ pages/
 
 페이지를 추가하거나 이동할 때는 이 구조와 `apps/web/src/app/routes`의 라우트 설정을 함께 수정한다.
 
+사진 기록의 진입 경로는 `/record`다.
+
 ### Features 구조
 
 `features`는 화면이 아닌 비즈니스 도메인을 기준으로 구성한다.

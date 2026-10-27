@@ -32,7 +32,6 @@ export const ROUTE_PATHS = {
   homeSearch: '/home/search',
   shopDetail: (shopId: string) => generatePath(ROUTE_PATTERNS.shopDetail, { shopId }),
 
-  shopStickerPreview: '/shop/sticker-preview',
   record: '/record',
   manualRecord: '/record/manual',
   recordShopSearch: '/record/shop/search',

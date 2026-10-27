@@ -19,11 +19,10 @@ type ShopDetailViewProps = {
   place: PlaceDetailResponse;
   recordLocationState?: RecordLocationState;
   stickerImages: readonly string[];
-  newestStickerIndex?: number;
   visitHistory: Omit<ComponentProps<typeof VisitHistoryList>, 'scrollRootRef'>;
 };
 
-/** 실제 장소 상세와 스티커 미리보기에서 공통으로 사용하는 상세 화면입니다. */
+/** 가게 정보와 방문 기록, 획득한 스티커를 표시하는 상세 화면입니다. */
 export default function ShopDetailView({
   headerContent,
   onViewOnMap,
@@ -31,7 +30,6 @@ export default function ShopDetailView({
   place,
   recordLocationState,
   stickerImages,
-  newestStickerIndex,
   visitHistory,
 }: ShopDetailViewProps) {
   const scrollRootRef = useRef<HTMLDivElement>(null);
@@ -43,7 +41,6 @@ export default function ShopDetailView({
         headerContent={headerContent}
         placeId={placeId}
         stickerImages={stickerImages}
-        newestStickerIndex={newestStickerIndex}
       />
       <div className="relative z-10 -mt-8.25 flex min-h-0 flex-1 flex-col rounded-t-30 bg-neutral-00 px-4 pt-8">
         <div className="flex min-w-0 items-center gap-2">
