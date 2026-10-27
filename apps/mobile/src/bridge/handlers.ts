@@ -1,4 +1,5 @@
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
 
 import { clearAccessToken } from '@/native/api';
 import {
@@ -55,4 +56,12 @@ export const BRIDGE_HANDLERS: BridgeHandlerMap = {
     return { cleared: true };
   },
   getPushToken: () => getPushToken(),
+  getNotificationPermissionStatus: async () => ({
+    granted: (await Notifications.getPermissionsAsync()).granted,
+  }),
+  openNotificationSettings: async () => {
+    await Linking.openSettings();
+
+    return { opened: true };
+  },
 };

@@ -15,6 +15,8 @@ const BRIDGE_MESSAGE_TYPES: BridgeMessageType[] = [
   'saveRefreshToken',
   'clearRefreshToken',
   'getPushToken',
+  'getNotificationPermissionStatus',
+  'openNotificationSettings',
 ];
 
 const isBridgeMessageType = (value: unknown): value is BridgeMessageType =>
@@ -142,6 +144,14 @@ export const isBridgeResponse = (value: unknown): value is BridgeResponse => {
       typeof value.result.pushToken === 'string' &&
       value.result.pushToken.length > 0
     );
+  }
+
+  if (value.type === 'getNotificationPermissionStatus') {
+    return typeof value.result.granted === 'boolean';
+  }
+
+  if (value.type === 'openNotificationSettings') {
+    return value.result.opened === true;
   }
 
   if (value.result.status === 'permissionDenied' || value.result.status === 'servicesDisabled') {

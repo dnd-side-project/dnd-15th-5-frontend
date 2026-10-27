@@ -22,4 +22,6 @@ export const BRIDGE_REQUEST_TIMEOUT_MS = {
   clearRefreshToken: 10_000,
   // NOTE: 첫 실행에는 OS 알림 권한 팝업에 사용자가 응답하는 시간이 포함된다.
   getPushToken: 120_000,
+  getNotificationPermissionStatus: 10_000,
+  openNotificationSettings: 10_000,
 } as const satisfies Record<BridgeMessageType, number>;
