@@ -16,6 +16,8 @@ const createCanvas = (width: number, height: number) => {
   canvas.height = height;
   const context = canvas.getContext('2d');
   if (!context) throw new Error('이 환경에서는 이미지 편집을 지원하지 않아요.');
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
   return { canvas, context };
 };
 
