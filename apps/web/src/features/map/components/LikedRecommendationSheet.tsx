@@ -11,6 +11,8 @@ import { Chip } from '@/shared/ui/chip';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
 
+import LikedRecommendationPhotoSkeleton from './LikedRecommendationPhotoSkeleton';
+
 type LikedRecommendationSheetProps = {
   recommendationId: string;
 };
@@ -135,7 +137,9 @@ export default function LikedRecommendationSheet({
           gridTemplateColumns: `repeat(${Math.max(photoUrls.length, 1)}, minmax(0, 1fr))`,
         }}
       >
-        {photoUrls.length > 0 ? (
+        {isResolvingRecordShop ? (
+          <LikedRecommendationPhotoSkeleton />
+        ) : photoUrls.length > 0 ? (
           photoUrls.map((photoUrl, index) => (
             <img
               key={photoUrl}
@@ -143,11 +147,11 @@ export default function LikedRecommendationSheet({
               alt={`${place.name} 사진 ${index + 1}`}
               data-mp-block=""
               loading="lazy"
-              className="aspect-[1.15] h-full w-full object-cover"
+              className="h-32 w-full object-cover"
             />
           ))
         ) : (
-          <div className="flex aspect-[1.15] items-center justify-center text-neutral-400">
+          <div className="col-span-full flex h-32 items-center justify-center text-neutral-400">
             <StoreIcon aria-hidden="true" className="size-12" />
           </div>
         )}
