@@ -5,7 +5,6 @@ import AppMainLayout from '@/app/layouts/AppMainLayout';
 import MobileLayout from '@/app/layouts/MobileLayout';
 import { AuthenticatedRoute, GuestOnlyRoute, TermsAgreementRoute } from '@/app/routes/AuthRoute';
 import RouteErrorPage from '@/app/routes/RouteErrorPage';
-import StickerPocRedirect from '@/app/routes/StickerPocRedirect';
 import AgreementPage from '@/pages/agreement/AgreementPage';
 import PrivacyPolicyPage from '@/pages/agreement/PrivacyPolicyPage';
 import TermsOfServicePage from '@/pages/agreement/TermsOfServicePage';
@@ -40,8 +39,12 @@ export const router = createSentryBrowserRouter([
     errorElement: <RouteErrorPage />,
     children: [
       {
-        path: ROUTE_PATHS.stickerPoc,
-        element: <StickerPocRedirect />,
+        path: ROUTE_PATHS.shopStickerPreview,
+        lazy: async () => {
+          const { default: Component } =
+            await import('@/pages/shop/sticker-preview/ShopStickerPreviewPage');
+          return { Component };
+        },
       },
       {
         // INFO: 로그인 및 약관 화면에 좌우 여백을 적용한다.

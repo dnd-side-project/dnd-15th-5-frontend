@@ -257,6 +257,22 @@ describe('<HomeScreen />', () => {
     expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
 
+    for (const [pathname, edges] of [
+      ['/record', bottomEdgeToEdgeEdges],
+      ['/record/shop/search', bottomEdgeToEdgeEdges],
+      ['/record/manual', bottomEdgeToEdgeEdges],
+    ] as const) {
+      await act(async () => {
+        await getByTestId('home-webview').props.onMessage({
+          nativeEvent: {
+            data: JSON.stringify({ kind: 'event', type: 'routeChanged', payload: { pathname } }),
+            url: `http://192.168.0.2:5173${pathname}`,
+          },
+        });
+      });
+      expect(getByTestId('home-safe-area').props.edges).toEqual(edges);
+    }
+
     await act(async () => {
       await getByTestId('home-webview').props.onMessage({
         nativeEvent: {

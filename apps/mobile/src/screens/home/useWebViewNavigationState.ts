@@ -42,10 +42,7 @@ export function useWebViewNavigationState(initialUrl: string | undefined) {
     initialPathname ? isMonthlyReportPathname(initialPathname) : false
   );
 
-  const [isStickerPoc, setIsStickerPoc] = useState(initialPathname === '/poc/sticker');
-
   const updatePathState = useCallback((pathname: string) => {
-    setIsStickerPoc(normalizePathname(pathname) === '/poc/sticker');
     setIsMapHome(isMapHomePathname(pathname));
     setIsMonthlyReport(isMonthlyReportPathname(pathname));
   }, []);
@@ -76,6 +73,5 @@ export function useWebViewNavigationState(initialUrl: string | undefined) {
     handleRouteChange,
     isMapHome,
     isMonthlyReport,
-    isStickerPoc,
   };
 }

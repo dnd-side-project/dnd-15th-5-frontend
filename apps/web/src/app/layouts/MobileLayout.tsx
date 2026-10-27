@@ -26,7 +26,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   const usesOwnBottomSafeArea =
     pathname === ROUTE_PATHS.home ||
     pathname === ROUTE_PATHS.record ||
-    pathname === ROUTE_PATHS.stickerPoc ||
+    pathname === ROUTE_PATHS.shopStickerPreview ||
     isShopDetail ||
     isSharedReport;
 
