@@ -1,4 +1,4 @@
-import { AccountRecordIcon, LikeIcon, NotificationDefaultIcon } from '@/shared/assets/icons';
+import { AccountRecordIcon, LikeIcon } from '@/shared/assets/icons';
 
 import type { ComponentType, SVGProps } from 'react';
 
@@ -39,22 +39,13 @@ function ShortcutCard({ icon: Icon, label, onClick }: ShortcutCardProps) {
 
 type MyPageShortcutMenuProps = {
   onRecordClick: () => void;
-  onNotificationClick: () => void;
 };
 
-export default function MyPageShortcutMenu({
-  onRecordClick,
-  onNotificationClick,
-}: MyPageShortcutMenuProps) {
+export default function MyPageShortcutMenu({ onRecordClick }: MyPageShortcutMenuProps) {
   return (
     <div className="flex gap-2 p-4">
       <ShortcutCard icon={LikeIcon} label="좋아요" />
       <ShortcutCard icon={AccountRecordIcon} label="누적 기록" onClick={onRecordClick} />
-      <ShortcutCard
-        icon={NotificationDefaultIcon}
-        label="알림 설정"
-        onClick={onNotificationClick}
-      />
     </div>
   );
 }

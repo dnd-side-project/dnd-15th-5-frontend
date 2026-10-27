@@ -10,7 +10,7 @@ import {
   WithdrawAccountButton,
   useGetMyAccount,
 } from '@/features/my-page';
-import { TermsIcon } from '@/shared/assets/icons';
+import { NotificationDefaultIcon, TermsIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { StateView } from '@/shared/ui/state-view';
 
@@ -49,14 +49,19 @@ export default function MyPage() {
       <section className="min-h-[calc(100dvh-211px)] rounded-t-30 bg-neutral-00 shadow-my-page-sheet">
         <h2 className="sr-only">마이페이지 메뉴</h2>
 
-        <MyPageShortcutMenu
-          onRecordClick={() => navigate(ROUTE_PATHS.spendingHistory)}
-          onNotificationClick={() => navigate(ROUTE_PATHS.notificationSettings)}
-        />
+        <MyPageShortcutMenu onRecordClick={() => navigate(ROUTE_PATHS.spendingHistory)} />
 
         <MyPageMenuSection>
           <MyPageMenuItem icon={TermsIcon} label="이용약관 및 개인정보처리방침" />
           <ContactButton />
+        </MyPageMenuSection>
+
+        <MyPageMenuSection className="mt-4">
+          <MyPageMenuItem
+            icon={NotificationDefaultIcon}
+            label="알림 설정"
+            onClick={() => navigate(ROUTE_PATHS.notificationSettings)}
+          />
         </MyPageMenuSection>
 
         <MyPageMenuSection className="mt-4">
