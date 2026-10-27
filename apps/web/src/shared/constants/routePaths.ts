@@ -45,6 +45,7 @@ export const ROUTE_PATHS = {
   sharedReport: (shareToken: string) => generatePath(ROUTE_PATTERNS.sharedReport, { shareToken }),
 
   notifications: NOTIFICATION_ALLOWED_PATHS.notifications,
+  notificationSettings: '/my-page/notifications',
   myPage: '/my-page',
   myPageProfile: '/my-page/profile',
 } as const;

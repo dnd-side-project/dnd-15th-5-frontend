@@ -17,6 +17,7 @@ import MyPage from '@/pages/my-page/MyPage';
 import MyProfileEditPage from '@/pages/my-page/MyProfileEditPage';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import NotificationPage from '@/pages/notifications/NotificationPage';
+import NotificationSettingsPage from '@/pages/notifications/NotificationSettingsPage';
 import OnboardingPage from '@/pages/onboarding/OnboardingPage';
 import ManualRecordPage from '@/pages/record/manual/ManualRecordPage';
 import ReceiptCameraPage from '@/pages/record/receipt/ReceiptCameraPage';
@@ -112,6 +113,10 @@ export const router = createSentryBrowserRouter([
               {
                 path: ROUTE_PATHS.notifications,
                 element: <NotificationPage />,
+              },
+              {
+                path: ROUTE_PATHS.notificationSettings,
+                element: <NotificationSettingsPage />,
               },
               {
                 path: ROUTE_PATHS.myPage,

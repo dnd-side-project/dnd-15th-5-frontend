@@ -16,7 +16,9 @@ import CafePinIcon from './ic-cafe-pin.svg?react';
 import CaretLeftIcon from './ic-caret-left.svg?react';
 import CaretRightIcon from './ic-caret-right.svg?react';
 import CheckIcon from './ic-check.svg?react';
+import ChevronRightThinIcon from './ic-chevron-right-thin.svg?react';
 import ChevronRightIcon from './ic-chevron-right.svg?react';
+import CircleWarningIcon from './ic-circle-warning.svg?react';
 import ContactIcon from './ic-contact.svg?react';
 import CrownIcon from './ic-crown.svg?react';
 import CurrentLocationIcon from './ic-current-location.svg?react';
@@ -62,8 +64,10 @@ export {
   CaretRightIcon,
   ChapchapLogo,
   CheckIcon,
+  CircleWarningIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronRightThinIcon,
   CloseIcon,
   ContactIcon,
   CrownIcon,

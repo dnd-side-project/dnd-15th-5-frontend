@@ -51,7 +51,7 @@ export default function MyPage() {
 
         <MyPageShortcutMenu
           onRecordClick={() => navigate(ROUTE_PATHS.spendingHistory)}
-          onNotificationClick={() => navigate(ROUTE_PATHS.notifications)}
+          onNotificationClick={() => navigate(ROUTE_PATHS.notificationSettings)}
         />
 
         <MyPageMenuSection>
