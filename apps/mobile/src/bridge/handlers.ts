@@ -1,5 +1,5 @@
-import { Linking, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { Linking, Platform } from 'react-native';
 
 import { clearAccessToken } from '@/native/api';
 import {
