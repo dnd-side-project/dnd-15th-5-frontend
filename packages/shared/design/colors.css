@@ -65,7 +65,7 @@
     var(--color-neutral-00) 100%
   );
   /* Semantic */
-  --color-notification: #ff5252;
+  --color-red: #ff5252;
 
   /* Brand */
   --color-kakao: #fee500;

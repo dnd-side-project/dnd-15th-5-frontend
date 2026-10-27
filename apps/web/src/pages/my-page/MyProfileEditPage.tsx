@@ -65,19 +65,15 @@ export default function MyProfileEditPage() {
           onChange={(event) => setNickname(event.target.value)}
           aria-invalid={showNicknameError}
           aria-describedby={showNicknameError ? 'nickname-error' : undefined}
-          className={`mt-2 h-13 w-full rounded-08 border px-4 text-body-01-regular text-neutral-700 outline-none placeholder:text-neutral-400 ${showNicknameError ? 'border-notification focus:border-notification' : 'border-neutral-300 focus:border-primary-500'}`}
+          className={`mt-2 h-13 w-full rounded-08 border px-4 text-body-01-regular text-neutral-700 outline-none placeholder:text-neutral-400 ${showNicknameError ? 'border-red focus:border-red' : 'border-neutral-300 focus:border-primary-500'}`}
         />
         {showNicknameError && (
-          <p
-            id="nickname-error"
-            role="alert"
-            className="mt-2 text-label-01-medium text-notification"
-          >
+          <p id="nickname-error" role="alert" className="mt-2 text-label-01-medium text-red">
             {nicknameErrorMessage}
           </p>
         )}
         {isSaveError && (
-          <p role="alert" className="mt-2 text-label-01-medium text-notification">
+          <p role="alert" className="mt-2 text-label-01-medium text-red">
             저장하지 못했어요. 잠시 후 다시 시도해주세요.
           </p>
         )}

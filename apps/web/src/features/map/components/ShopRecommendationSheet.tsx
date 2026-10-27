@@ -188,7 +188,7 @@ export default function ShopRecommendationSheet() {
                   disabled={likeMutation.isPending}
                   className={cn(
                     'absolute top-4 right-4 flex size-7 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-300',
-                    isLiked ? 'text-primary-500' : 'text-neutral-200'
+                    isLiked ? 'text-red' : 'text-neutral-200'
                   )}
                 >
                   <LikeIcon aria-hidden="true" className="size-5" />
