@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useOpenReceiptCamera } from '@/features/record/hooks/useOpenReceiptCamera';
-import StickerPoc from '@/features/record/sticker/StickerPoc';
+import StickerRecordFlow from '@/features/record/sticker/StickerRecordFlow';
 import type {
   ShopSearchLocationState,
   StickerRecordShopSearchContext,
@@ -46,7 +46,7 @@ export default function RecordPage() {
     <>
       {shouldKeepRecordFlow && (
         <div hidden={isShopSearchOpen}>
-          <StickerPoc
+          <StickerRecordFlow
             onClose={() => navigate(ROUTE_PATHS.home, { replace: true })}
             onSearchShop={handleSearchShop}
             onScanReceipt={openReceiptCamera}

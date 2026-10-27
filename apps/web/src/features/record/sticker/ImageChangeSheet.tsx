@@ -1,4 +1,5 @@
 import CameraIcon from '@chapchap/shared/assets/icons/ic-sticker-camera.svg?react';
+import DefaultStickerIcon from '@chapchap/shared/assets/icons/ic-sticker-default.svg?react';
 import GalleryIcon from '@chapchap/shared/assets/icons/ic-sticker-gallery.svg?react';
 import { useId } from 'react';
 
@@ -9,6 +10,7 @@ type ImageChangeSheetProps = {
   onClose: () => void;
   onTakePhoto?: () => void;
   onImportImage: () => void;
+  onSelectDefaultSticker: () => void;
 };
 
 /** 기록 폼 위에서 이미지를 바꿀 방법을 선택하며 취소 시 기존 이미지를 유지합니다. */
@@ -16,11 +18,13 @@ export default function ImageChangeSheet({
   onClose,
   onTakePhoto,
   onImportImage,
+  onSelectDefaultSticker,
 }: ImageChangeSheetProps) {
   const titleId = useId();
   const actions = [
     ...(onTakePhoto ? [{ label: '사진찍기', Icon: CameraIcon, onSelect: onTakePhoto }] : []),
     { label: '이미지 가져오기', Icon: GalleryIcon, onSelect: onImportImage },
+    { label: '기본 스티커로 기록하기', Icon: DefaultStickerIcon, onSelect: onSelectDefaultSticker },
   ];
 
   return (

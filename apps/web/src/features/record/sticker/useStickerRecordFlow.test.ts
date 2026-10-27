@@ -4,7 +4,7 @@ import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
 import { createPhotoSticker } from './createPhotoSticker';
 import { cropStickerImage } from './stickerImage';
-import { useStickerPoc } from './useStickerPoc';
+import { useStickerRecordFlow } from './useStickerRecordFlow';
 
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn(), requestToNative: jest.fn() }));
 jest.mock('./createPhotoSticker', () => ({ createPhotoSticker: jest.fn() }));
@@ -35,7 +35,7 @@ it('자르기에서 이미지 생성으로 넘어가면 자르기 대기 상태�
       finish = resolve;
     })
   );
-  const { result } = renderHook(useStickerPoc);
+  const { result } = renderHook(useStickerRecordFlow);
   act(() => result.current.openCrop(photo));
   let task!: Promise<void>;
   act(() => {
@@ -57,7 +57,7 @@ it('다른 사진으로 자르기를 시작하면 이전 사진의 늦은 자르
       finish = resolve;
     })
   );
-  const { result } = renderHook(useStickerPoc);
+  const { result } = renderHook(useStickerRecordFlow);
   act(() => result.current.openCrop(photo));
   let task!: Promise<void>;
   act(() => {
@@ -89,7 +89,7 @@ it('취소한 사진의 늦은 진행률과 완료 결과가 선택 화면을 �
       finish = resolve;
     })
   );
-  const { result } = renderHook(useStickerPoc);
+  const { result } = renderHook(useStickerRecordFlow);
   act(() => result.current.openCrop(photo));
   let task!: Promise<void>;
   act(() => {
@@ -125,7 +125,7 @@ it('촬영에서 누끼 생성으로 넘어가면 촬영 대기 상태를 해제
       finish = resolve;
     })
   );
-  const { result } = renderHook(useStickerPoc);
+  const { result } = renderHook(useStickerRecordFlow);
   let task!: Promise<void>;
   act(() => {
     task = result.current.capturePhoto();

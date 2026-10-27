@@ -4,18 +4,19 @@ import { CloseIcon } from '@/shared/assets/icons';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 
+import DefaultStickerPicker from './DefaultStickerPicker';
 import ImageChangeSheet from './ImageChangeSheet';
 import StickerCropper from './StickerCropper';
 import StickerGenerationPreview from './StickerGenerationPreview';
 import StickerRecordPreview from './StickerRecordPreview';
 import StickerSourcePicker from './StickerSourcePicker';
-import { useStickerPoc } from './useStickerPoc';
+import { useStickerRecordFlow } from './useStickerRecordFlow';
 
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 import type { ChangeEvent } from 'react';
 
-type StickerPocProps = {
+type StickerRecordFlowProps = {
   onClose: () => void;
   onSearchShop?: () => void;
   onScanReceipt?: () => void;
@@ -26,7 +27,7 @@ type StickerPocProps = {
   receiptError?: string;
 };
 
-export default function StickerPoc({
+export default function StickerRecordFlow({
   onClose,
   onSearchShop,
   onScanReceipt,
@@ -35,7 +36,7 @@ export default function StickerPoc({
   initialVisitDateTime,
   isOpeningReceipt,
   receiptError,
-}: StickerPocProps) {
+}: StickerRecordFlowProps) {
   const isApp = isNativeApp();
   const galleryInput = useRef<HTMLInputElement>(null);
   const [isImageChangeOpen, setIsImageChangeOpen] = useState(false);
@@ -58,7 +59,9 @@ export default function StickerPoc({
     cancelImageSelection,
     retry,
     confirm,
-  } = useStickerPoc();
+    openDefaultStickers,
+    selectDefaultSticker,
+  } = useStickerRecordFlow();
   const isPreview = stage === 'preview';
   const isDark = isPreview || stage === 'crop';
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -85,6 +88,14 @@ export default function StickerPoc({
         className="hidden"
         aria-label="사진 가져오기"
       />
+      {stage === 'default' && (
+        <DefaultStickerPicker
+          onClose={cancelImageSelection}
+          onConfirm={(sticker) => void selectDefaultSticker(sticker)}
+          isProcessing={isProcessing}
+          error={error}
+        />
+      )}
       {(stage === 'select' || isPreview) && (
         <header className={cn('relative shrink-0', isPreview ? 'h-33.5' : 'h-28')}>
           {isPreview && (
@@ -116,6 +127,7 @@ export default function StickerPoc({
           isCapturing={isCapturing}
           onCapture={isApp ? handleCapturePhoto : undefined}
           onImportImage={handleImportImage}
+          onSelectDefaultSticker={openDefaultStickers}
         />
       )}
       {isPreview && (
@@ -137,6 +149,7 @@ export default function StickerPoc({
         <div hidden={stage !== 'record'} inert={isImageChangeOpen}>
           <StickerRecordPreview
             sticker={recordResult.sticker}
+            isDefaultSticker={recordResult.source === 'default'}
             onChangeImage={() => setIsImageChangeOpen(true)}
             onBack={reset}
             onClose={onClose}
@@ -157,6 +170,7 @@ export default function StickerPoc({
           onClose={() => setIsImageChangeOpen(false)}
           onTakePhoto={isApp ? handleCapturePhoto : undefined}
           onImportImage={handleImportImage}
+          onSelectDefaultSticker={openDefaultStickers}
         />
       )}
       {(stage === 'select' || stage === 'crop') && error && (

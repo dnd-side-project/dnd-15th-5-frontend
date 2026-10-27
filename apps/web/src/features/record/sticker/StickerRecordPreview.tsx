@@ -33,6 +33,7 @@ const STICKER_RECORD_CATEGORIES = [
 
 type StickerRecordPreviewProps = {
   sticker: string;
+  isDefaultSticker: boolean;
   onChangeImage: () => void;
   onBack: () => void;
   onClose: () => void;
@@ -68,6 +69,7 @@ function RecordField({ label, required = false, children }: RecordFieldProps) {
 /** 스티커 기록 화면의 입력과 이미지 적용을 확인하는 미리보기입니다. 서버에는 저장하지 않습니다. */
 export default function StickerRecordPreview({
   sticker,
+  isDefaultSticker,
   onChangeImage,
   onBack,
   onClose,
@@ -112,7 +114,11 @@ export default function StickerRecordPreview({
           aria-label="스티커 PNG 다운로드"
           className="grid size-40 place-items-center"
         >
-          <img src={sticker} alt="기록에 적용한 스티커" className="size-40 object-contain" />
+          <img
+            src={sticker}
+            alt="기록에 적용한 스티커"
+            className={cn('object-contain', isDefaultSticker ? 'size-32' : 'size-40')}
+          />
         </a>
         <button
           type="button"

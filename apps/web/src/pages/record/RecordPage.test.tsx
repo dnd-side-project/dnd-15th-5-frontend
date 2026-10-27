@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import { createPhotoSticker } from '@/features/record/sticker/createPhotoSticker';
-import { cropStickerImage } from '@/features/record/sticker/stickerImage';
+import { loadDefaultSticker } from '@/features/record/sticker/loadDefaultSticker';
 import BottomTabBar from '@/shared/layout/BottomTabBar';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 import type { RecordLocationState } from '@/shared/types/recordNavigation';
@@ -17,17 +17,15 @@ jest.mock('@/shared/lib/bridge', () => ({
   requestToNative: jest.fn(),
   notifyNative: jest.fn(),
 }));
-
+jest.mock('@/features/record/sticker/loadDefaultSticker', () => ({
+  loadDefaultSticker: jest.fn(),
+}));
 jest.mock('@/features/record/sticker/createPhotoSticker', () => ({
   createPhotoSticker: jest.fn(),
 }));
 jest.mock('@/features/record/sticker/removeStickerBackground', () => ({
   prepareStickerBackground: jest.fn(),
   disposeStickerBackground: jest.fn(),
-}));
-jest.mock('@/features/record/sticker/stickerImage', () => ({
-  ...jest.requireActual('@/features/record/sticker/stickerImage'),
-  cropStickerImage: jest.fn(),
 }));
 jest.mock('@/features/shop', () => ({
   ShopSearch: ({ onSelectShop }: { onSelectShop: (shop: ShopSearchResult) => void }) => (
@@ -73,25 +71,17 @@ const renderRecordPage = (
     </MemoryRouter>
   );
 
-const selectPhoto = async () => {
-  const photo = new File(['photo'], 'photo.png', { type: 'image/png' });
-  jest.mocked(cropStickerImage).mockResolvedValueOnce(photo);
-  fireEvent.change(screen.getByLabelText('사진 가져오기'), { target: { files: [photo] } });
-  const image = screen.getByAltText('자를 사진');
-  Object.defineProperty(image, 'naturalWidth', { value: 300 });
-  Object.defineProperty(image, 'naturalHeight', { value: 400 });
-  fireEvent.load(image);
-  fireEvent.click(screen.getByRole('button', { name: '자르기 완료' }));
-  await screen.findByAltText('흰색 테두리가 적용된 스티커');
-  fireEvent.click(screen.getByRole('button', { name: '이 스티커 사용' }));
-  jest.mocked(URL.revokeObjectURL).mockClear();
-  return screen.getByAltText('기록에 적용한 스티커');
+const selectDefaultSticker = async () => {
+  fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '이 스티커로 기록하기' }));
+  return screen.findByAltText('기록에 적용한 스티커');
 };
 
 beforeEach(() => {
   jest.clearAllMocks();
   jest.mocked(isNativeApp).mockReturnValue(false);
   jest.mocked(requestToNative).mockResolvedValue({ opened: true });
+  jest.mocked(loadDefaultSticker).mockResolvedValue(new Blob());
   jest.mocked(createPhotoSticker).mockResolvedValue(new Blob());
   URL.createObjectURL = jest.fn(() => 'blob:sticker');
   URL.revokeObjectURL = jest.fn();
@@ -105,7 +95,7 @@ it('기록하기에 진입하면 방법 선택 카드 없이 바로 스티커 �
   expect(screen.getByRole('button', { name: '촬영하기' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '이미지 가져오기' })).toBeInTheDocument();
   expect(screen.queryByText('직접 작성')).not.toBeInTheDocument();
-  expect(screen.queryByText('사진 스티커 만들기 (PoC)')).not.toBeInTheDocument();
+  expect(screen.queryByText(/사진 스티커 만들기/)).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: /영수증 인식하기/ })).not.toBeInTheDocument();
   expect(requestToNative).not.toHaveBeenCalled();
 });
@@ -136,7 +126,7 @@ it('기록 폼의 영수증 버튼을 누를 때만 카메라를 열고 입력 �
     })
   );
   renderRecordPage();
-  const sticker = await selectPhoto();
+  const sticker = await selectDefaultSticker();
   fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
     target: { value: '친구와 방문' },
   });
@@ -159,7 +149,7 @@ it('영수증 카메라를 열지 못하면 작성 내용을 유지한 채 다�
   jest.mocked(isNativeApp).mockReturnValue(true);
   jest.mocked(requestToNative).mockRejectedValueOnce(new Error('카메라 권한이 필요합니다'));
   renderRecordPage();
-  await selectPhoto();
+  await selectDefaultSticker();
   fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
   expect(await screen.findByRole('alert')).toHaveTextContent('카메라 권한이 필요합니다');
   fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
@@ -170,7 +160,7 @@ it('영수증 카메라를 열지 못하면 작성 내용을 유지한 채 다�
 
 it('일반 웹의 기록 폼에서는 영수증 촬영 대신 앱 이용 안내를 표시한다', async () => {
   renderRecordPage();
-  await selectPhoto();
+  await selectDefaultSticker();
   fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
   expect(screen.getByRole('status')).toHaveTextContent('영수증 인식은 앱에서 사용할 수 있어요');
   expect(requestToNative).not.toHaveBeenCalled();
@@ -182,7 +172,7 @@ it('가게에서 전달한 정보와 지난 기록 월을 기록 폼에 유지�
     search: '?yearMonth=2020-07',
     state: { shop: mockSelectedShop, category: '음식점' },
   });
-  await selectPhoto();
+  await selectDefaultSticker();
   expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '음식점' })).toHaveAttribute('aria-pressed', 'true');
   expect(
@@ -192,7 +182,7 @@ it('가게에서 전달한 정보와 지난 기록 월을 기록 폼에 유지�
 
 it('기존 가게 검색 화면으로 이동하고 가게 선택 후 스티커와 입력 내용을 유지한다', async () => {
   renderRecordPage('/record?yearMonth=2020-07');
-  const sticker = await selectPhoto();
+  const sticker = await selectDefaultSticker();
   fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
     target: { value: '점심 방문' },
   });
@@ -213,12 +203,12 @@ it('기존 가게 검색 화면으로 이동하고 가게 선택 후 스티커�
   expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('5,500');
   expect(screen.getByRole('button', { name: '운동' })).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record?yearMonth=2020-07');
-  expect(createPhotoSticker).toHaveBeenCalledTimes(1);
+  expect(loadDefaultSticker).toHaveBeenCalledTimes(1);
 });
 
 it('가게 검색에서 뒤로 돌아오면 선택을 바꾸지 않고 작성 중이던 폼을 유지한다', async () => {
   renderRecordPage();
-  const sticker = await selectPhoto();
+  const sticker = await selectDefaultSticker();
   fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
     target: { value: '검색 전 메모' },
   });
@@ -234,7 +224,7 @@ it('가게 검색에서 뒤로 돌아오면 선택을 바꾸지 않고 작성 �
 
 it('가게 검색에서 작성을 종료할 때 확인한 뒤 홈으로 돌아가며 이미지 URL을 정리한다', async () => {
   renderRecordPage();
-  await selectPhoto();
+  await selectDefaultSticker();
   fireEvent.click(screen.getByRole('button', { name: '가게 정보 검색' }));
   fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
   expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();

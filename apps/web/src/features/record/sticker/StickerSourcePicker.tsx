@@ -1,4 +1,5 @@
 import CameraIcon from '@chapchap/shared/assets/icons/ic-sticker-camera.svg?react';
+import DefaultStickerIcon from '@chapchap/shared/assets/icons/ic-sticker-default.svg?react';
 import GalleryIcon from '@chapchap/shared/assets/icons/ic-sticker-gallery.svg?react';
 
 import { cn } from '@/shared/lib/cn';
@@ -7,13 +8,15 @@ type StickerSourcePickerProps = {
   isCapturing: boolean;
   onCapture?: () => void;
   onImportImage: () => void;
+  onSelectDefaultSticker: () => void;
 };
 
-/** 촬영 가능 여부에 맞춰 사진·갤러리 진입 메뉴를 표시합니다. */
+/** 촬영 가능 여부에 맞춰 사진·갤러리·기본 스티커 진입 메뉴를 표시합니다. */
 export default function StickerSourcePicker({
   isCapturing,
   onCapture,
   onImportImage,
+  onSelectDefaultSticker,
 }: StickerSourcePickerProps) {
   return (
     <section className="px-4 pt-2 pb-8">
@@ -42,6 +45,18 @@ export default function StickerSourcePicker({
           이미지 가져오기
         </button>
       </div>
+      <div className="my-4 flex items-center gap-5.75 text-caption-01-regular leading-3.5 text-neutral-500 before:h-px before:flex-1 before:bg-neutral-300 before:content-[''] after:h-px after:flex-1 after:bg-neutral-300 after:content-['']">
+        빠른 추가
+      </div>
+      <button
+        type="button"
+        className="flex h-18.25 w-full items-center justify-center gap-2.5 rounded-16 bg-primary-50 text-body-01-medium text-primary-500"
+        disabled={isCapturing}
+        onClick={onSelectDefaultSticker}
+      >
+        <DefaultStickerIcon className="size-6" aria-hidden="true" />
+        기본 스티커로 기록하기
+      </button>
       {isCapturing && (
         <p role="status" className="mt-4 text-center text-body-02-regular text-neutral-500">
           카메라를 열고 있어요

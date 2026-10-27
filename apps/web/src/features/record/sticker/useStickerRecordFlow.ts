@@ -4,19 +4,21 @@ import type { StickerPhotoSource } from '@/features/record/types';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
 import { createPhotoSticker } from './createPhotoSticker';
+import { loadDefaultSticker } from './loadDefaultSticker';
 import { disposeStickerBackground, prepareStickerBackground } from './removeStickerBackground';
 import { cropStickerImage, validateStickerFile } from './stickerImage';
 
 import type { StickerCrop } from './stickerImage';
 
-type Stage = 'select' | 'crop' | 'preview' | 'record';
+type Stage = 'select' | 'default' | 'crop' | 'preview' | 'record';
 type PendingAction = 'capture' | 'crop' | 'process' | null;
 type Result = {
   original: string;
   sticker: string;
+  source: 'photo' | 'default';
 };
 
-export const useStickerPoc = () => {
+export const useStickerRecordFlow = () => {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [cropSource, setCropSource] = useState<{ file: File; url: string } | null>(null);
   const [stage, setStage] = useState<Stage>('select');
@@ -103,6 +105,7 @@ export const useStickerPoc = () => {
       setResult({
         original: originalUrl,
         sticker: createUrl(sticker),
+        source: 'photo',
       });
     } catch (cause) {
       if (!request.signal.aborted)
@@ -198,6 +201,22 @@ export const useStickerPoc = () => {
     setStage('record');
   };
 
+  const selectDefaultSticker = async (sticker: string) => {
+    if (isProcessing) return;
+    const request = startRequest('process');
+    try {
+      const stickerBlob = await loadDefaultSticker(sticker, request.signal);
+      if (request.signal.aborted) return;
+      commitResult({ original: '', sticker: createUrl(stickerBlob), source: 'default' });
+    } catch (cause) {
+      if (!request.signal.aborted) {
+        setError(cause instanceof Error ? cause.message : '스티커를 만들지 못했어요.');
+      }
+    } finally {
+      finishRequest(request);
+    }
+  };
+
   const retry = () => {
     const file = lastFile.current;
     if (file && validateImage(file)) void processImage(file, startRequest(), photoSource);
@@ -221,6 +240,12 @@ export const useStickerPoc = () => {
     reset,
     cancelImageSelection,
     retry,
+    openDefaultStickers: () => {
+      startRequest();
+      keepRecordUrls();
+      setStage('default');
+    },
+    selectDefaultSticker,
     confirm: () => {
       if (result) commitResult(result);
     },

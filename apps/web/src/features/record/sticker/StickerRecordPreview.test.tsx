@@ -32,7 +32,8 @@ const callbacks = {
   onSearchShop: jest.fn(),
   onScanReceipt: jest.fn(),
 };
-const renderPreview = () => render(<StickerRecordPreview sticker="sticker.png" {...callbacks} />);
+const renderPreview = () =>
+  render(<StickerRecordPreview sticker="sticker.png" isDefaultSticker {...callbacks} />);
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -82,7 +83,7 @@ it('가게 선택 결과를 받아도 작성 중인 카테고리와 메모를 �
   rerender(
     <StickerRecordPreview
       sticker="sticker.png"
-
+      isDefaultSticker
       {...callbacks}
       selectedShop={{
         id: 'shop-01',
