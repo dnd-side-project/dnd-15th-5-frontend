@@ -3,8 +3,8 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ReceiptMethodLink, RecordMethodLink } from '@/features/record';
 import { createYearMonthPath, ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
+import PageHeader from '@/shared/layout/PageHeader';
 import type { RecordLocationState } from '@/shared/types/recordNavigation';
-import { BackButton } from '@/shared/ui/back-button';
 import {
   getRecordCategoryFromLocationState,
   getRecordShopFromLocationState,
@@ -26,9 +26,9 @@ export default function RecordMethodPage() {
 
   return (
     <main className="flex min-h-full flex-col">
-      <BackButton onClick={() => navigate(-1)} />
+      <PageHeader onBack={() => navigate(-1)} backButtonClassName="left-0" />
 
-      <h1 className="mt-8.5 text-heading-01-bold text-neutral-700">
+      <h1 className="mt-4 text-heading-01-bold text-neutral-700">
         소비 기록 방법을 <br />
         선택해주세요
       </h1>

@@ -1,6 +1,6 @@
 import { getProfileImageOption } from '@/features/my-page/constants/profileImageOptions';
 import { EditIcon } from '@/shared/assets/icons';
-import { BackButton } from '@/shared/ui/back-button';
+import PageHeader from '@/shared/layout/PageHeader';
 import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 
 type MyPageProfileSectionProps = {
@@ -22,9 +22,7 @@ export default function MyPageProfileSection({
 
   return (
     <section className="h-52.75" aria-labelledby="my-page-nickname">
-      <div className="h-14">
-        <BackButton className="ml-4" onClick={onBack} />
-      </div>
+      <PageHeader onBack={onBack} />
 
       <div className="flex flex-col items-center gap-2">
         <button

@@ -1,9 +1,7 @@
 import { RECORD_EXIT_CONFIRM_TEXT } from '@chapchap/shared/record';
 import { useState } from 'react';
 
-import { CloseIcon } from '@/shared/assets/icons';
-import { BackButton } from '@/shared/ui/back-button';
-import { Button } from '@/shared/ui/button';
+import PageHeader from '@/shared/layout/PageHeader';
 import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 
 type PendingExitAction = 'back' | 'close' | null;
@@ -58,17 +56,11 @@ export default function RecordNavigationHeader({
 
   return (
     <>
-      <div className="flex items-start justify-between">
-        <BackButton onClick={handleBackClick} />
-        <Button
-          variant="icon"
-          aria-label="기록 닫고 홈으로 이동"
-          onClick={handleCloseClick}
-          className="mt-4 size-6 text-neutral-700 [&_svg]:size-3.5"
-        >
-          <CloseIcon aria-hidden="true" />
-        </Button>
-      </div>
+      <PageHeader
+        onBack={handleBackClick}
+        onClose={handleCloseClick}
+        closeButtonLabel="기록 닫고 홈으로 이동"
+      />
 
       {pendingExitAction && (
         <UnsavedChangesDialog

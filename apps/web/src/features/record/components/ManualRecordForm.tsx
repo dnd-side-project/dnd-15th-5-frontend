@@ -140,7 +140,7 @@ export default function ManualRecordForm({
         confirmBeforeClose={isDraftDirty}
       />
 
-      <h1 className="mt-6 text-heading-01-bold text-neutral-700">소비 정보를 입력해주세요</h1>
+      <h1 className="mt-1.5 text-heading-01-bold text-neutral-700">소비 정보를 입력해주세요</h1>
 
       {hasSelectedShop ? (
         <div className="mt-6 flex items-center rounded-16 border border-neutral-300 p-2">

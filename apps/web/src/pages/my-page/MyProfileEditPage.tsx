@@ -1,5 +1,5 @@
 import { ProfileImageSelector, useProfileEditor } from '@/features/my-page';
-import { BackButton } from '@/shared/ui/back-button';
+import PageHeader from '@/shared/layout/PageHeader';
 import { Button } from '@/shared/ui/button';
 import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 import { StateView } from '@/shared/ui/state-view';
@@ -47,9 +47,7 @@ export default function MyProfileEditPage() {
 
   return (
     <main className="mobile-frame fixed inset-0 flex flex-col overflow-y-auto">
-      <div className="h-14 shrink-0">
-        <BackButton className="ml-4" onClick={handleBack} />
-      </div>
+      <PageHeader onBack={handleBack} />
 
       <ProfileImageSelector selectedCode={profileImageCode} onSelect={setProfileImageCode} />
 
