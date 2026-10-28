@@ -33,7 +33,7 @@ export default function PageHeader({
         <BackButton
           onClick={onBack}
           aria-label={backButtonLabel}
-          className={cn('absolute top-1/2 left-4 mt-0 -translate-y-1/2', backButtonClassName)}
+          className={cn('absolute top-1/2 left-0 mt-0 -translate-y-1/2', backButtonClassName)}
         />
       )}
       {title !== undefined && (
@@ -44,7 +44,7 @@ export default function PageHeader({
           variant="icon"
           aria-label={closeButtonLabel}
           onClick={onClose}
-          className="absolute top-1/2 right-4 size-6 -translate-y-1/2 text-neutral-700 [&_svg]:size-3.5"
+          className="absolute top-1/2 right-0 size-6 -translate-y-1/2 text-neutral-700 [&_svg]:size-3.5"
         >
           <CloseIcon aria-hidden="true" />
         </Button>

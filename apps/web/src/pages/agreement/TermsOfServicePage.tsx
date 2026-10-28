@@ -8,7 +8,7 @@ export default function TermsOfServicePage() {
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <PageHeader onBack={() => navigate(-1)} backButtonClassName="left-0" />
+      <PageHeader onBack={() => navigate(-1)} />
 
       <MarkdownPolicyContent className="mt-1.5" content={TERMS_OF_SERVICE_CONTENT} />
     </main>
