@@ -1,7 +1,41 @@
-import { LocationPinIcon, LikeIcon, StoreIcon } from '@/shared/assets/icons';
+import { useState } from 'react';
+
+import { LocationPinIcon, LikeIcon } from '@/shared/assets/icons';
+import { StoreImageFallback } from '@/shared/ui/card';
 import { Chip } from '@/shared/ui/chip';
 
 import LikedPlacePhotoSkeleton from './LikedPlacePhotoSkeleton';
+
+type LikedPlaceGalleryImageProps = {
+  name: string;
+  photoUrl: string;
+  index: number;
+};
+
+function LikedPlaceGalleryImage({ name, photoUrl, index }: LikedPlaceGalleryImageProps) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <StoreImageFallback
+        ariaLabel={`${name} 사진을 불러올 수 없음`}
+        className="h-32 w-full"
+        iconClassName="size-12"
+      />
+    );
+  }
+
+  return (
+    <img
+      src={photoUrl}
+      alt={`${name} 사진 ${index + 1}`}
+      data-mp-block=""
+      loading="lazy"
+      className="h-32 w-full object-cover"
+      onError={() => setHasError(true)}
+    />
+  );
+}
 
 type LikedPlaceSummaryProps = {
   placeId: string;
@@ -69,19 +103,10 @@ export default function LikedPlaceSummary({
           <LikedPlacePhotoSkeleton />
         ) : photoUrls.length > 0 ? (
           photoUrls.map((photoUrl, index) => (
-            <img
-              key={photoUrl}
-              src={photoUrl}
-              alt={`${name} 사진 ${index + 1}`}
-              data-mp-block=""
-              loading="lazy"
-              className="h-32 w-full object-cover"
-            />
+            <LikedPlaceGalleryImage key={photoUrl} name={name} photoUrl={photoUrl} index={index} />
           ))
         ) : (
-          <div className="col-span-full flex h-32 items-center justify-center text-neutral-400">
-            <StoreIcon aria-hidden="true" className="size-12" />
-          </div>
+          <StoreImageFallback className="col-span-full h-32 w-full" iconClassName="size-12" />
         )}
       </div>
     </section>
