@@ -42,6 +42,34 @@ export type ApiResponseNearbyPlacesResponse = {
   data?: NearbyPlacesResponse;
 };
 
+export type PhotoResponse = {
+  thumbnailUrl?: string;
+  googleMapsUri?: string;
+};
+
+export type LikedPlaceResponse = {
+  placeId?: number;
+  name?: string;
+  category?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  photos?: PhotoResponse[];
+};
+
+export type LikedPlaceScrollResponse = {
+  places?: LikedPlaceResponse[];
+  categories?: string[];
+  hasNext?: boolean;
+  nextCursorId?: number;
+};
+
+export type ApiResponseLikedPlaceScrollResponse = {
+  code?: string;
+  message?: string;
+  data?: LikedPlaceScrollResponse;
+};
+
 export type VisitedPlaceMarkerItem = {
   placeId?: number;
   placeName?: string;
@@ -80,6 +108,18 @@ export type GetNearbyPlacesParams = {
    * 검색 반경(미터), 생략시 1500m / 위치기반이면 적정범위 500m~1km
    */
   radiusMeters?: number;
+};
+
+export type GetLikedPlacesParams = {
+  category?: string;
+  /**
+   * 이전 응답의 nextCursorId (첫 조회 시 생략)
+   */
+  cursorId?: number;
+  /**
+   * 조회 개수 (1~5)
+   */
+  size?: number;
 };
 
 export type GetVisitedPlaceMarkersParams = {

@@ -13,7 +13,7 @@ import { StateView } from '@/shared/ui/state-view';
 import LikedPlaceSummary from './LikedPlaceSummary';
 
 const ALL_CATEGORY = '전체';
-// TODO: 방문 장소 API에 페이지네이션이 추가되면 서버 무한 조회로 교체한다.
+// TODO: 운영 API에 GET /v1/places/likes가 배포되면 서버 페이지네이션과 응답 사진으로 전환한다.
 
 function LikedPlaceCard({ likedPlace }: { likedPlace: ShopRecommendation }) {
   const { id: placeId, place } = likedPlace;
