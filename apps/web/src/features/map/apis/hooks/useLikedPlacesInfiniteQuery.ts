@@ -33,9 +33,12 @@ export const useLikedPlacesInfiniteQuery = (category?: string) => {
       getLikedPlaces({ ...pageParam, category, size: LIKED_PLACES_PAGE_SIZE }, undefined, signal),
     initialPageParam: {} as LikedPlacesCursor,
     getNextPageParam: getNextCursor,
+    placeholderData: (previousData) => previousData,
   });
-  const likedPlaces = query.data?.pages.flatMap(({ data }) => data?.places ?? []) ?? [];
-  const categories = query.data?.pages[0]?.data?.categories ?? [];
+  const likedPlaces = query.isPlaceholderData
+    ? []
+    : (query.data?.pages.flatMap(({ data }) => data?.places ?? []) ?? []);
+  const categories = query.data?.pages[0]?.data?.categories;
 
   return {
     categories,
@@ -45,6 +48,8 @@ export const useLikedPlacesInfiniteQuery = (category?: string) => {
     isFetchNextPageError: query.isFetchNextPageError,
     isFetchingNextPage: query.isFetchingNextPage,
     isPending: query.isPending,
+    isPlaceholderData: query.isPlaceholderData,
+    isSuccess: query.isSuccess,
     likedPlaces,
     refetch: query.refetch,
   };

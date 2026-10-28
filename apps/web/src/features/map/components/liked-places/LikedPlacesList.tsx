@@ -56,12 +56,23 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
     isFetchNextPageError,
     isFetchingNextPage,
     isPending,
+    isPlaceholderData,
+    isSuccess,
     likedPlaces,
     refetch,
   } = likedPlacesQuery;
+  if (
+    isSuccess &&
+    categories !== undefined &&
+    selectedCategory !== ALL_CATEGORY &&
+    !categories.includes(selectedCategory)
+  ) {
+    setSelectedCategory(ALL_CATEGORY);
+  }
+
   const availableCategories = [
     ALL_CATEGORY,
-    ...categories.filter((category) => category !== ALL_CATEGORY),
+    ...(categories ?? []).filter((category) => category !== ALL_CATEGORY),
   ];
   const activeCategory = availableCategories.includes(selectedCategory)
     ? selectedCategory
@@ -115,7 +126,7 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
         aria-label="좋아요한 가게 목록"
         className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto"
       >
-        {isPending ? (
+        {isPending || isPlaceholderData ? (
           <div role="status" aria-label="좋아요한 가게 불러오는 중" className="space-y-6 py-2">
             {[0, 1, 2].map((item) => (
               <LikedPlaceCardSkeleton key={item} />
