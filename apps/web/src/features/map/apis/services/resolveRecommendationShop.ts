@@ -48,6 +48,7 @@ export const resolveRecommendationShop = async (
     textQuery: `${place.name} ${place.address}`.trim(),
     maxResultCount: RECOMMENDATION_SEARCH_MAX_RESULT_COUNT,
     includePhotos,
+    includePhotoUrls: includePhotos,
     locationBias: {
       center: position,
       radius: RECOMMENDATION_SEARCH_RADIUS_METERS,
