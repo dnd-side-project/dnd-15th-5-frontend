@@ -31,7 +31,7 @@ export default function LikedRecommendationSheet({
     query: recordShopQuery,
     isLibraryLoading,
     isLibraryError,
-  } = useRecommendationRecordShopQuery(recommendation, { includePhotos: false });
+  } = useRecommendationRecordShopQuery(recommendation);
 
   if (!recommendation && (isPending || visitedPlacesQuery.isPending)) {
     return (

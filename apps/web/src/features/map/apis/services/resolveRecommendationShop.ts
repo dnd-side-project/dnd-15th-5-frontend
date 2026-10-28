@@ -40,15 +40,13 @@ const getDistanceMeters = (first: ShopSearchResult, second: ShopRecommendation['
 /** 추천 매장을 Google Places 결과와 대조해 소비 기록에 필요한 장소 정보로 변환합니다. */
 export const resolveRecommendationShop = async (
   placesLibrary: google.maps.PlacesLibrary,
-  recommendation: ShopRecommendation,
-  { includePhotos = true }: { includePhotos?: boolean } = {}
+  recommendation: ShopRecommendation
 ): Promise<ShopSearchResult> => {
   const { place, position, thumbnailSrc } = recommendation;
   const candidates = await searchGooglePlaces(placesLibrary, {
     textQuery: `${place.name} ${place.address}`.trim(),
     maxResultCount: RECOMMENDATION_SEARCH_MAX_RESULT_COUNT,
-    includePhotos,
-    includePhotoUrls: includePhotos,
+    includePhotos: false,
     locationBias: {
       center: position,
       radius: RECOMMENDATION_SEARCH_RADIUS_METERS,
