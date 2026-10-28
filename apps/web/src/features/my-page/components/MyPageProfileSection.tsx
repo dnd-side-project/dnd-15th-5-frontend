@@ -22,7 +22,9 @@ export default function MyPageProfileSection({
 
   return (
     <section className="h-52.75" aria-labelledby="my-page-nickname">
-      <PageHeader onBack={onBack} />
+      <div className="px-4">
+        <PageHeader onBack={onBack} />
+      </div>
 
       <div className="flex flex-col items-center gap-2">
         <button

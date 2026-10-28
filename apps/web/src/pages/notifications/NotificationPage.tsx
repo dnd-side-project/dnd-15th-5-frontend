@@ -7,7 +7,7 @@ export default function NotificationPage() {
   const navigate = useNavigate();
 
   return (
-    <main className="mobile-frame pb-safe-bottom fixed inset-0 flex flex-col overflow-hidden bg-neutral-00">
+    <main className="flex h-dvh flex-col overflow-hidden bg-neutral-00 pb-safe-bottom">
       <PageHeader
         title="알림"
         onBack={() => navigate(-1)}

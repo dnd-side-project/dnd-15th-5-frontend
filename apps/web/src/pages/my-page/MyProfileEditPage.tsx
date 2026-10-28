@@ -27,7 +27,7 @@ export default function MyProfileEditPage() {
 
   if (accountQuery.isError || (!accountQuery.isPending && !account)) {
     return (
-      <main className="-mx-4 px-4">
+      <main className="min-h-screen-safe-bottom">
         <StateView
           variant="error"
           headingAs="h1"
@@ -42,16 +42,16 @@ export default function MyProfileEditPage() {
   }
 
   if (accountQuery.isPending || !account) {
-    return <main className="-mx-4" aria-label="계정 정보 불러오는 중" />;
+    return <main className="min-h-screen-safe-bottom" aria-label="계정 정보 불러오는 중" />;
   }
 
   return (
-    <main className="mobile-frame fixed inset-0 flex flex-col overflow-y-auto">
+    <main className="min-h-screen-safe-bottom flex flex-col overflow-y-auto">
       <PageHeader onBack={handleBack} />
 
       <ProfileImageSelector selectedCode={profileImageCode} onSelect={setProfileImageCode} />
 
-      <div className="px-4 pt-8">
+      <div className="pt-8">
         <label htmlFor="profile-nickname" className="text-body-02-semibold text-neutral-700">
           이름
         </label>
@@ -77,7 +77,7 @@ export default function MyProfileEditPage() {
         )}
       </div>
 
-      <div className="mt-auto px-4 pt-8 pb-safe-bottom">
+      <div className="mt-auto pt-8">
         <Button
           type="button"
           disabled={!canSave}

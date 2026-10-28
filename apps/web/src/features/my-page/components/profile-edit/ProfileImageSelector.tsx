@@ -22,7 +22,7 @@ export default function ProfileImageSelector({
       <div className="flex justify-center pt-1">
         <ProfileAvatar className="size-25" backgroundColor={selectedOption.color} />
       </div>
-      <div className="mt-7 grid grid-cols-6 gap-2 px-4">
+      <div className="mt-7 grid grid-cols-6 gap-2">
         {PROFILE_IMAGE_OPTIONS.map((option) => (
           <button
             key={option.code}

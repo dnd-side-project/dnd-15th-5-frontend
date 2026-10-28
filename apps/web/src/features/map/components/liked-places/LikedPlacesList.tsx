@@ -95,12 +95,12 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
   );
 
   return (
-    <main className="mobile-frame fixed inset-0 flex flex-col bg-neutral-00">
+    <main className="min-h-screen-safe-bottom flex flex-col bg-neutral-00">
       <PageHeader title="좋아요" onBack={onBack} />
 
       <nav
         aria-label="좋아요 카테고리 필터"
-        className="scrollbar-hidden flex shrink-0 gap-2 overflow-x-auto px-4 pt-6 pb-3"
+        className="scrollbar-hidden flex shrink-0 gap-2 overflow-x-auto pt-6 pb-3"
       >
         {availableCategories.map((category) => (
           <CategoryChip
@@ -119,7 +119,7 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
 
       <section
         aria-label="좋아요한 가게 목록"
-        className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto px-4 pb-safe-bottom"
+        className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto"
       >
         {isPending ? (
           <div role="status" aria-label="좋아요한 가게 불러오는 중" className="space-y-6 py-2">
