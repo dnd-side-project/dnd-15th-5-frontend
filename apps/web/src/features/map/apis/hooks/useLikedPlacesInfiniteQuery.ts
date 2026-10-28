@@ -14,11 +14,16 @@ export const LIKED_PLACES_INFINITE_QUERY_KEY = [
 ] as const;
 
 const getNextCursor = (
-  lastPage: Awaited<ReturnType<typeof getLikedPlaces>>
+  lastPage: Awaited<ReturnType<typeof getLikedPlaces>>,
+  lastPageParam: LikedPlacesCursor
 ): LikedPlacesCursor | undefined => {
   const pageData = lastPage.data;
 
-  if (!pageData?.hasNext || pageData.nextCursorId === undefined) {
+  if (
+    !pageData?.hasNext ||
+    pageData.nextCursorId === undefined ||
+    pageData.nextCursorId === lastPageParam.cursorId
+  ) {
     return undefined;
   }
 
@@ -32,7 +37,8 @@ export const useLikedPlacesInfiniteQuery = (category?: string) => {
     queryFn: ({ pageParam, signal }) =>
       getLikedPlaces({ ...pageParam, category, size: LIKED_PLACES_PAGE_SIZE }, undefined, signal),
     initialPageParam: {} as LikedPlacesCursor,
-    getNextPageParam: getNextCursor,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+      getNextCursor(lastPage, lastPageParam),
     placeholderData: (previousData) => previousData,
   });
   const likedPlaces = query.isPlaceholderData
