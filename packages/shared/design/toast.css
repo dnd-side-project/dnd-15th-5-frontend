@@ -5,10 +5,10 @@
 
 /* Toast 외곽 크기와 여백 */
 @utility toast-surface {
-  min-height: 40px;
+  min-height: 52px;
   max-width: 100%;
-  border-radius: var(--radius-08);
-  padding: 12px 24px;
+  border-radius: var(--radius-16);
+  padding: 16px 24px;
 }
 
 /* 아이콘과 메시지 정렬 */

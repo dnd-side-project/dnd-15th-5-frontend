@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { getFrequentPlaces } from '@/features/report/apis/clients';
 import { GetFrequentPlacesPeriod } from '@/features/report/apis/dto';
+import { getGetFrequentPlacesQueryKey } from '@/features/report/apis/queryKeys';
 
 import { useFrequentPlacesInfiniteQuery } from './useFrequentPlacesInfiniteQuery';
 
@@ -50,7 +51,7 @@ describe('useFrequentPlacesInfiniteQuery', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     const frequentPlacesQuery = queryClient.getQueryCache().find({
-      queryKey: ['/consumptions/places/rank', 'infinite', { ...queryParams, size: 15 }],
+      queryKey: [...getGetFrequentPlacesQueryKey(), 'infinite', { ...queryParams, size: 15 }],
     });
     const cacheOptions = frequentPlacesQuery?.options as
       { gcTime?: number; refetchOnWindowFocus?: boolean; staleTime?: number } | undefined;
@@ -106,7 +107,7 @@ describe('useFrequentPlacesInfiniteQuery', () => {
     );
     expect(
       queryClient.getQueryCache().find({
-        queryKey: ['/consumptions/places/rank', 'infinite', queryParams],
+        queryKey: [...getGetFrequentPlacesQueryKey(), 'infinite', queryParams],
       })
     ).toBeDefined();
   });

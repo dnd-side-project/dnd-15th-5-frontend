@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import {
+  createFrequentShopListPath,
   MonthlyStickerSummary,
   RecentDiscoveryPanel,
   ReportContentSkeleton,
@@ -117,7 +118,7 @@ export default function ReportPage() {
               <br />
               보러가기
             </ReportLinkButton>
-            <ReportLinkButton to={ROUTE_PATHS.frequentShopList}>
+            <ReportLinkButton to={createFrequentShopListPath('all')}>
               단골리스트
               <br />
               보러가기

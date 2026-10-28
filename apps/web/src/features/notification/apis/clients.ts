@@ -12,7 +12,6 @@ import type {
   ApiResponseListNotificationResponse,
   ApiResponseVoid,
   DeviceTokenRegisterRequest,
-  GetNotificationsParams,
   SecondParameter,
 } from '@/features/notification/apis/dto';
 
@@ -21,7 +20,7 @@ export const unregisterDeviceToken = (
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseVoid>(
-    { url: `/accounts/me/device-token`, method: 'DELETE', signal },
+    { url: `/v1/accounts/me/device-token`, method: 'DELETE', signal },
     options
   );
 };
@@ -36,7 +35,7 @@ export const registerDeviceToken = (
 ) => {
   return apiClient<ApiResponseVoid>(
     {
-      url: `/accounts/me/device-token`,
+      url: `/v1/accounts/me/device-token`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: deviceTokenRegisterRequest,
@@ -51,12 +50,11 @@ export const registerDeviceToken = (
  * @summary 알림 목록 조회
  */
 export const getNotifications = (
-  params?: GetNotificationsParams,
   options?: SecondParameter<typeof apiClient>,
   signal?: AbortSignal
 ) => {
   return apiClient<ApiResponseListNotificationResponse>(
-    { url: `/notifications`, method: 'GET', params, signal },
+    { url: `/v1/notifications`, method: 'GET', signal },
     options
   );
 };
@@ -67,7 +65,7 @@ export const getNotifications = (
  */
 export const hasUnread = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
   return apiClient<ApiResponseBoolean>(
-    { url: `/notifications/unread-exists`, method: 'GET', signal },
+    { url: `/v1/notifications/unread-exists`, method: 'GET', signal },
     options
   );
 };

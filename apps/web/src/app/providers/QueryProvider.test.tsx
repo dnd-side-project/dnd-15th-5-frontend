@@ -25,15 +25,17 @@ describe('QueryProvider', () => {
 
     expect(type).toBe('active');
     expect(
-      predicate?.({ queryKey: ['/consumptions', 'infinite'], isStale: () => true } as never)
+      predicate?.({ queryKey: ['/v1/consumptions', 'infinite'], isStale: () => true } as never)
     ).toBe(true);
-    expect(predicate?.({ queryKey: ['/reports/current'], isStale: () => true } as never)).toBe(
+    expect(predicate?.({ queryKey: ['/v1/reports/current'], isStale: () => true } as never)).toBe(
       true
     );
     expect(
-      predicate?.({ queryKey: ['/consumptions', 'infinite'], isStale: () => false } as never)
+      predicate?.({ queryKey: ['/v1/consumptions', 'infinite'], isStale: () => false } as never)
     ).toBe(false);
-    expect(predicate?.({ queryKey: ['/accounts/me'], isStale: () => true } as never)).toBe(false);
+    expect(predicate?.({ queryKey: ['/v1/accounts/me'], isStale: () => true } as never)).toBe(
+      false
+    );
 
     unmount();
     refetchQueries.mockRestore();

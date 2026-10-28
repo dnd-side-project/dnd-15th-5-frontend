@@ -3,4 +3,10 @@
  * Do not edit manually.
  */
 
-export {};
+export const getGetConsumptionQueryKey = (consumptionId: number) => {
+  return [`/v1/consumptions/${consumptionId}`] as const;
+};
+
+export const getFindStickersQueryKey = () => {
+  return [`/v1/consumptions/stickers`] as const;
+};

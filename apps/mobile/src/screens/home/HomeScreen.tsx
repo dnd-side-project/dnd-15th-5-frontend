@@ -11,7 +11,8 @@ import {
   respondToBridgeRequest,
 } from '@/bridge';
 import { getKakaoTalkShareTarget } from '@/bridge/kakaoTalkShare';
-import { subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
+import { requestWebViewNavigation, subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
+import { clearNotificationBadge, subscribeNotificationResponses } from '@/native/notifications';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
 import {
   createNativeAnalyticsScript,
@@ -54,6 +55,8 @@ export default function HomeScreen() {
 
     return () => subscription.remove();
   }, [trustedWebOrigin]);
+
+  useEffect(() => subscribeNotificationResponses((path) => requestWebViewNavigation(path)), []);
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -110,6 +113,10 @@ export default function HomeScreen() {
         markNativeAnalyticsReady();
       } else if (message.type === 'routeChanged') {
         handleRouteChange(message.payload.pathname);
+
+        if (message.payload.pathname === '/notifications') {
+          void clearNotificationBadge();
+        }
       }
       return;
     }

@@ -8,6 +8,7 @@ import {
   startSocialLogin,
 } from '@/native/auth';
 import { getCurrentPosition } from '@/native/location';
+import { clearPushNotifications, getPushToken } from '@/native/notifications';
 import { openReceiptCamera } from '@/native/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/save-image';
 
@@ -19,6 +20,10 @@ jest.mock('@/native/location', () => ({ getCurrentPosition: jest.fn() }));
 jest.mock('@/native/api', () => ({ clearAccessToken: jest.fn() }));
 jest.mock('@/native/save-image', () => ({ saveImageToLibrary: jest.fn() }));
 jest.mock('@/native/openReceiptCamera', () => ({ openReceiptCamera: jest.fn() }));
+jest.mock('@/native/notifications', () => ({
+  clearPushNotifications: jest.fn(),
+  getPushToken: jest.fn(),
+}));
 jest.mock('@/native/auth', () => ({
   clearRefreshToken: jest.fn(),
   getRefreshToken: jest.fn(),
@@ -34,6 +39,8 @@ const mockSaveImageToLibrary = jest.mocked(saveImageToLibrary);
 const mockOpenReceiptCamera = jest.mocked(openReceiptCamera);
 const mockSetRefreshToken = jest.mocked(setRefreshToken);
 const mockStartSocialLogin = jest.mocked(startSocialLogin);
+const mockGetPushToken = jest.mocked(getPushToken);
+const mockClearPushNotifications = jest.mocked(clearPushNotifications);
 
 const createRequest = (overrides: Partial<BridgeRequest> = {}): BridgeRequest =>
   ({
@@ -56,6 +63,11 @@ describe('createBridgeResponse', () => {
     mockSetRefreshToken.mockResolvedValue(undefined);
     mockClearRefreshToken.mockResolvedValue(undefined);
     mockStartSocialLogin.mockResolvedValue({ status: 'cancelled' });
+    mockGetPushToken.mockResolvedValue({
+      status: 'success',
+      pushToken: 'ExponentPushToken[test-token]',
+    });
+    mockClearPushNotifications.mockResolvedValue();
   });
 
   it('요청을 처리하고 같은 식별자로 응답한다', async () => {
@@ -64,6 +76,23 @@ describe('createBridgeResponse', () => {
     expect(response.id).toBe('request-01');
     expect(response.type).toBe('ping');
     expect(response.ok).toBe(true);
+  });
+
+  it('Expo Push Token을 웹에 반환한다', async () => {
+    const request: BridgeRequest<'getPushToken'> = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'request-push-01',
+      type: 'getPushToken',
+      payload: {},
+    };
+
+    await expect(createBridgeResponse(request)).resolves.toEqual({
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: request.id,
+      type: request.type,
+      ok: true,
+      result: { status: 'success', pushToken: 'ExponentPushToken[test-token]' },
+    });
   });
 
   it('처리할 수 없는 요청이면 실패로 응답한다', async () => {

@@ -637,26 +637,41 @@ describe('HomeBottomSheet', () => {
 
   it('시트 전체를 재마운트하지 않고 콘텐츠만 fade로 전환한다', async () => {
     const user = userEvent.setup();
-    render(
-      <>
-        <HomeCategoryFilter />
-        <HomeBottomSheet
-          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
-          renderSelectedPlace={renderSelectedPlace}
-          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
-        />
-      </>
-    );
-    const bottomSheet = screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement;
+    const originalRequestAnimationFrame = window.requestAnimationFrame;
+    const originalCancelAnimationFrame = window.cancelAnimationFrame;
+    let animationFrameCallback: FrameRequestCallback | undefined;
+    window.requestAnimationFrame = jest.fn((callback: FrameRequestCallback) => {
+      animationFrameCallback = callback;
+      return 1;
+    });
+    window.cancelAnimationFrame = jest.fn();
 
-    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    try {
+      render(
+        <>
+          <HomeCategoryFilter />
+          <HomeBottomSheet
+            renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+            renderSelectedPlace={renderSelectedPlace}
+            renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+          />
+        </>
+      );
+      const bottomSheet = screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement;
 
-    const dialog = screen.getByRole('dialog');
-    expect(dialog).toHaveClass('opacity-0');
-    expect(screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement).toBe(
-      bottomSheet
-    );
+      await user.click(screen.getByRole('button', { name: '가게 추천' }));
 
-    await waitFor(() => expect(dialog).toHaveClass('opacity-100'));
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveClass('opacity-0');
+      expect(screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement).toBe(
+        bottomSheet
+      );
+
+      act(() => animationFrameCallback?.(0));
+      await waitFor(() => expect(dialog).toHaveClass('opacity-100'));
+    } finally {
+      window.requestAnimationFrame = originalRequestAnimationFrame;
+      window.cancelAnimationFrame = originalCancelAnimationFrame;
+    }
   });
 });

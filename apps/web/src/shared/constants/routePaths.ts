@@ -1,3 +1,7 @@
+import {
+  NOTIFICATION_ALLOWED_PATHS,
+  NOTIFICATION_ALLOWED_PATH_PATTERNS,
+} from '@chapchap/shared/notification';
 import { generatePath } from 'react-router-dom';
 
 import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
@@ -8,7 +12,7 @@ import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
  */
 export const ROUTE_PATTERNS = {
   sharedReport: '/share/:shareToken',
-  shopDetail: '/home/shop/:shopId',
+  shopDetail: NOTIFICATION_ALLOWED_PATH_PATTERNS.shopDetail,
 } as const;
 
 /**
@@ -33,15 +37,16 @@ export const ROUTE_PATHS = {
   recordShopSearch: '/record/shop/search',
   receiptCamera: '/record/receipt/camera',
 
-  report: '/report',
-  spendingHistory: '/report/history',
-  frequentShopList: '/report/frequent-shops',
-  monthlyRecordList: '/report/monthly-records',
-  monthlyReport: '/report/monthly-report',
+  report: NOTIFICATION_ALLOWED_PATHS.report,
+  spendingHistory: NOTIFICATION_ALLOWED_PATHS.spendingHistory,
+  frequentShopList: NOTIFICATION_ALLOWED_PATHS.frequentShopList,
+  monthlyRecordList: NOTIFICATION_ALLOWED_PATHS.monthlyRecordList,
+  monthlyReport: NOTIFICATION_ALLOWED_PATHS.monthlyReport,
   sharedReport: (shareToken: string) => generatePath(ROUTE_PATTERNS.sharedReport, { shareToken }),
 
-  notifications: '/notifications',
+  notifications: NOTIFICATION_ALLOWED_PATHS.notifications,
   myPage: '/my-page',
+  myPageProfile: '/my-page/profile',
 } as const;
 
 /** 선택한 연월을 유지해야 하는 기록 경로에 `yearMonth` 검색 파라미터를 추가합니다. */

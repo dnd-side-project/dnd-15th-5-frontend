@@ -6,23 +6,18 @@ import { useGetNotifications } from '@/features/notification/apis/queries';
 import { getHasUnreadQueryKey } from '@/features/notification/apis/queryKeys';
 import { toNotificationItems } from '@/features/notification/utils/notifications';
 
-const NOTIFICATION_LIST_SIZE = 20;
-
 /** 알림 페이지에 진입할 때 목록을 조회하고 읽음 여부에 따라 화면 데이터를 구분합니다. */
 export const useNotificationsQuery = () => {
   const queryClient = useQueryClient();
-  const query = useGetNotifications(
-    { size: NOTIFICATION_LIST_SIZE },
-    {
-      query: {
-        staleTime: 0,
-        refetchInterval: false,
-        refetchOnMount: 'always',
-        refetchOnReconnect: false,
-        refetchOnWindowFocus: false,
-      },
-    }
-  );
+  const query = useGetNotifications({
+    query: {
+      staleTime: 0,
+      refetchInterval: false,
+      refetchOnMount: 'always',
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+    },
+  });
 
   useEffect(() => {
     if (query.data === undefined) {

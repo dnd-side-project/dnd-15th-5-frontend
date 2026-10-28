@@ -11,6 +11,10 @@ import HomeScreen from './HomeScreen';
 const mockCreateBridgeResponse = jest.fn();
 const mockCreateResponseScript = jest.fn((_response: unknown, _trustedOrigin: string) => 'true;');
 const mockCreateAppActiveScript = jest.fn((_trustedOrigin: string) => 'app-active;');
+const mockSubscribeNotificationResponses = jest.fn((_listener: (path: string) => void) =>
+  jest.fn()
+);
+const mockClearNotificationBadge = jest.fn();
 const removeBackHandler = jest.fn();
 const removeAppStateHandler = jest.fn();
 type HardwareBackHandler = Parameters<typeof BackHandler.addEventListener>[1];
@@ -80,6 +84,11 @@ jest.mock('@/bridge', () => ({
     return true;
   },
 }));
+jest.mock('@/native/notifications', () => ({
+  clearNotificationBadge: () => mockClearNotificationBadge(),
+  subscribeNotificationResponses: (listener: (path: string) => void) =>
+    mockSubscribeNotificationResponses(listener),
+}));
 
 describe('<HomeScreen />', () => {
   const originalWebUrl = process.env.EXPO_PUBLIC_WEB_URL;
@@ -96,6 +105,8 @@ describe('<HomeScreen />', () => {
     mockCreateBridgeResponse.mockReset();
     mockCreateBridgeResponse.mockResolvedValue({});
     mockCreateResponseScript.mockClear();
+    mockSubscribeNotificationResponses.mockClear();
+    mockClearNotificationBadge.mockClear();
     jest.spyOn(BackHandler, 'addEventListener').mockImplementation((_eventName, handler) => {
       hardwareBackHandler = handler;
       return { remove: removeBackHandler };
@@ -105,6 +116,20 @@ describe('<HomeScreen />', () => {
       return { remove: removeAppStateHandler };
     });
     jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+  });
+
+  it('푸시 알림을 누르면 알림의 상세 경로로 이동한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    await render(<HomeScreen />);
+    const onNotificationOpen = mockSubscribeNotificationResponses.mock.calls[0]?.[0];
+
+    await act(async () => {
+      onNotificationOpen?.('/report/monthly-report?yearMonth=2026-09');
+    });
+
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      'window.location.replace("https://chapchap.example.com/report/monthly-report?yearMonth=2026-09"); true;'
+    );
   });
 
   afterEach(() => {

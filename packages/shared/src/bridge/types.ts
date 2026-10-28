@@ -103,6 +103,18 @@ export type BridgeMessageMap = {
     payload: Record<string, never>;
     result: { cleared: true };
   };
+  getPushToken: {
+    payload: Record<string, never>;
+    result:
+      | { status: 'success'; pushToken: string }
+      | { status: 'permissionDenied' }
+      | { status: 'unsupportedDevice' }
+      | {
+          status: 'error';
+          reason: 'network' | 'server' | 'configuration' | 'unknown';
+          message: string;
+        };
+  };
 };
 
 export type BridgeMessageType = keyof BridgeMessageMap;

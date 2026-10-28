@@ -2,6 +2,11 @@ import { BRIDGE_MESSAGE_KIND } from '@chapchap/shared/bridge';
 
 import { respondToBridgeRequest } from './respondToBridgeRequest';
 
+jest.mock('@/native/notifications', () => ({
+  clearPushNotifications: jest.fn(),
+  getPushToken: jest.fn(),
+}));
+
 const TRUSTED_ORIGIN = 'https://chapchap.example.com';
 
 describe('respondToBridgeRequest', () => {

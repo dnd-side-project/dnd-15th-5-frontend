@@ -15,7 +15,7 @@ jest.mock('@/features/notification/apis/queries', () => ({
 const mockedUseGetNotifications = jest.mocked(useGetNotifications);
 
 describe('useNotificationsQuery', () => {
-  it('폴링 없이 알림 20개를 조회하고 읽음 여부로 구분한다', () => {
+  it('폴링 없이 알림을 조회하고 읽음 여부로 구분한다', () => {
     const queryClient = new QueryClient();
     const wrapper = ({ children }: PropsWithChildren) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -31,18 +31,15 @@ describe('useNotificationsQuery', () => {
 
     const { result } = renderHook(() => useNotificationsQuery(), { wrapper });
 
-    expect(mockedUseGetNotifications).toHaveBeenCalledWith(
-      { size: 20 },
-      {
-        query: {
-          staleTime: 0,
-          refetchInterval: false,
-          refetchOnMount: 'always',
-          refetchOnReconnect: false,
-          refetchOnWindowFocus: false,
-        },
-      }
-    );
+    expect(mockedUseGetNotifications).toHaveBeenCalledWith({
+      query: {
+        staleTime: 0,
+        refetchInterval: false,
+        refetchOnMount: 'always',
+        refetchOnReconnect: false,
+        refetchOnWindowFocus: false,
+      },
+    });
     expect(result.current.recentNotifications).toHaveLength(1);
     expect(result.current.previousNotifications).toHaveLength(1);
     expect(queryClient.getQueryData(getHasUnreadQueryKey())).toEqual({ data: false });

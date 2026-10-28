@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import { AnnouncementIcon } from '@/shared/assets/icons';
 import { cn } from '@/shared/lib/cn';
 
@@ -8,13 +10,8 @@ type NotificationItemProps = {
 };
 
 function NotificationItem({ notification }: NotificationItemProps) {
-  return (
-    <li
-      className={cn(
-        'flex min-h-24 items-start gap-5.5 px-4 py-3.75',
-        !notification.isRead && 'bg-primary-50'
-      )}
-    >
+  const content = (
+    <>
       <span className="flex size-5.25 shrink-0 items-center justify-center" aria-hidden="true">
         <AnnouncementIcon className="h-4.5 w-[18.31px]" />
       </span>
@@ -30,6 +27,22 @@ function NotificationItem({ notification }: NotificationItemProps) {
           {notification.elapsedTime}
         </time>
       </div>
+    </>
+  );
+  const className = cn(
+    'flex min-h-24 items-start gap-5.5 px-4 py-3.75',
+    !notification.isRead && 'bg-primary-50'
+  );
+
+  return (
+    <li className={className}>
+      {notification.path ? (
+        <Link className="flex w-full items-start gap-5.5" to={notification.path}>
+          {content}
+        </Link>
+      ) : (
+        <div className="flex w-full items-start gap-5.5">{content}</div>
+      )}
     </li>
   );
 }

@@ -1,7 +1,5 @@
-import { NATIVE_APP_ACTIVE_EVENT } from '@chapchap/shared/bridge';
-import { useEffect } from 'react';
-
 import { useHasUnread } from '@/features/notification/apis/queries';
+import { useNativeAppActive } from '@/shared/hooks/useNativeAppActive';
 
 /** 홈에서 안 읽은 알림 상태를 조회하고 앱 활성화 시 최신 상태로 갱신합니다. */
 export const useHasUnreadNotificationQuery = () => {
@@ -16,18 +14,8 @@ export const useHasUnreadNotificationQuery = () => {
       refetchOnWindowFocus: true,
     },
   });
-  const { refetch } = query;
-
-  useEffect(() => {
-    // NOTE: WebView에서는 브라우저 focus 이벤트가 안정적이지 않아 네이티브 활성화 이벤트를 사용한다.
-    const handleNativeAppActive = () => {
-      void refetch();
-    };
-
-    window.addEventListener(NATIVE_APP_ACTIVE_EVENT, handleNativeAppActive);
-
-    return () => window.removeEventListener(NATIVE_APP_ACTIVE_EVENT, handleNativeAppActive);
-  }, [refetch]);
+  // NOTE: WebView에서는 브라우저 focus 이벤트가 안정적이지 않아 네이티브 활성화 이벤트를 사용한다.
+  useNativeAppActive(() => void query.refetch());
 
   return {
     ...query,

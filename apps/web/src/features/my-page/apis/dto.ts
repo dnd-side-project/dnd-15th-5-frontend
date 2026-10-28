@@ -12,10 +12,12 @@ export type AccountResponse = {
   /** 닉네임 */
   nickname?: string;
   /**
-   * 프로필 이미지 URL
+   * 기존 파일 업로드 API의 이미지 URL. 현재 조회에서는 사용하지 않습니다.
    * @nullable
    */
   profileImageUrl?: string | null;
+  /** 현재 기본 프로필 이미지 코드 */
+  profileImageCode?: string;
 };
 
 export type ApiResponseAccountResponse = {
@@ -37,15 +39,49 @@ export type ApiResponseVoid = {
 };
 
 /**
+ * 선택한 기본 프로필 이미지
+ * @minLength 1
+ */
+export type ProfileUpdateRequestProfileImageCode =
+  (typeof ProfileUpdateRequestProfileImageCode)[keyof typeof ProfileUpdateRequestProfileImageCode];
+
+export const ProfileUpdateRequestProfileImageCode = {
+  BLUE: 'BLUE',
+  SKY_BLUE: 'SKY_BLUE',
+  PINK: 'PINK',
+  YELLOW: 'YELLOW',
+  TEAL: 'TEAL',
+  RED: 'RED',
+} as const;
+
+/**
+ * 이름과 기본 프로필 이미지 수정 요청
+ */
+export type ProfileUpdateRequest = {
+  /**
+   * 한글·자모·공백 허용, 앞뒤 공백 제거 후 1~16자
+   * @minLength 0
+   * @maxLength 16
+   * @pattern [가-힣ㄱ-ㅎㅏ-ㅣ ]+
+   */
+  nickname: string;
+  /**
+   * 선택한 기본 프로필 이미지
+   * @minLength 1
+   */
+  profileImageCode: ProfileUpdateRequestProfileImageCode;
+};
+
+/**
  * 내 정보 수정 요청
  */
 export type AccountUpdateRequest = {
   /**
    * 변경할 닉네임
-   * @minLength 2
-   * @maxLength 10
+   * @minLength 1
+   * @maxLength 16
    * @nullable
-   * @pattern .*\S.*
+   * @pattern [가-힣ㄱ-ㅎㅏ-ㅣ ]+
    */
   nickname?: string | null;
   /**

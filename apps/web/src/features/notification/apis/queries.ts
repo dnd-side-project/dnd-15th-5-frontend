@@ -23,7 +23,7 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type { ErrorType } from '@/shared/apis/orvalMutator';
 
-import type { GetNotificationsParams, SecondParameter } from '@/features/notification/apis/dto';
+import type { SecondParameter } from '@/features/notification/apis/dto';
 
 import { getNotifications, hasUnread } from '@/features/notification/apis/clients';
 
@@ -50,19 +50,16 @@ export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { 
 export const getGetNotificationsQueryOptions = <
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
->(
-  params?: GetNotificationsParams,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>>;
-    request?: SecondParameter<typeof apiClient>;
-  }
-) => {
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>>;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetNotificationsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetNotificationsQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotifications>>> = ({ signal }) =>
-    getNotifications(params, requestOptions, signal);
+    getNotifications(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getNotifications>>,
@@ -79,7 +76,6 @@ export function useGetNotifications<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
-  params: undefined | GetNotificationsParams,
   options: {
     query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>> &
       Pick<
@@ -99,7 +95,6 @@ export function useGetNotifications<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
-  params?: GetNotificationsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>> &
       Pick<
@@ -119,7 +114,6 @@ export function useGetNotifications<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
-  params?: GetNotificationsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>>;
     request?: SecondParameter<typeof apiClient>;
@@ -135,14 +129,13 @@ export function useGetNotifications<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
-  params?: GetNotificationsParams,
   options?: {
     query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>>;
     request?: SecondParameter<typeof apiClient>;
   },
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getGetNotificationsQueryOptions(params, options);
+  const queryOptions = getGetNotificationsQueryOptions(options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
@@ -154,21 +147,18 @@ export function useGetNotifications<
 export const getGetNotificationsSuspenseQueryOptions = <
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
->(
-  params?: GetNotificationsParams,
-  options?: {
-    query?: Partial<
-      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>
-    >;
-    request?: SecondParameter<typeof apiClient>;
-  }
-) => {
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetNotificationsQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetNotificationsQueryKey();
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotifications>>> = ({ signal }) =>
-    getNotifications(params, requestOptions, signal);
+    getNotifications(requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getNotifications>>,
@@ -187,7 +177,6 @@ export function useGetNotificationsSuspense<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
-  params: undefined | GetNotificationsParams,
   options: {
     query: Partial<
       UseSuspenseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>
@@ -201,7 +190,6 @@ export function useGetNotificationsSuspense<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
-  params?: GetNotificationsParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>
@@ -215,7 +203,6 @@ export function useGetNotificationsSuspense<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
-  params?: GetNotificationsParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>
@@ -233,7 +220,6 @@ export function useGetNotificationsSuspense<
   TData = Awaited<ReturnType<typeof getNotifications>>,
   TError = ErrorType<unknown>,
 >(
-  params?: GetNotificationsParams,
   options?: {
     query?: Partial<
       UseSuspenseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>
@@ -242,7 +228,7 @@ export function useGetNotificationsSuspense<
   },
   queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getGetNotificationsSuspenseQueryOptions(params, options);
+  const queryOptions = getGetNotificationsSuspenseQueryOptions(options);
 
   const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
     TData,
