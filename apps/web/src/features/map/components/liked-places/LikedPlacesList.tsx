@@ -1,98 +1,90 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
-import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
+import type { LikedPlaceResponse } from '@/features/map/apis/dto';
+import { useLikedPlacesInfiniteQuery } from '@/features/map/apis/hooks/useLikedPlacesInfiniteQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
-import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
-import { HOME_CATEGORIES } from '@/features/map/constants';
-import type { ShopRecommendation } from '@/features/map/types';
 import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import PageHeader from '@/shared/layout/PageHeader';
+import { Button } from '@/shared/ui/button';
 import { CategoryChip } from '@/shared/ui/category-chip';
 import { StateView } from '@/shared/ui/state-view';
 
+import LikedPlaceCardSkeleton from './LikedPlaceCardSkeleton';
 import LikedPlaceSummary from './LikedPlaceSummary';
 
 const ALL_CATEGORY = '전체';
-// TODO: 운영 API에 GET /v1/places/likes가 배포되면 서버 페이지네이션과 응답 사진으로 전환한다.
 
-function LikedPlaceCard({ likedPlace }: { likedPlace: ShopRecommendation }) {
-  const { id: placeId, place } = likedPlace;
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [isNearViewport, setIsNearViewport] = useState(
-    () => typeof IntersectionObserver === 'undefined'
-  );
-  useEffect(() => {
-    const card = cardRef.current;
-    if (!card) return;
-
-    if (typeof IntersectionObserver === 'undefined') return;
-
-    // 카드가 화면 가까이에 왔을 때 매장별 Places 조회를 한 번 실행하고 관찰을 끝낸다.
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsNearViewport(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '160px 0px' }
-    );
-    observer.observe(card);
-
-    return () => observer.disconnect();
-  }, []);
-  const {
-    query: placeDetailsQuery,
-    isLibraryLoading,
-    isLibraryError,
-  } = useRecommendationRecordShopQuery(likedPlace, { enabled: isNearViewport });
-  // TODO: 방문 장소 API가 사진 URL을 제공하면 Google Places 사진 조회를 API 응답 사용으로 교체한다.
+function LikedPlaceCard({ likedPlace }: { likedPlace: LikedPlaceResponse }) {
   const likeMutation = useTogglePlaceLikeMutation();
-  const placeDetails = placeDetailsQuery.data;
-  const photoUrls = getLikedPlacePhotoUrls(placeDetails?.photoUrls, placeDetails?.photoUrl);
-  const address = placeDetails?.address || place.address;
-  const isPlaceDetailsLoading =
-    !isLibraryError && (isLibraryLoading || placeDetailsQuery.isPending);
+  const photoUrls = getLikedPlacePhotoUrls(
+    likedPlace.photos?.flatMap(({ thumbnailUrl }) => (thumbnailUrl ? [thumbnailUrl] : []))
+  );
+
+  if (likedPlace.placeId === undefined) {
+    return null;
+  }
+  const placeId = likedPlace.placeId;
 
   return (
-    <div ref={cardRef}>
-      <LikedPlaceSummary
-        placeId={placeId}
-        name={place.name}
-        category={place.category}
-        address={address}
-        photoUrls={photoUrls}
-        isLoading={isPlaceDetailsLoading}
-        isUnlikePending={likeMutation.isPending}
-        onUnlike={() => likeMutation.mutate({ placeId: Number(placeId) })}
-        headingAs="h2"
-      />
-    </div>
+    <LikedPlaceSummary
+      placeId={String(placeId)}
+      name={likedPlace.name ?? '이름 정보가 없어요'}
+      category={likedPlace.category ?? '기타'}
+      address={likedPlace.address}
+      photoUrls={photoUrls}
+      isLoading={false}
+      isUnlikePending={likeMutation.isPending}
+      onUnlike={() => likeMutation.mutate({ placeId })}
+      headingAs="h2"
+    />
   );
 }
 
-/** 좋아요한 장소를 카테고리별로 모아 보여주는 목록입니다. */
+/** 좋아요한 장소를 서버 페이지네이션으로 조회해 카테고리별로 보여줍니다. */
 export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
-  const [selectedCategory, setSelectedCategory] = useState<string>(ALL_CATEGORY);
+  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
+  const listRef = useRef<HTMLElement>(null);
+  const isFetchingNextPageRef = useRef(false);
+  const categoryParam = selectedCategory === ALL_CATEGORY ? undefined : selectedCategory;
+  const likedPlacesQuery = useLikedPlacesInfiniteQuery(categoryParam);
   const {
-    likedRecommendations: likedPlaces,
-    isPending,
+    categories,
+    fetchNextPage,
+    hasNextPage,
     isError,
+    isFetchNextPageError,
+    isFetchingNextPage,
+    isPending,
+    likedPlaces,
     refetch,
-  } = useVisitedPlaceStickersQuery();
-  // 좋아요한 매장에 실제로 존재하는 카테고리만 필터에 노출한다.
+  } = likedPlacesQuery;
   const availableCategories = [
     ALL_CATEGORY,
-    ...HOME_CATEGORIES.filter((category) =>
-      likedPlaces.some(({ place }) => place.category === category)
-    ),
+    ...categories.filter((category) => category !== ALL_CATEGORY),
   ];
   const activeCategory = availableCategories.includes(selectedCategory)
     ? selectedCategory
     : ALL_CATEGORY;
-  const filteredLikedPlaces = likedPlaces.filter(
-    ({ place }) => activeCategory === ALL_CATEGORY || place.category === activeCategory
-  );
+
+  const loadNextPage = useCallback(() => {
+    if (!hasNextPage || isFetchingNextPageRef.current) {
+      return;
+    }
+
+    isFetchingNextPageRef.current = true;
+    void fetchNextPage().finally(() => {
+      isFetchingNextPageRef.current = false;
+    });
+  }, [fetchNextPage, hasNextPage]);
+  const loadMoreRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    isLoadMoreError: isFetchNextPageError,
+    onLoadMore: loadNextPage,
+    rootRef: listRef,
+    rootMargin: '160px 0px',
+  });
 
   return (
     <main className="min-h-screen-safe-bottom flex flex-col bg-neutral-00">
@@ -107,8 +99,9 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
             key={category}
             selected={activeCategory === category}
             onSelectedChange={(selected) => {
-              if (!selected) return;
-              setSelectedCategory(category);
+              if (selected) {
+                setSelectedCategory(category);
+              }
             }}
             className="px-3 py-1.5"
           >
@@ -118,13 +111,14 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
       </nav>
 
       <section
+        ref={listRef}
         aria-label="좋아요한 가게 목록"
         className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto"
       >
         {isPending ? (
           <div role="status" aria-label="좋아요한 가게 불러오는 중" className="space-y-6 py-2">
             {[0, 1, 2].map((item) => (
-              <div key={item} className="h-45 animate-pulse rounded-12 bg-neutral-100" />
+              <LikedPlaceCardSkeleton key={item} />
             ))}
           </div>
         ) : isError ? (
@@ -137,11 +131,28 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
             onAction={() => void refetch()}
             className="pt-12"
           />
-        ) : filteredLikedPlaces.length ? (
+        ) : likedPlaces.length > 0 ? (
           <div className="space-y-6 py-2">
-            {filteredLikedPlaces.map((likedPlace) => (
-              <LikedPlaceCard key={likedPlace.id} likedPlace={likedPlace} />
+            {likedPlaces.map((likedPlace) => (
+              <LikedPlaceCard key={likedPlace.placeId} likedPlace={likedPlace} />
             ))}
+            {isFetchingNextPage && (
+              <div role="status" aria-label="다음 좋아요 장소 불러오는 중" className="space-y-6">
+                {[0, 1].map((item) => (
+                  <LikedPlaceCardSkeleton key={item} />
+                ))}
+              </div>
+            )}
+            {isFetchNextPageError && (
+              <div className="flex justify-center py-4">
+                <Button variant="primary" size="small" onClick={loadNextPage}>
+                  다시 불러오기
+                </Button>
+              </div>
+            )}
+            {hasNextPage && !isFetchNextPageError && (
+              <div ref={loadMoreRef} aria-hidden="true" className="h-px" />
+            )}
           </div>
         ) : (
           <StateView

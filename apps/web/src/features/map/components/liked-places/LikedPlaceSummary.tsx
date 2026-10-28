@@ -58,7 +58,8 @@ export default function LikedPlaceSummary({
       </p>
 
       <div
-        aria-label={`${name} 사진`}
+        role={isLoading ? 'status' : undefined}
+        aria-label={isLoading ? '가게 사진 불러오는 중' : `${name} 사진`}
         className="mt-3 grid gap-1 overflow-hidden rounded-16 bg-neutral-100"
         style={{
           gridTemplateColumns: `repeat(${isLoading ? 3 : Math.max(photoUrls.length, 1)}, minmax(0, 1fr))`,

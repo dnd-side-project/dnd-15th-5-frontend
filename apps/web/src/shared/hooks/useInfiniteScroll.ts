@@ -24,7 +24,15 @@ export const useInfiniteScroll = ({
 
   useEffect(() => {
     const loadMoreElement = loadMoreRef.current;
-    if (!loadMoreElement || !hasNextPage || isFetchingNextPage || isLoadMoreError) return;
+    if (
+      !loadMoreElement ||
+      !hasNextPage ||
+      isFetchingNextPage ||
+      isLoadMoreError ||
+      typeof IntersectionObserver === 'undefined'
+    ) {
+      return;
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {

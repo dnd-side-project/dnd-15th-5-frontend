@@ -3,7 +3,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toggleLike } from '@/features/map/apis/clients';
 import type {
   ApiResponseNearbyPlacesResponse,
+  ApiResponseLikedPlaceScrollResponse,
   ApiResponseVisitedPlaceMarkerResponse,
+  GetLikedPlacesParams,
   RecommendedPlaceItem,
 } from '@/features/map/apis/dto';
 import {
@@ -12,7 +14,12 @@ import {
 } from '@/features/map/apis/queryKeys';
 import { useToast } from '@/shared/ui/toast';
 
+import { LIKED_PLACES_INFINITE_QUERY_KEY } from './useLikedPlacesInfiniteQuery';
+
 import type { QueryClient } from '@tanstack/react-query';
+import type { InfiniteData } from '@tanstack/react-query';
+
+type LikedPlacesCursor = Pick<GetLikedPlacesParams, 'cursorId'>;
 
 const LIKE_ERROR_MESSAGE = '좋아요 상태를 변경하지 못했어요. 잠시 후 다시 시도해주세요.';
 const NEARBY_PLACES_QUERY_KEY = getGetNearbyPlacesQueryKey();
@@ -21,7 +28,15 @@ const VISITED_PLACES_QUERY_KEY = getGetVisitedPlaceMarkersQueryKey();
 type LikeMutationContext = {
   optimisticLiked: boolean;
   previousLiked: boolean | undefined;
+  previousLikedPlaces: Array<
+    [
+      readonly unknown[],
+      InfiniteData<ApiResponseLikedPlaceScrollResponse, LikedPlacesCursor> | undefined,
+    ]
+  >;
 };
+
+type LikedPlacesInfiniteData = InfiniteData<ApiResponseLikedPlaceScrollResponse, LikedPlacesCursor>;
 
 type LikeStateUpdater = (liked: boolean | undefined) => boolean | undefined;
 
@@ -100,7 +115,7 @@ const updateCachedLikeState = (
   );
 };
 
-/** 추천·지도 캐시의 좋아요 상태를 낙관적으로 맞추고 실패 시 이전 값으로 되돌립니다. */
+/** 추천·지도·좋아요 목록 캐시를 낙관적으로 갱신하고 실패 시 이전 값으로 복구합니다. */
 export const useTogglePlaceLikeMutation = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -116,6 +131,7 @@ export const useTogglePlaceLikeMutation = () => {
       await Promise.all([
         queryClient.cancelQueries({ queryKey: NEARBY_PLACES_QUERY_KEY }),
         queryClient.cancelQueries({ queryKey: VISITED_PLACES_QUERY_KEY }),
+        queryClient.cancelQueries({ queryKey: LIKED_PLACES_INFINITE_QUERY_KEY }),
       ]);
 
       const nearbyPlaces = queryClient.getQueriesData<ApiResponseNearbyPlacesResponse>({
@@ -124,6 +140,12 @@ export const useTogglePlaceLikeMutation = () => {
       const visitedPlaces = queryClient.getQueriesData<ApiResponseVisitedPlaceMarkerResponse>({
         queryKey: VISITED_PLACES_QUERY_KEY,
       });
+      const previousLikedPlaces = queryClient.getQueriesData<LikedPlacesInfiniteData>({
+        queryKey: LIKED_PLACES_INFINITE_QUERY_KEY,
+      });
+      const likedPlaceIsInList = previousLikedPlaces.some(([, data]) =>
+        data?.pages.some((page) => page.data?.places?.some((place) => place.placeId === placeId))
+      );
       const currentRecommendation = nearbyPlaces
         .flatMap(([, response]) => [
           ...(response?.data?.sameCategoryPlaces ?? []),
@@ -133,18 +155,44 @@ export const useTogglePlaceLikeMutation = () => {
       const currentVisitedPlace = visitedPlaces
         .flatMap(([, response]) => response?.data?.places ?? [])
         .find((place) => place.placeId === placeId);
-      const previousLiked = currentRecommendation?.liked ?? currentVisitedPlace?.liked;
+      const previousLiked = likedPlaceIsInList
+        ? true
+        : (currentRecommendation?.liked ?? currentVisitedPlace?.liked);
       const optimisticLiked = !(previousLiked ?? false);
 
       updateCachedLikeState(queryClient, placeId, () => optimisticLiked);
 
-      return { optimisticLiked, previousLiked };
+      if (!optimisticLiked) {
+        queryClient.setQueriesData<LikedPlacesInfiniteData>(
+          { queryKey: LIKED_PLACES_INFINITE_QUERY_KEY },
+          (data) =>
+            data
+              ? {
+                  ...data,
+                  pages: data.pages.map((page) => ({
+                    ...page,
+                    data: page.data
+                      ? {
+                          ...page.data,
+                          places: page.data.places?.filter((place) => place.placeId !== placeId),
+                        }
+                      : page.data,
+                  })),
+                }
+              : data
+        );
+      }
+
+      return { optimisticLiked, previousLiked, previousLikedPlaces };
     },
     onError: (_error, { placeId }, context) => {
       if (context) {
         updateCachedLikeState(queryClient, placeId, (liked) =>
           liked === context.optimisticLiked ? context.previousLiked : liked
         );
+        context.previousLikedPlaces.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
       showToast({ type: 'error', message: LIKE_ERROR_MESSAGE });
     },
@@ -158,6 +206,7 @@ export const useTogglePlaceLikeMutation = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: NEARBY_PLACES_QUERY_KEY }),
         queryClient.invalidateQueries({ queryKey: VISITED_PLACES_QUERY_KEY }),
+        queryClient.invalidateQueries({ queryKey: LIKED_PLACES_INFINITE_QUERY_KEY }),
       ]);
     },
   });
