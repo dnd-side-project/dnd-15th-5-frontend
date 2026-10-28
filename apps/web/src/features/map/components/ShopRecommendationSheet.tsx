@@ -148,10 +148,8 @@ export default function ShopRecommendationSheet() {
       <StateView
         variant="empty"
         headingAs="h2"
-        title="주변 추천 가게가 없어요"
-        description="잠시 후 다시 확인해주세요."
-        actionLabel="다시 불러오기"
-        onAction={() => void refetch()}
+        title="아직 주변에 추천 가게가 없어요"
+        description="지도를 움직여 다른 곳을 살펴보세요."
         className="py-8"
       />
     );
