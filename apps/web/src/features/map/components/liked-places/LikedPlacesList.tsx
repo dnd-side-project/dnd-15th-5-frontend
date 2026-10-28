@@ -174,7 +174,7 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
                 ? '좋아요한 가게가 없어요'
                 : '해당 카테고리의 가게가 없어요'
             }
-            description="마음에 드는 가게를 좋아요 해보세요."
+            description="가게에 좋아요를 누르고 나만의 목록을 만들어보세요."
             className="pt-12"
           />
         )}
