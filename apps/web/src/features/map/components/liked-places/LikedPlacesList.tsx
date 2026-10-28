@@ -98,7 +98,7 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
   });
 
   return (
-    <main className="min-h-screen-safe-bottom flex flex-col bg-neutral-00">
+    <main className="flex h-[calc(100dvh-env(safe-area-inset-bottom))] flex-col bg-neutral-00">
       <PageHeader title="좋아요" onBack={onBack} />
 
       <nav

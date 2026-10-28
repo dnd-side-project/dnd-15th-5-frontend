@@ -40,6 +40,63 @@ type LikedPlacesInfiniteData = InfiniteData<ApiResponseLikedPlaceScrollResponse,
 
 type LikeStateUpdater = (liked: boolean | undefined) => boolean | undefined;
 
+const restoreLikedPlace = (
+  currentData: LikedPlacesInfiniteData | undefined,
+  previousData: LikedPlacesInfiniteData | undefined,
+  placeId: number
+): LikedPlacesInfiniteData | undefined => {
+  if (!currentData || !previousData) return currentData;
+
+  const pages = [...currentData.pages];
+
+  previousData.pages.forEach((previousPage, pageIndex) => {
+    const previousPlaces = previousPage.data?.places;
+    const placeIndex = previousPlaces?.findIndex((place) => place.placeId === placeId) ?? -1;
+    const previousPlace = placeIndex >= 0 ? previousPlaces?.[placeIndex] : undefined;
+    const currentPage = pages[pageIndex];
+
+    if (!previousPlace || !currentPage?.data) return;
+
+    const currentPlaces = currentPage.data.places ?? [];
+    const existingPlaceIndex = currentPlaces.findIndex((place) => place.placeId === placeId);
+    const restoredPlaces = [...currentPlaces];
+
+    if (existingPlaceIndex >= 0) {
+      restoredPlaces[existingPlaceIndex] = previousPlace;
+    } else {
+      const previousPlacesBeforeTarget = previousPlaces ?? [];
+      const nextPlace = previousPlacesBeforeTarget
+        .slice(placeIndex + 1)
+        .find((place) =>
+          currentPlaces.some((currentPlace) => currentPlace.placeId === place.placeId)
+        );
+      const previousPlaceBeforeTarget = previousPlacesBeforeTarget
+        .slice(0, placeIndex)
+        .reverse()
+        .find((place) =>
+          currentPlaces.some((currentPlace) => currentPlace.placeId === place.placeId)
+        );
+      const nextIndex = nextPlace
+        ? currentPlaces.findIndex((place) => place.placeId === nextPlace.placeId)
+        : -1;
+      const previousIndex = previousPlaceBeforeTarget
+        ? currentPlaces.findIndex((place) => place.placeId === previousPlaceBeforeTarget.placeId)
+        : -1;
+      const insertionIndex =
+        nextIndex >= 0 ? nextIndex : previousIndex >= 0 ? previousIndex + 1 : placeIndex;
+
+      restoredPlaces.splice(Math.min(insertionIndex, restoredPlaces.length), 0, previousPlace);
+    }
+
+    pages[pageIndex] = {
+      ...currentPage,
+      data: { ...currentPage.data, places: restoredPlaces },
+    };
+  });
+
+  return { ...currentData, pages };
+};
+
 const updateRecommendedPlaces = (
   places: RecommendedPlaceItem[] | undefined,
   placeId: number,
@@ -190,8 +247,10 @@ export const useTogglePlaceLikeMutation = () => {
         updateCachedLikeState(queryClient, placeId, (liked) =>
           liked === context.optimisticLiked ? context.previousLiked : liked
         );
-        context.previousLikedPlaces.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
+        context.previousLikedPlaces.forEach(([queryKey, previousData]) => {
+          queryClient.setQueryData<LikedPlacesInfiniteData>(queryKey, (currentData) =>
+            restoreLikedPlace(currentData, previousData, placeId)
+          );
         });
       }
       showToast({ type: 'error', message: LIKE_ERROR_MESSAGE });
