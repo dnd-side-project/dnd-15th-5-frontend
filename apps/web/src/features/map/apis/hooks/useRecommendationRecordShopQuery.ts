@@ -4,8 +4,8 @@ import { APILoadingStatus, useApiLoadingStatus, useMapsLibrary } from '@vis.gl/r
 import { resolveRecommendationShop } from '@/features/map/apis/services/resolveRecommendationShop';
 import type { ShopRecommendation } from '@/features/map/types';
 
-const RECOMMENDATION_RECORD_SHOP_QUERY_KEY = (recommendationId?: string) =>
-  ['map', 'recommendation', 'record-shop', recommendationId] as const;
+const RECOMMENDATION_RECORD_SHOP_QUERY_KEY = (recommendationId?: string, includePhotos = true) =>
+  ['map', 'recommendation', 'record-shop', recommendationId, { includePhotos }] as const;
 
 /** 추천 매장의 Google 장소 정보를 조회합니다. 필요한 화면에서 조회를 지연할 수 있습니다.
  * @param recommendation 조회할 추천 매장입니다.
@@ -13,7 +13,7 @@ const RECOMMENDATION_RECORD_SHOP_QUERY_KEY = (recommendationId?: string) =>
  */
 export const useRecommendationRecordShopQuery = (
   recommendation?: ShopRecommendation,
-  { enabled = true }: { enabled?: boolean } = {}
+  { enabled = true, includePhotos = true }: { enabled?: boolean; includePhotos?: boolean } = {}
 ) => {
   const placesLibrary = useMapsLibrary('places');
   const apiLoadingStatus = useApiLoadingStatus();
@@ -24,13 +24,13 @@ export const useRecommendationRecordShopQuery = (
   // Places 라이브러리는 로드 후 유지되는 SDK 인스턴스이고 추천 정보는 ID 기준으로 캐시한다.
   // eslint-disable-next-line @tanstack/query/exhaustive-deps
   const query = useQuery({
-    queryKey: RECOMMENDATION_RECORD_SHOP_QUERY_KEY(recommendation?.id),
+    queryKey: RECOMMENDATION_RECORD_SHOP_QUERY_KEY(recommendation?.id, includePhotos),
     queryFn: () => {
       if (!placesLibrary || !recommendation) {
         throw new Error('추천 매장을 조회할 수 없습니다');
       }
 
-      return resolveRecommendationShop(placesLibrary, recommendation);
+      return resolveRecommendationShop(placesLibrary, recommendation, { includePhotos });
     },
     enabled: enabled && Boolean(placesLibrary) && Boolean(recommendation),
     staleTime: Infinity,

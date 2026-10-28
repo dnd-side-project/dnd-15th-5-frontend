@@ -31,7 +31,7 @@ export default function LikedRecommendationSheet({
     query: recordShopQuery,
     isLibraryLoading,
     isLibraryError,
-  } = useRecommendationRecordShopQuery(recommendation);
+  } = useRecommendationRecordShopQuery(recommendation, { includePhotos: false });
 
   if (!recommendation && (isPending || visitedPlacesQuery.isPending)) {
     return (
@@ -77,6 +77,7 @@ export default function LikedRecommendationSheet({
   }
 
   const { id, place, thumbnailSrc } = recommendation;
+  // TODO: placeId 기반 백엔드 장소 상세 API가 추가되면 사진 URL 최대 3장을 조회해 사용한다.
   const fallbackPhotoUrl = recordShopQuery.data?.photoUrl ?? thumbnailSrc;
   const photoUrls = getLikedPlacePhotoUrls(recordShopQuery.data?.photoUrls, fallbackPhotoUrl);
   const address = recordShopQuery.data?.address || place.address;

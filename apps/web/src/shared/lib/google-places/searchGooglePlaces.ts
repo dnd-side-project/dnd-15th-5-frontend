@@ -8,6 +8,7 @@ const GOOGLE_PLACES_GALLERY_PHOTO_MAX_WIDTH = 640;
 
 type SearchGooglePlacesParams = {
   fallbackPhotoUrl?: string | null;
+  includePhotos?: boolean;
   includePhotoUrls?: boolean;
   locationBias?: google.maps.places.SearchByTextRequest['locationBias'];
   maxResultCount: number;
@@ -19,6 +20,7 @@ export const searchGooglePlaces = async (
   placesLibrary: google.maps.PlacesLibrary,
   {
     fallbackPhotoUrl = null,
+    includePhotos = true,
     includePhotoUrls = false,
     locationBias,
     maxResultCount,
@@ -27,7 +29,13 @@ export const searchGooglePlaces = async (
 ): Promise<ShopSearchResult[]> => {
   const { places } = await placesLibrary.Place.searchByText({
     textQuery,
-    fields: ['id', 'displayName', 'formattedAddress', 'photos', 'location'],
+    fields: [
+      'id',
+      'displayName',
+      'formattedAddress',
+      'location',
+      ...(includePhotos ? ['photos' as const] : []),
+    ],
     language: GOOGLE_PLACES_LANGUAGE,
     region: GOOGLE_PLACES_REGION,
     maxResultCount,
@@ -65,8 +73,9 @@ export const searchGooglePlaces = async (
         name,
         address,
         photoUrl:
-          place.photos?.[0]?.getURI({ maxWidth: GOOGLE_PLACES_PHOTO_MAX_WIDTH }) ??
-          fallbackPhotoUrl,
+          (includePhotos
+            ? place.photos?.[0]?.getURI({ maxWidth: GOOGLE_PLACES_PHOTO_MAX_WIDTH })
+            : undefined) ?? fallbackPhotoUrl,
         ...(includePhotoUrls ? { photoUrls } : {}),
         latitude,
         longitude,
