@@ -13,7 +13,7 @@ import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 import { SegmentedToggle } from '@/shared/ui/segmented-toggle';
 import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from '@/shared/ui/toast';
 
-import LikedRecommendationSheet from './LikedRecommendationSheet';
+import LikedRecommendationSheet from './liked-places/LikedRecommendationSheet';
 import ShopRecommendationSheet from './ShopRecommendationSheet';
 
 import type { ReactNode, UIEvent } from 'react';

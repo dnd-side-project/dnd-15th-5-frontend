@@ -1,5 +1,5 @@
-/** 좋아요 가게 사진이 로드되는 동안 표시하는 3칸 스켈레톤입니다. */
-export default function LikedRecommendationPhotoSkeleton() {
+/** 좋아요한 가게 사진을 불러오는 동안 3칸 미리보기를 표시합니다. */
+export default function LikedPlacePhotoSkeleton() {
   return (
     <div
       role="status"

@@ -7,8 +7,14 @@ import type { ShopRecommendation } from '@/features/map/types';
 const RECOMMENDATION_RECORD_SHOP_QUERY_KEY = (recommendationId?: string) =>
   ['map', 'recommendation', 'record-shop', recommendationId] as const;
 
-/** 추천 매장을 소비 기록 폼이 사용하는 Google 장소 정보로 조회합니다. */
-export const useRecommendationRecordShopQuery = (recommendation?: ShopRecommendation) => {
+/** 추천 매장의 Google 장소 정보를 조회합니다. 필요한 화면에서 조회를 지연할 수 있습니다.
+ * @param recommendation 조회할 추천 매장입니다.
+ * @param options.enabled `false`이면 쿼리를 실행하지 않습니다. 목록의 화면 밖 항목을 지연할 때 사용합니다.
+ */
+export const useRecommendationRecordShopQuery = (
+  recommendation?: ShopRecommendation,
+  { enabled = true }: { enabled?: boolean } = {}
+) => {
   const placesLibrary = useMapsLibrary('places');
   const apiLoadingStatus = useApiLoadingStatus();
   const isLibraryError =
@@ -26,7 +32,7 @@ export const useRecommendationRecordShopQuery = (recommendation?: ShopRecommenda
 
       return resolveRecommendationShop(placesLibrary, recommendation);
     },
-    enabled: Boolean(placesLibrary) && Boolean(recommendation),
+    enabled: enabled && Boolean(placesLibrary) && Boolean(recommendation),
     staleTime: Infinity,
   });
 

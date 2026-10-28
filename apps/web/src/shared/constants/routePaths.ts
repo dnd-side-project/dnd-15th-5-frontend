@@ -46,6 +46,7 @@ export const ROUTE_PATHS = {
 
   notifications: NOTIFICATION_ALLOWED_PATHS.notifications,
   myPage: '/my-page',
+  myPageLikes: '/my-page/likes',
   myPageProfile: '/my-page/profile',
 } as const;
 
