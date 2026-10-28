@@ -77,7 +77,7 @@ export default function LikedRecommendationSheet({
   }
 
   const { id, place, thumbnailSrc } = recommendation;
-  // TODO: placeId 기반 백엔드 장소 상세 API가 추가되면 사진 URL 최대 3장을 조회해 사용한다.
+  // TODO: placeId 기반 백엔드 상세 API가 googlePlaceId, 가게명, 도로명 주소, 좌표, 사진 URL(최대 3장)을 제공하면 Google Places 조회를 제거하고 기록 작성과 바텀시트에 사용한다.
   const fallbackPhotoUrl = recordShopQuery.data?.photoUrl ?? thumbnailSrc;
   const photoUrls = getLikedPlacePhotoUrls(recordShopQuery.data?.photoUrls, fallbackPhotoUrl);
   const address = recordShopQuery.data?.address || place.address;
