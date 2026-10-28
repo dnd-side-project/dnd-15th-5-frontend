@@ -46,6 +46,7 @@ function LikedPlaceCard({ likedPlace }: { likedPlace: ShopRecommendation }) {
     isLibraryLoading,
     isLibraryError,
   } = useRecommendationRecordShopQuery(likedPlace, { enabled: isNearViewport });
+  // TODO: 방문 장소 API가 사진 URL을 제공하면 Google Places 사진 조회를 API 응답 사용으로 교체한다.
   const likeMutation = useTogglePlaceLikeMutation();
   const placeDetails = placeDetailsQuery.data;
   const photoUrls = getLikedPlacePhotoUrls(placeDetails?.photoUrls, placeDetails?.photoUrl);
