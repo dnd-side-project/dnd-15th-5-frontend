@@ -76,13 +76,12 @@ export default function RecommendationMapMarkers() {
     likedRecommendations.map((recommendation) => [recommendation.id, recommendation])
   );
   recommendations.forEach((recommendation) => {
-    if (recommendation.isLiked) {
-      likedRecommendationById.set(recommendation.id, recommendation);
+    const isLiked = recommendation.isLiked || likedRecommendationById.has(recommendation.id);
+    if (isRecommendationOpen || isLiked) {
+      likedRecommendationById.set(recommendation.id, { ...recommendation, isLiked });
     }
   });
-  const visibleRecommendations = isRecommendationOpen
-    ? recommendations
-    : [...likedRecommendationById.values()];
+  const visibleRecommendations = [...likedRecommendationById.values()];
   const recommendationsRef = useRef(recommendations);
   const lastFocusedRecommendationIdRef = useRef<string | null>(null);
   const lastFocusedVisibleHeightPxRef = useRef<number | undefined>(undefined);
