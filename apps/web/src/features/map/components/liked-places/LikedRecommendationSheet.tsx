@@ -110,7 +110,7 @@ export default function LikedRecommendationSheet({
         headingAs="h1"
       />
       {isResolvingRecordShop ? (
-        <Button isLoading size="large" className="mt-4 h-18 text-title-01-semibold">
+        <Button isLoading size="large" className="mt-4">
           기록하기
         </Button>
       ) : recordLocationState ? (
@@ -118,12 +118,12 @@ export default function LikedRecommendationSheet({
           to={ROUTE_PATHS.record}
           state={recordLocationState}
           size="large"
-          className="mt-4 h-18 text-title-01-semibold"
+          className="mt-4"
         >
           기록하기
         </LinkButton>
       ) : (
-        <Button disabled size="large" className="mt-4 h-18 text-title-01-semibold">
+        <Button disabled size="large" className="mt-4">
           기록하기
         </Button>
       )}
