@@ -55,6 +55,7 @@ describe('resolveRecommendationShop', () => {
       name: `${recommendation.place.name} 강남점`,
       address: '서울특별시 강남구 봉은사로 125 1층',
       photoUrl: 'https://example.com/place.jpg',
+      photoUrls: ['https://example.com/place.jpg'],
       latitude: recommendation.position.lat + 0.0001,
       longitude: recommendation.position.lng + 0.0001,
     });

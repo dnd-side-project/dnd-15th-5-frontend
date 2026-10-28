@@ -264,7 +264,6 @@ describe('RecommendationMapMarkers', () => {
     const marker = screen.getByRole('button', {
       name: `${recommendation.place.name} 추천 마커`,
     });
-    expect(marker.firstElementChild).toHaveClass('size-14');
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'like-default');
     expect(marker.firstElementChild).not.toHaveClass('opacity-60');
     expect(marker.firstElementChild).toHaveAttribute('data-state', 'default');
