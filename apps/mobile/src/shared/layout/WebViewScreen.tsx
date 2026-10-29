@@ -148,8 +148,6 @@ export function WebViewScreen({
           onLoadStart={onLoadStart}
           startInLoadingState
           onContentProcessDidTerminate={() => webViewRef.current?.reload()}
-          // NOTE: Android는 렌더 프로세스가 종료되면 흰 화면으로 남으므로 iOS와 같이 다시 불러온다.
-          onRenderProcessGone={() => webViewRef.current?.reload()}
           renderLoading={() => <ActivityIndicator className="flex-1" size="large" />}
           onError={({ nativeEvent }) => setLoadErrorMessage(nativeEvent.description)}
           onHttpError={({ nativeEvent }) =>
