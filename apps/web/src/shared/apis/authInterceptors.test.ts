@@ -81,7 +81,7 @@ describe('authInterceptors', () => {
     const dependencies = createDependencies();
     const detach = attachAuthInterceptors(instance, dependencies);
 
-    const response = await instance.post('/auth/signup/terms');
+    const response = await instance.post('/v1/auth/signup/terms');
 
     expect(response.config.headers.get('Authorization')).toBe('Bearer signup-token');
     detach();
@@ -93,11 +93,11 @@ describe('authInterceptors', () => {
     const dependencies = createDependencies();
     const detach = attachAuthInterceptors(instance, dependencies);
 
-    await expect(instance.post('/auth/social/exchange')).rejects.toBeInstanceOf(AxiosError);
+    await expect(instance.post('/v1/auth/social/exchange')).rejects.toBeInstanceOf(AxiosError);
 
     expect(dependencies.refreshWeb).not.toHaveBeenCalled();
-    expect(isAuthRetryExcludedRequest('/api/auth/signup/terms')).toBe(true);
-    expect(isAuthRetryExcludedRequest('/api/auth/logout/web?source=test')).toBe(true);
+    expect(isAuthRetryExcludedRequest('/api/v1/auth/signup/terms')).toBe(true);
+    expect(isAuthRetryExcludedRequest('/api/v1/auth/logout/web?source=test')).toBe(true);
     detach();
   });
 
