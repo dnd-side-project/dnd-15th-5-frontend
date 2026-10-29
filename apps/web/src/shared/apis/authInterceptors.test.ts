@@ -96,8 +96,8 @@ describe('authInterceptors', () => {
     await expect(instance.post('/v1/auth/social/exchange')).rejects.toBeInstanceOf(AxiosError);
 
     expect(dependencies.refreshWeb).not.toHaveBeenCalled();
-    expect(isAuthRetryExcludedRequest('/api/v1/auth/signup/terms')).toBe(true);
-    expect(isAuthRetryExcludedRequest('/api/v1/auth/logout/web?source=test')).toBe(true);
+    expect(isAuthRetryExcludedRequest('/v1/auth/signup/terms')).toBe(true);
+    expect(isAuthRetryExcludedRequest('/v1/auth/logout/web?source=test')).toBe(true);
     detach();
   });
 

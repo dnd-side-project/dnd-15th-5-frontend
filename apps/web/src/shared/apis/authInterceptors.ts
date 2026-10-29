@@ -42,9 +42,9 @@ const getRequestPath = (url: string | undefined) => {
   if (!url) return '';
 
   try {
-    return new URL(url, window.location.origin).pathname.replace(/^\/api/u, '');
+    return new URL(url, window.location.origin).pathname;
   } catch {
-    return (url.split('?')[0] ?? '').replace(/^\/api/u, '');
+    return url.split('?')[0] ?? '';
   }
 };
 
