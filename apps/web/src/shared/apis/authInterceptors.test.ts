@@ -73,18 +73,45 @@ describe('authInterceptors', () => {
     detach();
   });
 
-  it('약관 동의 요청에는 Signup Token을 추가한다', async () => {
-    useAuthStore.getState().setSignupToken('signup-token');
-    const instance = axios.create({
-      adapter: async (config) => createResponse(config, 200),
-    });
+  it.each(['/auth/signup/terms', '/v1/auth/signup/terms', '/api/v1/auth/signup/terms'])(
+    '%s 약관 동의 요청에는 Signup Token을 추가한다',
+    async (path) => {
+      useAuthStore.getState().setSignupToken('signup-token');
+      const instance = axios.create({
+        adapter: async (config) => createResponse(config, 200),
+      });
+      const dependencies = createDependencies();
+      const detach = attachAuthInterceptors(instance, dependencies);
+
+      const response = await instance.post(path);
+
+      expect(response.config.headers.get('Authorization')).toBe('Bearer signup-token');
+      detach();
+    }
+  );
+
+  it.each([
+    '/v1/auth/token/refresh/web',
+    '/api/v1/auth/token/refresh/web',
+    'https://chapchap.kr/api/v1/auth/token/refresh/web?source=bootstrap',
+    '/v1/auth/token/refresh',
+    '/v1/auth/social/exchange',
+    '/v1/auth/logout',
+    '/v1/auth/logout/web',
+  ])('%s 인증 요청의 401에는 토큰을 붙이거나 재발급을 재시도하지 않는다', async (path) => {
+    useAuthStore.getState().setAccessToken('expired-access-token');
+    const adapter = jest.fn(rejectUnauthorized);
+    const instance = axios.create({ adapter });
     const dependencies = createDependencies();
     const detach = attachAuthInterceptors(instance, dependencies);
-
-    const response = await instance.post('/auth/signup/terms');
-
-    expect(response.config.headers.get('Authorization')).toBe('Bearer signup-token');
-    detach();
+    try {
+      await expect(instance.post(path)).rejects.toBeInstanceOf(AxiosError);
+      expect(dependencies.refreshWeb).not.toHaveBeenCalled();
+      expect(adapter).toHaveBeenCalledTimes(1);
+      expect(adapter.mock.calls[0][0].headers.get('Authorization')).toBeUndefined();
+    } finally {
+      detach();
+    }
   });
 
   it('인증 발급·교환·로그아웃 요청에는 토큰을 추가하거나 401 재시도를 하지 않는다', async () => {
@@ -99,6 +126,26 @@ describe('authInterceptors', () => {
     expect(isAuthRetryExcludedRequest('/api/auth/signup/terms')).toBe(true);
     expect(isAuthRetryExcludedRequest('/api/auth/logout/web?source=test')).toBe(true);
     detach();
+  });
+
+  it('같은 인터셉터를 거치는 재발급 API가 401이면 서로 기다리지 않고 인증 실패로 종료한다', async () => {
+    useAuthStore.getState().setAccessToken('expired-access-token');
+    const adapter = jest.fn(rejectUnauthorized);
+    const instance = axios.create({ adapter });
+    const refreshWeb = jest.fn(() =>
+      instance.post('/v1/auth/token/refresh/web').then(({ data }) => data)
+    );
+    const dependencies = createDependencies({ refreshWeb });
+    const detach = attachAuthInterceptors(instance, dependencies);
+    try {
+      await expect(instance.get('/v1/consumptions')).rejects.toBeInstanceOf(AxiosError);
+      expect(refreshWeb).toHaveBeenCalledTimes(1);
+      expect(adapter).toHaveBeenCalledTimes(2);
+      expect(useAuthStore.getState().isAuthenticated).toBe(false);
+      expect(dependencies.redirectToLogin).toHaveBeenCalledTimes(1);
+    } finally {
+      detach();
+    }
   });
 
   it('동시에 발생한 여러 401 응답은 웹 토큰을 한 번만 재발급하고 모두 재시도한다', async () => {

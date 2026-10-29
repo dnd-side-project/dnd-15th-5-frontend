@@ -21,7 +21,7 @@ export const createSocialLoginStartUrl = (
     codeChallenge: params.codeChallenge,
   });
 
-  return `${API_BASE_URL}/oauth/${provider}/start?${searchParams.toString()}`;
+  return `${API_BASE_URL}/v1/oauth/${provider}/start?${searchParams.toString()}`;
 };
 
 /** PKCE 값을 준비한 뒤 브라우저를 소셜 로그인 화면으로 이동합니다. */
