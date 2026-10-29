@@ -190,6 +190,9 @@ pages/
   찾은 `stickerItemId`를 등록한다. 이모지 이미지는 업로드하지 않으며 카테고리는 선택한 이모지와 일치한다.
   이미지·카테고리·이름의 기준은 `shared/assets/images/ios-stickers/catalog.ts`이며, 서버 목록도
   이 64종과 일치해야 한다. 목록에 없는 항목이나 유효하지 않은 ID는 등록하지 않고 오류를 안내한다.
+  카테고리와 표시 순서의 기준은 `packages/shared/common/constants`의 `SPENDING_CATEGORIES`다.
+  기록 폼·이모지 선택·라우트 상태 복원도 같은 목록을 재사용하는 `RECORD_CATEGORIES`를 사용한다.
+  기본 스티커는 투명 PNG 64종(카페 8종)을 긴 변 최대 512px로 배포하며 외곽선·그림자는 파일에 포함한다.
 - 기록 폼의 영수증 인식은 `scanReceipt` 브릿지로 네이티브 카메라를 열고 OCR 결과를
   같은 폼에 채운다. 최종 등록 시 선택한 이미지와 `receiptImageId`를 함께 전달한다.
 - 기존 `captureReceipt` 진입은 별도의 네이티브 영수증 확인 화면 흐름을 유지한다.
