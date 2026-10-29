@@ -5,13 +5,14 @@ import {
   formatVisitDateTime,
   MAX_RECORD_AMOUNT,
   parseReceiptVisitDateTime,
+  RECORD_CATEGORIES,
   sanitizeAmount,
 } from '@chapchap/shared/record';
 import { useState } from 'react';
 
 import RecordNavigationHeader from '@/features/record/components/RecordNavigationHeader';
 import VisitDateTimeSheet from '@/features/record/components/visit-date-time-sheet/VisitDateTimeSheet';
-import type { StickerRecordCategory, StickerRecordDraft } from '@/features/record/types';
+import type { StickerRecordDraft } from '@/features/record/types';
 import { isValidStickerRecordShop } from '@/features/record/utils/createStickerConsumptionRequest';
 import { CalendarIcon, ChevronRightIcon, SearchIcon } from '@/shared/assets/icons';
 import ReceiptScanIcon from '@/shared/assets/icons/ic-receipt-scan.svg?react';
@@ -25,21 +26,10 @@ import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 import type { FormEvent, ReactNode } from 'react';
 
-const STICKER_RECORD_CATEGORIES = [
-  '카페',
-  '운동',
-  '편의점/마트',
-  '취미/놀거리',
-  '음식점',
-  '미용/뷰티',
-  '쇼핑',
-  '기타',
-] as const satisfies readonly StickerRecordCategory[];
-
 type StickerRecordPreviewProps = {
   sticker: string;
   isDefaultSticker: boolean;
-  defaultStickerCategory?: StickerRecordCategory;
+  defaultStickerCategory?: RecordCategory;
   onChangeImage: () => void;
   onBack: () => void;
   onClose: () => void;
@@ -98,7 +88,7 @@ export default function StickerRecordPreview({
   imageError = '',
   isCapturing = false,
 }: StickerRecordPreviewProps) {
-  const [photoCategory, setPhotoCategory] = useState<StickerRecordCategory>(initialCategory);
+  const [photoCategory, setPhotoCategory] = useState<RecordCategory>(initialCategory);
   const category = defaultStickerCategory ?? photoCategory;
   const [visitDateTime, setVisitDateTime] = useState(
     () => initialVisitDateTime ?? createInitialVisitDateTime()
@@ -270,7 +260,7 @@ export default function StickerRecordPreview({
 
               <RecordField label="카테고리" required>
                 <div className="flex flex-wrap gap-2" inert={Boolean(defaultStickerCategory)}>
-                  {STICKER_RECORD_CATEGORIES.map((item) => (
+                  {RECORD_CATEGORIES.map((item) => (
                     <CategoryChip
                       key={item}
                       selected={category === item}

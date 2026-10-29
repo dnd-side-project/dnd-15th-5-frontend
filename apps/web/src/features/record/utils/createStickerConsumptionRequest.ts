@@ -37,8 +37,7 @@ export const validateStickerRecordDraft = (draft: StickerRecordDraft) => {
   )
     throw new Error('금액을 확인해주세요.');
   if (memo.length > 1000) throw new Error('메모는 1,000자 이하로 입력해주세요.');
-  if (![...RECORD_CATEGORIES, '쇼핑'].includes(category))
-    throw new Error('카테고리를 확인해주세요.');
+  if (!RECORD_CATEGORIES.includes(category)) throw new Error('카테고리를 확인해주세요.');
   if (purchaseTime && !/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(purchaseTime))
     throw new Error('방문 시각을 확인해주세요.');
   if (receiptImageId !== undefined && (!Number.isInteger(receiptImageId) || receiptImageId <= 0))

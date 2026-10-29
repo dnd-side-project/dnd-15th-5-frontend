@@ -61,3 +61,13 @@ it('기본 이모지는 imageId 없이 stickerItemId와 영수증 ID를 전달�
   expect(request).toMatchObject({ stickerItemId: 173, receiptImageId: 15 });
   expect(request).not.toHaveProperty('imageId');
 });
+
+it.each([{ imageId: 42 }, { stickerItemId: 173 }])(
+  '사진과 이모지 모두 쇼핑 카테고리로 등록할 수 있다 (%#)',
+  (media) => {
+    expect(createStickerConsumptionRequest({ ...draft, category: '쇼핑' }, media)).toMatchObject({
+      ...media,
+      category: '쇼핑',
+    });
+  }
+);

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 
 import { isNativeApp } from '@/shared/lib/bridge';
 
@@ -34,6 +34,16 @@ const callbacks = {
 };
 const renderPreview = () =>
   render(<StickerRecordPreview sticker="sticker.png" isDefaultSticker {...callbacks} />);
+
+it('카테고리 8개를 정해진 순서로 표시한다', () => {
+  renderPreview();
+  const categories = screen.getByRole('group', { name: '카테고리' });
+  expect(
+    within(categories)
+      .getAllByRole('button')
+      .map((button) => button.textContent)
+  ).toEqual(['카페', '음식점', '운동', '미용/뷰티', '편의점/마트', '쇼핑', '취미/놀거리', '기타']);
+});
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -105,6 +115,30 @@ it('웹에서는 영수증 인식의 앱 이용 안내를 표시한다', () => {
   fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
   expect(screen.getByRole('status')).toHaveTextContent('영수증 인식은 앱에서 사용할 수 있어요');
   expect(callbacks.onScanReceipt).not.toHaveBeenCalled();
+});
+
+it('가게에서 전달된 쇼핑 카테고리를 선택 상태로 표시하고 그대로 제출한다', () => {
+  const onSubmit = jest.fn();
+  render(
+    <StickerRecordPreview
+      {...callbacks}
+      sticker="sticker.png"
+      isDefaultSticker={false}
+      initialCategory="쇼핑"
+      selectedShop={{
+        id: 'shop-01',
+        name: '가게',
+        address: '서울',
+        photoUrl: null,
+        latitude: 37.5,
+        longitude: 127,
+      }}
+      onSubmit={onSubmit}
+    />
+  );
+  expect(screen.getByRole('button', { name: '쇼핑' })).toHaveAttribute('aria-pressed', 'true');
+  fireEvent.click(screen.getByRole('button', { name: '기록하기' }));
+  expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ category: '쇼핑' }));
 });
 
 it('앱에서는 영수증 촬영 진입을 요청한다', () => {

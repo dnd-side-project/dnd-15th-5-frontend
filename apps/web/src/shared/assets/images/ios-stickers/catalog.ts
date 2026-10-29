@@ -1,3 +1,5 @@
+import { RECORD_CATEGORIES } from '@chapchap/shared/record';
+
 import appleJuice from '@/shared/assets/images/ios-stickers/apple-juice.png';
 import apple from '@/shared/assets/images/ios-stickers/apple.png';
 import books from '@/shared/assets/images/ios-stickers/books.png';
@@ -63,16 +65,7 @@ import tennisBall from '@/shared/assets/images/ios-stickers/tennis-ball.png';
 import toiletPaper from '@/shared/assets/images/ios-stickers/toilet-paper.png';
 import weightlifting from '@/shared/assets/images/ios-stickers/weightlifting.png';
 
-export const DEFAULT_STICKER_CATEGORIES = [
-  '카페',
-  '음식점',
-  '편의점/마트',
-  '취미/놀거리',
-  '쇼핑',
-  '운동',
-  '미용/뷰티',
-  '기타',
-] as const;
+export const DEFAULT_STICKER_CATEGORIES = RECORD_CATEGORIES;
 
 export type DefaultStickerCategory = (typeof DEFAULT_STICKER_CATEGORIES)[number];
 
@@ -83,7 +76,6 @@ export type DefaultSticker = {
   image: string;
 };
 
-/** 서버 스티커 목록의 category·name은 이 목록과 일치해야 하며 ID는 서버에서 조회합니다. */
 /** 서버 스티커 목록의 category·name은 이 목록과 일치해야 하며 ID는 서버에서 조회합니다. */
 export const DEFAULT_STICKERS: readonly DefaultSticker[] = [
   { id: 'coffee', name: '커피', category: '카페', image: coffee },
