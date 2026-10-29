@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { StickerPhotoSource } from '@/features/record/types';
+import type { StickerPhotoSource, StickerRecordMedia } from '@/features/record/types';
+import type { DefaultSticker } from '@/shared/assets/images/ios-stickers/catalog';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
 import { createPhotoSticker } from './createPhotoSticker';
@@ -15,8 +16,7 @@ type PendingAction = 'capture' | 'crop' | 'process' | null;
 type Result = {
   original: string;
   sticker: string;
-  source: 'photo' | 'default';
-};
+} & StickerRecordMedia;
 
 export const useStickerRecordFlow = () => {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
@@ -103,6 +103,7 @@ export const useStickerRecordFlow = () => {
       });
       if (request.signal.aborted) return;
       setResult({
+        image: sticker,
         original: originalUrl,
         sticker: createUrl(sticker),
         source: 'photo',
@@ -201,13 +202,19 @@ export const useStickerRecordFlow = () => {
     setStage('record');
   };
 
-  const selectDefaultSticker = async (sticker: string) => {
+  const selectDefaultSticker = async (sticker: DefaultSticker) => {
     if (isProcessing) return;
     const request = startRequest('process');
     try {
-      const stickerBlob = await loadDefaultSticker(sticker, request.signal);
+      const stickerBlob = await loadDefaultSticker(sticker.image, request.signal);
       if (request.signal.aborted) return;
-      commitResult({ original: '', sticker: createUrl(stickerBlob), source: 'default' });
+      commitResult({
+        category: sticker.category,
+        name: sticker.name,
+        original: '',
+        sticker: createUrl(stickerBlob),
+        source: 'default',
+      });
     } catch (cause) {
       if (!request.signal.aborted) {
         setError(cause instanceof Error ? cause.message : '스티커를 만들지 못했어요.');

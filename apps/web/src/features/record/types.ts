@@ -3,6 +3,23 @@ import type { ShopSearchResult } from '@chapchap/shared/shop';
 
 /** 사진 생성 화면에서 재선택·재촬영 동작을 구분하는 입력 경로입니다. */
 export type StickerPhotoSource = 'gallery' | 'camera';
+export type StickerRecordCategory = RecordCategory | '쇼핑';
+
+/** 사진은 업로드하고 기본 이모지는 서버 목록의 카테고리·이름으로 식별합니다. */
+export type StickerRecordMedia =
+  | { source: 'photo'; image: Blob }
+  | { source: 'default'; category: StickerRecordCategory; name: string };
+
+/** 사진·기본 스티커에 공통으로 사용하는 최종 기록 입력값입니다. */
+export type StickerRecordDraft = {
+  shop: ShopSearchResult;
+  visitDateTime: VisitDateTimeValue;
+  amount: string;
+  memo: string;
+  category: StickerRecordCategory;
+  receiptImageId?: number;
+  purchaseTime?: string;
+};
 
 /** 가게 변경 화면을 오갈 때 보존할 수기 기록 초안입니다. */
 export type ManualRecordDraft = {

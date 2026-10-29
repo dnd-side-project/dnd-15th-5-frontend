@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 
+import type { StickerRecordDraft, StickerRecordMedia } from '@/features/record/types';
 import { CloseIcon } from '@/shared/assets/icons';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
@@ -12,6 +13,7 @@ import StickerRecordPreview from './StickerRecordPreview';
 import StickerSourcePicker from './StickerSourcePicker';
 import { useStickerRecordFlow } from './useStickerRecordFlow';
 
+import type { ReceiptScanData } from '@chapchap/shared/bridge';
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 import type { ChangeEvent } from 'react';
@@ -19,7 +21,11 @@ import type { ChangeEvent } from 'react';
 type StickerRecordFlowProps = {
   onClose: () => void;
   onSearchShop?: () => void;
-  onScanReceipt?: () => void;
+  onScanReceipt?: () => Promise<ReceiptScanData | null> | void;
+  onReceiptShopSelected?: (shop: ShopSearchResult) => void;
+  onSubmit?: (media: StickerRecordMedia, draft: StickerRecordDraft) => void;
+  isSubmitting?: boolean;
+  submitError?: string;
   selectedShop?: ShopSearchResult | null;
   initialCategory?: RecordCategory;
   initialVisitDateTime?: VisitDateTimeValue;
@@ -31,6 +37,10 @@ export default function StickerRecordFlow({
   onClose,
   onSearchShop,
   onScanReceipt,
+  onReceiptShopSelected,
+  onSubmit,
+  isSubmitting,
+  submitError,
   selectedShop,
   initialCategory,
   initialVisitDateTime,
@@ -150,11 +160,18 @@ export default function StickerRecordFlow({
           <StickerRecordPreview
             sticker={recordResult.sticker}
             isDefaultSticker={recordResult.source === 'default'}
+            defaultStickerCategory={
+              recordResult.source === 'default' ? recordResult.category : undefined
+            }
             onChangeImage={() => setIsImageChangeOpen(true)}
             onBack={reset}
             onClose={onClose}
             onSearchShop={onSearchShop}
             onScanReceipt={onScanReceipt}
+            onReceiptShopSelected={onReceiptShopSelected}
+            onSubmit={onSubmit ? (draft) => onSubmit(recordResult, draft) : undefined}
+            isSubmitting={isSubmitting}
+            submitError={submitError}
             selectedShop={selectedShop}
             initialCategory={initialCategory}
             initialVisitDateTime={initialVisitDateTime}

@@ -480,7 +480,7 @@ it.each([
 ])('%s 카테고리의 스티커를 표시하고 선택한 뒤에만 확정할 수 있다', (category, stickerName) => {
   render(<StickerRecordFlow onClose={mockClose} />);
   fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
-  fireEvent.click(screen.getByRole('button', { name: category, exact: true }));
+  fireEvent.click(screen.getByRole('button', { name: category }));
   expect(screen.queryByRole('button', { name: '커피 스티커' })).not.toBeInTheDocument();
   const stickers = screen.getByRole('group', { name: `${category} 스티커` });
   expect(within(stickers).getAllByRole('button')).toHaveLength(8);

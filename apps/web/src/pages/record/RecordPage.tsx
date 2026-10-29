@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { useOpenReceiptCamera } from '@/features/record/hooks/useOpenReceiptCamera';
+import { useSubmitStickerRecord } from '@/features/record/apis/hooks/useSubmitStickerRecord';
+import { useScanReceipt } from '@/features/record/hooks/useScanReceipt';
 import StickerRecordFlow from '@/features/record/sticker/StickerRecordFlow';
 import type {
   ShopSearchLocationState,
@@ -32,9 +33,8 @@ export default function RecordPage() {
   const [initialVisitDateTime] = useState(() =>
     createInitialVisitDateTimeForMonth(searchParams.get(YEAR_MONTH_SEARCH_PARAM))
   );
-  const { state: receiptState, retry: openReceiptCamera } = useOpenReceiptCamera({
-    autoOpen: false,
-  });
+  const { scanReceipt, isOpeningReceipt, receiptError } = useScanReceipt();
+  const { submit, isSubmitting, submitError } = useSubmitStickerRecord();
   const handleSearchShop = () => {
     navigate(
       createYearMonthPath(ROUTE_PATHS.recordShopSearch, searchParams.get(YEAR_MONTH_SEARCH_PARAM)),
@@ -49,9 +49,13 @@ export default function RecordPage() {
           <StickerRecordFlow
             onClose={() => navigate(ROUTE_PATHS.home, { replace: true })}
             onSearchShop={handleSearchShop}
-            onScanReceipt={openReceiptCamera}
-            isOpeningReceipt={receiptState.status === 'opening'}
-            receiptError={receiptState.status === 'error' ? receiptState.message : ''}
+            onScanReceipt={scanReceipt}
+            onReceiptShopSelected={setSelectedShop}
+            isOpeningReceipt={isOpeningReceipt}
+            receiptError={receiptError}
+            onSubmit={(media, draft) => void submit(media, draft)}
+            isSubmitting={isSubmitting}
+            submitError={submitError}
             selectedShop={selectedShop}
             initialCategory={getRecordCategoryFromLocationState(location.state)}
             initialVisitDateTime={initialVisitDateTime}

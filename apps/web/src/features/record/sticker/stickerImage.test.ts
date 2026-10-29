@@ -1,9 +1,56 @@
 import {
+  cropStickerImage,
   FULL_STICKER_CROP,
   getAlphaBounds,
   moveCropCorner,
+  prepareStickerImage,
   validateStickerFile,
 } from './stickerImage';
+
+describe('자른 사진 준비', () => {
+  const originalCreateObjectURL = URL.createObjectURL;
+  const originalRevokeObjectURL = URL.revokeObjectURL;
+
+  beforeEach(() => {
+    URL.createObjectURL = jest.fn(() => 'blob:photo');
+    URL.revokeObjectURL = jest.fn();
+    jest
+      .spyOn(window, 'Image')
+      .mockImplementation(
+        () =>
+          ({ naturalWidth: 2400, naturalHeight: 1800, decode: async () => {} }) as HTMLImageElement
+      );
+    jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      drawImage: jest.fn(),
+    } as unknown as CanvasRenderingContext2D);
+    jest.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => {
+      callback(new Blob(['normalized'], { type: 'image/png' }));
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    URL.createObjectURL = originalCreateObjectURL;
+    URL.revokeObjectURL = originalRevokeObjectURL;
+  });
+
+  it('자르기에서 정규화한 파일은 재시도해도 PNG를 다시 만들지 않는다', async () => {
+    const photo = new File(['photo'], 'photo.jpg', { type: 'image/jpeg' });
+    const cropped = await cropStickerImage(photo, FULL_STICKER_CROP);
+    await expect(prepareStickerImage(cropped)).resolves.toBe(cropped);
+    await expect(prepareStickerImage(cropped)).resolves.toBe(cropped);
+    expect(HTMLCanvasElement.prototype.toBlob).toHaveBeenCalledTimes(1);
+    expect(window.Image).toHaveBeenCalledTimes(1);
+  });
+
+  it('이름이 같은 외부 PNG도 크기와 방향을 정규화한다', async () => {
+    const photo = new File(['photo'], 'sticker-crop.png', { type: 'image/png' });
+    const prepared = await prepareStickerImage(photo);
+    expect(prepared).not.toBe(photo);
+    expect(HTMLCanvasElement.prototype.toBlob).toHaveBeenCalledTimes(1);
+    expect(window.Image).toHaveBeenCalledTimes(1);
+  });
+});
 
 describe('스티커 이미지 검사', () => {
   it('투명 여백과 희미한 잔상을 제외한 피사체 경계를 반환한다', () => {

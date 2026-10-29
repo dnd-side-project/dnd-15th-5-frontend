@@ -76,13 +76,15 @@ export const DEFAULT_STICKER_CATEGORIES = [
 
 export type DefaultStickerCategory = (typeof DEFAULT_STICKER_CATEGORIES)[number];
 
-type DefaultSticker = {
+export type DefaultSticker = {
   id: string;
   name: string;
   category: DefaultStickerCategory;
   image: string;
 };
 
+/** 서버 스티커 목록의 category·name은 이 목록과 일치해야 하며 ID는 서버에서 조회합니다. */
+/** 서버 스티커 목록의 category·name은 이 목록과 일치해야 하며 ID는 서버에서 조회합니다. */
 export const DEFAULT_STICKERS: readonly DefaultSticker[] = [
   { id: 'coffee', name: '커피', category: '카페', image: coffee },
   { id: 'cake', name: '케이크', category: '카페', image: cake },

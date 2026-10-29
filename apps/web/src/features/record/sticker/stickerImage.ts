@@ -9,6 +9,8 @@ const BORDER_RATIO = 0.035;
 const MIN_BORDER_WIDTH = 8;
 const SHADOW_BLUR_RATIO = 0.4;
 const SHADOW_COLOR = 'rgba(0, 0, 0, 0.18)';
+// NOTE: 자르기에서 이미 크기·방향·PNG 변환을 마친 파일만 다시 인코딩하지 않습니다.
+const preparedCrops = new WeakSet<File>();
 
 const createCanvas = (width: number, height: number) => {
   const canvas = document.createElement('canvas');
@@ -53,6 +55,7 @@ export const validateStickerFile = (file: File) => {
 /** 모바일 메모리 사용량을 제한하고 EXIF 방향이 적용된 이미지를 PNG로 정규화합니다. */
 export const prepareStickerImage = async (file: File) => {
   validateStickerFile(file);
+  if (preparedCrops.has(file)) return file;
   const image = await loadImage(file);
   const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(image.naturalWidth, image.naturalHeight));
   const { canvas, context } = createCanvas(
@@ -188,5 +191,7 @@ export const cropStickerImage = async (file: File, crop: StickerCrop) => {
     canvas.width,
     canvas.height
   );
-  return new File([await toPng(canvas)], 'sticker-crop.png', { type: 'image/png' });
+  const cropped = new File([await toPng(canvas)], 'sticker-crop.png', { type: 'image/png' });
+  preparedCrops.add(cropped);
+  return cropped;
 };

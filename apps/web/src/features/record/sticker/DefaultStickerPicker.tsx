@@ -1,17 +1,21 @@
 import { useState } from 'react';
 
 import { CheckIcon, CloseIcon } from '@/shared/assets/icons';
+import {
+  DEFAULT_STICKER_CATEGORIES,
+  DEFAULT_STICKERS,
+} from '@/shared/assets/images/ios-stickers/catalog';
+import type {
+  DefaultSticker,
+  DefaultStickerCategory,
+} from '@/shared/assets/images/ios-stickers/catalog';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 import { CategoryChip } from '@/shared/ui/category-chip';
 
-import { DEFAULT_STICKER_CATEGORIES, DEFAULT_STICKERS } from './defaultStickers';
-
-import type { DefaultStickerCategory } from './defaultStickers';
-
 type DefaultStickerPickerProps = {
   onClose: () => void;
-  onConfirm: (sticker: string) => void;
+  onConfirm: (sticker: DefaultSticker) => void;
   isProcessing: boolean;
   error: string;
 };
@@ -110,7 +114,7 @@ export default function DefaultStickerPicker({
         <Button
           isLoading={isProcessing}
           disabled={!selectedSticker}
-          onClick={() => selectedSticker && onConfirm(selectedSticker.image)}
+          onClick={() => selectedSticker && onConfirm(selectedSticker)}
         >
           이 스티커로 기록하기
         </Button>

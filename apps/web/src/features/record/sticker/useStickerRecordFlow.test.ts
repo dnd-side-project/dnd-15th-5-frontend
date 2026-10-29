@@ -12,6 +12,7 @@ jest.mock('./removeStickerBackground', () => ({
   prepareStickerBackground: jest.fn(),
   disposeStickerBackground: jest.fn(),
 }));
+
 jest.mock('./stickerImage', () => ({
   ...jest.requireActual('./stickerImage'),
   cropStickerImage: jest.fn(),

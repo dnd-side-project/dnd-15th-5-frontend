@@ -42,6 +42,11 @@ const mockSelectedShop = {
   longitude: 127,
 };
 
+const mockSubmit = jest.fn();
+jest.mock('@/features/record/apis/hooks/useSubmitStickerRecord', () => ({
+  useSubmitStickerRecord: () => ({ submit: mockSubmit, isSubmitting: false, submitError: '' }),
+}));
+
 function LocationProbe() {
   const location = useLocation();
   return <span aria-label="현재 경로">{location.pathname + location.search}</span>;
@@ -80,7 +85,7 @@ const selectDefaultSticker = async () => {
 beforeEach(() => {
   jest.clearAllMocks();
   jest.mocked(isNativeApp).mockReturnValue(false);
-  jest.mocked(requestToNative).mockResolvedValue({ opened: true });
+  jest.mocked(requestToNative).mockResolvedValue({ status: 'cancelled' });
   jest.mocked(loadDefaultSticker).mockResolvedValue(new Blob());
   jest.mocked(createPhotoSticker).mockResolvedValue(new Blob());
   URL.createObjectURL = jest.fn(() => 'blob:sticker');
@@ -119,7 +124,7 @@ it('앱 촬영 결과를 스티커로 만들어 기록 입력 화면에 적용�
 
 it('기록 폼의 영수증 버튼을 누를 때만 카메라를 열고 입력 내용과 스티커를 유지한다', async () => {
   jest.mocked(isNativeApp).mockReturnValue(true);
-  let finish: (result: { opened: true }) => void = () => {};
+  let finish: (result: { status: 'cancelled' }) => void = () => {};
   jest.mocked(requestToNative).mockReturnValueOnce(
     new Promise((resolve) => {
       finish = resolve;
@@ -133,9 +138,9 @@ it('기록 폼의 영수증 버튼을 누를 때만 카메라를 열고 입력 �
   fireEvent.change(screen.getByRole('textbox', { name: '금액' }), { target: { value: '5500' } });
   expect(requestToNative).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
-  await waitFor(() => expect(requestToNative).toHaveBeenCalledWith('captureReceipt', {}));
+  await waitFor(() => expect(requestToNative).toHaveBeenCalledWith('scanReceipt', {}));
   expect(screen.getByRole('button', { name: /카메라를 열고 있어요/ })).toBeDisabled();
-  finish({ opened: true });
+  finish({ status: 'cancelled' });
   await waitFor(() =>
     expect(screen.getByRole('button', { name: /영수증 인식하기/ })).toBeEnabled()
   );
@@ -166,7 +171,7 @@ it('일반 웹의 기록 폼에서는 영수증 촬영 대신 앱 이용 안내�
   expect(requestToNative).not.toHaveBeenCalled();
 });
 
-it('가게에서 전달한 정보와 지난 기록 월을 기록 폼에 유지한다', async () => {
+it('가게 정보와 지난 기록 월을 유지하고 기본 이모지의 카테고리를 적용한다', async () => {
   renderRecordPage({
     pathname: '/record',
     search: '?yearMonth=2020-07',
@@ -174,7 +179,7 @@ it('가게에서 전달한 정보와 지난 기록 월을 기록 폼에 유지�
   });
   await selectDefaultSticker();
   expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: '음식점' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
   expect(
     screen.getByRole('button', { name: /방문 일시 변경, 2020년 7월 31일/ })
   ).toBeInTheDocument();
@@ -201,7 +206,8 @@ it('기존 가게 검색 화면으로 이동하고 가게 선택 후 스티커�
   expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('점심 방문');
   expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('5,500');
-  expect(screen.getByRole('button', { name: '운동' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: '운동' })).toHaveAttribute('aria-disabled', 'true');
   expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record?yearMonth=2020-07');
   expect(loadDefaultSticker).toHaveBeenCalledTimes(1);
 });
@@ -237,4 +243,83 @@ it('닫기를 누르면 홈으로 돌아간다', () => {
   renderRecordPage();
   fireEvent.click(screen.getByRole('button', { name: '닫기' }));
   expect(screen.getByText('홈 화면')).toBeInTheDocument();
+});
+
+it('기본 이모지의 카테고리·이름과 소비 정보를 제출하며 금액·메모는 생략할 수 있다', async () => {
+  renderRecordPage({ pathname: '/record', state: { shop: mockSelectedShop } });
+  await selectDefaultSticker();
+  fireEvent.click(screen.getByRole('button', { name: '기록하기' }));
+  expect(mockSubmit).toHaveBeenCalledWith(
+    expect.objectContaining({ source: 'default', category: '카페', name: '커피' }),
+    expect.objectContaining({
+      shop: mockSelectedShop,
+      amount: '',
+      memo: '',
+      category: '카페',
+    })
+  );
+});
+
+it('영수증 인식 결과를 현재 폼에 채우고 스티커와 영수증 ID를 한 번에 제출한다', async () => {
+  jest.mocked(isNativeApp).mockReturnValue(true);
+  jest.mocked(requestToNative).mockResolvedValueOnce({
+    status: 'success',
+    receipt: {
+      receiptImageId: 15,
+      purchaseDate: '2020-07-25',
+      purchaseTime: '11:20:00',
+      amount: 33000,
+      shop: { ...mockSelectedShop, name: '인식한 가게' },
+    },
+  });
+  renderRecordPage();
+  await selectDefaultSticker();
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '유지할 메모' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
+  await screen.findByText('인식한 가게');
+  expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('33,000');
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('유지할 메모');
+  expect(
+    screen.getByRole('button', { name: /방문 일시 변경, 2020년 7월 25일/ })
+  ).toBeInTheDocument();
+  expect(mockSubmit).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: '이미지 변경' }));
+  fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '케이크 스티커' }));
+  fireEvent.click(screen.getByRole('button', { name: '이 스티커로 기록하기' }));
+  await screen.findByRole('heading', { name: '기록하기', level: 1 });
+  fireEvent.click(screen.getByRole('button', { name: '기록하기' }));
+  expect(mockSubmit).toHaveBeenCalledTimes(1);
+  expect(mockSubmit).toHaveBeenCalledWith(
+    expect.objectContaining({ source: 'default', category: '카페', name: '케이크' }),
+    expect.objectContaining({
+      receiptImageId: 15,
+      purchaseTime: '11:20:00',
+      amount: '33000',
+      memo: '유지할 메모',
+      shop: expect.objectContaining({ name: '인식한 가게' }),
+    })
+  );
+});
+
+it('다른 카테고리의 이모지로 바꾸면 메모를 유지하고 해당 카테고리로 제출한다', async () => {
+  renderRecordPage({ pathname: '/record', state: { shop: mockSelectedShop } });
+  await selectDefaultSticker();
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '운동 기록' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: '이미지 변경' }));
+  fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '운동' }));
+  fireEvent.click(screen.getByRole('button', { name: '근육 스티커' }));
+  fireEvent.click(screen.getByRole('button', { name: '이 스티커로 기록하기' }));
+  await screen.findByRole('heading', { level: 1, name: '기록하기' });
+  expect(screen.getByRole('button', { name: '운동' })).toHaveAttribute('aria-pressed', 'true');
+  fireEvent.click(screen.getByRole('button', { name: '기록하기' }));
+  expect(mockSubmit).toHaveBeenCalledWith(
+    expect.objectContaining({ source: 'default', category: '운동', name: '근육' }),
+    expect.objectContaining({ category: '운동', memo: '운동 기록' })
+  );
 });

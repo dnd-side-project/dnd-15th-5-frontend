@@ -1,9 +1,8 @@
+import { ISNET_ORIGINAL_MODEL } from '@chapchap/shared/record/isnet-model';
+
 export const ISNET_MODELS = {
   wasm: {
-    filename: 'isnet-general-use.onnx',
-    bytes: 178648008,
-    url: 'https://github.com/danielgatis/rembg/releases/download/v0.0.0/isnet-general-use.onnx',
-    checksum: { algorithm: 'md5', value: 'fc16ebd8b0c10d971d3513d564d01e29' },
+    ...ISNET_ORIGINAL_MODEL,
     runtime: 'ort.wasm.min.mjs',
     wasmModule: 'ort-wasm-simd-threaded.mjs',
     wasmBinary: 'ort-wasm-simd-threaded.wasm',

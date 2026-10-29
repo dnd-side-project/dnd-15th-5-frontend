@@ -88,6 +88,7 @@ const createSession = async (
   };
   let session: OnnxRuntime.InferenceSession;
   try {
+    onUpdate({ type: 'diagnostic', backend, phase: 'initializing' });
     session = await InferenceSession.create(model, { executionProviders: [backend] });
   } catch (cause) {
     destroyDevice();

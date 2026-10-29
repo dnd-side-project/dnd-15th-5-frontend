@@ -1,4 +1,8 @@
+import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
+
 import { createStickerBackgroundClient } from './createStickerBackgroundClient';
+import { assertNativeStickerBackground } from './nativeStickerCapabilities';
+import { removeNativeStickerBackground } from './removeNativeStickerBackground';
 
 const client = createStickerBackgroundClient(
   () => new Worker(new URL('./sticker.worker.ts', import.meta.url), { type: 'module' }),
@@ -10,8 +14,21 @@ const client = createStickerBackgroundClient(
   }
 );
 
-export const prepareStickerBackground = client.prepare;
-export const removeStickerBackground = client.remove;
-export const disposeStickerBackground = client.dispose;
+export const prepareStickerBackground = () => {
+  if (isNativeApp()) {
+    void assertNativeStickerBackground()
+      .then(() => requestToNative('prepareStickerBackground', {}))
+      .catch(() => {});
+  } else client.prepare();
+};
+export const removeStickerBackground = (
+  image: Blob,
+  signal: AbortSignal,
+  onProgress: (message: string) => void
+) => {
+  if (!isNativeApp()) return client.remove(image, signal, onProgress);
+  return removeNativeStickerBackground(image, signal, onProgress);
+};
+export const disposeStickerBackground = () => client.dispose();
 
 if (import.meta.hot) import.meta.hot.dispose(client.dispose);

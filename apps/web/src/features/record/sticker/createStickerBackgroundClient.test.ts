@@ -67,6 +67,43 @@ it('워밍업 중 진행률을 기다리는 사진 요청에 전달한다', asyn
   await promise;
 });
 
+it('사진 선택 전 다운로드 상태를 대기 중인 사진에 즉시 표시한다', async () => {
+  client.prepare();
+  workers[0].respond({ type: 'progress', key: 'fetch:isnet', current: 3, total: 4 });
+  const progress = jest.fn();
+  const promise = client.remove(image, new AbortController().signal, progress);
+  expect(progress).toHaveBeenLastCalledWith(expect.stringContaining('75%'));
+  workers[0].respond({ type: 'success', requestId: 1, blob: result });
+  await promise;
+});
+
+it('모델 초기화와 실제 배경 제거를 구분해서 표시한다', async () => {
+  const progress = jest.fn();
+  const promise = client.remove(image, new AbortController().signal, progress);
+  workers[0].respond({ type: 'progress', key: 'fetch:isnet', current: 100, total: 100 });
+  expect(progress).toHaveBeenLastCalledWith('배경 제거 모델을 시작하고 있어요');
+  workers[0].respond({ type: 'diagnostic', backend: 'wasm', phase: 'initializing' });
+  expect(progress).toHaveBeenLastCalledWith('배경 제거 모델을 시작하고 있어요');
+  workers[0].respond({
+    type: 'progress',
+    requestId: 1,
+    key: 'inference:isnet:wasm',
+    current: 0,
+    total: 0,
+  });
+  expect(progress).toHaveBeenLastCalledWith('사진에서 배경을 지우고 있어요');
+  workers[0].respond({ type: 'success', requestId: 1, blob: result });
+  await promise;
+});
+
+it('대기 중인 사진이 있을 때 사전 로딩에 실패하면 바로 오류를 전달한다', async () => {
+  client.prepare();
+  const promise = client.remove(image, new AbortController().signal, jest.fn());
+  workers[0].respond({ type: 'error', message: '모델을 시작하지 못했어요' });
+  await expect(promise).rejects.toThrow('모델을 시작하지 못했어요');
+  expect(workers[0].terminate).toHaveBeenCalledTimes(1);
+});
+
 it('취소하면 실제 Worker를 종료하고 다음 요청에는 새 Worker를 사용한다', async () => {
   const controller = new AbortController();
   const first = client.remove(image, controller.signal, jest.fn());

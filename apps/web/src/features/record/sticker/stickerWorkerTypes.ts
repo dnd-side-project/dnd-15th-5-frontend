@@ -4,7 +4,7 @@ export type StickerProgress = { type: 'progress'; key: string; current: number; 
 export type StickerDiagnostic = {
   type: 'diagnostic';
   backend: IsnetBackend;
-  phase: 'selected' | 'warming' | 'ready' | 'reused' | 'complete' | 'fallback';
+  phase: 'selected' | 'initializing' | 'warming' | 'ready' | 'reused' | 'complete' | 'fallback';
   elapsedMs?: number;
   details?: string;
 };
