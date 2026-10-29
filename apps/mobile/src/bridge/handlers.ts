@@ -12,6 +12,13 @@ import { getCurrentPosition } from '@/native/location';
 import { clearPushNotifications, getPushToken } from '@/native/notifications';
 import { openReceiptCamera } from '@/native/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/save-image';
+import { scanReceipt } from '@/native/scanReceipt';
+import {
+  hasNativeStickerBackground,
+  prepareNativeStickerBackground,
+  removeNativeStickerBackground,
+  cancelNativeStickerBackground,
+} from '@/native/stickerBackground';
 
 import type { BridgeMessageMap, BridgeMessageType } from '@chapchap/shared/bridge';
 
@@ -32,15 +39,23 @@ type BridgeHandlerMap = {
  *
  */
 export const BRIDGE_HANDLERS: BridgeHandlerMap = {
+  prepareStickerBackground: () => prepareNativeStickerBackground(),
+  removeStickerBackground: (payload) => removeNativeStickerBackground(payload),
+  cancelStickerBackground: (payload) => cancelNativeStickerBackground(payload),
   startSocialLogin: ({ provider, codeChallenge }) => startSocialLogin(provider, codeChallenge),
   getCurrentPosition: () => getCurrentPosition(),
-  ping: () => ({ platform: Platform.OS, receivedAt: Date.now() }),
+  ping: () => ({
+    platform: Platform.OS,
+    receivedAt: Date.now(),
+    nativeStickerBackground: hasNativeStickerBackground(),
+  }),
   saveImage: async ({ base64, fileName }) => {
     await saveImageToLibrary(base64, fileName);
 
     return { saved: true };
   },
   captureReceipt: () => openReceiptCamera(),
+  scanReceipt: () => scanReceipt(),
   captureStickerPhoto: () => captureStickerPhoto(),
   getRefreshToken: async () => ({ refreshToken: await getRefreshToken() }),
   saveRefreshToken: async ({ refreshToken }) => {

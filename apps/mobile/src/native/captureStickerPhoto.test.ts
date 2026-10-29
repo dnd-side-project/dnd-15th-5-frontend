@@ -64,3 +64,25 @@ it('시간이 지나면 대기 요청을 해제한다', async () => {
   await expect(request).resolves.toEqual({ status: 'cancelled' });
   jest.useRealTimers();
 });
+
+it('화면을 열지 못해도 요청을 해제해 다시 촬영할 수 있다', async () => {
+  jest.mocked(router.push).mockImplementationOnce(() => {
+    throw new Error('화면 열기 실패');
+  });
+  await expect(captureStickerPhoto()).rejects.toThrow('화면 열기 실패');
+  expect(isStickerCaptureActive(getCaptureId())).toBe(false);
+  jest.mocked(router.push).mockClear();
+  const request = captureStickerPhoto();
+  await Promise.resolve();
+  finishStickerCapture(getCaptureId(), { status: 'cancelled' });
+  await expect(request).resolves.toEqual({ status: 'cancelled' });
+});
+
+it('권한 확인에서 오류가 나도 다음 촬영 요청을 허용한다', async () => {
+  permission.mockRejectedValueOnce(new Error('권한 확인 실패'));
+  await expect(captureStickerPhoto()).rejects.toThrow('권한 확인 실패');
+  const request = captureStickerPhoto();
+  await Promise.resolve();
+  finishStickerCapture(getCaptureId(), { status: 'cancelled' });
+  await expect(request).resolves.toEqual({ status: 'cancelled' });
+});

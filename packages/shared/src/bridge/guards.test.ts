@@ -1,6 +1,119 @@
 import { isBridgeEvent, isBridgeRequest, isBridgeResponse } from './guards';
 import { BRIDGE_MESSAGE_KIND } from './types';
 
+describe('네이티브 ISNet 브릿지', () => {
+  const payload = { requestId: 'photo-01', base64: 'cGhvdG8=', mimeType: 'image/png' };
+  const request = { kind: 'request', id: 'native-01', type: 'removeStickerBackground', payload };
+  const response = {
+    kind: 'response',
+    id: 'native-01',
+    type: 'removeStickerBackground',
+    ok: true,
+    result: { base64: 'aW1hZ2U=', mimeType: 'image/png', backend: 'coreml', elapsedMs: 10 },
+  };
+  it('사진 요청·준비·취소와 PNG 응답을 허용한다', () => {
+    expect(isBridgeRequest(request)).toBe(true);
+    expect(isBridgeRequest({ ...request, type: 'prepareStickerBackground', payload: {} })).toBe(
+      true
+    );
+    expect(
+      isBridgeRequest({
+        ...request,
+        type: 'cancelStickerBackground',
+        payload: { requestId: 'photo-01' },
+      })
+    ).toBe(true);
+    expect(isBridgeResponse(response)).toBe(true);
+    expect(
+      isBridgeResponse({
+        ...response,
+        type: 'prepareStickerBackground',
+        result: { ready: true, backend: 'cpu' },
+      })
+    ).toBe(true);
+    expect(
+      isBridgeResponse({
+        ...response,
+        type: 'cancelStickerBackground',
+        result: { cancelled: true },
+      })
+    ).toBe(true);
+  });
+  it.each([
+    { ...payload, requestId: '' },
+    { ...payload, base64: '' },
+    { ...payload, base64: 'data:image/png;base64,aW1hZ2U=' },
+    { ...payload, base64: 'bad' },
+    { ...payload, mimeType: 'image/jpeg' },
+    { ...payload, base64: 'a'.repeat(16 * 1024 * 1024 + 4) },
+  ])('잘못된 사진 요청을 거부한다 (%#)', (invalid) => {
+    expect(isBridgeRequest({ ...request, payload: invalid })).toBe(false);
+  });
+  it.each([
+    { ...response.result, backend: 'webgpu' },
+    { ...response.result, backend: 'nnapi' },
+    { ...response.result, elapsedMs: -1 },
+    { ...response.result, elapsedMs: Infinity },
+    { ...response.result, mimeType: 'image/jpeg' },
+    { ...response.result, base64: '' },
+  ])('잘못된 추론 결과는 거부한다 (%#)', (invalid) => {
+    expect(isBridgeResponse({ ...response, result: invalid })).toBe(false);
+  });
+});
+
+describe('영수증 인식 결과 브릿지', () => {
+  const response = {
+    kind: 'response',
+    id: 'scan-01',
+    type: 'scanReceipt',
+    ok: true,
+    result: {
+      status: 'success',
+      receipt: {
+        receiptImageId: 15,
+        purchaseDate: '2020-07-25',
+        purchaseTime: '11:20:00',
+        amount: 33000,
+        shop: null,
+      },
+    },
+  };
+  it('인식 결과와 취소 응답을 허용한다', () => {
+    expect(
+      isBridgeRequest({ kind: 'request', id: 'scan-01', type: 'scanReceipt', payload: {} })
+    ).toBe(true);
+    expect(isBridgeResponse(response)).toBe(true);
+    expect(isBridgeResponse({ ...response, result: { status: 'cancelled' } })).toBe(true);
+  });
+  it('잘못된 영수증 ID와 가게 좌표를 거부한다', () => {
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: { ...response.result, receipt: { ...response.result.receipt, receiptImageId: -1 } },
+      })
+    ).toBe(false);
+    expect(
+      isBridgeResponse({
+        ...response,
+        result: {
+          ...response.result,
+          receipt: {
+            ...response.result.receipt,
+            shop: {
+              id: 'google-01',
+              name: '가게',
+              address: '서울',
+              latitude: 999,
+              longitude: 127,
+              photoUrl: null,
+            },
+          },
+        },
+      })
+    ).toBe(false);
+  });
+});
+
 describe('auth bridge guards', () => {
   it('웹 분석 수신 준비 이벤트를 허용한다', () => {
     expect(

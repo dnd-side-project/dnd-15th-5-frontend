@@ -25,6 +25,30 @@ export const createBridgeResponse = async (request: BridgeRequest): Promise<Brid
 
   try {
     switch (request.type) {
+      case 'prepareStickerBackground':
+        return {
+          kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+          id: request.id,
+          type: request.type,
+          ok: true,
+          result: await BRIDGE_HANDLERS.prepareStickerBackground(request.payload),
+        };
+      case 'removeStickerBackground':
+        return {
+          kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+          id: request.id,
+          type: request.type,
+          ok: true,
+          result: await BRIDGE_HANDLERS.removeStickerBackground(request.payload),
+        };
+      case 'cancelStickerBackground':
+        return {
+          kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+          id: request.id,
+          type: request.type,
+          ok: true,
+          result: await BRIDGE_HANDLERS.cancelStickerBackground(request.payload),
+        };
       case 'startSocialLogin':
         return {
           kind: BRIDGE_MESSAGE_KIND.RESPONSE,
@@ -72,6 +96,14 @@ export const createBridgeResponse = async (request: BridgeRequest): Promise<Brid
           type: request.type,
           ok: true,
           result: await BRIDGE_HANDLERS.captureReceipt(request.payload),
+        };
+      case 'scanReceipt':
+        return {
+          kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+          id: request.id,
+          type: request.type,
+          ok: true,
+          result: await BRIDGE_HANDLERS.scanReceipt(request.payload),
         };
       case 'getRefreshToken':
         return {

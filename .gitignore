@@ -47,3 +47,5 @@ storybook-static
 /apps/web/public/models/*.onnx
 /apps/web/public/models/*.download
 /apps/web/public/isnet-runtime/
+/apps/mobile/modules/chapchap-isnet/models/*.onnx
+/apps/mobile/modules/chapchap-isnet/models/*.download

@@ -18,6 +18,17 @@ import { createBridgeResponse } from './createBridgeResponse';
 import type { BridgeRequest } from '@chapchap/shared/bridge';
 
 jest.mock('@/native/captureStickerPhoto', () => ({ captureStickerPhoto: jest.fn() }));
+jest.mock('@/native/stickerBackground', () => ({
+  hasNativeStickerBackground: jest.fn().mockReturnValue(true),
+  prepareNativeStickerBackground: jest.fn().mockResolvedValue({ ready: true, backend: 'coreml' }),
+  removeNativeStickerBackground: jest.fn().mockResolvedValue({
+    base64: 'aW1hZ2U=',
+    mimeType: 'image/png',
+    backend: 'coreml',
+    elapsedMs: 20,
+  }),
+  cancelNativeStickerBackground: jest.fn().mockReturnValue({ cancelled: true }),
+}));
 
 jest.mock('@/native/location', () => ({ getCurrentPosition: jest.fn() }));
 jest.mock('@/native/api', () => ({ clearAccessToken: jest.fn() }));

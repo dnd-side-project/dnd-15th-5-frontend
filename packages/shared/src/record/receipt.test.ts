@@ -1,4 +1,4 @@
-import { parseReceiptVisitDateTime } from './parseReceiptVisitDateTime';
+import { parseReceiptVisitDateTime } from './receipt';
 
 describe('parseReceiptVisitDateTime', () => {
   const now = new Date(2026, 7, 20, 15);

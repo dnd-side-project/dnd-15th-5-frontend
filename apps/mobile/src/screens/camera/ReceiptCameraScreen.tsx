@@ -1,7 +1,7 @@
 import { ANALYTICS_EVENTS, createStepAttemptProperties } from '@chapchap/shared/analytics';
 import { CameraView } from 'expo-camera';
-import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -14,7 +14,9 @@ import {
   RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET,
   ReceiptScanLoading,
 } from '@/features/record';
+import { createReceiptScanData } from '@/features/record/utils/createReceiptScanData';
 import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
+import { finishReceiptScan, isReceiptScanActive } from '@/native/scanReceipt';
 import { CloseIcon, GalleryIcon } from '@/shared/assets/icons';
 import { useCameraPinchZoom } from '@/shared/hooks/useCameraPinchZoom';
 import {
@@ -25,14 +27,29 @@ import {
 import { BackButton } from '@/shared/ui/back-button';
 import { useToast } from '@/shared/ui/toast';
 
+import type { BridgeResult } from '@chapchap/shared/bridge';
+
 /**
  * 영수증을 촬영하는 화면.
  *
- * 촬영·선택 결과는 웹으로 돌아가지 않고 `receipt-confirm` 화면으로 바로 이어간다.
+ * 웹 기록에서 요청하면 OCR 결과를 현재 웹 폼으로 반환하고, 그 외에는 `receipt-confirm`으로 이어간다.
  * 좌표는 시안(REC_ReceiptScan, 393x852 기준)을 그대로 옮긴 값이다.
  * 393x852는 상단바·하단바가 노치·홈 인디케이터를 감안해 그려진 크기라 안전영역을 더하지 않는다.
  */
 export default function ReceiptCameraScreen() {
+  const { scanId = '' } = useLocalSearchParams<{ scanId?: string }>();
+  const mounted = useRef(false);
+  const scanResult = useRef<BridgeResult<'scanReceipt'> | null>(null);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      void Promise.resolve().then(() => {
+        if (!mounted.current && scanId)
+          finishReceiptScan(scanId, scanResult.current ?? { status: 'cancelled' });
+      });
+    };
+  }, [scanId]);
   useNativeScreenAnalytics(NATIVE_ANALYTICS_SCREENS.receiptScan);
 
   const insets = useSafeAreaInsets();
@@ -69,11 +86,19 @@ export default function ReceiptCameraScreen() {
   };
 
   const handleClose = () => {
+    if (scanId) {
+      router.back();
+      return;
+    }
     requestWebViewNavigation('/home');
     router.dismissTo('/');
   };
 
   const startProcessing = () => {
+    if (scanId && !isReceiptScanActive(scanId)) {
+      showToast({ message: '촬영 대기 시간이 지났어요. 닫고 다시 촬영해주세요.', type: 'info' });
+      return false;
+    }
     if (isProcessingRef.current) {
       return false;
     }
@@ -94,6 +119,32 @@ export default function ReceiptCameraScreen() {
     });
   };
 
+  const completeReceiptScan = (
+    receipt: Awaited<ReturnType<typeof processReceiptImage>>,
+    inputMethod: 'camera' | 'photo_library'
+  ) => {
+    if (!mounted.current) return;
+    if (scanId && !isReceiptScanActive(scanId)) {
+      resetProcessing();
+      return;
+    }
+    const webReceipt = scanId ? createReceiptScanData(receipt) : null;
+    trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepCompleted, {
+      step_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
+      screen_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
+      screen_path: NATIVE_ANALYTICS_SCREENS.receiptScan.screenPath,
+      completion_reason: 'ocr_succeeded',
+      input_method: inputMethod,
+      attempt_number: attemptCountRef.current,
+    });
+    if (webReceipt) {
+      scanResult.current = { status: 'success', receipt: webReceipt };
+      router.back();
+    } else {
+      router.replace({ pathname: '/receipt-confirm', params: createReceiptConfirmParams(receipt) });
+    }
+  };
+
   const handleCapture = async () => {
     if (!cameraRef.current || !isCameraReady || !startProcessing()) {
       return;
@@ -104,23 +155,12 @@ export default function ReceiptCameraScreen() {
     try {
       // NOTE: 압축은 normalizeReceiptImage가 백엔드 제약에 맞춰 처리하므로 최대 화질로 촬영한다.
       const picture = await cameraRef.current.takePictureAsync();
+      if (!mounted.current) return;
       showScanLoading(picture.uri);
       const processedReceipt = await processReceiptImage(picture);
-
-      trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepCompleted, {
-        step_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
-        screen_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
-        screen_path: NATIVE_ANALYTICS_SCREENS.receiptScan.screenPath,
-        completion_reason: 'ocr_succeeded',
-        input_method: 'camera',
-        attempt_number: attemptCountRef.current,
-      });
-
-      router.replace({
-        pathname: '/receipt-confirm',
-        params: createReceiptConfirmParams(processedReceipt),
-      });
+      completeReceiptScan(processedReceipt, 'camera');
     } catch (error) {
+      if (!mounted.current) return;
       // NOTE: 촬영에 실패해도 화면을 유지해 다시 시도할 수 있게 한다.
       resetProcessing();
       const serverErrorMessage = getRecordErrorMessage(error);
@@ -141,6 +181,7 @@ export default function ReceiptCameraScreen() {
 
     try {
       const picked = await pickReceiptImageFromLibrary();
+      if (!mounted.current) return;
 
       if (picked.status === 'cancelled') {
         resetProcessing();
@@ -150,21 +191,9 @@ export default function ReceiptCameraScreen() {
       trackReceiptScanAttempt('photo_library');
       showScanLoading(picked.uri);
       const processedReceipt = await processReceiptImage(picked);
-
-      trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepCompleted, {
-        step_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
-        screen_name: NATIVE_ANALYTICS_SCREENS.receiptScan.screenName,
-        screen_path: NATIVE_ANALYTICS_SCREENS.receiptScan.screenPath,
-        completion_reason: 'ocr_succeeded',
-        input_method: 'photo_library',
-        attempt_number: attemptCountRef.current,
-      });
-
-      router.replace({
-        pathname: '/receipt-confirm',
-        params: createReceiptConfirmParams(processedReceipt),
-      });
+      completeReceiptScan(processedReceipt, 'photo_library');
     } catch (error) {
+      if (!mounted.current) return;
       resetProcessing();
       const serverErrorMessage = getRecordErrorMessage(error);
 
@@ -206,11 +235,11 @@ export default function ReceiptCameraScreen() {
       />
 
       <Pressable
-        onPress={() => setIsExitConfirmOpen(true)}
+        onPress={() => (scanId ? handleClose() : setIsExitConfirmOpen(true))}
         disabled={isProcessing}
         hitSlop={12}
         accessibilityRole="button"
-        accessibilityLabel="기록 닫고 홈으로 이동"
+        accessibilityLabel={scanId ? '영수증 촬영 취소' : '기록 닫고 홈으로 이동'}
         className={`absolute right-4 h-6 w-6 items-center justify-center ${isProcessing ? 'opacity-40' : ''}`}
         style={{ top: insets.top + RECEIPT_BACK_BUTTON_SAFE_AREA_OFFSET }}
       >

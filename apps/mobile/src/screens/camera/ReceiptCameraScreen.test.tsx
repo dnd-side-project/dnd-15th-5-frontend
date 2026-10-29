@@ -12,6 +12,12 @@ import ReceiptCameraScreen from './ReceiptCameraScreen';
 
 const mockTakePictureAsync = jest.fn();
 const mockShowToast = jest.fn();
+let mockScanId = '';
+const mockFinishReceiptScan = jest.fn();
+jest.mock('@/native/scanReceipt', () => ({
+  finishReceiptScan: (...args: unknown[]) => mockFinishReceiptScan(...args),
+  isReceiptScanActive: () => true,
+}));
 
 jest.mock('expo-camera', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -32,6 +38,7 @@ jest.mock('expo-camera', () => {
 });
 
 jest.mock('expo-router', () => ({
+  useLocalSearchParams: () => ({ scanId: mockScanId }),
   router: { back: jest.fn(), dismissTo: jest.fn(), replace: jest.fn() },
 }));
 jest.mock('@/bridge/webViewNavigation', () => ({ requestWebViewNavigation: jest.fn() }));
@@ -61,6 +68,7 @@ const mockReplace = jest.mocked(router.replace);
 
 describe('<ReceiptCameraScreen />', () => {
   beforeEach(() => {
+    mockScanId = '';
     jest.clearAllMocks();
     jest.useFakeTimers();
     mockRecognizeReceipt.mockResolvedValue({
@@ -71,6 +79,48 @@ describe('<ReceiptCameraScreen />', () => {
       purchaseTime: null,
       amount: null,
     });
+  });
+
+  it('웹 기록에서 촬영하면 확인 화면을 열지 않고 OCR 결과를 웹으로 반환한다', async () => {
+    mockScanId = 'web-scan-01';
+    const picture = { uri: 'file://receipt.jpg', width: 100, height: 100 };
+    mockTakePictureAsync.mockResolvedValue(picture);
+    mockNormalizeReceiptImage.mockResolvedValue({ uri: 'file://normalized.jpg' });
+    const { getByRole, unmount } = await render(<ReceiptCameraScreen />);
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '영수증 촬영' }));
+      await Promise.resolve();
+      await jest.runAllTimersAsync();
+    });
+    expect(router.back).toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+    await unmount();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(mockFinishReceiptScan).toHaveBeenCalledWith('web-scan-01', {
+      status: 'success',
+      receipt: {
+        receiptImageId: 15,
+        purchaseDate: null,
+        purchaseTime: null,
+        amount: null,
+        shop: null,
+      },
+    });
+  });
+
+  it('웹 기록의 영수증 촬영을 취소하면 홈 이동 없이 취소를 반환한다', async () => {
+    mockScanId = 'web-scan-cancel';
+    const { getByRole, unmount } = await render(<ReceiptCameraScreen />);
+    await fireEvent.press(getByRole('button', { name: '영수증 촬영 취소' }));
+    expect(router.back).toHaveBeenCalled();
+    expect(requestWebViewNavigation).not.toHaveBeenCalled();
+    await unmount();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(mockFinishReceiptScan).toHaveBeenCalledWith('web-scan-cancel', { status: 'cancelled' });
   });
 
   afterEach(() => {
