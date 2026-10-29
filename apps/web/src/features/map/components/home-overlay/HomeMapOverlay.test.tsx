@@ -14,8 +14,7 @@ describe('HomeMapOverlay', () => {
   beforeEach(() => {
     useHomeBottomSheetStore.setState({ topActionBottomPx: 0 });
     mockedUseVisitedPlaceStickersQuery.mockReturnValue({
-      isSuccess: true,
-      stickers: [],
+      monthlyPlaceCount: 7,
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
   });
 
