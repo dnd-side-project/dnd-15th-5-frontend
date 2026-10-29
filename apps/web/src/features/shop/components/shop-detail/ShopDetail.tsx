@@ -74,7 +74,11 @@ export default function ShopDetail({
   }
 
   const visits = placeVisitsQuery.data?.pages.flatMap((page) => page.data?.visits ?? []) ?? [];
-  const stickerImages = getStickerImages(place.stickerSummary ?? place.recentStickers ?? []);
+  const summaryStickerImages = getStickerImages(place.stickerSummary ?? []);
+  const stickerImages =
+    summaryStickerImages.length > 0
+      ? summaryStickerImages
+      : getStickerImages(place.recentStickers ?? []);
   const recordLocationState = createShopRecordLocationState({
     address: place.address,
     category: place.category,

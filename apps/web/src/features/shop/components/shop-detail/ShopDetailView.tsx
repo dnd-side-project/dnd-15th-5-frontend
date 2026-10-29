@@ -33,11 +33,14 @@ export default function ShopDetailView({
   visitHistory,
 }: ShopDetailViewProps) {
   const scrollRootRef = useRef<HTMLDivElement>(null);
+  const hasRecordedVisits =
+    (place.stats?.totalVisitCount ?? 0) > 0 || visitHistory.visits.length > 0;
 
   return (
     <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
       <ShopStickerHero
         key={placeId}
+        emptyMessage={hasRecordedVisits ? '기록한 이미지를 아직 표시할 수 없어요' : undefined}
         headerContent={headerContent}
         placeId={placeId}
         stickerImages={stickerImages}
