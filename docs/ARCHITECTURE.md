@@ -179,6 +179,21 @@ pages/
 
 사진 기록의 진입 경로는 `/record`다.
 
+- 일반 브라우저는 기존 ISNet WebGPU·WASM을, iOS 앱 WebView는 `removeStickerBackground` 브릿지와
+  `apps/mobile/modules/chapchap-isnet` 로컬 네이티브 모듈을 사용한다. 앱은 모델을 미리 준비해 재사용하고
+  투명 PNG만 웹으로 반환하며 외곽선·그림자와 기록 저장 흐름은 웹에 유지한다.
+  모델 준비와 빌드는 아래 [iOS 스티커 배경 제거](#ios-스티커-배경-제거)를 참고한다.
+
+- 사진 촬영·이미지 선택으로 만든 스티커는 최종 PNG를
+  `/v1/consumptions/images`에 업로드한 뒤, 반환된 `imageId`로 `/v1/consumptions`에 등록한다.
+- 기본 이모지는 프론트 이미지를 사용하고 `/v1/consumptions/stickers`에서 카테고리·이름으로
+  찾은 `stickerItemId`를 등록한다. 이모지 이미지는 업로드하지 않으며 카테고리는 선택한 이모지와 일치한다.
+  이미지·카테고리·이름의 기준은 `shared/assets/images/ios-stickers/catalog.ts`이며, 서버 목록도
+  이 64종과 일치해야 한다. 목록에 없는 항목이나 유효하지 않은 ID는 등록하지 않고 오류를 안내한다.
+- 기록 폼의 영수증 인식은 `scanReceipt` 브릿지로 네이티브 카메라를 열고 OCR 결과를
+  같은 폼에 채운다. 최종 등록 시 선택한 이미지와 `receiptImageId`를 함께 전달한다.
+- 기존 `captureReceipt` 진입은 별도의 네이티브 영수증 확인 화면 흐름을 유지한다.
+
 ### Features 구조
 
 `features`는 화면이 아닌 비즈니스 도메인을 기준으로 구성한다.
@@ -286,6 +301,35 @@ apps/mobile/src/
 - WebView 화면은 `shared/layout/WebViewScreen`을 사용해 Safe Area·로딩·오류 복구 동작을 통일한다. 지도 홈(`/home`)은 전체 화면을 시스템 영역까지 표시하고, 나머지 웹 화면은 하단 배경만 확장한 뒤 웹의 `MobileLayout` 또는 자체 스크롤 영역에서 하단 Safe Area를 확보한다.
 - 수기 입력과 영수증 입력의 공통 규칙은 `packages/shared/record`, 네이티브 영수증 UI와 상태는 `features/record`에서 관리한다.
 - 필요한 폴더만 만든다. 사용처가 생기기 전에는 만들지 않는다.
+
+#### iOS 스티커 배경 제거
+
+- `apps/mobile/modules/chapchap-isnet`은 Apple 전용 Expo 로컬 모듈이다. `ChapChapIsnetModule`은
+  요청·모델 세션·취소 상태를, `IsnetImageProcessor`는 이미지 검사·입력 변환·마스크 적용을 담당한다.
+- `HomeScreen`에서 ISNet을 미리 로딩·워밍업하고 재사용한다. UI·JS 스레드 밖의 단일 큐에서
+  Core ML 가속을 시도하고, 준비·실행 실패 시 네이티브 CPU로 한 번 전환한다.
+  서버로 사진을 전송하거나 WebView 추론으로 자동 재시도하지 않는다.
+- 웹에서 긴 변 1536px 이하 PNG를 전달하고, 네이티브는 1024×1024 입력으로 추론한 투명 PNG를 반환한다.
+  취소·브릿지 시간 초과 시 요청 대기를 정리하고, 이미 시작한 추론은 반환 후 결과를 버린다.
+  재시도는 거절하지 않고 기존 연산이 정리된 뒤 자동으로 이어 처리하며, 대기 중인 요청도 취소할 수 있다.
+- 모델은 약 170MiB이며 앱에 포함한다. 원본 URL·크기·체크섬은 `packages/shared/src/record/isnetModel.ts`에서
+  관리하고, `modules/chapchap-isnet/models/*.onnx`는 Git에서 제외한다. 관련 라이선스는 앱에 함께 포함한다.
+- EAS는 `eas-build-pre-install`에서 모델을 준비·검증한다. 직접 `expo prebuild`를 실행할 때도
+  Pod 리소스 목록 생성 전에 `sticker:prepare`를 실행한다. `onnxruntime-objc`는 1.23.0으로 고정한다.
+
+```powershell
+# 저장소 루트: 모델 준비 및 macOS iOS 개발 빌드
+pnpm --filter @chapchap/mobile sticker:prepare
+pnpm ios
+
+# Windows: EAS iOS 개발 빌드
+cd apps/mobile
+pnpm dlx eas-cli build --profile development --platform ios
+```
+
+네이티브 변경은 앱을 다시 빌드·설치해야 적용된다. Jest와 `expo export`는 Swift 컴파일을 검증하지 않으므로
+iOS 빌드와 실기기에서 Core ML 실행·속도·마스크 품질을 확인한다. 개발 로그의
+`[ISNet native] { backend, elapsedMs }`에는 웹↔앱 전송·외곽선 합성 시간이 포함되지 않는다.
 
 ---
 
