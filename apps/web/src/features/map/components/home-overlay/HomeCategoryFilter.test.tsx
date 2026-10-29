@@ -47,4 +47,16 @@ describe('HomeCategoryFilter', () => {
     expect(screen.getByRole('button', { name: '카페' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '운동' })).not.toBeInTheDocument();
   });
+
+  it('선택된 카테고리가 목록에서 사라지면 필터를 해제한다', () => {
+    useMapCategoryFilterStore.setState({ selectedCategory: '운동' });
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      isSuccess: true,
+      stickers: [{ place: { category: '카페' } }],
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+
+    render(<HomeCategoryFilter />);
+
+    expect(useMapCategoryFilterStore.getState().selectedCategory).toBeNull();
+  });
 });

@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { CategoryChip } from '@/shared/ui/category-chip';
 
 import { useVisitedPlaceStickersQuery } from '../../apis/hooks/useVisitedPlaceStickersQuery';
@@ -18,6 +20,12 @@ export default function HomeCategoryFilter() {
   const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
   const showRecommendation = useHomeBottomSheetStore((state) => state.showRecommendation);
+
+  useEffect(() => {
+    if (isSuccess && selectedCategory && !visibleCategories.includes(selectedCategory)) {
+      setSelectedCategory(null);
+    }
+  }, [isSuccess, selectedCategory, setSelectedCategory, visibleCategories]);
 
   const handleRecommendationSelection = (isSelected: boolean) => {
     if (isSelected) {
