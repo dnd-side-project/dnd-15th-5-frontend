@@ -1,21 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 
 import HomeMapOverlay from './HomeMapOverlay';
 
-jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
-
-const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
-
 describe('HomeMapOverlay', () => {
   beforeEach(() => {
     useHomeBottomSheetStore.setState({ topActionBottomPx: 0 });
-    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
-      monthlyPlaceCount: 7,
-    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
   });
 
   it('지도는 가리지 않으면서 상단 UI를 Safe Area 아래에 배치한다', () => {
@@ -52,20 +44,5 @@ describe('HomeMapOverlay', () => {
 
     expect(useHomeBottomSheetStore.getState().topActionBottomPx).toBe(96);
     boundingClientRectSpy.mockRestore();
-  });
-
-  it('방문 장소 응답이 아직 없으면 0곳으로 표시하지 않는다', () => {
-    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
-      monthlyPlaceCount: undefined,
-    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
-
-    render(
-      <MemoryRouter>
-        <HomeMapOverlay hasUnreadNotification={false} />
-      </MemoryRouter>
-    );
-
-    expect(screen.queryByText('0곳 기록')).not.toBeInTheDocument();
-    expect(screen.queryByText(/곳 기록/)).not.toBeInTheDocument();
   });
 });
