@@ -29,7 +29,7 @@ describe('startSocialLogin', () => {
     await startSocialLogin('kakao', redirect);
 
     expect(redirect).toHaveBeenCalledWith(
-      '/api/oauth/kakao/start?client=WEB&codeChallenge=code-challenge'
+      '/api/v1/oauth/kakao/start?client=WEB&codeChallenge=code-challenge'
     );
   });
 

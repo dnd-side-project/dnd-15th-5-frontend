@@ -29,20 +29,20 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
 };
 
 const AUTH_RETRY_EXCLUDED_PATHS = new Set([
-  '/auth/token/refresh',
-  '/auth/token/refresh/web',
-  '/auth/social/exchange',
-  '/auth/signup/terms',
-  '/auth/logout',
-  '/auth/logout/web',
+  '/v1/auth/token/refresh',
+  '/v1/auth/token/refresh/web',
+  '/v1/auth/social/exchange',
+  '/v1/auth/signup/terms',
+  '/v1/auth/logout',
+  '/v1/auth/logout/web',
 ]);
-const TERMS_AGREEMENT_PATH = '/auth/signup/terms';
+const TERMS_AGREEMENT_PATH = '/v1/auth/signup/terms';
 
 const getRequestPath = (url: string | undefined) => {
   if (!url) return '';
 
   try {
-    return new URL(url, window.location.origin).pathname.replace(/^\/api/u, '');
+    return new URL(url, window.location.origin).pathname;
   } catch {
     return url.split('?')[0] ?? '';
   }
