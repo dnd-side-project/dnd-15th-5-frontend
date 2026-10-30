@@ -44,6 +44,7 @@ function LikedPlaceCard({ likedPlace }: { likedPlace: LikedPlaceResponse }) {
 /** 좋아요한 장소를 서버 페이지네이션으로 조회해 카테고리별로 보여줍니다. */
 export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
   const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
+  const [categoryOptionsSnapshot, setCategoryOptionsSnapshot] = useState<string[] | null>(null);
   const listRef = useRef<HTMLElement>(null);
   const isFetchingNextPageRef = useRef(false);
   const categoryParam = selectedCategory === ALL_CATEGORY ? undefined : selectedCategory;
@@ -53,27 +54,41 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
     fetchNextPage,
     hasNextPage,
     isError,
+    isFetchedAfterMount,
     isFetchNextPageError,
+    isFetching,
     isFetchingNextPage,
     isPending,
     isPlaceholderData,
+    isStale,
     isSuccess,
     likedPlaces,
     refetch,
   } = likedPlacesQuery;
+
   if (
-    isSuccess &&
-    categories !== undefined &&
     selectedCategory !== ALL_CATEGORY &&
+    isSuccess &&
+    !isPlaceholderData &&
+    !isFetching &&
+    categories !== undefined &&
     !categories.includes(selectedCategory)
   ) {
     setSelectedCategory(ALL_CATEGORY);
   }
 
-  const availableCategories = [
+  const responseCategories = [
     ALL_CATEGORY,
     ...(categories ?? []).filter((category) => category !== ALL_CATEGORY),
   ];
+  const availableCategories = [
+    ...((selectedCategory !== ALL_CATEGORY || isPlaceholderData) && categoryOptionsSnapshot
+      ? categoryOptionsSnapshot
+      : responseCategories),
+  ];
+  if (selectedCategory !== ALL_CATEGORY && !availableCategories.includes(selectedCategory)) {
+    availableCategories.push(selectedCategory);
+  }
   const activeCategory = availableCategories.includes(selectedCategory)
     ? selectedCategory
     : ALL_CATEGORY;
@@ -111,6 +126,7 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
             selected={activeCategory === category}
             onSelectedChange={(selected) => {
               if (selected) {
+                setCategoryOptionsSnapshot(availableCategories);
                 setSelectedCategory(category);
               }
             }}
@@ -126,7 +142,12 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
         aria-label="좋아요한 가게 목록"
         className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto"
       >
-        {isPending || isPlaceholderData ? (
+        {isPending ||
+        isPlaceholderData ||
+        (!isError &&
+          !isFetchedAfterMount &&
+          likedPlaces.length === 0 &&
+          (isFetching || isStale)) ? (
           <div role="status" aria-label="좋아요한 가게 불러오는 중" className="space-y-6 py-2">
             {[0, 1, 2].map((item) => (
               <LikedPlaceCardSkeleton key={item} />
