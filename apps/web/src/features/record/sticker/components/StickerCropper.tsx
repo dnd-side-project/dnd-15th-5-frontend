@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import {
+  STICKER_FLOW_CROP_AREA_TOP,
   STICKER_FLOW_HEADER_HEIGHT_CLASS,
   STICKER_FLOW_HEADER_TOP_CLASS,
 } from '@/features/record/sticker/constants';
@@ -100,8 +101,11 @@ export default function StickerCropper({
         </button>
       </header>
       {/* NOTE: 모서리 터치 영역의 가로 넘침을 막고, 절대 위치 영역으로 컨테이너 높이를 확정한다. */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-x-4 inset-y-0 flex flex-col items-center justify-center @container-size">
+      <div
+        className="absolute inset-x-0 bottom-0 overflow-hidden"
+        style={{ top: STICKER_FLOW_CROP_AREA_TOP }}
+      >
+        <div className="absolute inset-x-4 top-5.5 bottom-0 flex flex-col items-center justify-center @container-size">
           <div
             ref={imageBox}
             className="relative max-w-full shrink-0 touch-none select-none aspect-(--crop-ratio)"
