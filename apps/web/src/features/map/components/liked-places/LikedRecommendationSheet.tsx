@@ -1,5 +1,3 @@
-import { useLayoutEffect } from 'react';
-
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
@@ -27,11 +25,6 @@ export default function LikedRecommendationSheet({
   const likeMutation = useTogglePlaceLikeMutation();
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
   const nearbyRecommendation = recommendations.find(({ id }) => id === recommendationId);
-  const visitedPlace = visitedPlacesQuery.data?.data?.places?.find(
-    ({ placeId }) => String(placeId) === recommendationId
-  );
-  const isExplicitlyUnliked =
-    visitedPlace?.liked === false || nearbyRecommendation?.isLiked === false;
   const recommendation =
     nearbyRecommendation ??
     visitedPlacesQuery.likedRecommendations.find(({ id }) => id === recommendationId);
@@ -40,16 +33,6 @@ export default function LikedRecommendationSheet({
     isLibraryLoading,
     isLibraryError,
   } = useRecommendationRecordShopQuery(recommendation);
-
-  useLayoutEffect(() => {
-    if (isExplicitlyUnliked) {
-      showHome();
-    }
-  }, [isExplicitlyUnliked, showHome]);
-
-  if (isExplicitlyUnliked) {
-    return null;
-  }
 
   if (!recommendation && (isPending || visitedPlacesQuery.isPending)) {
     return (
