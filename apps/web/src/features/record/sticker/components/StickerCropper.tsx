@@ -105,7 +105,7 @@ export default function StickerCropper({
         className="absolute inset-x-0 bottom-0 overflow-hidden"
         style={{ top: STICKER_FLOW_CROP_AREA_TOP }}
       >
-        <div className="absolute inset-x-4 top-5.5 bottom-0 flex flex-col items-center justify-center @container-size">
+        <div className="absolute inset-x-4 top-20 bottom-0 flex flex-col items-center justify-start @container-size">
           <div
             ref={imageBox}
             className="relative max-w-full shrink-0 touch-none select-none aspect-(--crop-ratio)"
