@@ -12,6 +12,7 @@ import {
   getGetNearbyPlacesQueryKey,
   getGetVisitedPlaceMarkersQueryKey,
 } from '@/features/map/apis/queryKeys';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useToast } from '@/shared/ui/toast';
 
 import { LIKED_PLACES_INFINITE_QUERY_KEY } from './useLikedPlacesInfiniteQuery';
@@ -296,6 +297,10 @@ export const useTogglePlaceLikeMutation = () => {
       if (liked === undefined) return;
 
       updateCachedLikeState(queryClient, placeId, () => liked);
+
+      if (!liked) {
+        useHomeBottomSheetStore.getState().closeLikedRecommendationIfMatches(String(placeId));
+      }
     },
     onSettled: async () => {
       // 진행 중인 좋아요 변경이 남아 있으면 재조회가 다른 장소의 낙관적 상태를 덮을 수 있습니다.

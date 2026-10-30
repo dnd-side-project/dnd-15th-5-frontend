@@ -23,7 +23,9 @@ export default function LikedRecommendationSheet({
   const { recommendations, isPending, isError, refetch } = useNearbyPlaceRecommendationsQuery();
   const visitedPlacesQuery = useVisitedPlaceStickersQuery();
   const likeMutation = useTogglePlaceLikeMutation();
-  const showHome = useHomeBottomSheetStore((state) => state.showHome);
+  const closeLikedRecommendationIfMatches = useHomeBottomSheetStore(
+    (state) => state.closeLikedRecommendationIfMatches
+  );
   const nearbyRecommendation = recommendations.find(({ id }) => id === recommendationId);
   const recommendation =
     nearbyRecommendation ??
@@ -71,7 +73,7 @@ export default function LikedRecommendationSheet({
         title="선택한 가게를 찾을 수 없어요"
         description="지도에서 다른 가게를 선택해주세요."
         actionLabel="지도 홈으로"
-        onAction={showHome}
+        onAction={() => closeLikedRecommendationIfMatches(recommendationId)}
         className="py-6"
       />
     );
@@ -94,7 +96,10 @@ export default function LikedRecommendationSheet({
   const isResolvingRecordShop = !isLibraryError && (isLibraryLoading || recordShopQuery.isPending);
 
   const handleUnlike = () => {
-    likeMutation.mutate({ placeId: Number(id) }, { onSuccess: showHome });
+    likeMutation.mutate(
+      { placeId: Number(id) },
+      { onSuccess: () => closeLikedRecommendationIfMatches(id) }
+    );
   };
 
   return (
