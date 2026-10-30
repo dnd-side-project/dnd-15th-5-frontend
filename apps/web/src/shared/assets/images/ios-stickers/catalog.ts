@@ -1,69 +1,71 @@
 import { RECORD_CATEGORIES } from '@chapchap/shared/record';
 
-import appleJuice from '@/shared/assets/images/ios-stickers/apple-juice.png';
-import apple from '@/shared/assets/images/ios-stickers/apple.png';
-import books from '@/shared/assets/images/ios-stickers/books.png';
-import bowling from '@/shared/assets/images/ios-stickers/bowling.png';
-import bubbleTea from '@/shared/assets/images/ios-stickers/bubble-tea.png';
-import burger from '@/shared/assets/images/ios-stickers/burger.png';
-import cake from '@/shared/assets/images/ios-stickers/cake.png';
-import camera from '@/shared/assets/images/ios-stickers/camera.png';
-import cannedFood from '@/shared/assets/images/ios-stickers/canned-food.png';
-import capsule from '@/shared/assets/images/ios-stickers/capsule.png';
-import car from '@/shared/assets/images/ios-stickers/car.png';
-import cat from '@/shared/assets/images/ios-stickers/cat.png';
-import clapperboard from '@/shared/assets/images/ios-stickers/clapperboard.png';
-import coffee from '@/shared/assets/images/ios-stickers/coffee.png';
-import convenienceStore from '@/shared/assets/images/ios-stickers/convenience-store.png';
-import cookie from '@/shared/assets/images/ios-stickers/cookie.png';
-import creditCard from '@/shared/assets/images/ios-stickers/credit-card.png';
-import croissant from '@/shared/assets/images/ios-stickers/croissant.png';
-import cupcake from '@/shared/assets/images/ios-stickers/cupcake.png';
-import cycling from '@/shared/assets/images/ios-stickers/cycling.png';
-import dog from '@/shared/assets/images/ios-stickers/dog.png';
-import dress from '@/shared/assets/images/ios-stickers/dress.png';
-import ferrisWheel from '@/shared/assets/images/ios-stickers/ferris-wheel.png';
-import gamepad from '@/shared/assets/images/ios-stickers/gamepad.png';
-import gift from '@/shared/assets/images/ios-stickers/gift.png';
-import greenTea from '@/shared/assets/images/ios-stickers/green-tea.png';
-import haircut from '@/shared/assets/images/ios-stickers/haircut.png';
-import handbag from '@/shared/assets/images/ios-stickers/handbag.png';
-import headphones from '@/shared/assets/images/ios-stickers/headphones.png';
-import hospital from '@/shared/assets/images/ios-stickers/hospital.png';
-import iceCream from '@/shared/assets/images/ios-stickers/ice-cream.png';
-import jeans from '@/shared/assets/images/ios-stickers/jeans.png';
-import laundry from '@/shared/assets/images/ios-stickers/laundry.png';
-import lipstick from '@/shared/assets/images/ios-stickers/lipstick.png';
-import lotion from '@/shared/assets/images/ios-stickers/lotion.png';
-import massage from '@/shared/assets/images/ios-stickers/massage.png';
-import meditation from '@/shared/assets/images/ios-stickers/meditation.png';
-import microphone from '@/shared/assets/images/ios-stickers/microphone.png';
-import milk from '@/shared/assets/images/ios-stickers/milk.png';
-import mirror from '@/shared/assets/images/ios-stickers/mirror.png';
-import muscle from '@/shared/assets/images/ios-stickers/muscle.png';
-import nailPolish from '@/shared/assets/images/ios-stickers/nail-polish.png';
-import paella from '@/shared/assets/images/ios-stickers/paella.png';
-import palette from '@/shared/assets/images/ios-stickers/palette.png';
-import pizza from '@/shared/assets/images/ios-stickers/pizza.png';
-import plate from '@/shared/assets/images/ios-stickers/plate.png';
-import pushpin from '@/shared/assets/images/ios-stickers/pushpin.png';
-import ramen from '@/shared/assets/images/ios-stickers/ramen.png';
-import rice from '@/shared/assets/images/ios-stickers/rice.png';
-import ring from '@/shared/assets/images/ios-stickers/ring.png';
-import running from '@/shared/assets/images/ios-stickers/running.png';
-import sauna from '@/shared/assets/images/ios-stickers/sauna.png';
-import shoppingBags from '@/shared/assets/images/ios-stickers/shopping-bags.png';
-import shoppingCart from '@/shared/assets/images/ios-stickers/shopping-cart.png';
-import sneaker from '@/shared/assets/images/ios-stickers/sneaker.png';
-import soccerBall from '@/shared/assets/images/ios-stickers/soccer-ball.png';
-import spaghetti from '@/shared/assets/images/ios-stickers/spaghetti.png';
-import sparkles from '@/shared/assets/images/ios-stickers/sparkles.png';
-import sunglasses from '@/shared/assets/images/ios-stickers/sunglasses.png';
-import sushi from '@/shared/assets/images/ios-stickers/sushi.png';
-import swimming from '@/shared/assets/images/ios-stickers/swimming.png';
-import tennisBall from '@/shared/assets/images/ios-stickers/tennis-ball.png';
-import toiletPaper from '@/shared/assets/images/ios-stickers/toilet-paper.png';
-import weightlifting from '@/shared/assets/images/ios-stickers/weightlifting.png';
+import {
+  appleJuice,
+  apple,
+  books,
+  bowling,
+  bubbleTea,
+  burger,
+  cake,
+  camera,
+  cannedFood,
+  capsule,
+  car,
+  cat,
+  clapperboard,
+  coffee,
+  convenienceStore,
+  cookie,
+  creditCard,
+  croissant,
+  cupcake,
+  cycling,
+  dog,
+  dress,
+  ferrisWheel,
+  gamepad,
+  gift,
+  greenTea,
+  haircut,
+  handbag,
+  headphones,
+  hospital,
+  iceCream,
+  jeans,
+  laundry,
+  lipstick,
+  lotion,
+  massage,
+  meditation,
+  microphone,
+  milk,
+  mirror,
+  muscle,
+  nailPolish,
+  paella,
+  palette,
+  pizza,
+  plate,
+  pushpin,
+  ramen,
+  rice,
+  ring,
+  running,
+  sauna,
+  shoppingBags,
+  shoppingCart,
+  sneaker,
+  soccerBall,
+  spaghetti,
+  sparkles,
+  sunglasses,
+  sushi,
+  swimming,
+  tennisBall,
+  toiletPaper,
+  weightlifting,
+} from './index';
 
 export const DEFAULT_STICKER_CATEGORIES = RECORD_CATEGORIES;
 

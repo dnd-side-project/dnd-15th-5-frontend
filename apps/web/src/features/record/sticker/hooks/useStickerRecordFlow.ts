@@ -1,26 +1,44 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { captureStickerPhoto } from '@/features/record/camera/utils/captureStickerPhoto';
+import {
+  disposeStickerBackground,
+  prepareStickerBackground,
+} from '@/features/record/sticker/background-removal/removeStickerBackground';
+import {
+  cropStickerImage,
+  validateStickerFile,
+} from '@/features/record/sticker/image/stickerImage';
+import type { StickerCrop } from '@/features/record/sticker/image/stickerImage';
+import { createPhotoSticker } from '@/features/record/sticker/utils/createPhotoSticker';
+import { loadDefaultSticker } from '@/features/record/sticker/utils/loadDefaultSticker';
 import type { StickerPhotoSource, StickerRecordMedia } from '@/features/record/types';
 import type { DefaultSticker } from '@/shared/assets/images/ios-stickers/catalog';
-import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
-
-import { createPhotoSticker } from './createPhotoSticker';
-import { loadDefaultSticker } from './loadDefaultSticker';
-import { disposeStickerBackground, prepareStickerBackground } from './removeStickerBackground';
-import { cropStickerImage, validateStickerFile } from './stickerImage';
-
-import type { StickerCrop } from './stickerImage';
+import { isNativeApp } from '@/shared/lib/bridge';
 
 type Stage = 'select' | 'default' | 'crop' | 'preview' | 'record';
 type PendingAction = 'capture' | 'crop' | 'process' | null;
+type CropSource = { file: File; url: string };
 type Result = {
   original: string;
   sticker: string;
+  cropSource?: CropSource;
+  photoSource?: StickerPhotoSource;
+  defaultSticker?: DefaultSticker;
 } & StickerRecordMedia;
 
+/**
+ * 사진 촬영·자르기·스티커 생성과 기본 스티커 선택의 화면 전환 및 비동기 상태를 관리합니다.
+ *
+ * 새 요청이나 취소 시 이전 요청의 취소 신호를 활성화하고, 늦게 도착한 결과를 무시합니다.
+ * 이미지 변경이 확정되기 전까지 기존 기록 결과를 유지해 선택 취소 시 복원합니다.
+ * 사진 원본과 blob URL은 다시 자르기에 사용할 수 있도록 보관하며,
+ * 새 결과 확정·초기화·언마운트 시 더 이상 필요하지 않은 URL을 해제합니다.
+ * 반환된 blob URL의 수명은 이 훅에서 관리합니다.
+ */
 export const useStickerRecordFlow = () => {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-  const [cropSource, setCropSource] = useState<{ file: File; url: string } | null>(null);
+  const [cropSource, setCropSource] = useState<CropSource | null>(null);
   const [stage, setStage] = useState<Stage>('select');
   const [result, setResult] = useState<Result | null>(null);
   const [recordResult, setRecordResult] = useState<Result | null>(null);
@@ -31,6 +49,7 @@ export const useStickerRecordFlow = () => {
   const controller = useRef<AbortController | null>(null);
   const urls = useRef<string[]>([]);
   const lastFile = useRef<File | null>(null);
+  const lastCropSource = useRef<CropSource | null>(null);
   const isCapturing = pendingAction === 'capture';
   const isCropping = pendingAction === 'crop';
   const isProcessing = pendingAction === 'process';
@@ -60,10 +79,11 @@ export const useStickerRecordFlow = () => {
       return false;
     });
   };
-  const keepRecordUrls = () =>
-    releaseUrls(recordResult ? [recordResult.original, recordResult.sticker] : []);
+  const getResultUrls = (value: Result | null) =>
+    value ? [value.original, value.sticker, value.cropSource?.url ?? ''] : [];
+  const keepRecordUrls = () => releaseUrls(getResultUrls(recordResult));
   const commitResult = (next: Result) => {
-    releaseUrls([next.original, next.sticker]);
+    releaseUrls(getResultUrls(next));
     setRecordResult(next);
     setResult(next);
     setStage('record');
@@ -87,12 +107,19 @@ export const useStickerRecordFlow = () => {
     }
   };
 
-  const processImage = async (file: File, request: AbortController, source: StickerPhotoSource) => {
+  const processImage = async (
+    file: File,
+    request: AbortController,
+    source: StickerPhotoSource,
+    sourceCrop?: CropSource
+  ) => {
     lastFile.current = file;
     setPhotoSource(source);
-    keepRecordUrls();
+    releaseUrls([...getResultUrls(recordResult), sourceCrop?.url ?? '']);
     const originalUrl = createUrl(file);
-    setCropSource(null);
+    const nextCropSource = sourceCrop ?? { file, url: originalUrl };
+    lastCropSource.current = nextCropSource;
+    setCropSource(nextCropSource);
     setPendingAction('process');
     setOriginal(originalUrl);
     setResult(null);
@@ -107,6 +134,8 @@ export const useStickerRecordFlow = () => {
         original: originalUrl,
         sticker: createUrl(sticker),
         source: 'photo',
+        cropSource: nextCropSource,
+        photoSource: source,
       });
     } catch (cause) {
       if (!request.signal.aborted)
@@ -125,6 +154,7 @@ export const useStickerRecordFlow = () => {
     prepareStickerBackground();
     keepRecordUrls();
     setCropSource({ file, url: createUrl(file) });
+    setPhotoSource('gallery');
     setOriginal('');
     setResult(null);
     setStage('crop');
@@ -136,7 +166,7 @@ export const useStickerRecordFlow = () => {
     try {
       const file = await cropStickerImage(cropSource.file, crop);
       if (request.signal.aborted) return;
-      await processImage(file, request, 'gallery');
+      await processImage(file, request, photoSource, cropSource);
     } catch (cause) {
       if (!request.signal.aborted)
         setError(cause instanceof Error ? cause.message : '사진을 자르지 못했어요.');
@@ -150,19 +180,14 @@ export const useStickerRecordFlow = () => {
     const request = startRequest('capture');
     prepareStickerBackground();
     try {
-      const photo = await requestToNative('captureStickerPhoto', {});
+      const photo = await captureStickerPhoto();
       if (request.signal.aborted) return;
       if (photo.status === 'cancelled') return;
       if (photo.status === 'permissionDenied') {
         setError('앱 설정에서 카메라 권한을 허용한 뒤 다시 촬영해주세요.');
         return;
       }
-      const bytes = Uint8Array.from(atob(photo.base64), (character) => character.charCodeAt(0));
-      await processImage(
-        new File([bytes], 'sticker-photo.jpg', { type: photo.mimeType }),
-        request,
-        'camera'
-      );
+      await processImage(photo.file, request, 'camera');
     } catch (cause) {
       if (!request.signal.aborted)
         setError(cause instanceof Error ? cause.message : '카메라를 열지 못했어요.');
@@ -178,6 +203,7 @@ export const useStickerRecordFlow = () => {
     if (isProcessing) disposeStickerBackground();
     releaseUrls();
     lastFile.current = null;
+    lastCropSource.current = null;
     setCropSource(null);
     setOriginal('');
     setResult(null);
@@ -199,7 +225,22 @@ export const useStickerRecordFlow = () => {
     setCropSource(null);
     setOriginal(recordResult.original);
     setResult(recordResult);
+    setPhotoSource(recordResult.photoSource ?? 'gallery');
     setStage('record');
+  };
+
+  const backToImageSelection = () => {
+    if (!recordResult) return;
+    startRequest();
+    keepRecordUrls();
+    if (recordResult.source === 'default') {
+      setStage('default');
+      return;
+    }
+    setCropSource(recordResult.cropSource ?? null);
+    setPhotoSource(recordResult.photoSource ?? 'gallery');
+    setResult(null);
+    setStage('crop');
   };
 
   const selectDefaultSticker = async (sticker: DefaultSticker) => {
@@ -214,6 +255,7 @@ export const useStickerRecordFlow = () => {
         original: '',
         sticker: createUrl(stickerBlob),
         source: 'default',
+        defaultSticker: sticker,
       });
     } catch (cause) {
       if (!request.signal.aborted) {
@@ -226,7 +268,8 @@ export const useStickerRecordFlow = () => {
 
   const retry = () => {
     const file = lastFile.current;
-    if (file && validateImage(file)) void processImage(file, startRequest(), photoSource);
+    if (file && validateImage(file))
+      void processImage(file, startRequest(), photoSource, lastCropSource.current ?? undefined);
   };
 
   return {
@@ -246,6 +289,7 @@ export const useStickerRecordFlow = () => {
     error,
     reset,
     cancelImageSelection,
+    backToImageSelection,
     retry,
     openDefaultStickers: () => {
       startRequest();

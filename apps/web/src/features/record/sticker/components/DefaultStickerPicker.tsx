@@ -14,6 +14,7 @@ import { Button } from '@/shared/ui/button';
 import { CategoryChip } from '@/shared/ui/category-chip';
 
 type DefaultStickerPickerProps = {
+  initialSticker?: DefaultSticker;
   onClose: () => void;
   onConfirm: (sticker: DefaultSticker) => void;
   isProcessing: boolean;
@@ -21,13 +22,16 @@ type DefaultStickerPickerProps = {
 };
 
 export default function DefaultStickerPicker({
+  initialSticker,
   onClose,
   onConfirm,
   isProcessing,
   error,
 }: DefaultStickerPickerProps) {
-  const [category, setCategory] = useState<DefaultStickerCategory>('카페');
-  const [selectedId, setSelectedId] = useState<string | null>('coffee');
+  const [category, setCategory] = useState<DefaultStickerCategory>(
+    initialSticker?.category ?? '카페'
+  );
+  const [selectedId, setSelectedId] = useState<string | null>(initialSticker?.id ?? 'coffee');
   const stickers = DEFAULT_STICKERS.filter((sticker) => sticker.category === category);
   const selectedSticker = stickers.find((sticker) => sticker.id === selectedId);
 
@@ -49,7 +53,7 @@ export default function DefaultStickerPicker({
         </button>
       </header>
 
-      <h1 className="mx-4 mt-2.5 text-heading-02-semibold">스티커를 골라주세요</h1>
+      <h1 className="mx-4 mt-2.5 text-heading-01-bold">스티커를 골라주세요</h1>
 
       <div
         role="group"

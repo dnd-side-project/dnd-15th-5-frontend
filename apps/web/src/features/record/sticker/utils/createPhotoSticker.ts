@@ -1,5 +1,5 @@
-import { removeStickerBackground } from './removeStickerBackground';
-import { composeSticker, prepareStickerImage } from './stickerImage';
+import { removeStickerBackground } from '@/features/record/sticker/background-removal/removeStickerBackground';
+import { composeSticker, prepareStickerImage } from '@/features/record/sticker/image/stickerImage';
 
 /** 사진 정규화·ISNet 배경 제거·테두리 합성을 순서대로 실행하고 취소된 결과는 반환하지 않습니다. */
 export const createPhotoSticker = async (

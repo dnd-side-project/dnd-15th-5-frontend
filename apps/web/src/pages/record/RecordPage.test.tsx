@@ -1,8 +1,8 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
-import { createPhotoSticker } from '@/features/record/sticker/createPhotoSticker';
-import { loadDefaultSticker } from '@/features/record/sticker/loadDefaultSticker';
+import { createPhotoSticker } from '@/features/record/sticker/utils/createPhotoSticker';
+import { loadDefaultSticker } from '@/features/record/sticker/utils/loadDefaultSticker';
 import BottomTabBar from '@/shared/layout/BottomTabBar';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 import type { RecordLocationState } from '@/shared/types/recordNavigation';
@@ -17,13 +17,13 @@ jest.mock('@/shared/lib/bridge', () => ({
   requestToNative: jest.fn(),
   notifyNative: jest.fn(),
 }));
-jest.mock('@/features/record/sticker/loadDefaultSticker', () => ({
+jest.mock('@/features/record/sticker/utils/loadDefaultSticker', () => ({
   loadDefaultSticker: jest.fn(),
 }));
-jest.mock('@/features/record/sticker/createPhotoSticker', () => ({
+jest.mock('@/features/record/sticker/utils/createPhotoSticker', () => ({
   createPhotoSticker: jest.fn(),
 }));
-jest.mock('@/features/record/sticker/removeStickerBackground', () => ({
+jest.mock('@/features/record/sticker/background-removal/removeStickerBackground', () => ({
   prepareStickerBackground: jest.fn(),
   disposeStickerBackground: jest.fn(),
 }));
@@ -163,11 +163,10 @@ it('영수증 카메라를 열지 못하면 작성 내용을 유지한 채 다�
   expect(screen.getByAltText('기록에 적용한 스티커')).toBeInTheDocument();
 });
 
-it('일반 웹의 기록 폼에서는 영수증 촬영 대신 앱 이용 안내를 표시한다', async () => {
+it('일반 웹의 기록 폼에서는 영수증 인식 메뉴를 표시하지 않는다', async () => {
   renderRecordPage();
   await selectDefaultSticker();
-  fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
-  expect(screen.getByRole('status')).toHaveTextContent('영수증 인식은 앱에서 사용할 수 있어요');
+  expect(screen.queryByRole('button', { name: /영수증 인식하기/ })).not.toBeInTheDocument();
   expect(requestToNative).not.toHaveBeenCalled();
 });
 

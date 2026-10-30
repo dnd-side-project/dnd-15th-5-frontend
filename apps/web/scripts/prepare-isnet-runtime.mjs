@@ -2,7 +2,7 @@ import { copyFile, mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 
-import { ISNET_MODELS } from '../src/features/record/sticker/isnetModels.ts';
+import { ISNET_MODELS } from '../src/features/record/sticker/background-removal/isnetModels.ts';
 
 const require = createRequire(import.meta.url);
 const runtimeDirectory = dirname(require.resolve('onnxruntime-web'));

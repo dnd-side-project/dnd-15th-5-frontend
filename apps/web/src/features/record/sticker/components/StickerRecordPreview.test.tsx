@@ -110,10 +110,18 @@ it('가게 선택 결과를 받아도 작성 중인 카테고리와 메모를 �
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('친구와 방문');
 });
 
-it('웹에서는 영수증 인식의 앱 이용 안내를 표시한다', () => {
-  renderPreview();
-  fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
-  expect(screen.getByRole('status')).toHaveTextContent('영수증 인식은 앱에서 사용할 수 있어요');
+it('웹에서는 영수증 인식 메뉴와 관련 오류를 표시하지 않는다', () => {
+  render(
+    <StickerRecordPreview
+      sticker="sticker.png"
+      isDefaultSticker
+      {...callbacks}
+      receiptError="촬영 오류"
+    />
+  );
+  expect(screen.queryByRole('button', { name: /영수증 인식하기/ })).not.toBeInTheDocument();
+  expect(screen.queryByText('소비정보를 자동으로 기록')).not.toBeInTheDocument();
+  expect(screen.queryByText('촬영 오류')).not.toBeInTheDocument();
   expect(callbacks.onScanReceipt).not.toHaveBeenCalled();
 });
 

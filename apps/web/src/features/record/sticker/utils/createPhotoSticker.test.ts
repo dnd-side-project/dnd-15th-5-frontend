@@ -1,11 +1,17 @@
 import { waitFor } from '@testing-library/react';
 
-import { createPhotoSticker } from './createPhotoSticker';
-import { removeStickerBackground } from './removeStickerBackground';
-import { composeSticker, prepareStickerImage } from './stickerImage';
+import { removeStickerBackground } from '@/features/record/sticker/background-removal/removeStickerBackground';
+import { composeSticker, prepareStickerImage } from '@/features/record/sticker/image/stickerImage';
 
-jest.mock('./removeStickerBackground', () => ({ removeStickerBackground: jest.fn() }));
-jest.mock('./stickerImage', () => ({ prepareStickerImage: jest.fn(), composeSticker: jest.fn() }));
+import { createPhotoSticker } from './createPhotoSticker';
+
+jest.mock('@/features/record/sticker/background-removal/removeStickerBackground', () => ({
+  removeStickerBackground: jest.fn(),
+}));
+jest.mock('@/features/record/sticker/image/stickerImage', () => ({
+  prepareStickerImage: jest.fn(),
+  composeSticker: jest.fn(),
+}));
 
 const photo = new File(['photo'], 'photo.jpg', { type: 'image/jpeg' });
 const prepared = new Blob(['prepared']);

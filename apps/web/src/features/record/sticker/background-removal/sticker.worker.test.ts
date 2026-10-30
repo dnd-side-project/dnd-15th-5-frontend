@@ -1,5 +1,5 @@
 import { prepareIsnetBackground, removeIsnetBackground } from './isnetBackgroundRemoval';
-import './sticker.worker';
+import './sticker.worker.ts';
 
 import type { StickerWorkerRequest } from './stickerWorkerTypes';
 

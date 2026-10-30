@@ -1,20 +1,22 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 
+import { cropStickerImage } from '@/features/record/sticker/image/stickerImage';
+import { createPhotoSticker } from '@/features/record/sticker/utils/createPhotoSticker';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
-import { createPhotoSticker } from './createPhotoSticker';
-import { cropStickerImage } from './stickerImage';
 import { useStickerRecordFlow } from './useStickerRecordFlow';
 
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn(), requestToNative: jest.fn() }));
-jest.mock('./createPhotoSticker', () => ({ createPhotoSticker: jest.fn() }));
-jest.mock('./removeStickerBackground', () => ({
+jest.mock('@/features/record/sticker/utils/createPhotoSticker', () => ({
+  createPhotoSticker: jest.fn(),
+}));
+jest.mock('@/features/record/sticker/background-removal/removeStickerBackground', () => ({
   prepareStickerBackground: jest.fn(),
   disposeStickerBackground: jest.fn(),
 }));
 
-jest.mock('./stickerImage', () => ({
-  ...jest.requireActual('./stickerImage'),
+jest.mock('@/features/record/sticker/image/stickerImage', () => ({
+  ...jest.requireActual('@/features/record/sticker/image/stickerImage'),
   cropStickerImage: jest.fn(),
 }));
 
@@ -139,4 +141,14 @@ it('촬영에서 누끼 생성으로 넘어가면 촬영 대기 상태를 해제
   });
   act(() => result.current.confirm());
   expect(result.current.stage).toBe('record');
+  const cameraPhoto = jest.mocked(createPhotoSticker).mock.calls[0][0];
+  act(() => result.current.backToImageSelection());
+  expect(result.current.stage).toBe('crop');
+  expect(result.current.cropSource?.file).toBe(cameraPhoto);
+  expect(result.current.photoSource).toBe('camera');
+  await act(async () => result.current.confirmCrop(crop));
+  expect(cropStickerImage).toHaveBeenLastCalledWith(cameraPhoto, crop);
+  act(() => result.current.confirm());
+  expect(result.current.recordResult?.source).toBe('photo');
+  expect(result.current.photoSource).toBe('camera');
 });

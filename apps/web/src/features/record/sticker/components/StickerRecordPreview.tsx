@@ -53,7 +53,7 @@ type RecordFieldProps = { label: string; required?: boolean; children: ReactNode
 function RecordField({ label, required = false, children }: RecordFieldProps) {
   return (
     <fieldset className="min-w-0">
-      <legend className="mb-2 text-body-02-medium text-neutral-700">
+      <legend className="mb-2 text-body-02-semibold text-neutral-700">
         {required && (
           <span aria-hidden="true" className="mr-1 text-notification">
             *
@@ -88,6 +88,7 @@ export default function StickerRecordPreview({
   imageError = '',
   isCapturing = false,
 }: StickerRecordPreviewProps) {
+  const isApp = isNativeApp();
   const [photoCategory, setPhotoCategory] = useState<RecordCategory>(initialCategory);
   const category = defaultStickerCategory ?? photoCategory;
   const [visitDateTime, setVisitDateTime] = useState(
@@ -96,7 +97,6 @@ export default function StickerRecordPreview({
   const [isDateSheetOpen, setIsDateSheetOpen] = useState(false);
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
-  const [receiptMessage, setReceiptMessage] = useState('');
   const [receiptImageId, setReceiptImageId] = useState<number>();
   const [purchaseTime, setPurchaseTime] = useState<string>();
   const isAmountTooLarge = Number(amount) > MAX_RECORD_AMOUNT;
@@ -124,10 +124,7 @@ export default function StickerRecordPreview({
     });
   };
   const handleScanReceipt = async () => {
-    if (!isNativeApp()) {
-      setReceiptMessage('영수증 인식은 앱에서 사용할 수 있어요.');
-      return;
-    }
+    if (!isApp) return;
     const receipt = await onScanReceipt?.();
     if (!receipt) return;
     setReceiptImageId(receipt.receiptImageId);
@@ -196,30 +193,27 @@ export default function StickerRecordPreview({
 
         <div className="flex flex-1 flex-col rounded-t-32 bg-neutral-00 px-4 pt-8 pb-[max(32px,env(safe-area-inset-bottom))]">
           <h2 className="text-title-01-bold">소비정보를 입력해주세요</h2>
-          <button
-            type="button"
-            onClick={handleScanReceipt}
-            disabled={isOpeningReceipt}
-            aria-busy={isOpeningReceipt}
-            className="mt-3 flex h-18.5 items-center gap-4 rounded-16 bg-primary-50 px-6 text-left text-primary-500"
-          >
-            <ReceiptScanIcon aria-hidden="true" className="size-8 shrink-0" />
-            <span className="flex flex-1 flex-col gap-1">
-              <span className="text-body-01-semibold">
-                {isOpeningReceipt ? '카메라를 열고 있어요' : '영수증 인식하기'}
+          {isApp && (
+            <button
+              type="button"
+              onClick={handleScanReceipt}
+              disabled={isOpeningReceipt}
+              aria-busy={isOpeningReceipt}
+              className="mt-3 flex h-18.5 items-center gap-4 rounded-16 bg-primary-50 px-6 text-left text-primary-500"
+            >
+              <ReceiptScanIcon aria-hidden="true" className="size-8 shrink-0" />
+              <span className="flex flex-1 flex-col gap-1">
+                <span className="text-body-01-semibold">
+                  {isOpeningReceipt ? '카메라를 열고 있어요' : '영수증 인식하기'}
+                </span>
+                <span className="text-body-02-regular text-neutral-500">
+                  소비정보를 자동으로 기록
+                </span>
               </span>
-              <span className="text-body-02-regular text-neutral-500">
-                소비정보를 자동으로 기록
-              </span>
-            </span>
-            <ChevronRightIcon aria-hidden="true" className="size-6 shrink-0" />
-          </button>
-          {receiptMessage && (
-            <p role="status" className="mt-2 text-body-02-regular text-neutral-500">
-              {receiptMessage}
-            </p>
+              <ChevronRightIcon aria-hidden="true" className="size-6 shrink-0" />
+            </button>
           )}
-          {receiptError && (
+          {isApp && receiptError && (
             <p role="alert" className="mt-2 text-body-02-regular text-notification">
               {receiptError}
             </p>

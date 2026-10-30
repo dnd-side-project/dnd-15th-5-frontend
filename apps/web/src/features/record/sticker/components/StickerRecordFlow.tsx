@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 
+import { useStickerRecordFlow } from '@/features/record/sticker/hooks/useStickerRecordFlow';
 import type { StickerRecordDraft, StickerRecordMedia } from '@/features/record/types';
 import { CloseIcon } from '@/shared/assets/icons';
 import { isNativeApp } from '@/shared/lib/bridge';
@@ -11,7 +12,6 @@ import StickerCropper from './StickerCropper';
 import StickerGenerationPreview from './StickerGenerationPreview';
 import StickerRecordPreview from './StickerRecordPreview';
 import StickerSourcePicker from './StickerSourcePicker';
-import { useStickerRecordFlow } from './useStickerRecordFlow';
 
 import type { ReceiptScanData } from '@chapchap/shared/bridge';
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
@@ -65,7 +65,7 @@ export default function StickerRecordFlow({
     isCropping,
     openCrop,
     confirmCrop,
-    reset,
+    backToImageSelection,
     cancelImageSelection,
     retry,
     confirm,
@@ -100,6 +100,7 @@ export default function StickerRecordFlow({
       />
       {stage === 'default' && (
         <DefaultStickerPicker
+          initialSticker={recordResult?.defaultSticker}
           onClose={cancelImageSelection}
           onConfirm={(sticker) => void selectDefaultSticker(sticker)}
           isProcessing={isProcessing}
@@ -109,7 +110,7 @@ export default function StickerRecordFlow({
       {(stage === 'select' || isPreview) && (
         <header className={cn('relative shrink-0', isPreview ? 'h-33.5' : 'h-28')}>
           {isPreview && (
-            <h1 className="absolute inset-x-14 top-19.25 text-center text-title-02-semibold leading-6.25">
+            <h1 className="absolute inset-x-14 top-19.25 text-center text-title-02-semibold">
               스티커 생성
             </h1>
           )}
@@ -164,7 +165,7 @@ export default function StickerRecordFlow({
               recordResult.source === 'default' ? recordResult.category : undefined
             }
             onChangeImage={() => setIsImageChangeOpen(true)}
-            onBack={reset}
+            onBack={backToImageSelection}
             onClose={onClose}
             onSearchShop={onSearchShop}
             onScanReceipt={onScanReceipt}

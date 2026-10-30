@@ -1,12 +1,11 @@
 import { useRef, useState } from 'react';
 
+import { FULL_STICKER_CROP, moveCropCorner } from '@/features/record/sticker/image/stickerImage';
+import type { StickerCrop, StickerCropCorner } from '@/features/record/sticker/image/stickerImage';
 import { CheckIcon } from '@/shared/assets/icons';
 import { cn } from '@/shared/lib/cn';
 import { BackButton } from '@/shared/ui/back-button';
 
-import { FULL_STICKER_CROP, moveCropCorner } from './stickerImage';
-
-import type { StickerCrop, StickerCropCorner } from './stickerImage';
 import type { CSSProperties, PointerEvent } from 'react';
 
 type StickerCropperProps = {
@@ -75,7 +74,7 @@ export default function StickerCropper({
           aria-label="사진 다시 선택"
           className="absolute top-19.25 left-4 mt-0"
         />
-        <h1 className="absolute inset-x-14 top-19.25 text-center text-title-02-semibold leading-6.25">
+        <h1 className="absolute inset-x-14 top-19.25 text-center text-title-02-semibold">
           사진 자르기
         </h1>
         <button

@@ -4,7 +4,7 @@ import { access, mkdir, rename, rm, stat } from 'node:fs/promises';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
-import { ISNET_MODELS } from '../src/features/record/sticker/isnetModels.ts';
+import { ISNET_MODELS } from '../src/features/record/sticker/background-removal/isnetModels.ts';
 
 const directory = new URL('../public/models/', import.meta.url);
 const checksum = async (path, algorithm) => {

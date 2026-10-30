@@ -20,9 +20,7 @@ export default function StickerSourcePicker({
 }: StickerSourcePickerProps) {
   return (
     <section className="px-4 pt-2 pb-8">
-      <h1 className="text-heading-02-semibold leading-8.5 font-bold tracking-[-0.6px]">
-        오늘의 방문을 사진으로 남겨요
-      </h1>
+      <h1 className="text-heading-01-bold">오늘의 방문을 사진으로 남겨요</h1>
       <div className={cn('mt-8.25 grid gap-3', onCapture ? 'grid-cols-2' : 'grid-cols-1')}>
         {onCapture && (
           <button

@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-
 
 import { useSubmitStickerRecord } from '@/features/record/apis/hooks/useSubmitStickerRecord';
 import { useScanReceipt } from '@/features/record/hooks/useScanReceipt';
-import StickerRecordFlow from '@/features/record/sticker/StickerRecordFlow';
+import StickerRecordFlow from '@/features/record/sticker/components/StickerRecordFlow';
 import type {
   ShopSearchLocationState,
   StickerRecordShopSearchContext,
