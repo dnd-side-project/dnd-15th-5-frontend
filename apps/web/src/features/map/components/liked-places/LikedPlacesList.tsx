@@ -1,8 +1,12 @@
-import { useCallback, useRef, useState } from 'react';
+import { useIsMutating } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { LikedPlaceResponse } from '@/features/map/apis/dto';
 import { useLikedPlacesInfiniteQuery } from '@/features/map/apis/hooks/useLikedPlacesInfiniteQuery';
-import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
+import {
+  TOGGLE_PLACE_LIKE_MUTATION_KEY,
+  useTogglePlaceLikeMutation,
+} from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import PageHeader from '@/shared/layout/PageHeader';
@@ -47,6 +51,10 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
   const [categoryOptionsSnapshot, setCategoryOptionsSnapshot] = useState<string[] | null>(null);
   const listRef = useRef<HTMLElement>(null);
   const isFetchingNextPageRef = useRef(false);
+  const isLikeMutationPending =
+    useIsMutating({
+      mutationKey: TOGGLE_PLACE_LIKE_MUTATION_KEY,
+    }) > 0;
   const categoryParam = selectedCategory === ALL_CATEGORY ? undefined : selectedCategory;
   const likedPlacesQuery = useLikedPlacesInfiniteQuery(categoryParam);
   const {
@@ -66,13 +74,23 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
     refetch,
   } = likedPlacesQuery;
 
-  if (
+  const isOptimisticallyEmptySelectedCategory =
     selectedCategory !== ALL_CATEGORY &&
+    isLikeMutationPending &&
     isSuccess &&
     !isPlaceholderData &&
-    !isFetching &&
-    categories !== undefined &&
-    !categories.includes(selectedCategory)
+    likedPlaces.length === 0 &&
+    !hasNextPage &&
+    !isFetchingNextPage;
+
+  if (
+    isOptimisticallyEmptySelectedCategory ||
+    (selectedCategory !== ALL_CATEGORY &&
+      isSuccess &&
+      !isPlaceholderData &&
+      !isFetching &&
+      categories !== undefined &&
+      !categories.includes(selectedCategory))
   ) {
     setSelectedCategory(ALL_CATEGORY);
   }
@@ -112,6 +130,31 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
     rootMargin: '160px 0px',
   });
 
+  useEffect(() => {
+    if (
+      selectedCategory === ALL_CATEGORY ||
+      !isSuccess ||
+      isPlaceholderData ||
+      likedPlaces.length > 0 ||
+      !hasNextPage ||
+      isFetchingNextPage ||
+      isFetchNextPageError
+    ) {
+      return;
+    }
+
+    loadNextPage();
+  }, [
+    hasNextPage,
+    isFetchNextPageError,
+    isFetchingNextPage,
+    isPlaceholderData,
+    isSuccess,
+    likedPlaces.length,
+    loadNextPage,
+    selectedCategory,
+  ]);
+
   return (
     <main className="flex h-[calc(100dvh-env(safe-area-inset-bottom))] flex-col bg-neutral-00">
       <PageHeader title="좋아요" onBack={onBack} />
@@ -144,6 +187,11 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
       >
         {isPending ||
         isPlaceholderData ||
+        (isFetchingNextPage && likedPlaces.length === 0) ||
+        (selectedCategory !== ALL_CATEGORY &&
+          likedPlaces.length === 0 &&
+          hasNextPage &&
+          !isFetchNextPageError) ||
         (!isError &&
           !isFetchedAfterMount &&
           likedPlaces.length === 0 &&
@@ -163,6 +211,13 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
             onAction={() => void refetch()}
             className="pt-12"
           />
+        ) : isFetchNextPageError && likedPlaces.length === 0 ? (
+          <div className="flex flex-col items-center py-5 text-body-02-regular text-neutral-500">
+            다음 좋아요 장소를 불러오지 못했어요.
+            <Button variant="primary" size="small" className="mt-3" onClick={loadNextPage}>
+              다시 불러오기
+            </Button>
+          </div>
         ) : likedPlaces.length > 0 ? (
           <div className="space-y-6 py-2">
             {likedPlaces.map((likedPlace) => (
