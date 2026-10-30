@@ -55,14 +55,9 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_PROXY_TARGET || 'https://chapchap.kr',
           changeOrigin: true,
           secure: true,
-          // 개발 API의 경로와 쿠키 범위를 브라우저가 요청하는 `/api`에 맞춘다.
           // 생성된 API가 `/v1`을 포함하므로 프록시는 배포 환경의 `/dev/api`만 덧붙인다.
           rewrite: (path) => path.replace(/^\/api/, '/dev/api'),
           cookieDomainRewrite: '',
-          cookiePathRewrite: {
-            '/dev/api/v1': '/api',
-            '/dev/api': '/api',
-          },
         },
       },
     },
