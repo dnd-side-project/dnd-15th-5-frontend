@@ -22,7 +22,7 @@ import type { InfiniteData } from '@tanstack/react-query';
 type LikedPlacesCursor = Pick<GetLikedPlacesParams, 'cursorId'>;
 
 const LIKE_ERROR_MESSAGE = '좋아요 상태를 변경하지 못했어요. 잠시 후 다시 시도해주세요.';
-const TOGGLE_PLACE_LIKE_MUTATION_KEY = ['toggle-place-like'] as const;
+export const TOGGLE_PLACE_LIKE_MUTATION_KEY = ['toggle-place-like'] as const;
 const NEARBY_PLACES_QUERY_KEY = getGetNearbyPlacesQueryKey();
 const VISITED_PLACES_QUERY_KEY = getGetVisitedPlaceMarkersQueryKey();
 
@@ -41,6 +41,24 @@ type LikedPlacesInfiniteData = InfiniteData<ApiResponseLikedPlaceScrollResponse,
 
 type LikeStateUpdater = (liked: boolean | undefined) => boolean | undefined;
 
+type LikedPlacePosition = {
+  pageIndex: number;
+  placeIndex: number;
+};
+
+const findLikedPlacePosition = (
+  data: LikedPlacesInfiniteData,
+  placeId: number
+): LikedPlacePosition | undefined => {
+  for (const [pageIndex, page] of data.pages.entries()) {
+    const placeIndex = page.data?.places?.findIndex((place) => place.placeId === placeId) ?? -1;
+
+    if (placeIndex >= 0) return { pageIndex, placeIndex };
+  }
+
+  return undefined;
+};
+
 const restoreLikedPlace = (
   currentData: LikedPlacesInfiniteData | undefined,
   previousData: LikedPlacesInfiniteData | undefined,
@@ -48,52 +66,68 @@ const restoreLikedPlace = (
 ): LikedPlacesInfiniteData | undefined => {
   if (!currentData || !previousData) return currentData;
 
-  const pages = [...currentData.pages];
+  const previousPosition = findLikedPlacePosition(previousData, placeId);
+  const previousPlace = previousPosition
+    ? previousData.pages[previousPosition.pageIndex]?.data?.places?.[previousPosition.placeIndex]
+    : undefined;
 
-  previousData.pages.forEach((previousPage, pageIndex) => {
-    const previousPlaces = previousPage.data?.places;
-    const placeIndex = previousPlaces?.findIndex((place) => place.placeId === placeId) ?? -1;
-    const previousPlace = placeIndex >= 0 ? previousPlaces?.[placeIndex] : undefined;
-    const currentPage = pages[pageIndex];
+  if (!previousPlace || !previousPosition) return currentData;
 
-    if (!previousPlace || !currentPage?.data) return;
+  const pages = currentData.pages.map((page) => page);
+  let existingPlaceFound = false;
 
-    const currentPlaces = currentPage.data.places ?? [];
-    const existingPlaceIndex = currentPlaces.findIndex((place) => place.placeId === placeId);
-    const restoredPlaces = [...currentPlaces];
+  for (const [pageIndex, page] of pages.entries()) {
+    const currentPlaces = page.data?.places;
+    if (!currentPlaces?.some((place) => place.placeId === placeId)) continue;
 
-    if (existingPlaceIndex >= 0) {
-      restoredPlaces[existingPlaceIndex] = previousPlace;
-    } else {
-      const previousPlacesBeforeTarget = previousPlaces ?? [];
-      const nextPlace = previousPlacesBeforeTarget
-        .slice(placeIndex + 1)
-        .find((place) =>
-          currentPlaces.some((currentPlace) => currentPlace.placeId === place.placeId)
-        );
-      const previousPlaceBeforeTarget = previousPlacesBeforeTarget
-        .slice(0, placeIndex)
-        .reverse()
-        .find((place) =>
-          currentPlaces.some((currentPlace) => currentPlace.placeId === place.placeId)
-        );
-      const nextIndex = nextPlace
-        ? currentPlaces.findIndex((place) => place.placeId === nextPlace.placeId)
-        : -1;
-      const previousIndex = previousPlaceBeforeTarget
-        ? currentPlaces.findIndex((place) => place.placeId === previousPlaceBeforeTarget.placeId)
-        : -1;
-      const insertionIndex =
-        nextIndex >= 0 ? nextIndex : previousIndex >= 0 ? previousIndex + 1 : placeIndex;
+    const restoredPlaces = currentPlaces.flatMap((place) => {
+      if (place.placeId !== placeId) return [place];
+      if (existingPlaceFound) return [];
 
-      restoredPlaces.splice(Math.min(insertionIndex, restoredPlaces.length), 0, previousPlace);
-    }
+      existingPlaceFound = true;
+      return [previousPlace];
+    });
 
     pages[pageIndex] = {
-      ...currentPage,
-      data: { ...currentPage.data, places: restoredPlaces },
+      ...page,
+      data: { ...page.data, places: restoredPlaces },
     };
-  });
+  }
+
+  if (existingPlaceFound) return { ...currentData, pages };
+
+  const previousPlaces = previousData.pages.flatMap((page) => page.data?.places ?? []);
+  const previousPlaceIndex = previousPlaces.findIndex((place) => place.placeId === placeId);
+  const findCurrentPosition = (place: { placeId?: number }) =>
+    place.placeId === undefined ? undefined : findLikedPlacePosition(currentData, place.placeId);
+  const nextPlace = previousPlaces
+    .slice(previousPlaceIndex + 1)
+    .find((place) => findCurrentPosition(place) !== undefined);
+  const previousPlaceBeforeTarget = previousPlaces
+    .slice(0, previousPlaceIndex)
+    .reverse()
+    .find((place) => findCurrentPosition(place) !== undefined);
+  const nextPosition = nextPlace ? findCurrentPosition(nextPlace) : undefined;
+  const previousPositionInCurrentData = previousPlaceBeforeTarget
+    ? findCurrentPosition(previousPlaceBeforeTarget)
+    : undefined;
+  const insertionPosition = nextPosition ?? previousPositionInCurrentData;
+
+  // 페이지 구성이 바뀌어 주변 장소도 찾지 못하면, 위치를 추측하지 않고 정합성을 서버 재조회에 맡깁니다.
+  if (!insertionPosition) return currentData;
+
+  const currentPage = pages[insertionPosition.pageIndex];
+  if (!currentPage?.data) return currentData;
+
+  const restoredPlaces = [...(currentPage.data.places ?? [])];
+  const insertionIndex = nextPosition
+    ? insertionPosition.placeIndex
+    : insertionPosition.placeIndex + 1;
+  restoredPlaces.splice(insertionIndex, 0, previousPlace);
+  pages[insertionPosition.pageIndex] = {
+    ...currentPage,
+    data: { ...currentPage.data, places: restoredPlaces },
+  };
 
   return { ...currentData, pages };
 };
