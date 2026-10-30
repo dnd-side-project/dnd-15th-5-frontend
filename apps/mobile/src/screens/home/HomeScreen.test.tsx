@@ -9,7 +9,7 @@ import { resetNativeAnalyticsForTest } from '@/shared/lib/analytics/nativeAnalyt
 import HomeScreen from './HomeScreen';
 
 let mockNativePathname = '/';
-jest.mock('@/native/stickerBackground', () => ({
+jest.mock('@/native/sticker/stickerBackground', () => ({
   prepareNativeStickerBackground: jest.fn().mockResolvedValue({ ready: true, backend: 'cpu' }),
 }));
 jest.mock('expo-router', () => ({ usePathname: () => mockNativePathname }));

@@ -14,7 +14,7 @@ import {
 import { getKakaoTalkShareTarget } from '@/bridge/kakaoTalkShare';
 import { requestWebViewNavigation, subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
 import { clearNotificationBadge, subscribeNotificationResponses } from '@/native/notifications';
-import { prepareNativeStickerBackground } from '@/native/stickerBackground';
+import { prepareNativeStickerBackground } from '@/native/sticker/stickerBackground';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
 import {
   createNativeAnalyticsScript,

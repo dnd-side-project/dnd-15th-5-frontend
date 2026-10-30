@@ -7,18 +7,18 @@ import {
   setRefreshToken,
   startSocialLogin,
 } from '@/native/auth';
-import { captureStickerPhoto } from '@/native/captureStickerPhoto';
 import { getCurrentPosition } from '@/native/location';
 import { clearPushNotifications, getPushToken } from '@/native/notifications';
-import { openReceiptCamera } from '@/native/openReceiptCamera';
+import { openReceiptCamera } from '@/native/receipt/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/save-image';
+import { captureStickerPhoto } from '@/native/sticker/captureStickerPhoto';
 
 import { createBridgeResponse } from './createBridgeResponse';
 
 import type { BridgeRequest } from '@chapchap/shared/bridge';
 
-jest.mock('@/native/captureStickerPhoto', () => ({ captureStickerPhoto: jest.fn() }));
-jest.mock('@/native/stickerBackground', () => ({
+jest.mock('@/native/sticker/captureStickerPhoto', () => ({ captureStickerPhoto: jest.fn() }));
+jest.mock('@/native/sticker/stickerBackground', () => ({
   hasNativeStickerBackground: jest.fn().mockReturnValue(true),
   prepareNativeStickerBackground: jest.fn().mockResolvedValue({ ready: true, backend: 'coreml' }),
   removeNativeStickerBackground: jest.fn().mockResolvedValue({
@@ -33,7 +33,7 @@ jest.mock('@/native/stickerBackground', () => ({
 jest.mock('@/native/location', () => ({ getCurrentPosition: jest.fn() }));
 jest.mock('@/native/api', () => ({ clearAccessToken: jest.fn() }));
 jest.mock('@/native/save-image', () => ({ saveImageToLibrary: jest.fn() }));
-jest.mock('@/native/openReceiptCamera', () => ({ openReceiptCamera: jest.fn() }));
+jest.mock('@/native/receipt/openReceiptCamera', () => ({ openReceiptCamera: jest.fn() }));
 jest.mock('@/native/notifications', () => ({
   clearPushNotifications: jest.fn(),
   getPushToken: jest.fn(),

@@ -5,8 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { finishStickerCapture, isStickerCaptureActive } from '@/native/captureStickerPhoto';
-import { prepareStickerPhoto } from '@/native/prepareStickerPhoto';
+import { finishStickerCapture, isStickerCaptureActive } from '@/native/sticker/captureStickerPhoto';
+import { prepareStickerPhoto } from '@/native/sticker/prepareStickerPhoto';
 import { CloseIcon } from '@/shared/assets/icons';
 import { useCameraPinchZoom } from '@/shared/hooks/useCameraPinchZoom';
 

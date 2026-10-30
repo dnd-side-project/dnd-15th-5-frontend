@@ -4,8 +4,8 @@ import { router } from 'expo-router';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import { recognizeReceipt } from '@/features/record/apis/clients';
-import { normalizeReceiptImage } from '@/native/normalizeReceiptImage';
-import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
+import { normalizeReceiptImage } from '@/native/receipt/normalizeReceiptImage';
+import { pickReceiptImageFromLibrary } from '@/native/receipt/pickReceiptImageFromLibrary';
 import { trackNativeAnalyticsEvent } from '@/shared/lib/analytics';
 
 import ReceiptCameraScreen from './ReceiptCameraScreen';
@@ -14,7 +14,7 @@ const mockTakePictureAsync = jest.fn();
 const mockShowToast = jest.fn();
 let mockScanId = '';
 const mockFinishReceiptScan = jest.fn();
-jest.mock('@/native/scanReceipt', () => ({
+jest.mock('@/native/receipt/scanReceipt', () => ({
   finishReceiptScan: (...args: unknown[]) => mockFinishReceiptScan(...args),
   isReceiptScanActive: () => true,
 }));
@@ -42,9 +42,9 @@ jest.mock('expo-router', () => ({
   router: { back: jest.fn(), dismissTo: jest.fn(), replace: jest.fn() },
 }));
 jest.mock('@/bridge/webViewNavigation', () => ({ requestWebViewNavigation: jest.fn() }));
-jest.mock('@/native/normalizeReceiptImage', () => ({ normalizeReceiptImage: jest.fn() }));
+jest.mock('@/native/receipt/normalizeReceiptImage', () => ({ normalizeReceiptImage: jest.fn() }));
 jest.mock('@/features/record/apis/clients', () => ({ recognizeReceipt: jest.fn() }));
-jest.mock('@/native/pickReceiptImageFromLibrary', () => ({
+jest.mock('@/native/receipt/pickReceiptImageFromLibrary', () => ({
   pickReceiptImageFromLibrary: jest.fn(),
 }));
 jest.mock('@/shared/lib/analytics', () => ({

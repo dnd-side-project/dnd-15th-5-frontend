@@ -7,18 +7,18 @@ import {
   setRefreshToken,
   startSocialLogin,
 } from '@/native/auth';
-import { captureStickerPhoto } from '@/native/captureStickerPhoto';
 import { getCurrentPosition } from '@/native/location';
 import { clearPushNotifications, getPushToken } from '@/native/notifications';
-import { openReceiptCamera } from '@/native/openReceiptCamera';
+import { openReceiptCamera } from '@/native/receipt/openReceiptCamera';
+import { scanReceipt } from '@/native/receipt/scanReceipt';
 import { saveImageToLibrary } from '@/native/save-image';
-import { scanReceipt } from '@/native/scanReceipt';
+import { captureStickerPhoto } from '@/native/sticker/captureStickerPhoto';
 import {
   hasNativeStickerBackground,
   prepareNativeStickerBackground,
   removeNativeStickerBackground,
   cancelNativeStickerBackground,
-} from '@/native/stickerBackground';
+} from '@/native/sticker/stickerBackground';
 
 import type { BridgeMessageMap, BridgeMessageType } from '@chapchap/shared/bridge';
 

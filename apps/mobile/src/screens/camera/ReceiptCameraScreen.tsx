@@ -15,8 +15,8 @@ import {
   ReceiptScanLoading,
 } from '@/features/record';
 import { createReceiptScanData } from '@/features/record/utils/createReceiptScanData';
-import { pickReceiptImageFromLibrary } from '@/native/pickReceiptImageFromLibrary';
-import { finishReceiptScan, isReceiptScanActive } from '@/native/scanReceipt';
+import { pickReceiptImageFromLibrary } from '@/native/receipt/pickReceiptImageFromLibrary';
+import { finishReceiptScan, isReceiptScanActive } from '@/native/receipt/scanReceipt';
 import { CloseIcon, GalleryIcon } from '@/shared/assets/icons';
 import { useCameraPinchZoom } from '@/shared/hooks/useCameraPinchZoom';
 import {

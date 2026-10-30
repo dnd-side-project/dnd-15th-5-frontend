@@ -1,8 +1,8 @@
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
-import { finishStickerCapture, isStickerCaptureActive } from '@/native/captureStickerPhoto';
-import { prepareStickerPhoto } from '@/native/prepareStickerPhoto';
+import { finishStickerCapture, isStickerCaptureActive } from '@/native/sticker/captureStickerPhoto';
+import { prepareStickerPhoto } from '@/native/sticker/prepareStickerPhoto';
 
 import StickerCameraScreen from './StickerCameraScreen';
 
@@ -30,11 +30,11 @@ jest.mock('expo-router', () => ({
   router: { back: jest.fn() },
   useLocalSearchParams: () => ({ captureId: 'capture-01' }),
 }));
-jest.mock('@/native/captureStickerPhoto', () => ({
+jest.mock('@/native/sticker/captureStickerPhoto', () => ({
   finishStickerCapture: jest.fn(),
   isStickerCaptureActive: jest.fn(),
 }));
-jest.mock('@/native/prepareStickerPhoto', () => ({ prepareStickerPhoto: jest.fn() }));
+jest.mock('@/native/sticker/prepareStickerPhoto', () => ({ prepareStickerPhoto: jest.fn() }));
 
 beforeEach(() => {
   jest.clearAllMocks();

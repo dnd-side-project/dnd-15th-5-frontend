@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 
-import { createCameraRequest } from './createCameraRequest';
+import { createCameraRequest } from '@/native/camera/createCameraRequest';
 
 import type { BridgeResult } from '@chapchap/shared/bridge';
 
