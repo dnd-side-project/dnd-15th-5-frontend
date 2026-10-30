@@ -99,11 +99,8 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
     ALL_CATEGORY,
     ...(categories ?? []).filter((category) => category !== ALL_CATEGORY),
   ];
-  const availableCategories = [
-    ...((selectedCategory !== ALL_CATEGORY || isPlaceholderData) && categoryOptionsSnapshot
-      ? categoryOptionsSnapshot
-      : responseCategories),
-  ];
+  const availableCategories =
+    isPlaceholderData && categoryOptionsSnapshot ? categoryOptionsSnapshot : responseCategories;
   if (selectedCategory !== ALL_CATEGORY && !availableCategories.includes(selectedCategory)) {
     availableCategories.push(selectedCategory);
   }
