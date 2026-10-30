@@ -1,6 +1,14 @@
+import { DEFAULT_STICKERS } from '@/shared/assets/images/ios-stickers/catalog';
+
 import { getStickerImageByName, getStickerImages } from './stickerImageByName';
 
 describe('getStickerImages', () => {
+  it('기록에서 선택한 기본 이모지와 같은 이미지를 서버 이름으로 표시한다', () => {
+    for (const sticker of DEFAULT_STICKERS) {
+      expect(getStickerImageByName(sticker.name)).toBe(sticker.image);
+    }
+    expect(getStickerImageByName('서버에 없는 이름')).toBeUndefined();
+  });
   it('지원하는 스티커의 이미지 경로만 반환한다', () => {
     expect(
       getStickerImages([

@@ -22,6 +22,7 @@ const STAMP_PLAYING_CLASS = 'shop-sticker-hero__stamp--playing';
 const STAMP_PLAYING_NEWEST_CLASS = 'shop-sticker-hero__stamp--playing-newest';
 
 type ShopStickerHeroProps = {
+  emptyMessage?: string;
   headerContent: ReactNode;
   /** 나머지 스티커가 다 찍힌 뒤 마지막으로 강조 등장시킬 스티커의 인덱스 */
   newestStickerIndex?: number;
@@ -30,6 +31,7 @@ type ShopStickerHeroProps = {
 };
 
 export default function ShopStickerHero({
+  emptyMessage = '아직 획득한 스티커가 없어요',
   headerContent,
   newestStickerIndex,
   placeId,
@@ -55,8 +57,8 @@ export default function ShopStickerHero({
       <div className="absolute top-0 left-4 z-10">{headerContent}</div>
 
       {mixedStickerImages.length === 0 ? (
-        <p className="absolute inset-x-0 bottom-6 text-center text-body-02-medium text-neutral-500">
-          아직 획득한 스티커가 없어요
+        <p className="pointer-events-none absolute inset-x-4 top-0 bottom-8.25 flex items-center justify-center text-center text-body-02-medium text-neutral-500">
+          {emptyMessage}
         </p>
       ) : (
         <ShopStickerCanvas

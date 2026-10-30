@@ -1,10 +1,10 @@
 import { recognizeReceipt } from '@/features/record/apis/clients';
-import { normalizeReceiptImage } from '@/native/normalizeReceiptImage';
+import { normalizeReceiptImage } from '@/native/receipt/normalizeReceiptImage';
 
 import { processReceiptImage } from './processReceiptImage';
 
 jest.mock('@/features/record/apis/clients', () => ({ recognizeReceipt: jest.fn() }));
-jest.mock('@/native/normalizeReceiptImage', () => ({ normalizeReceiptImage: jest.fn() }));
+jest.mock('@/native/receipt/normalizeReceiptImage', () => ({ normalizeReceiptImage: jest.fn() }));
 
 const mockRecognizeReceipt = jest.mocked(recognizeReceipt);
 const mockNormalizeReceiptImage = jest.mocked(normalizeReceiptImage);

@@ -91,6 +91,8 @@ describe('HomeBottomSheet', () => {
       isPending: false,
       isError: false,
       refetch: jest.fn(),
+      isSuccess: false,
+      stickers: [],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
   });
 

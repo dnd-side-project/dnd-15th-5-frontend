@@ -9,7 +9,7 @@ const HTTP_STATUS_ACCEPTED = 202;
 
 /** 응답 상태와 Location 헤더를 보존해 소셜 제공자별 탈퇴 흐름을 구분합니다. */
 export const requestAccountWithdrawal = async (): Promise<AccountWithdrawalResult> => {
-  const response = await axiosInstance.delete<ApiResponseVoid>('/accounts/me');
+  const response = await axiosInstance.delete<ApiResponseVoid>('/v1/accounts/me');
 
   if (response.status !== HTTP_STATUS_ACCEPTED) {
     return { type: 'completed' };

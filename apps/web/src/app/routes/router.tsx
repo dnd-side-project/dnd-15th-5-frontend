@@ -21,7 +21,7 @@ import NotificationPage from '@/pages/notifications/NotificationPage';
 import OnboardingPage from '@/pages/onboarding/OnboardingPage';
 import ManualRecordPage from '@/pages/record/manual/ManualRecordPage';
 import ReceiptCameraPage from '@/pages/record/receipt/ReceiptCameraPage';
-import RecordMethodPage from '@/pages/record/RecordMethodPage';
+import RecordPage from '@/pages/record/RecordPage';
 import ShopSearchPage from '@/pages/record/shop/search/ShopSearchPage';
 import FrequentShopListPage from '@/pages/report/frequent-shops/FrequentShopListPage';
 import SpendingHistoryPage from '@/pages/report/history/SpendingHistoryPage';
@@ -97,6 +97,17 @@ export const router = createSentryBrowserRouter([
               },
             ],
           },
+          // 사진 선택과 기록 입력은 화면 전체 너비와 자체 Safe Area를 사용한다.
+          {
+            path: ROUTE_PATHS.record,
+            element: <RecordPage />,
+            children: [
+              {
+                path: ROUTE_PATHS.recordShopSearch,
+                element: <ShopSearchPage />,
+              },
+            ],
+          },
           // 영수증 촬영은 좌우 여백 없이 전체 너비를 사용한다.
           {
             path: ROUTE_PATHS.receiptCamera,
@@ -131,16 +142,8 @@ export const router = createSentryBrowserRouter([
                 element: <ShopDetailPage />,
               },
               {
-                path: ROUTE_PATHS.record,
-                element: <RecordMethodPage />,
-              },
-              {
                 path: ROUTE_PATHS.manualRecord,
                 element: <ManualRecordPage />,
-              },
-              {
-                path: ROUTE_PATHS.recordShopSearch,
-                element: <ShopSearchPage />,
               },
               {
                 path: ROUTE_PATHS.spendingHistory,

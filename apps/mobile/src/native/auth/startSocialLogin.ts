@@ -1,6 +1,8 @@
 import { isOAuthCancellationError } from '@chapchap/shared/bridge';
 import * as WebBrowser from 'expo-web-browser';
 
+import { createVersionedApiUrl } from '@/shared/utils/createVersionedApiUrl';
+
 import { createOAuthCallbackUrl, isOAuthCallbackUrl } from './oauthCallbackUrl';
 
 import type { SocialLoginProvider, SocialLoginResult } from '@chapchap/shared/bridge';
@@ -10,8 +12,7 @@ const createSocialLoginStartUrl = (
   provider: SocialLoginProvider,
   codeChallenge: string
 ) => {
-  const normalizedApiBaseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl : `${apiBaseUrl}/`;
-  const url = new URL(`oauth/${provider}/start`, normalizedApiBaseUrl);
+  const url = new URL(createVersionedApiUrl(apiBaseUrl, `oauth/${provider}/start`));
 
   url.searchParams.set('client', 'APP');
   url.searchParams.set('codeChallenge', codeChallenge);

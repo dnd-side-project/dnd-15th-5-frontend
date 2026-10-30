@@ -15,7 +15,8 @@
     "jsx": "react-jsx",
     "erasableSyntaxOnly": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "onnxruntime-web/wasm": ["./node_modules/onnxruntime-web/types.d.ts"]
     }
   },
   "include": ["src"]
