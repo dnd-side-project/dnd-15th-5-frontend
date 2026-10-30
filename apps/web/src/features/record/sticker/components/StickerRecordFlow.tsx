@@ -1,8 +1,12 @@
 import { useRef, useState } from 'react';
 
+import {
+  STICKER_FLOW_HEADER_HEIGHT_CLASS,
+  STICKER_FLOW_HEADER_TOP_CLASS,
+} from '@/features/record/sticker/constants';
 import { useStickerRecordFlow } from '@/features/record/sticker/hooks/useStickerRecordFlow';
 import type { StickerRecordDraft, StickerRecordMedia } from '@/features/record/types';
-import { CloseIcon } from '@/shared/assets/icons';
+import PageHeader from '@/shared/layout/PageHeader';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 
@@ -86,7 +90,7 @@ export default function StickerRecordFlow({
   return (
     <main
       className={cn(
-        'flex min-h-dvh flex-col [--sticker-primary:var(--color-primary-500)] [&_button:disabled:not([data-disabled])]:cursor-default [&_button:disabled:not([data-disabled])]:opacity-45 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-4 [&_button:focus-visible]:outline-primary-500',
+        'relative flex min-h-dvh flex-col [--sticker-primary:var(--color-primary-500)] [&_button:disabled:not([data-disabled])]:cursor-default [&_button:disabled:not([data-disabled])]:opacity-45 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-4 [&_button:focus-visible]:outline-primary-500',
         isDark ? 'bg-neutral-700 text-neutral-00' : 'bg-neutral-00 text-neutral-700'
       )}
     >
@@ -108,21 +112,21 @@ export default function StickerRecordFlow({
         />
       )}
       {(stage === 'select' || isPreview) && (
-        <header className={cn('relative shrink-0', isPreview ? 'h-33.5' : 'h-28')}>
-          {isPreview && (
-            <h1 className="absolute inset-x-14 top-19.25 text-center text-title-02-semibold">
-              스티커 생성
-            </h1>
+        <div
+          className={cn(
+            'relative shrink-0',
+            isPreview
+              ? STICKER_FLOW_HEADER_HEIGHT_CLASS
+              : 'h-[max(7rem,calc(env(safe-area-inset-top)+4rem))]'
           )}
-          <button
-            type="button"
-            className="absolute top-19.25 right-4 grid size-6 place-items-center"
-            aria-label="닫기"
-            onClick={onClose}
-          >
-            <CloseIcon className="size-4" aria-hidden="true" />
-          </button>
-        </header>
+        >
+          <PageHeader
+            title={isPreview ? '스티커 생성' : undefined}
+            tone={isPreview ? 'inverse' : undefined}
+            onClose={onClose}
+            className={cn('absolute inset-x-4 h-6 py-0', STICKER_FLOW_HEADER_TOP_CLASS)}
+          />
+        </div>
       )}
       {stage === 'crop' && cropSource && (
         <StickerCropper

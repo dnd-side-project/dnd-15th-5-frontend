@@ -56,3 +56,18 @@ export const CloseOnly: Story = {
     onClose: fn(),
   },
 };
+
+/** 어두운 배경에서 제목과 아이콘을 밝게 표시합니다. */
+export const Inverse: Story = {
+  args: {
+    tone: 'inverse',
+    onClose: fn(),
+  },
+  decorators: [
+    (Story) => (
+      <div className="w-full max-w-96 bg-neutral-700">
+        <Story />
+      </div>
+    ),
+  ],
+};
