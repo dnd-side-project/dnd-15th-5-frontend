@@ -1,8 +1,6 @@
 .shop-sticker-hero__stamp {
   display: block;
   opacity: 1;
-  transform: scale(1) rotate(0deg);
-  backface-visibility: hidden;
 }
 
 .shop-sticker-hero__stamp--playing,

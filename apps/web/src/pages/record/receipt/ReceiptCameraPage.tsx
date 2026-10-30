@@ -17,7 +17,7 @@ export default function ReceiptCameraPage() {
 
   useEffect(() => {
     if (state.status === 'opened') {
-      // 카메라 뒤에는 기록 방법 선택 화면이 남아 있도록 숨겨진 WebView만 이전 경로로 돌린다.
+      // 카메라 뒤에는 이전 웹 화면이 남도록 숨겨진 WebView만 이전 경로로 돌린다.
       navigate(-1);
     }
   }, [navigate, state.status]);

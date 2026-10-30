@@ -19,19 +19,22 @@ describe('startSocialLogin', () => {
     jest.clearAllMocks();
   });
 
-  it('PKCE 값을 준비한 뒤 생성된 URL로 이동한다', async () => {
-    const redirect = jest.fn();
-    mockPrepareOAuthLogin.mockResolvedValue({
-      client: StartClient.WEB,
-      codeChallenge: 'code-challenge',
-    });
+  it.each(['kakao', 'google'] as const)(
+    '%s 로그인은 /v1 시작 주소로 이동한다',
+    async (provider) => {
+      const redirect = jest.fn();
+      mockPrepareOAuthLogin.mockResolvedValue({
+        client: StartClient.WEB,
+        codeChallenge: 'code-challenge',
+      });
 
-    await startSocialLogin('kakao', redirect);
+      await startSocialLogin(provider, redirect);
 
-    expect(redirect).toHaveBeenCalledWith(
-      '/api/v1/oauth/kakao/start?client=WEB&codeChallenge=code-challenge'
-    );
-  });
+      expect(redirect).toHaveBeenCalledWith(
+        `/api/v1/oauth/${provider}/start?client=WEB&codeChallenge=code-challenge`
+      );
+    }
+  );
 
   it('앱에서는 네이티브 OAuth 결과의 loginCode로 웹 callback에 이동한다', async () => {
     const redirect = jest.fn();

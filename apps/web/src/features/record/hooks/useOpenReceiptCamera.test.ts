@@ -1,4 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
+import { StrictMode } from 'react';
 
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
@@ -72,5 +73,37 @@ describe('useOpenReceiptCamera', () => {
 
     expect(mockRequestToNative).toHaveBeenCalledTimes(2);
     expect(result.current.state).toEqual({ status: 'opened' });
+  });
+
+  it('수동 모드에서는 버튼을 누르기 전까지 카메라를 열지 않는다', async () => {
+    mockIsNativeApp.mockReturnValue(true);
+    mockRequestToNative.mockResolvedValue({ opened: true });
+    const { result } = renderHook(() => useOpenReceiptCamera({ autoOpen: false }));
+    await act(() => Promise.resolve());
+    expect(result.current.state).toEqual({ status: 'idle' });
+    expect(mockRequestToNative).not.toHaveBeenCalled();
+    await act(async () => {
+      result.current.retry();
+      result.current.retry();
+    });
+    expect(mockRequestToNative).toHaveBeenCalledTimes(1);
+    expect(result.current.state).toEqual({ status: 'opened' });
+  });
+
+  it('StrictMode에서도 네이티브 촬영 화면을 중복해서 열지 않는다', async () => {
+    mockIsNativeApp.mockReturnValue(true);
+    mockRequestToNative.mockResolvedValue({ opened: true });
+    const { result } = renderHook(() => useOpenReceiptCamera(), { wrapper: StrictMode });
+    await act(() => Promise.resolve());
+    expect(mockRequestToNative).toHaveBeenCalledTimes(1);
+    expect(result.current.state).toEqual({ status: 'opened' });
+  });
+
+  it('요청이 시작되기 전에 화면을 나가면 카메라를 열지 않는다', async () => {
+    mockIsNativeApp.mockReturnValue(true);
+    const { unmount } = renderHook(() => useOpenReceiptCamera());
+    unmount();
+    await act(() => Promise.resolve());
+    expect(mockRequestToNative).not.toHaveBeenCalled();
   });
 });

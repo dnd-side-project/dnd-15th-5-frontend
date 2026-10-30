@@ -23,7 +23,11 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   const { pathname } = useLocation();
   const isShopDetail = Boolean(matchPath(ROUTE_PATTERNS.shopDetail, pathname));
   const isSharedReport = Boolean(matchPath(ROUTE_PATTERNS.sharedReport, pathname));
-  const usesOwnBottomSafeArea = pathname === ROUTE_PATHS.home || isShopDetail || isSharedReport;
+  const usesOwnBottomSafeArea =
+    pathname === ROUTE_PATHS.home ||
+    pathname === ROUTE_PATHS.record ||
+    isShopDetail ||
+    isSharedReport;
 
   useEffect(() => {
     // 모바일은 이 경로를 기준으로 /home에만 edge-to-edge를 적용한다.

@@ -3,6 +3,18 @@ import type { ShopSearchResult } from '../shop/types';
 
 export type SocialLoginProvider = 'kakao' | 'google';
 
+export const MAX_STICKER_IMAGE_BASE64_LENGTH = 16 * 1024 * 1024;
+export type StickerInferenceBackend = 'coreml' | 'cpu';
+
+/** 영수증 OCR에서 인식한 값. 인식하지 못한 항목은 기존 폼 값을 유지합니다. */
+export type ReceiptScanData = {
+  receiptImageId: number;
+  purchaseDate: string | null;
+  purchaseTime: string | null;
+  amount: number | null;
+  shop: ShopSearchResult | null;
+};
+
 export type SocialLoginResult =
   | { status: 'success'; loginCode: string }
   | { status: 'cancelled' }
@@ -60,6 +72,23 @@ export type BridgeEvent<TType extends BridgeEventType = BridgeEventType> = {
  * NOTE: ping은 브릿지 동작 확인용이며 실제 기능에서 사용하지 않는다.
  */
 export type BridgeMessageMap = {
+  prepareStickerBackground: {
+    payload: Record<string, never>;
+    result: { ready: true; backend: StickerInferenceBackend };
+  };
+  removeStickerBackground: {
+    payload: { requestId: string; base64: string; mimeType: 'image/png' };
+    result: {
+      base64: string;
+      mimeType: 'image/png';
+      backend: StickerInferenceBackend;
+      elapsedMs: number;
+    };
+  };
+  cancelStickerBackground: {
+    payload: { requestId: string };
+    result: { cancelled: true };
+  };
   startSocialLogin: {
     payload: {
       provider: SocialLoginProvider;
@@ -79,17 +108,31 @@ export type BridgeMessageMap = {
   };
   ping: {
     payload: { sentAt: number };
-    result: { platform: string; receivedAt: number };
+    result: { platform: string; receivedAt: number; nativeStickerBackground?: boolean };
   };
   saveImage: {
     payload: { base64: string; fileName: string };
     result: { saved: true };
+  };
+  captureStickerPhoto: {
+    payload: Record<string, never>;
+    result:
+      | { status: 'success'; base64: string; mimeType: 'image/jpeg' }
+      | { status: 'cancelled' }
+      | { status: 'permissionDenied' };
   };
   // NOTE: 영수증 촬영·검토는 앱에서만 제공하는 기능이라, 이 요청은 네이티브 카메라
   // 화면을 여는 데까지만 관여한다. 촬영 결과는 웹으로 돌아오지 않고 네이티브 화면 안에서 이어진다.
   captureReceipt: {
     payload: Record<string, never>;
     result: { opened: true };
+  };
+  scanReceipt: {
+    payload: Record<string, never>;
+    result:
+      | { status: 'success'; receipt: ReceiptScanData }
+      | { status: 'cancelled' }
+      | { status: 'permissionDenied' };
   };
   getRefreshToken: {
     payload: Record<string, never>;

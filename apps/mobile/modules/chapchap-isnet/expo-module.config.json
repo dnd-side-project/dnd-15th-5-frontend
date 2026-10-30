@@ -1,0 +1,4 @@
+{
+  "platforms": ["apple"],
+  "apple": { "modules": ["ChapChapIsnetModule"], "podspecPath": "ChapChapIsnet.podspec" }
+}

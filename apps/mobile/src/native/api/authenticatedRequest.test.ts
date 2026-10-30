@@ -53,7 +53,13 @@ describe('authenticatedRequest', () => {
     process.env.EXPO_PUBLIC_API_BASE_URL = originalApiBaseUrl;
   });
 
-  it('Refresh Token으로 Access Token을 발급한 뒤 인증 요청을 보낸다', async () => {
+  it.each([
+    'https://chapchap.example.com/api',
+    'https://chapchap.example.com/api/',
+    'https://chapchap.example.com/api/v1',
+    'https://chapchap.example.com/api/v1/',
+  ])('%s에서 /v1 인증 요청을 보내고 회전된 토큰을 저장한다', async (apiBaseUrl) => {
+    process.env.EXPO_PUBLIC_API_BASE_URL = apiBaseUrl;
     mockFetch
       .mockResolvedValueOnce(
         createResponse(200, {
@@ -70,13 +76,13 @@ describe('authenticatedRequest', () => {
 
     expect(mockFetch).toHaveBeenNthCalledWith(
       1,
-      'https://chapchap.example.com/api/auth/token/refresh',
+      'https://chapchap.example.com/api/v1/auth/token/refresh',
       expect.objectContaining({ body: JSON.stringify({ refreshToken: 'refresh-token' }) })
     );
     expect(mockSetRefreshToken).toHaveBeenCalledWith('rotated-refresh-token');
     expect(mockFetch).toHaveBeenNthCalledWith(
       2,
-      'https://chapchap.example.com/api/consumptions/receipt-ocr',
+      'https://chapchap.example.com/api/v1/consumptions/receipt-ocr',
       expect.objectContaining({
         method: 'POST',
         headers: { Authorization: 'Bearer access-token' },

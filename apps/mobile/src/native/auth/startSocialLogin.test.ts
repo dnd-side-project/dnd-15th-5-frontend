@@ -40,19 +40,24 @@ describe('startSocialLogin', () => {
     });
     expect(mockCreateUrl).toHaveBeenCalledWith('/oauth/callback');
     expect(mockOpenAuthSessionAsync).toHaveBeenCalledWith(
-      `https://chapchap.kr/api/oauth/kakao/start?client=APP&codeChallenge=${'a'.repeat(43)}`,
+      `https://chapchap.kr/api/v1/oauth/kakao/start?client=APP&codeChallenge=${'a'.repeat(43)}`,
       'chapchap://oauth/callback'
     );
   });
 
-  it('API 주소가 슬래시로 끝나도 OAuth 경로를 유지한다', async () => {
-    process.env.EXPO_PUBLIC_API_BASE_URL = 'https://chapchap.kr/api/';
+  it.each([
+    { baseUrl: 'https://chapchap.kr/api/', expectedBase: 'https://chapchap.kr/api/v1' },
+    { baseUrl: 'https://chapchap.kr/dev/api', expectedBase: 'https://chapchap.kr/dev/api/v1' },
+    { baseUrl: 'https://chapchap.kr/api/v1', expectedBase: 'https://chapchap.kr/api/v1' },
+    { baseUrl: 'https://chapchap.kr/dev/api/v1/', expectedBase: 'https://chapchap.kr/dev/api/v1' },
+  ])('$baseUrl에서 /v1 중복 없이 OAuth를 시작한다', async ({ baseUrl, expectedBase }) => {
+    process.env.EXPO_PUBLIC_API_BASE_URL = baseUrl;
     mockOpenAuthSessionAsync.mockResolvedValue({ type: WebBrowser.WebBrowserResultType.CANCEL });
 
-    await startSocialLogin('kakao', 'a'.repeat(43));
+    await startSocialLogin('google', 'a'.repeat(43));
 
     expect(mockOpenAuthSessionAsync).toHaveBeenCalledWith(
-      `https://chapchap.kr/api/oauth/kakao/start?client=APP&codeChallenge=${'a'.repeat(43)}`,
+      `${expectedBase}/oauth/google/start?client=APP&codeChallenge=${'a'.repeat(43)}`,
       'chapchap://oauth/callback'
     );
   });

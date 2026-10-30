@@ -25,6 +25,7 @@ type BottomSheetProps = {
   onHandleClick?: () => void;
   /** 콘텐츠 높이에 맞추고 내부 스크롤을 사용하지 않습니다. `hidden` 지정 시 아래로 드래그해 닫을 수 있습니다. */
   fitContent?: boolean;
+  showHandle?: boolean;
   children: ReactNode;
   contentClassName?: string;
   rootRef?: Ref<HTMLDivElement>;
@@ -91,6 +92,7 @@ export function BottomSheet({
   onSnapPointChange,
   onHandleClick,
   fitContent = false,
+  showHandle = true,
   children,
   contentClassName,
   rootRef,
@@ -175,23 +177,24 @@ export function BottomSheet({
         isHidden ? 'translate-y-full' : 'translate-y-0'
       )}
     >
-      {isHandleInteractive ? (
-        <button
-          type="button"
-          onClick={handleClick}
-          onKeyDown={handleKeyDown}
-          onPointerDown={handlePointerDown}
-          aria-label="바텀시트 높이 조절"
-          className={cn(
-            handleClassName,
-            'cursor-grab rounded-t-30 outline-none active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset'
-          )}
-        >
-          {handleBar}
-        </button>
-      ) : (
-        <div className={handleClassName}>{handleBar}</div>
-      )}
+      {showHandle &&
+        (isHandleInteractive ? (
+          <button
+            type="button"
+            onClick={handleClick}
+            onKeyDown={handleKeyDown}
+            onPointerDown={handlePointerDown}
+            aria-label="바텀시트 높이 조절"
+            className={cn(
+              handleClassName,
+              'cursor-grab rounded-t-30 outline-none active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset'
+            )}
+          >
+            {handleBar}
+          </button>
+        ) : (
+          <div className={handleClassName}>{handleBar}</div>
+        ))}
       <div
         onScroll={onContentScroll}
         onTouchCancel={handleTouchEnd}

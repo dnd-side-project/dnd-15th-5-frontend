@@ -29,22 +29,26 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
 };
 
 const AUTH_RETRY_EXCLUDED_PATHS = new Set([
-  '/v1/auth/token/refresh',
-  '/v1/auth/token/refresh/web',
-  '/v1/auth/social/exchange',
-  '/v1/auth/signup/terms',
-  '/v1/auth/logout',
-  '/v1/auth/logout/web',
+  '/auth/token/refresh',
+  '/auth/token/refresh/web',
+  '/auth/social/exchange',
+  '/auth/signup/terms',
+  '/auth/logout',
+  '/auth/logout/web',
 ]);
-const TERMS_AGREEMENT_PATH = '/v1/auth/signup/terms';
+const TERMS_AGREEMENT_PATH = '/auth/signup/terms';
+
+// NOTE: 생성 API의 /v1 경로와 브라우저 프록시의 /api 경로를 같은 인증 경로로 비교한다.
+const normalizeRequestPath = (path: string) =>
+  path.replace(/^\/api(?=\/|$)/u, '').replace(/^\/v1(?=\/|$)/u, '');
 
 const getRequestPath = (url: string | undefined) => {
   if (!url) return '';
 
   try {
-    return new URL(url, window.location.origin).pathname;
+    return normalizeRequestPath(new URL(url, window.location.origin).pathname);
   } catch {
-    return url.split('?')[0] ?? '';
+    return normalizeRequestPath(url.split('?')[0] ?? '');
   }
 };
 

@@ -13,6 +13,9 @@ export type {
   BridgeRequest,
   BridgeResponse,
   BridgeResult,
+  ReceiptScanData,
   SocialLoginProvider,
   SocialLoginResult,
 } from './types';
+export { MAX_STICKER_IMAGE_BASE64_LENGTH } from './types';
+export type { StickerInferenceBackend } from './types';

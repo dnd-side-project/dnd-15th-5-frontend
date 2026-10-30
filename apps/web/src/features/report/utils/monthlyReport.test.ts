@@ -11,6 +11,26 @@ const getAvailableReport = (report: MonthlyReportData | undefined): MonthlyRepor
 };
 
 describe('mapMonthlyReportResponse', () => {
+  it('쇼핑 통계를 기타와 합치지 않고 독립된 카테고리로 표시한다', () => {
+    const report = getAvailableReport(
+      mapMonthlyReportResponse(
+        {
+          reportId: 7,
+          yearMonth: '2026-07',
+          categoryStats: [
+            { category: '쇼핑', percentage: 70 },
+            { category: '기타', percentage: 30 },
+          ],
+        },
+        { month: 7, year: 2026 }
+      )
+    );
+    expect(report.categories).toEqual([
+      { category: '쇼핑', percentage: 70 },
+      { category: '기타', percentage: 30 },
+    ]);
+  });
+
   it('월간 리포트 API 응답을 상세 화면 표시 데이터로 변환한다', () => {
     const report = getAvailableReport(
       mapMonthlyReportResponse(

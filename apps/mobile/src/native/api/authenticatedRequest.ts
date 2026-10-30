@@ -3,6 +3,7 @@ import {
   getRefreshToken,
   setRefreshToken,
 } from '@/native/auth/authTokenStorage';
+import { createVersionedApiUrl } from '@/shared/utils/createVersionedApiUrl';
 
 import { clearAccessToken, getAccessToken, setAccessToken } from './accessTokenMemory';
 
@@ -43,7 +44,7 @@ const createApiUrl = (path: string) => {
     throw new NativeApiError('API 주소가 설정되지 않았습니다.');
   }
 
-  return `${apiBaseUrl.replace(/\/$/u, '')}/${path.replace(/^\//u, '')}`;
+  return createVersionedApiUrl(apiBaseUrl, path);
 };
 
 const parseApiResponse = async <TData>(response: Response) => {

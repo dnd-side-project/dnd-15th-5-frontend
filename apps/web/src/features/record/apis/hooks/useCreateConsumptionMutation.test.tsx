@@ -108,4 +108,45 @@ describe('useCreateConsumptionMutation', () => {
       message: '도로명주소를 확인해 주세요.',
     });
   });
+
+  it('저장 중 화면을 떠나면 늦은 성공 응답은 캐시만 갱신하고 홈으로 이동하지 않는다', async () => {
+    const { unmount } = renderHook(() => useCreateConsumptionMutation());
+    unmount();
+    await act(async () => {
+      await handleSuccess?.(undefined, {
+        data: { placeName: '카페 차차', latitude: 37.5, longitude: 127 },
+      });
+    });
+    expect(mockInvalidateQueries).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('저장 성공 후 캐시 갱신을 기다리다 화면을 떠나도 홈 이동을 막는다', async () => {
+    let finish!: () => void;
+    mockInvalidateQueries.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      })
+    );
+    const { unmount } = renderHook(() => useCreateConsumptionMutation());
+    const completed = handleSuccess?.(undefined, {
+      data: { placeName: '카페 차차', latitude: 37.5, longitude: 127 },
+    });
+    unmount();
+    await act(async () => {
+      finish();
+      await completed;
+    });
+    expect(mockInvalidateQueries).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('화면을 떠난 뒤 도착한 저장 오류는 다른 화면에 토스트를 띄우지 않는다', () => {
+    const { unmount } = renderHook(() => useCreateConsumptionMutation());
+    unmount();
+    act(() => {
+      handleError?.({ response: { status: 502, data: { message: '늦은 오류' } } });
+    });
+    expect(mockShowToast).not.toHaveBeenCalled();
+  });
 });

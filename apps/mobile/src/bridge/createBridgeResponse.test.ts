@@ -9,17 +9,31 @@ import {
 } from '@/native/auth';
 import { getCurrentPosition } from '@/native/location';
 import { clearPushNotifications, getPushToken } from '@/native/notifications';
-import { openReceiptCamera } from '@/native/openReceiptCamera';
+import { openReceiptCamera } from '@/native/receipt/openReceiptCamera';
 import { saveImageToLibrary } from '@/native/save-image';
+import { captureStickerPhoto } from '@/native/sticker/captureStickerPhoto';
 
 import { createBridgeResponse } from './createBridgeResponse';
 
 import type { BridgeRequest } from '@chapchap/shared/bridge';
 
+jest.mock('@/native/sticker/captureStickerPhoto', () => ({ captureStickerPhoto: jest.fn() }));
+jest.mock('@/native/sticker/stickerBackground', () => ({
+  hasNativeStickerBackground: jest.fn().mockReturnValue(true),
+  prepareNativeStickerBackground: jest.fn().mockResolvedValue({ ready: true, backend: 'coreml' }),
+  removeNativeStickerBackground: jest.fn().mockResolvedValue({
+    base64: 'aW1hZ2U=',
+    mimeType: 'image/png',
+    backend: 'coreml',
+    elapsedMs: 20,
+  }),
+  cancelNativeStickerBackground: jest.fn().mockReturnValue({ cancelled: true }),
+}));
+
 jest.mock('@/native/location', () => ({ getCurrentPosition: jest.fn() }));
 jest.mock('@/native/api', () => ({ clearAccessToken: jest.fn() }));
 jest.mock('@/native/save-image', () => ({ saveImageToLibrary: jest.fn() }));
-jest.mock('@/native/openReceiptCamera', () => ({ openReceiptCamera: jest.fn() }));
+jest.mock('@/native/receipt/openReceiptCamera', () => ({ openReceiptCamera: jest.fn() }));
 jest.mock('@/native/notifications', () => ({
   clearPushNotifications: jest.fn(),
   getPushToken: jest.fn(),
@@ -370,5 +384,20 @@ describe('createBridgeResponse', () => {
       ok: true,
       result: { cleared: true },
     });
+  });
+});
+
+it('스티커 촬영 결과를 요청 식별자와 함께 웹으로 반환한다', async () => {
+  jest
+    .mocked(captureStickerPhoto)
+    .mockResolvedValue({ status: 'success', base64: 'cGhvdG8=', mimeType: 'image/jpeg' });
+  await expect(
+    createBridgeResponse(createRequest({ type: 'captureStickerPhoto', payload: {} }))
+  ).resolves.toEqual({
+    kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+    id: 'request-01',
+    type: 'captureStickerPhoto',
+    ok: true,
+    result: { status: 'success', base64: 'cGhvdG8=', mimeType: 'image/jpeg' },
   });
 });
