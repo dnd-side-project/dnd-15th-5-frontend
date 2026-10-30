@@ -22,6 +22,7 @@ import type { InfiniteData } from '@tanstack/react-query';
 type LikedPlacesCursor = Pick<GetLikedPlacesParams, 'cursorId'>;
 
 const LIKE_ERROR_MESSAGE = '좋아요 상태를 변경하지 못했어요. 잠시 후 다시 시도해주세요.';
+const TOGGLE_PLACE_LIKE_MUTATION_KEY = ['toggle-place-like'] as const;
 const NEARBY_PLACES_QUERY_KEY = getGetNearbyPlacesQueryKey();
 const VISITED_PLACES_QUERY_KEY = getGetVisitedPlaceMarkersQueryKey();
 
@@ -183,6 +184,7 @@ export const useTogglePlaceLikeMutation = () => {
     { placeId: number },
     LikeMutationContext
   >({
+    mutationKey: TOGGLE_PLACE_LIKE_MUTATION_KEY,
     mutationFn: ({ placeId }) => toggleLike(placeId),
     onMutate: async ({ placeId }) => {
       await Promise.all([
@@ -262,6 +264,9 @@ export const useTogglePlaceLikeMutation = () => {
       updateCachedLikeState(queryClient, placeId, () => liked);
     },
     onSettled: async () => {
+      // 진행 중인 좋아요 변경이 남아 있으면 재조회가 다른 장소의 낙관적 상태를 덮을 수 있습니다.
+      if (queryClient.isMutating({ mutationKey: TOGGLE_PLACE_LIKE_MUTATION_KEY }) > 1) return;
+
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: NEARBY_PLACES_QUERY_KEY }),
         queryClient.invalidateQueries({ queryKey: VISITED_PLACES_QUERY_KEY }),
