@@ -132,7 +132,7 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
               <LikedPlaceCardSkeleton key={item} />
             ))}
           </div>
-        ) : isError ? (
+        ) : isError && !isFetchNextPageError && likedPlaces.length === 0 ? (
           <StateView
             variant="error"
             headingAs="h2"
@@ -155,8 +155,9 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
               </div>
             )}
             {isFetchNextPageError && (
-              <div className="flex justify-center py-4">
-                <Button variant="primary" size="small" onClick={loadNextPage}>
+              <div className="flex flex-col items-center py-5 text-body-02-regular text-neutral-500">
+                다음 좋아요 장소를 불러오지 못했어요.
+                <Button variant="primary" size="small" className="mt-3" onClick={loadNextPage}>
                   다시 불러오기
                 </Button>
               </div>
