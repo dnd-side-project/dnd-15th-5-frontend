@@ -50,6 +50,7 @@ export default function MyPage() {
         <h2 className="sr-only">마이페이지 메뉴</h2>
 
         <MyPageShortcutMenu
+          onLikeClick={() => navigate(ROUTE_PATHS.myPageLikes)}
           onRecordClick={() => navigate(ROUTE_PATHS.spendingHistory)}
           onNotificationClick={() => navigate(ROUTE_PATHS.notifications)}
         />

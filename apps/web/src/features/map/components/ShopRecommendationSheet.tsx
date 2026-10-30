@@ -148,10 +148,8 @@ export default function ShopRecommendationSheet() {
       <StateView
         variant="empty"
         headingAs="h2"
-        title="주변 추천 가게가 없어요"
-        description="잠시 후 다시 확인해주세요."
-        actionLabel="다시 불러오기"
-        onAction={() => void refetch()}
+        title="아직 주변에 추천 가게가 없어요"
+        description="지도를 움직여 다른 곳을 살펴보세요."
         className="py-8"
       />
     );
@@ -188,7 +186,7 @@ export default function ShopRecommendationSheet() {
                   disabled={likeMutation.isPending}
                   className={cn(
                     'absolute top-4 right-4 flex size-7 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-300',
-                    isLiked ? 'text-primary-500' : 'text-neutral-200'
+                    isLiked ? 'text-red' : 'text-neutral-200'
                   )}
                 >
                   <LikeIcon aria-hidden="true" className="size-5" />

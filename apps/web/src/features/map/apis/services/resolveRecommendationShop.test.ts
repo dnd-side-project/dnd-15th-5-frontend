@@ -54,10 +54,15 @@ describe('resolveRecommendationShop', () => {
       id: 'ChIJ-twosome-nearby',
       name: `${recommendation.place.name} 강남점`,
       address: '서울특별시 강남구 봉은사로 125 1층',
-      photoUrl: 'https://example.com/place.jpg',
+      photoUrl: null,
       latitude: recommendation.position.lat + 0.0001,
       longitude: recommendation.position.lng + 0.0001,
     });
+    expect(searchByText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fields: expect.not.arrayContaining(['photos']),
+      })
+    );
     expect(searchByText).toHaveBeenCalledWith(
       expect.objectContaining({
         textQuery: `${recommendation.place.name} ${recommendation.place.address}`,

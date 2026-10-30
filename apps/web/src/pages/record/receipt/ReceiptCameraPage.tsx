@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useOpenReceiptCamera } from '@/features/record';
-import { BackButton } from '@/shared/ui/back-button';
+import PageHeader from '@/shared/layout/PageHeader';
 import { Button } from '@/shared/ui/button';
 
 /**
@@ -24,7 +24,7 @@ export default function ReceiptCameraPage() {
 
   return (
     <main className="flex min-h-full flex-col">
-      <BackButton className="ml-4" onClick={() => navigate(-1)} />
+      <PageHeader onBack={() => navigate(-1)} />
 
       {state.status === 'error' && (
         <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">

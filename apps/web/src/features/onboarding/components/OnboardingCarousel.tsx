@@ -3,8 +3,8 @@ import { useState } from 'react';
 import OnboardingMapImage from '@/shared/assets/images/onboarding/img-onboarding-map.png';
 import OnboardingReceiptImage from '@/shared/assets/images/onboarding/img-onboarding-receipt.png';
 import OnboardingReportImage from '@/shared/assets/images/onboarding/img-onboarding-report.png';
+import PageHeader from '@/shared/layout/PageHeader';
 import { cn } from '@/shared/lib/cn';
-import { BackButton } from '@/shared/ui/back-button';
 import { Button } from '@/shared/ui/button';
 
 type OnboardingCarouselProps = {
@@ -57,9 +57,9 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
 
   return (
     <>
-      <BackButton onClick={handleBack} className="ml-4" />
+      <PageHeader onBack={handleBack} />
 
-      <section className="flex min-h-0 flex-1 flex-col items-center pt-7">
+      <section className="flex min-h-0 flex-1 flex-col items-center pt-2.5">
         <ol
           aria-label={`온보딩 진행 상태: ${ONBOARDING_STEPS.length}단계 중 ${currentStepIndex + 1}단계`}
           className="flex gap-1"

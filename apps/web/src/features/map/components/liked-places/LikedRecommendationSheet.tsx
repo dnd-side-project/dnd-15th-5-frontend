@@ -1,15 +1,16 @@
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
+import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
-import { getDistrict, getGoogleMapsPlaceUrl } from '@/features/map/utils/recommendation';
-import { BlueLocationPinIcon, LikeIcon } from '@/shared/assets/icons';
+import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import type { RecordLocationState } from '@/shared/types/recordNavigation';
 import { Button, LinkButton } from '@/shared/ui/button';
-import { PlaceTagCard } from '@/shared/ui/card';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
+
+import LikedPlaceSummary from './LikedPlaceSummary';
 
 type LikedRecommendationSheetProps = {
   recommendationId: string;
@@ -20,16 +21,22 @@ export default function LikedRecommendationSheet({
   recommendationId,
 }: LikedRecommendationSheetProps) {
   const { recommendations, isPending, isError, refetch } = useNearbyPlaceRecommendationsQuery();
+  const visitedPlacesQuery = useVisitedPlaceStickersQuery();
   const likeMutation = useTogglePlaceLikeMutation();
-  const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const recommendation = recommendations.find(({ id }) => id === recommendationId);
+  const closeLikedRecommendationIfMatches = useHomeBottomSheetStore(
+    (state) => state.closeLikedRecommendationIfMatches
+  );
+  const nearbyRecommendation = recommendations.find(({ id }) => id === recommendationId);
+  const recommendation =
+    nearbyRecommendation ??
+    visitedPlacesQuery.likedRecommendations.find(({ id }) => id === recommendationId);
   const {
     query: recordShopQuery,
     isLibraryLoading,
     isLibraryError,
   } = useRecommendationRecordShopQuery(recommendation);
 
-  if (isPending) {
+  if (!recommendation && (isPending || visitedPlacesQuery.isPending)) {
     return (
       <div
         role="status"
@@ -41,7 +48,7 @@ export default function LikedRecommendationSheet({
     );
   }
 
-  if (isError) {
+  if (isError && visitedPlacesQuery.isError) {
     return (
       <StateView
         variant="error"
@@ -49,7 +56,10 @@ export default function LikedRecommendationSheet({
         title="가게 정보를 불러오지 못했어요"
         description="잠시 후 다시 시도해주세요."
         actionLabel="다시 불러오기"
-        onAction={() => void refetch()}
+        onAction={() => {
+          void refetch();
+          void visitedPlacesQuery.refetch();
+        }}
         className="py-6"
       />
     );
@@ -63,13 +73,17 @@ export default function LikedRecommendationSheet({
         title="선택한 가게를 찾을 수 없어요"
         description="지도에서 다른 가게를 선택해주세요."
         actionLabel="지도 홈으로"
-        onAction={showHome}
+        onAction={() => closeLikedRecommendationIfMatches(recommendationId)}
         className="py-6"
       />
     );
   }
 
-  const { googleMapsUri, id, place, thumbnailSrc } = recommendation;
+  const { id, place, thumbnailSrc } = recommendation;
+  // TODO: placeId 기반 백엔드 상세 API가 googlePlaceId, 가게명, 도로명 주소, 좌표, 사진 URL(최대 3장)을 제공하면 Google Places 조회를 제거하고 기록 작성과 바텀시트에 사용한다.
+  const fallbackPhotoUrl = recordShopQuery.data?.photoUrl ?? thumbnailSrc;
+  const photoUrls = getLikedPlacePhotoUrls(recordShopQuery.data?.photoUrls, fallbackPhotoUrl);
+  const address = recordShopQuery.data?.address || place.address;
   const recordLocationState = recordShopQuery.data
     ? ({
         shop: {
@@ -82,46 +96,25 @@ export default function LikedRecommendationSheet({
   const isResolvingRecordShop = !isLibraryError && (isLibraryLoading || recordShopQuery.isPending);
 
   const handleUnlike = () => {
-    likeMutation.mutate({ placeId: Number(id) }, { onSuccess: showHome });
+    likeMutation.mutate(
+      { placeId: Number(id) },
+      { onSuccess: () => closeLikedRecommendationIfMatches(id) }
+    );
   };
 
   return (
-    <section aria-labelledby={`liked-recommendation-${id}`}>
-      <h1 id={`liked-recommendation-${id}`} className="sr-only">
-        {place.name}
-      </h1>
-
-      <div className="relative pr-10">
-        <PlaceTagCard
-          thumbnailSrc={thumbnailSrc}
-          thumbnailSize="large"
-          title={place.name}
-          tags={[
-            { label: getDistrict(place.address), icon: BlueLocationPinIcon },
-            { label: place.category },
-          ]}
-          footer={
-            <a
-              href={getGoogleMapsPlaceUrl(place.name, place.address, googleMapsUri)}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-flex px-4 py-1.5 items-center justify-center rounded-08 border border-neutral-200 text-caption-01-medium text-neutral-500 outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-            >
-              지도앱에서 확인하기
-            </a>
-          }
-        />
-        <button
-          type="button"
-          aria-label={`${place.name} 좋아요 해제`}
-          onClick={handleUnlike}
-          disabled={likeMutation.isPending}
-          className="absolute top-0 right-1 flex size-8 items-center justify-center rounded-full text-primary-500 outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-        >
-          <LikeIcon aria-hidden="true" className="size-5" />
-        </button>
-      </div>
-
+    <div className="pb-2">
+      <LikedPlaceSummary
+        placeId={id}
+        name={place.name}
+        category={place.category}
+        address={address}
+        photoUrls={photoUrls}
+        isLoading={isResolvingRecordShop}
+        isUnlikePending={likeMutation.isPending}
+        onUnlike={handleUnlike}
+        headingAs="h1"
+      />
       {isResolvingRecordShop ? (
         <Button isLoading size="large" className="mt-4">
           기록하기
@@ -140,6 +133,6 @@ export default function LikedRecommendationSheet({
           기록하기
         </Button>
       )}
-    </section>
+    </div>
   );
 }

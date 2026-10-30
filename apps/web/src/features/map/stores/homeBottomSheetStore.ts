@@ -32,6 +32,7 @@ type HomeBottomSheetStore = {
   stepIndex: number;
   advance: () => void;
   showHome: () => void;
+  closeLikedRecommendationIfMatches: (recommendationId: string) => void;
   showLikedRecommendation: (recommendationId: string) => void;
   showRecommendation: () => void;
   showSelectedPlace: (stickerId: string) => void;
@@ -61,6 +62,13 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
       stepIndex: (state.stepIndex + 1) % HOME_BOTTOM_SHEET_SNAP_SEQUENCE.length,
     })),
   showHome: () => set({ activeSheet: { type: 'home' } }),
+  closeLikedRecommendationIfMatches: (recommendationId) =>
+    set((state) =>
+      state.activeSheet.type === 'likedRecommendation' &&
+      state.activeSheet.recommendationId === recommendationId
+        ? { activeSheet: { type: 'home' } }
+        : state
+    ),
   showLikedRecommendation: (recommendationId) =>
     set({ activeSheet: { type: 'likedRecommendation', recommendationId } }),
   showRecommendation: () => set({ activeSheet: { type: 'recommendation' } }),

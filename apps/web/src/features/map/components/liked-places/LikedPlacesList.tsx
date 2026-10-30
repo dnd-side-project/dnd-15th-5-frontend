@@ -1,0 +1,258 @@
+import { useIsMutating } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import type { LikedPlaceResponse } from '@/features/map/apis/dto';
+import { useLikedPlacesInfiniteQuery } from '@/features/map/apis/hooks/useLikedPlacesInfiniteQuery';
+import {
+  TOGGLE_PLACE_LIKE_MUTATION_KEY,
+  useTogglePlaceLikeMutation,
+} from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
+import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
+import PageHeader from '@/shared/layout/PageHeader';
+import { Button } from '@/shared/ui/button';
+import { CategoryChip } from '@/shared/ui/category-chip';
+import { StateView } from '@/shared/ui/state-view';
+
+import LikedPlaceCardSkeleton from './LikedPlaceCardSkeleton';
+import LikedPlaceSummary from './LikedPlaceSummary';
+
+const ALL_CATEGORY = '전체';
+
+function LikedPlaceCard({ likedPlace }: { likedPlace: LikedPlaceResponse }) {
+  const likeMutation = useTogglePlaceLikeMutation();
+  const photoUrls = getLikedPlacePhotoUrls(
+    likedPlace.photos?.flatMap(({ thumbnailUrl }) => (thumbnailUrl ? [thumbnailUrl] : []))
+  );
+
+  if (likedPlace.placeId === undefined) {
+    return null;
+  }
+  const placeId = likedPlace.placeId;
+
+  return (
+    <LikedPlaceSummary
+      placeId={String(placeId)}
+      name={likedPlace.name ?? '이름 정보가 없어요'}
+      category={likedPlace.category ?? '기타'}
+      address={likedPlace.address}
+      photoUrls={photoUrls}
+      isLoading={false}
+      isUnlikePending={likeMutation.isPending}
+      onUnlike={() => likeMutation.mutate({ placeId })}
+      headingAs="h2"
+    />
+  );
+}
+
+/** 좋아요한 장소를 서버 페이지네이션으로 조회해 카테고리별로 보여줍니다. */
+export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
+  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY);
+  const [categoryOptionsSnapshot, setCategoryOptionsSnapshot] = useState<string[] | null>(null);
+  const listRef = useRef<HTMLElement>(null);
+  const isFetchingNextPageRef = useRef(false);
+  const isLikeMutationPending =
+    useIsMutating({
+      mutationKey: TOGGLE_PLACE_LIKE_MUTATION_KEY,
+    }) > 0;
+  const categoryParam = selectedCategory === ALL_CATEGORY ? undefined : selectedCategory;
+  const likedPlacesQuery = useLikedPlacesInfiniteQuery(categoryParam);
+  const {
+    categories,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    isFetchedAfterMount,
+    isFetchNextPageError,
+    isFetching,
+    isFetchingNextPage,
+    isPending,
+    isPlaceholderData,
+    isStale,
+    isSuccess,
+    likedPlaces,
+    refetch,
+  } = likedPlacesQuery;
+
+  const isOptimisticallyEmptySelectedCategory =
+    selectedCategory !== ALL_CATEGORY &&
+    isLikeMutationPending &&
+    isSuccess &&
+    !isPlaceholderData &&
+    likedPlaces.length === 0 &&
+    !hasNextPage &&
+    !isFetchingNextPage;
+
+  if (
+    isOptimisticallyEmptySelectedCategory ||
+    (selectedCategory !== ALL_CATEGORY &&
+      isSuccess &&
+      !isPlaceholderData &&
+      !isFetching &&
+      categories !== undefined &&
+      !categories.includes(selectedCategory))
+  ) {
+    setSelectedCategory(ALL_CATEGORY);
+  }
+
+  const responseCategories = [
+    ALL_CATEGORY,
+    ...(categories ?? []).filter((category) => category !== ALL_CATEGORY),
+  ];
+  const availableCategories =
+    isPlaceholderData && categoryOptionsSnapshot ? categoryOptionsSnapshot : responseCategories;
+  if (selectedCategory !== ALL_CATEGORY && !availableCategories.includes(selectedCategory)) {
+    availableCategories.push(selectedCategory);
+  }
+  const activeCategory = availableCategories.includes(selectedCategory)
+    ? selectedCategory
+    : ALL_CATEGORY;
+
+  const loadNextPage = useCallback(() => {
+    if (!hasNextPage || isFetchingNextPageRef.current) {
+      return;
+    }
+
+    isFetchingNextPageRef.current = true;
+    void fetchNextPage().finally(() => {
+      isFetchingNextPageRef.current = false;
+    });
+  }, [fetchNextPage, hasNextPage]);
+  const loadMoreRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    isLoadMoreError: isFetchNextPageError,
+    onLoadMore: loadNextPage,
+    rootRef: listRef,
+    rootMargin: '160px 0px',
+  });
+
+  useEffect(() => {
+    if (
+      selectedCategory === ALL_CATEGORY ||
+      !isSuccess ||
+      isPlaceholderData ||
+      likedPlaces.length > 0 ||
+      !hasNextPage ||
+      isFetchingNextPage ||
+      isFetchNextPageError
+    ) {
+      return;
+    }
+
+    loadNextPage();
+  }, [
+    hasNextPage,
+    isFetchNextPageError,
+    isFetchingNextPage,
+    isPlaceholderData,
+    isSuccess,
+    likedPlaces.length,
+    loadNextPage,
+    selectedCategory,
+  ]);
+
+  return (
+    <main className="flex h-[calc(100dvh-env(safe-area-inset-bottom))] flex-col bg-neutral-00">
+      <PageHeader title="좋아요" onBack={onBack} />
+
+      <nav
+        aria-label="좋아요 카테고리 필터"
+        className="scrollbar-hidden flex shrink-0 gap-2 overflow-x-auto pt-6 pb-3"
+      >
+        {availableCategories.map((category) => (
+          <CategoryChip
+            key={category}
+            selected={activeCategory === category}
+            onSelectedChange={(selected) => {
+              if (selected) {
+                setCategoryOptionsSnapshot(availableCategories);
+                setSelectedCategory(category);
+              }
+            }}
+            className="px-3 py-1.5"
+          >
+            {category}
+          </CategoryChip>
+        ))}
+      </nav>
+
+      <section
+        ref={listRef}
+        aria-label="좋아요한 가게 목록"
+        className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto"
+      >
+        {isPending ||
+        isPlaceholderData ||
+        (isFetchingNextPage && likedPlaces.length === 0) ||
+        (selectedCategory !== ALL_CATEGORY &&
+          likedPlaces.length === 0 &&
+          hasNextPage &&
+          !isFetchNextPageError) ||
+        (!isError &&
+          !isFetchedAfterMount &&
+          likedPlaces.length === 0 &&
+          (isFetching || isStale)) ? (
+          <div role="status" aria-label="좋아요한 가게 불러오는 중" className="space-y-6 py-2">
+            {[0, 1, 2].map((item) => (
+              <LikedPlaceCardSkeleton key={item} />
+            ))}
+          </div>
+        ) : isError && !isFetchNextPageError && likedPlaces.length === 0 ? (
+          <StateView
+            variant="error"
+            headingAs="h2"
+            title="좋아요 목록을 불러오지 못했어요"
+            description="잠시 후 다시 시도해주세요."
+            actionLabel="다시 불러오기"
+            onAction={() => void refetch()}
+            className="pt-12"
+          />
+        ) : isFetchNextPageError && likedPlaces.length === 0 ? (
+          <div className="flex flex-col items-center py-5 text-body-02-regular text-neutral-500">
+            다음 좋아요 장소를 불러오지 못했어요.
+            <Button variant="primary" size="small" className="mt-3" onClick={loadNextPage}>
+              다시 불러오기
+            </Button>
+          </div>
+        ) : likedPlaces.length > 0 ? (
+          <div className="space-y-6 py-2">
+            {likedPlaces.map((likedPlace) => (
+              <LikedPlaceCard key={likedPlace.placeId} likedPlace={likedPlace} />
+            ))}
+            {isFetchingNextPage && (
+              <div role="status" aria-label="다음 좋아요 장소 불러오는 중" className="space-y-6">
+                {[0, 1].map((item) => (
+                  <LikedPlaceCardSkeleton key={item} />
+                ))}
+              </div>
+            )}
+            {isFetchNextPageError && (
+              <div className="flex flex-col items-center py-5 text-body-02-regular text-neutral-500">
+                다음 좋아요 장소를 불러오지 못했어요.
+                <Button variant="primary" size="small" className="mt-3" onClick={loadNextPage}>
+                  다시 불러오기
+                </Button>
+              </div>
+            )}
+            {hasNextPage && !isFetchNextPageError && (
+              <div ref={loadMoreRef} aria-hidden="true" className="h-px" />
+            )}
+          </div>
+        ) : (
+          <StateView
+            variant="empty"
+            headingAs="h2"
+            title={
+              activeCategory === ALL_CATEGORY
+                ? '좋아요한 가게가 없어요'
+                : '해당 카테고리의 가게가 없어요'
+            }
+            description="가게에 좋아요를 누르고 나만의 목록을 만들어보세요."
+            className="pt-12"
+          />
+        )}
+      </section>
+    </main>
+  );
+}

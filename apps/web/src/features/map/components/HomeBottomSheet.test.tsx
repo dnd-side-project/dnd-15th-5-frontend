@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -87,6 +87,10 @@ describe('HomeBottomSheet', () => {
       isPending: false,
     } as unknown as ReturnType<typeof useTogglePlaceLikeMutation>);
     mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      likedRecommendations: [],
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
       isSuccess: false,
       stickers: [],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
@@ -327,12 +331,9 @@ describe('HomeBottomSheet', () => {
     });
     expect(likedPlaceHeading).toBeInTheDocument();
     expect(
-      likedPlaceHeading.closest('section')?.querySelector('span[aria-hidden="true"]')
-    ).toHaveClass('size-22.5', 'rounded-12');
-    const googleMapsLink = screen.getByRole('link', { name: '지도앱에서 확인하기' });
-    expect(googleMapsLink).toHaveAttribute('href', recommendation.googleMapsUri);
-    expect(
-      within(googleMapsLink.parentElement as HTMLElement).getByText(recommendation.place.name)
+      likedPlaceHeading
+        .closest('section')
+        ?.querySelector(`[aria-label="${recommendation.place.name} 사진"]`)
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '기록하기' })).toHaveAttribute('href', '/record');
     expect(screen.queryByText('기존 홈 시트')).not.toBeInTheDocument();

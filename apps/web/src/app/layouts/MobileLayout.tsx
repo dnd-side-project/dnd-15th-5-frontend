@@ -15,7 +15,7 @@ type MobileLayoutProps = PropsWithChildren;
 /**
  * 모든 웹 라우트를 최대 480px 모바일 프레임 안에 렌더링하는 최상위 레이아웃입니다.
  *
- * 지도 홈과 매장 상세는 각각 바텀시트·내부 스크롤 영역에서 하단 Safe Area를 처리합니다.
+ * 지도 홈·매장 상세·공유 리포트는 각 화면이 하단 Safe Area를 처리합니다.
  * 나머지 경로에는 프레임이 `pb-safe-bottom`을 적용합니다. 경로가 바뀌면 모바일 WebView가
  * edge-to-edge와 뒤로 가기 상태를 동기화할 수 있도록 `routeChanged` 이벤트를 전송합니다.
  */

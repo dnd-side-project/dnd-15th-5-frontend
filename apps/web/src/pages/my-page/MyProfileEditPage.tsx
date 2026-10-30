@@ -1,5 +1,5 @@
 import { ProfileImageSelector, useProfileEditor } from '@/features/my-page';
-import { BackButton } from '@/shared/ui/back-button';
+import PageHeader from '@/shared/layout/PageHeader';
 import { Button } from '@/shared/ui/button';
 import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 import { StateView } from '@/shared/ui/state-view';
@@ -27,7 +27,7 @@ export default function MyProfileEditPage() {
 
   if (accountQuery.isError || (!accountQuery.isPending && !account)) {
     return (
-      <main className="-mx-4 px-4">
+      <main className="min-h-screen-safe-bottom">
         <StateView
           variant="error"
           headingAs="h1"
@@ -42,18 +42,16 @@ export default function MyProfileEditPage() {
   }
 
   if (accountQuery.isPending || !account) {
-    return <main className="-mx-4" aria-label="계정 정보 불러오는 중" />;
+    return <main className="min-h-screen-safe-bottom" aria-label="계정 정보 불러오는 중" />;
   }
 
   return (
-    <main className="mobile-frame fixed inset-0 flex flex-col overflow-y-auto">
-      <div className="h-14 shrink-0">
-        <BackButton className="ml-4" onClick={handleBack} />
-      </div>
+    <main className="min-h-screen-safe-bottom flex flex-col overflow-y-auto">
+      <PageHeader onBack={handleBack} />
 
       <ProfileImageSelector selectedCode={profileImageCode} onSelect={setProfileImageCode} />
 
-      <div className="px-4 pt-8">
+      <div className="pt-8">
         <label htmlFor="profile-nickname" className="text-body-02-semibold text-neutral-700">
           이름
         </label>
@@ -65,25 +63,21 @@ export default function MyProfileEditPage() {
           onChange={(event) => setNickname(event.target.value)}
           aria-invalid={showNicknameError}
           aria-describedby={showNicknameError ? 'nickname-error' : undefined}
-          className={`mt-2 h-13 w-full rounded-08 border px-4 text-body-01-regular text-neutral-700 outline-none placeholder:text-neutral-400 ${showNicknameError ? 'border-notification focus:border-notification' : 'border-neutral-300 focus:border-primary-500'}`}
+          className={`mt-2 h-13 w-full rounded-08 border px-4 text-body-01-regular text-neutral-700 outline-none placeholder:text-neutral-400 ${showNicknameError ? 'border-red focus:border-red' : 'border-neutral-300 focus:border-primary-500'}`}
         />
         {showNicknameError && (
-          <p
-            id="nickname-error"
-            role="alert"
-            className="mt-2 text-label-01-medium text-notification"
-          >
+          <p id="nickname-error" role="alert" className="mt-2 text-label-01-medium text-red">
             {nicknameErrorMessage}
           </p>
         )}
         {isSaveError && (
-          <p role="alert" className="mt-2 text-label-01-medium text-notification">
+          <p role="alert" className="mt-2 text-label-01-medium text-red">
             저장하지 못했어요. 잠시 후 다시 시도해주세요.
           </p>
         )}
       </div>
 
-      <div className="mt-auto px-4 pt-8 pb-safe-bottom">
+      <div className="mt-auto pt-8">
         <Button
           type="button"
           disabled={!canSave}

@@ -13,6 +13,7 @@ import HomePage from '@/pages/home/HomePage';
 import MapSearchPage from '@/pages/home/search/MapSearchPage';
 import ShopDetailPage from '@/pages/home/shop/ShopDetailPage';
 import LoginPage from '@/pages/login/LoginPage';
+import LikedPlacesPage from '@/pages/my-page/LikedPlacesPage';
 import MyPage from '@/pages/my-page/MyPage';
 import MyProfileEditPage from '@/pages/my-page/MyProfileEditPage';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
@@ -127,6 +128,10 @@ export const router = createSentryBrowserRouter([
               {
                 path: ROUTE_PATHS.myPage,
                 element: <MyPage />,
+              },
+              {
+                path: ROUTE_PATHS.myPageLikes,
+                element: <LikedPlacesPage />,
               },
               {
                 path: ROUTE_PATHS.myPageProfile,

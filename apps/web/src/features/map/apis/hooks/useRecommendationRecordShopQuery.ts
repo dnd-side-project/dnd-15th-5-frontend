@@ -7,7 +7,7 @@ import type { ShopRecommendation } from '@/features/map/types';
 const RECOMMENDATION_RECORD_SHOP_QUERY_KEY = (recommendationId?: string) =>
   ['map', 'recommendation', 'record-shop', recommendationId] as const;
 
-/** 추천 매장을 소비 기록 폼이 사용하는 Google 장소 정보로 조회합니다. */
+/** 기록 작성에 필요한 추천 매장의 Google 장소 정보를 조회합니다. */
 export const useRecommendationRecordShopQuery = (recommendation?: ShopRecommendation) => {
   const placesLibrary = useMapsLibrary('places');
   const apiLoadingStatus = useApiLoadingStatus();
