@@ -120,11 +120,11 @@ describe('authInterceptors', () => {
     const dependencies = createDependencies();
     const detach = attachAuthInterceptors(instance, dependencies);
 
-    await expect(instance.post('/auth/social/exchange')).rejects.toBeInstanceOf(AxiosError);
+    await expect(instance.post('/v1/auth/social/exchange')).rejects.toBeInstanceOf(AxiosError);
 
     expect(dependencies.refreshWeb).not.toHaveBeenCalled();
-    expect(isAuthRetryExcludedRequest('/api/auth/signup/terms')).toBe(true);
-    expect(isAuthRetryExcludedRequest('/api/auth/logout/web?source=test')).toBe(true);
+    expect(isAuthRetryExcludedRequest('/v1/auth/signup/terms')).toBe(true);
+    expect(isAuthRetryExcludedRequest('/v1/auth/logout/web?source=test')).toBe(true);
     detach();
   });
 
