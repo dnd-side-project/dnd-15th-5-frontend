@@ -56,7 +56,11 @@ export default function MyPage() {
         />
 
         <MyPageMenuSection>
-          <MyPageMenuItem icon={TermsIcon} label="이용약관 및 개인정보처리방침" />
+          <MyPageMenuItem
+            icon={TermsIcon}
+            label="이용약관 및 개인정보처리방침"
+            onClick={() => navigate(ROUTE_PATHS.myPagePolicies)}
+          />
           <ContactButton />
         </MyPageMenuSection>
 

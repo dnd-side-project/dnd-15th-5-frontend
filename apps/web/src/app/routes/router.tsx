@@ -6,6 +6,7 @@ import MobileLayout from '@/app/layouts/MobileLayout';
 import { AuthenticatedRoute, GuestOnlyRoute, TermsAgreementRoute } from '@/app/routes/AuthRoute';
 import RouteErrorPage from '@/app/routes/RouteErrorPage';
 import AgreementPage from '@/pages/agreement/AgreementPage';
+import PoliciesPage from '@/pages/agreement/PoliciesPage';
 import PrivacyPolicyPage from '@/pages/agreement/PrivacyPolicyPage';
 import TermsOfServicePage from '@/pages/agreement/TermsOfServicePage';
 import AuthCallbackPage from '@/pages/auth-callback/AuthCallbackPage';
@@ -58,12 +59,11 @@ export const router = createSentryBrowserRouter([
           },
           {
             element: <TermsAgreementRoute />,
-            children: [
-              { path: ROUTE_PATHS.agreement, element: <AgreementPage /> },
-              { path: ROUTE_PATHS.agreementPrivacyPolicy, element: <PrivacyPolicyPage /> },
-              { path: ROUTE_PATHS.agreementTermsOfService, element: <TermsOfServicePage /> },
-            ],
+            children: [{ path: ROUTE_PATHS.agreement, element: <AgreementPage /> }],
           },
+          // 약관 원문은 가입 전·후 모두 확인할 수 있다.
+          { path: ROUTE_PATHS.agreementPrivacyPolicy, element: <PrivacyPolicyPage /> },
+          { path: ROUTE_PATHS.agreementTermsOfService, element: <TermsOfServicePage /> },
         ],
       },
       {
@@ -136,6 +136,10 @@ export const router = createSentryBrowserRouter([
               {
                 path: ROUTE_PATHS.myPageProfile,
                 element: <MyProfileEditPage />,
+              },
+              {
+                path: ROUTE_PATHS.myPagePolicies,
+                element: <PoliciesPage />,
               },
               {
                 path: ROUTE_PATTERNS.shopDetail,
