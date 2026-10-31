@@ -110,7 +110,7 @@ describe('MapStickers', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('선택하면 이미지의 긴 축은 최대 80px, 핀은 66px로 커지고 화살표 끝이 장소 좌표를 가리킨다', async () => {
+  it('이미지 크기를 확인하기 전 선택하면 핀 중앙에 표시하고 화살표 끝이 장소 좌표를 가리킨다', async () => {
     const user = userEvent.setup();
     render(<MapStickers />);
 
@@ -136,7 +136,11 @@ describe('MapStickers', () => {
     });
     expect(stickerButton).toHaveAccessibleName(`${sticker.label} 스티커, 선택됨`);
     expect(stickerImage).toHaveAttribute('width', '62');
-    expect(stickerImage).toHaveAttribute('height', '80');
+    expect(stickerImage).toHaveAttribute('height', '62');
+    expect(stickerImage).toHaveAttribute('x', '2');
+    expect(stickerImage).toHaveAttribute('y', '2');
+    expect(stickerImage).toHaveAttribute('preserveAspectRatio', 'xMidYMid meet');
+    expect(stickerButton.querySelector('clipPath rect')).not.toBeInTheDocument();
     expect(stickerImage?.closest('[data-analytics-id="map-place-sticker"]')).toHaveClass(
       'size-16.5'
     );
@@ -165,7 +169,7 @@ describe('MapStickers', () => {
     expect(firstSticker).toHaveAttribute('data-anchor-top', '-50%');
     expect(secondSticker).toHaveAccessibleName(`${TEST_MAP_STICKERS[1]!.label} 스티커, 선택됨`);
     expect(secondSticker.querySelector('svg image')).toHaveAttribute('width', '62');
-    expect(secondSticker.querySelector('svg image')).toHaveAttribute('height', '80');
+    expect(secondSticker.querySelector('svg image')).toHaveAttribute('height', '62');
     expect(secondSticker).toHaveAttribute('data-anchor-top', 'calc(-100% - 8px)');
   });
 
@@ -237,14 +241,19 @@ describe('MapStickers', () => {
         naturalWidth: { value: width },
         naturalHeight: { value: height },
       });
-      fireEvent.load(stickerImage);
-
       const renderedImage = stickerButton.querySelector('svg image');
       expect(renderedImage).toHaveAttribute('width', '40');
       expect(renderedImage).toHaveAttribute('height', '40');
       expect(stickerImage).toHaveAttribute('hidden');
 
       await user.click(stickerButton);
+
+      expect(renderedImage).toHaveAttribute('width', '62');
+      expect(renderedImage).toHaveAttribute('height', '62');
+      expect(renderedImage).toHaveAttribute('preserveAspectRatio', 'xMidYMid meet');
+      expect(stickerButton.querySelector('clipPath rect')).not.toBeInTheDocument();
+
+      fireEvent.load(stickerImage);
 
       expect(stickerButton.querySelectorAll('svg image')).toHaveLength(1);
       expect(renderedImage).toHaveAttribute('href', stickerImage.getAttribute('src'));

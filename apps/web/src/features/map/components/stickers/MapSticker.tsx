@@ -32,7 +32,7 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
   } | null>(null);
   const isLandscape = loadedImage?.source === image && loadedImage.isLandscape;
   const isSquare = loadedImage?.source === image && loadedImage.isSquare;
-  const isProtruding = isSelected && !isSquare;
+  const isProtruding = isSelected && loadedImage?.source === image && !isSquare;
   const isVisitBadgeVisible = visitCount >= VISIT_BADGE_THRESHOLD;
   const additionalRecordCount = visitCount - 1;
   const pinSize = isSelected ? SELECTED_PIN_SIZE : DEFAULT_PIN_SIZE;
