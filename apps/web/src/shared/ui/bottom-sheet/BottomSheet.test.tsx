@@ -194,6 +194,108 @@ describe('BottomSheet', () => {
     expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
   });
 
+  it.each([
+    { distance: 65, endEvent: 'pointerup', expands: true },
+    { distance: 64, endEvent: 'pointerup', expands: false },
+    { distance: 90, endEvent: 'pointercancel', expands: false },
+    { distance: -120, endEvent: 'pointerup', expands: false },
+  ])(
+    '맞춤 시트 핸들 드래그 $distance px를 $endEvent으로 끝냈을 때 확장을 판정한다',
+    ({ distance, endEvent, expands }) => {
+      const onExpand = jest.fn();
+      const onHandleClick = jest.fn();
+      const { container } = render(
+        <BottomSheet
+          snapPoint="medium"
+          fitContent
+          onExpand={onExpand}
+          onHandleClick={onHandleClick}
+        >
+          내용
+        </BottomSheet>
+      );
+      const sheet = container.firstChild as HTMLElement;
+      jest.spyOn(sheet, 'getBoundingClientRect').mockReturnValue({
+        ...sheet.getBoundingClientRect(),
+        height: 200,
+      });
+      const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+      firePointerEvent(handle, 'pointerdown', 500);
+      firePointerEvent(document.body, 'pointermove', 500 - distance);
+      expect(onExpand).not.toHaveBeenCalled();
+      firePointerEvent(document.body, endEvent, 500 - distance);
+
+      expect(onExpand).toHaveBeenCalledTimes(expands ? 1 : 0);
+      if (expands) {
+        fireEvent.click(handle);
+        expect(onHandleClick).not.toHaveBeenCalled();
+      }
+    }
+  );
+
+  it.each([
+    { distance: 65, endEvent: 'touchEnd', expands: true },
+    { distance: 64, endEvent: 'touchEnd', expands: false },
+    { distance: 90, endEvent: 'touchCancel', expands: false },
+  ])(
+    '맞춤 시트 콘텐츠를 $distance px 올린 뒤 $endEvent이면 확장을 판정한다',
+    ({ distance, endEvent, expands }) => {
+      const onExpand = jest.fn();
+      const { container } = render(
+        <BottomSheet snapPoint="medium" fitContent onExpand={onExpand}>
+          내용
+        </BottomSheet>
+      );
+      const content = (container.firstChild as HTMLElement).lastChild as HTMLElement;
+
+      fireEvent.touchStart(content, { touches: [{ clientY: 300 }] });
+      fireEvent.touchMove(content, { touches: [{ clientY: 300 - distance }] });
+      expect(onExpand).not.toHaveBeenCalled();
+      if (endEvent === 'touchEnd') fireEvent.touchEnd(content);
+      else fireEvent.touchCancel(content);
+
+      expect(onExpand).toHaveBeenCalledTimes(expands ? 1 : 0);
+    }
+  );
+
+  it('콘텐츠 스크롤이 끝나기 전에는 휠로 확장하지 않고 끝에서 누적 64px를 넘으면 확장한다', () => {
+    const onExpand = jest.fn();
+    const { container } = render(
+      <BottomSheet snapPoint="medium" fitContent onExpand={onExpand}>
+        내용
+      </BottomSheet>
+    );
+    const content = (container.firstChild as HTMLElement).lastChild as HTMLElement;
+    Object.defineProperties(content, {
+      clientHeight: { value: 200, configurable: true },
+      scrollHeight: { value: 500, configurable: true },
+    });
+
+    fireEvent.wheel(content, { deltaY: 100 });
+    expect(onExpand).not.toHaveBeenCalled();
+    content.scrollTop = 300;
+    fireEvent.wheel(content, { deltaY: 32 });
+    expect(onExpand).not.toHaveBeenCalled();
+    fireEvent.wheel(content, { deltaY: 33 });
+    expect(onExpand).toHaveBeenCalledTimes(1);
+  });
+
+  it('맞춤 시트 핸들에서 위 화살표를 누르면 확장 콜백을 실행한다', () => {
+    const onExpand = jest.fn();
+    render(
+      <BottomSheet snapPoint="medium" fitContent onExpand={onExpand}>
+        내용
+      </BottomSheet>
+    );
+
+    fireEvent.keyDown(screen.getByRole('button', { name: '바텀시트 높이 조절' }), {
+      key: 'ArrowUp',
+    });
+
+    expect(onExpand).toHaveBeenCalledTimes(1);
+  });
+
   it('핸들을 누르면 onHandleClick을 호출한다', () => {
     const onHandleClick = jest.fn();
     render(
