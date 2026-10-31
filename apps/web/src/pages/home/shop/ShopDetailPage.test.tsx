@@ -60,6 +60,45 @@ describe('ShopDetailPage', () => {
     expect(screen.getByText(`기록 가게 ${sticker.googlePlaceId}`)).toBeInTheDocument();
   });
 
+  it.each([true, false])(
+    '지도 시트 진입 여부가 %s일 때만 등장 효과를 실행하고 정리한다',
+    (fromMapSheet) => {
+      const originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'animate');
+      const animation = { cancel: jest.fn() } as unknown as Animation;
+      const animate = jest.fn(() => animation);
+      Object.defineProperty(HTMLElement.prototype, 'animate', {
+        configurable: true,
+        value: animate,
+      });
+      try {
+        const { unmount } = render(
+          <MemoryRouter initialEntries={[{ pathname: '/home/shop/101', state: { fromMapSheet } }]}>
+            <Routes>
+              <Route path="/home/shop/:shopId" element={<ShopDetailPage />} />
+            </Routes>
+          </MemoryRouter>
+        );
+
+        expect(animate).toHaveBeenCalledTimes(fromMapSheet ? 1 : 0);
+        if (fromMapSheet) {
+          expect(animate).toHaveBeenCalledWith(
+            [
+              { opacity: 0, transform: 'translateY(8px)' },
+              { opacity: 1, transform: 'none' },
+            ],
+            expect.objectContaining({ duration: 160 })
+          );
+        }
+        unmount();
+        expect(animation.cancel).toHaveBeenCalledTimes(fromMapSheet ? 1 : 0);
+      } finally {
+        if (originalAnimate)
+          Object.defineProperty(HTMLElement.prototype, 'animate', originalAnimate);
+        else Reflect.deleteProperty(HTMLElement.prototype, 'animate');
+      }
+    }
+  );
+
   it('직접 진입해 마커 캐시가 비어 있어도 다시 조회한 좌표로 지도에 포커스한다', async () => {
     const user = userEvent.setup();
     const sticker = TEST_MAP_STICKERS[0]!;
