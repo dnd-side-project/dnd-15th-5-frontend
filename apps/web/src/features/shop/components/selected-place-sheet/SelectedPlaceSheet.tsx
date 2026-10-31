@@ -101,6 +101,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
       </div>
 
       <StickerCollection
+        size="compact"
         stickers={stickerImages}
         maxItems={5}
         replayStampAnimationOnClick

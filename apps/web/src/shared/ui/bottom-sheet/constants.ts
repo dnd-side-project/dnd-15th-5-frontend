@@ -13,3 +13,6 @@ export const BOTTOM_SHEET_HEIGHT_RATIO: Record<'full' | 'large' | 'medium', numb
  * 닫힘 이후 콜백을 실행하는 훅과 실제 CSS transition이 같은 시점을 사용하도록 공유합니다.
  */
 export const BOTTOM_SHEET_TRANSITION_MS = 300;
+
+/** 위로 올려 확장하거나 콘텐츠를 아래로 당길 때 필요한 최소 이동 거리입니다. */
+export const BOTTOM_SHEET_PULL_THRESHOLD_PX = 64;
