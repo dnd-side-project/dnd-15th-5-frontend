@@ -185,29 +185,47 @@ describe('MapStickers', () => {
     {
       width: 400,
       height: 400,
-      alignment: 'xMidYMax meet',
-      size: [62, 80],
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
     },
     {
       width: 512,
       height: 487,
-      alignment: 'xMinYMid meet',
-      size: [80, 62],
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
     },
     {
       width: 487,
       height: 512,
-      alignment: 'xMidYMax meet',
-      size: [62, 80],
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
     },
     {
       width: 512,
       height: 469,
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
+    },
+    {
+      width: 440,
+      height: 400,
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
+    },
+    {
+      width: 441,
+      height: 400,
       alignment: 'xMinYMid meet',
       size: [80, 62],
     },
+    {
+      width: 400,
+      height: 441,
+      alignment: 'xMidYMax meet',
+      size: [62, 80],
+    },
   ])(
-    '사진 비율 $width × $height에 맞춰 선택한 사진의 돌출 방향을 정한다',
+    '사진 비율 $width × $height에 맞춰 선택한 사진의 정렬과 돌출 여부를 정한다',
     async ({ width, height, alignment, size }) => {
       const user = userEvent.setup();
       render(<MapStickers />);
@@ -235,7 +253,11 @@ describe('MapStickers', () => {
       expect(renderedImage).toHaveAttribute('preserveAspectRatio', alignment);
       expect(stickerButton.querySelector('clipPath circle')).toHaveAttribute('r', '31');
       const protrudingArea = stickerButton.querySelector('clipPath rect');
-      if (width > height) {
+      if (alignment === 'xMidYMid meet') {
+        expect(protrudingArea).not.toBeInTheDocument();
+        expect(renderedImage).toHaveAttribute('x', '2');
+        expect(renderedImage).toHaveAttribute('y', '2');
+      } else if (width > height) {
         expect(protrudingArea).toHaveAttribute('x', '33');
         expect(protrudingArea).toHaveAttribute('y', '2');
         expect(protrudingArea).toHaveAttribute('height', '62');

@@ -13,6 +13,7 @@ const SELECTED_IMAGE_SIZE = 80;
 const DEFAULT_BORDER_WIDTH = 1;
 const SELECTED_BORDER_WIDTH = 2;
 const PIN_TIP_HALF_WIDTH = 4;
+const SQUARE_ASPECT_RATIO_LIMIT = 1.1;
 
 type MapStickerProps = {
   isSelected: boolean;
@@ -27,8 +28,11 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
   const [loadedImage, setLoadedImage] = useState<{
     source: string;
     isLandscape: boolean;
+    isSquare: boolean;
   } | null>(null);
   const isLandscape = loadedImage?.source === image && loadedImage.isLandscape;
+  const isSquare = loadedImage?.source === image && loadedImage.isSquare;
+  const isProtruding = isSelected && !isSquare;
   const isVisitBadgeVisible = visitCount >= VISIT_BADGE_THRESHOLD;
   const additionalRecordCount = visitCount - 1;
   const pinSize = isSelected ? SELECTED_PIN_SIZE : DEFAULT_PIN_SIZE;
@@ -37,11 +41,11 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
   const imageInset = isSelected ? borderWidth : (pinSize - DEFAULT_IMAGE_SIZE) / 2;
   // 원의 안쪽 경계에 맞춰야 사진이 돌출 방향의 반대쪽 테두리를 덮지 않습니다.
   const shortImageSize = pinSize - imageInset * 2;
-  const imageWidth = isSelected && isLandscape ? SELECTED_IMAGE_SIZE : shortImageSize;
-  const imageHeight = isSelected && !isLandscape ? SELECTED_IMAGE_SIZE : shortImageSize;
-  const imageX = isSelected && isLandscape ? imageInset : (pinSize - imageWidth) / 2;
+  const imageWidth = isProtruding && isLandscape ? SELECTED_IMAGE_SIZE : shortImageSize;
+  const imageHeight = isProtruding && !isLandscape ? SELECTED_IMAGE_SIZE : shortImageSize;
+  const imageX = isProtruding && isLandscape ? imageInset : (pinSize - imageWidth) / 2;
   const imageY =
-    isSelected && !isLandscape ? pinSize - imageInset - imageHeight : (pinSize - imageHeight) / 2;
+    isProtruding && !isLandscape ? pinSize - imageInset - imageHeight : (pinSize - imageHeight) / 2;
 
   return (
     <AdvancedMarker
@@ -82,7 +86,7 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
           <defs>
             <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
               <circle cx={center} cy={center} r={center - borderWidth} />
-              {isSelected &&
+              {isProtruding &&
                 (isLandscape ? (
                   <rect
                     x={center}
@@ -119,7 +123,7 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
             width={imageWidth}
             height={imageHeight}
             preserveAspectRatio={
-              isSelected ? (isLandscape ? 'xMinYMid meet' : 'xMidYMax meet') : 'xMidYMid meet'
+              isProtruding ? (isLandscape ? 'xMinYMid meet' : 'xMidYMax meet') : 'xMidYMid meet'
             }
             clipPath={`url(#${clipId})`}
           />
@@ -128,12 +132,17 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
           src={image}
           alt=""
           hidden
-          onLoad={(event) =>
+          onLoad={(event) => {
+            const { naturalWidth, naturalHeight } = event.currentTarget;
+            const shortSide = Math.min(naturalWidth, naturalHeight);
             setLoadedImage({
               source: image,
-              isLandscape: event.currentTarget.naturalWidth > event.currentTarget.naturalHeight,
-            })
-          }
+              isLandscape: naturalWidth > naturalHeight,
+              isSquare:
+                shortSide > 0 &&
+                Math.max(naturalWidth, naturalHeight) / shortSide <= SQUARE_ASPECT_RATIO_LIMIT,
+            });
+          }}
         />
         {isVisitBadgeVisible && (
           <span className="pointer-events-none absolute -right-2 bottom-0 z-20 flex min-w-6 items-center justify-center rounded-full bg-primary-500 px-1.5 py-0.5 text-label-01-medium text-neutral-00">
