@@ -15,7 +15,7 @@ export default function NotificationPage() {
         className="mb-4"
       />
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-page-bottom">
         <NotificationFeed />
       </div>
     </main>

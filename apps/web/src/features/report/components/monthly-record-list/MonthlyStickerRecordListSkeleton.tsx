@@ -6,7 +6,7 @@ const STICKER_SKELETON_COUNT = 5;
 /** 월별 스티커 기록을 불러오는 동안 날짜별 목록 구조를 유지합니다. */
 export default function MonthlyStickerRecordListSkeleton() {
   return (
-    <div aria-live="polite" className="flex flex-col gap-6.75 pb-8" role="status">
+    <div aria-live="polite" className="flex flex-col gap-6.75 pb-page-bottom" role="status">
       <span className="sr-only">기록을 불러오는 중이에요</span>
 
       <div aria-hidden>

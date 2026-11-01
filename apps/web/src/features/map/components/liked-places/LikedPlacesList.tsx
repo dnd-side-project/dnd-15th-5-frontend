@@ -180,7 +180,7 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
       <section
         ref={listRef}
         aria-label="좋아요한 가게 목록"
-        className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto"
+        className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto pb-page-bottom"
       >
         {isPending ||
         isPlaceholderData ||
