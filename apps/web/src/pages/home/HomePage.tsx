@@ -41,6 +41,12 @@ export default function HomePage() {
     },
     [openVisitedPlaceOnMap]
   );
+  const handleSelectedPlaceExpand = useCallback(
+    (placeId: string) => {
+      navigate(ROUTE_PATHS.shopDetail(placeId), { state: { fromMapSheet: true } });
+    },
+    [navigate]
+  );
 
   useCreatedConsumptionResult({
     createdPlace,
@@ -55,6 +61,7 @@ export default function HomePage() {
           <GoogleMapView />
           <HomeMapOverlay hasUnreadNotification={hasUnreadNotification} />
           <HomeBottomSheet
+            onSelectedPlaceExpand={handleSelectedPlaceExpand}
             renderFrequentShops={(headerContent) => (
               <FrequentShopSummary
                 headerContent={headerContent}

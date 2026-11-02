@@ -52,6 +52,18 @@ function RecordLocationProbe() {
   return <p>{shop ? `${shop.id}|${shop.name}|${shop.address}|${category}` : '선택 가게 없음'}</p>;
 }
 
+const mockExpandAnimation = (sheet: HTMLElement) => {
+  const animation = { onfinish: null, oncancel: null, cancel: jest.fn() } as unknown as Animation;
+  const animate = jest.fn(() => animation);
+  Object.defineProperty(sheet, 'animate', { configurable: true, value: animate });
+  jest.spyOn(sheet, 'getBoundingClientRect').mockReturnValue({
+    ...sheet.getBoundingClientRect(),
+    height: 280,
+  });
+
+  return { animation, animate };
+};
+
 describe('HomeBottomSheet', () => {
   beforeEach(() => {
     useHomeBottomSheetStore.setState({
@@ -273,6 +285,149 @@ describe('HomeBottomSheet', () => {
       `/home/shop/${selectedSticker.place.id}`
     );
     expect(screen.queryByRole('button', { name: '자주 소비한 곳' })).not.toBeInTheDocument();
+  });
+
+  it('선택한 가게 시트를 위로 쓸어올려 놓으면 해당 가게의 상세 이동을 요청한다', () => {
+    const onSelectedPlaceExpand = jest.fn();
+    const selectedSticker = TEST_MAP_STICKERS[0]!;
+    useHomeBottomSheetStore.getState().showSelectedPlace(selectedSticker.id);
+    render(
+      <HomeBottomSheet
+        onSelectedPlaceExpand={onSelectedPlaceExpand}
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSelectedPlace={renderSelectedPlace}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+    const content = screen.getByRole('dialog', { name: '선택한 가게 정보' }).parentElement!;
+
+    fireEvent.touchStart(content, { touches: [{ clientY: 300 }] });
+    fireEvent.touchMove(content, { touches: [{ clientY: 200 }] });
+    expect(onSelectedPlaceExpand).not.toHaveBeenCalled();
+    fireEvent.touchEnd(content);
+
+    expect(onSelectedPlaceExpand).toHaveBeenCalledTimes(1);
+    expect(onSelectedPlaceExpand).toHaveBeenCalledWith(selectedSticker.id);
+  });
+
+  it('시트 크기를 유지하며 짧게 위로 사라진 뒤 한 번만 상세로 이동한다', () => {
+    const onSelectedPlaceExpand = jest.fn();
+    const selectedSticker = TEST_MAP_STICKERS[0]!;
+    useHomeBottomSheetStore.getState().showSelectedPlace(selectedSticker.id);
+    render(
+      <HomeBottomSheet
+        onSelectedPlaceExpand={onSelectedPlaceExpand}
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSelectedPlace={renderSelectedPlace}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+    const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement!;
+    const content = screen.getByRole('dialog', { name: '선택한 가게 정보' }).parentElement!;
+    const { animation, animate } = mockExpandAnimation(sheet);
+
+    for (let gesture = 0; gesture < 2; gesture += 1) {
+      fireEvent.touchStart(content, { touches: [{ clientY: 300 }] });
+      fireEvent.touchMove(content, { touches: [{ clientY: 200 }] });
+      fireEvent.touchEnd(content);
+    }
+
+    expect(animate).toHaveBeenCalledTimes(1);
+    expect(animate).toHaveBeenCalledWith(
+      [
+        { height: '280px', transform: 'translateY(0)', opacity: 1 },
+        { height: '280px', transform: 'translateY(-12px)', opacity: 0 },
+      ],
+      expect.objectContaining({ duration: 140, fill: 'forwards' })
+    );
+    expect(onSelectedPlaceExpand).not.toHaveBeenCalled();
+
+    act(() => animation.onfinish?.(new Event('finish') as AnimationPlaybackEvent));
+
+    expect(onSelectedPlaceExpand).toHaveBeenCalledTimes(1);
+    expect(onSelectedPlaceExpand).toHaveBeenCalledWith(selectedSticker.id);
+    fireEvent.keyDown(screen.getByRole('button', { name: '바텀시트 높이 조절' }), {
+      key: 'ArrowUp',
+    });
+    expect(animate).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['다른 가게 선택', '언마운트'])(
+    '전환 도중 %s 시 애니메이션과 이전 가게로의 이동을 취소한다',
+    (reason) => {
+      const onSelectedPlaceExpand = jest.fn();
+      useHomeBottomSheetStore.getState().showSelectedPlace(TEST_MAP_STICKERS[0]!.id);
+      const { unmount } = render(
+        <HomeBottomSheet
+          onSelectedPlaceExpand={onSelectedPlaceExpand}
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      );
+      const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+      const { animation } = mockExpandAnimation(handle.parentElement!);
+      fireEvent.keyDown(handle, { key: 'ArrowUp' });
+      const pendingFinish = animation.onfinish;
+
+      if (reason === '언마운트') unmount();
+      else
+        act(() => useHomeBottomSheetStore.getState().showSelectedPlace(TEST_MAP_STICKERS[1]!.id));
+
+      expect(animation.cancel).toHaveBeenCalledTimes(1);
+      act(() => pendingFinish?.call(animation, new Event('finish') as AnimationPlaybackEvent));
+      expect(onSelectedPlaceExpand).not.toHaveBeenCalled();
+    }
+  );
+
+  it('모션 감소 설정에서는 전환 애니메이션 없이 상세로 이동한다', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = jest.fn().mockReturnValue({
+      matches: true,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    }) as unknown as typeof window.matchMedia;
+    try {
+      const onSelectedPlaceExpand = jest.fn();
+      const selectedSticker = TEST_MAP_STICKERS[0]!;
+      useHomeBottomSheetStore.getState().showSelectedPlace(selectedSticker.id);
+      render(
+        <HomeBottomSheet
+          onSelectedPlaceExpand={onSelectedPlaceExpand}
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      );
+      const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+      const { animate } = mockExpandAnimation(handle.parentElement!);
+
+      fireEvent.keyDown(handle, { key: 'ArrowUp' });
+
+      expect(animate).not.toHaveBeenCalled();
+      expect(onSelectedPlaceExpand).toHaveBeenCalledWith(selectedSticker.id);
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it('홈 시트에서는 위로 쓸어올려도 가게 상세 이동을 요청하지 않는다', () => {
+    const onSelectedPlaceExpand = jest.fn();
+    render(
+      <HomeBottomSheet
+        onSelectedPlaceExpand={onSelectedPlaceExpand}
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSelectedPlace={renderSelectedPlace}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+    const content = screen.getByRole('button', { name: '바텀시트 높이 조절' }).nextElementSibling!;
+
+    fireEvent.touchStart(content, { touches: [{ clientY: 300 }] });
+    fireEvent.touchMove(content, { touches: [{ clientY: 200 }] });
+    fireEvent.touchEnd(content);
+
+    expect(onSelectedPlaceExpand).not.toHaveBeenCalled();
   });
 
   it('스티커 선택을 해제하면 원래 홈 바텀시트를 복원한다', () => {

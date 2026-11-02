@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import {
@@ -9,6 +10,7 @@ import ConsumptionRecordActions from '@/features/record/components/ConsumptionRe
 import ConsumptionSticker from '@/features/record/components/ConsumptionSticker';
 import { ShopDetail } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { BackButton } from '@/shared/ui/back-button';
 import {
   getConsumptionScrollDate,
@@ -16,16 +18,39 @@ import {
 } from '@/shared/utils/consumptionNavigation';
 import { getRecordShopFromLocationState } from '@/shared/utils/recordNavigation';
 
+const DETAIL_ENTER_DURATION_MS = 160;
+const DETAIL_ENTER_OFFSET_PX = 8;
+const DETAIL_ENTER_EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+type ShopDetailPageState = {
+  fromMapSheet?: boolean;
+};
+
 export default function ShopDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const fromMapSheet = (location.state as ShopDetailPageState | null)?.fromMapSheet === true;
   const { shopId } = useParams();
+  const pageRef = useRef<HTMLElement | null>(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
   const placeId = Number(shopId);
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
   const { stickers } = useVisitedPlaceStickersQuery();
   const recordShop =
     getRecordShopFromLocationState(location.state) ??
     toShopSearchResult(stickers.find(({ id }) => id === shopId));
+
+  useLayoutEffect(() => {
+    if (!fromMapSheet || prefersReducedMotion) return;
+    const animation = pageRef.current?.animate?.(
+      [
+        { opacity: 0, transform: `translateY(${DETAIL_ENTER_OFFSET_PX}px)` },
+        { opacity: 1, transform: 'none' },
+      ],
+      { duration: DETAIL_ENTER_DURATION_MS, easing: DETAIL_ENTER_EASING }
+    );
+    return () => animation?.cancel();
+  }, [fromMapSheet, prefersReducedMotion, shopId]);
 
   const focusThisShopOnMap = async () => {
     if (!shopId) return;
@@ -54,7 +79,7 @@ export default function ShopDetailPage() {
   return (
     <ConsumptionRecordActions>
       {(actions) => (
-        <main>
+        <main ref={pageRef}>
           <ShopDetail
             {...actions}
             placeId={placeId}

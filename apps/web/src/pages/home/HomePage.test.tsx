@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import {
   useHomeBottomSheetStore,
@@ -34,13 +34,16 @@ jest.mock('@/features/map', () => ({
   GoogleMapView: () => null,
   HomeMapOverlay: () => null,
   HomeBottomSheet: ({
+    onSelectedPlaceExpand,
     renderFrequentShops,
     renderSpendingHistory,
   }: {
+    onSelectedPlaceExpand?: (placeId: string) => void;
     renderFrequentShops: (headerContent: null) => ReactNode;
     renderSpendingHistory: (headerContent: null) => ReactNode;
   }) => (
     <>
+      <button onClick={() => onSelectedPlaceExpand?.('101')}>선택 가게 상세 펼치기</button>
       {renderFrequentShops(null)}
       {renderSpendingHistory(null)}
     </>
@@ -80,6 +83,11 @@ const mockedTrackUtTaskCompleted = jest.mocked(trackUtTaskCompleted);
 const mockedUseToast = jest.mocked(useToast);
 const mockShowToast = jest.fn().mockReturnValue('toast-1');
 
+function ShopDetailLocationProbe() {
+  const location = useLocation();
+  return <p>{`${location.pathname}|${location.state?.fromMapSheet}`}</p>;
+}
+
 const renderHomePage = (createdPlace?: {
   placeName: string;
   latitude: number;
@@ -94,6 +102,19 @@ const renderHomePage = (createdPlace?: {
   );
 
 describe('<HomePage />', () => {
+  it('지도 시트를 펼치면 상세 진입 애니메이션 상태를 전달하며 가게 상세로 이동한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/home']}>
+        <Routes>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/home/shop/:shopId" element={<ShopDetailLocationProbe />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    await user.click(screen.getByRole('button', { name: '선택 가게 상세 펼치기' }));
+    expect(screen.getByText('/home/shop/101|true')).toBeInTheDocument();
+  });
   it('소비내역에 수정·삭제 액션을 전달한다', async () => {
     const user = userEvent.setup();
     renderHomePage();
