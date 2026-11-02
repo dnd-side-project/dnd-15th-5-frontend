@@ -3,16 +3,23 @@ import { Link } from 'react-router-dom';
 import type { ConsumptionResponse } from '@/features/report/apis/dto';
 import { formatPurchaseDateTimeLabel } from '@/features/report/utils/consumptions';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { CardThumbnail, CardTitle } from '@/shared/ui/card';
+import SwipeActions from '@/shared/ui/swipe-actions/SwipeActions';
+import { isPositiveSafeInteger } from '@/shared/utils/isPositiveSafeInteger';
 
-type SpendingRecordItemProps = {
+type SpendingRecordItemProps = ConsumptionActions & {
   consumption: ConsumptionResponse;
 };
 
 const formatAmount = (amount?: number) => `${(amount ?? 0).toLocaleString('ko-KR')} 원`;
 
 /** 가게명, 결제 정보와 금액을 표시하는 소비내역 목록 항목입니다. */
-export default function SpendingRecordItem({ consumption }: SpendingRecordItemProps) {
+export default function SpendingRecordItem({
+  consumption,
+  onEditRecord,
+  onDeleteRecord,
+}: SpendingRecordItemProps) {
   const content = (
     <>
       <CardThumbnail src={consumption.thumbnailUrl ?? null} />
@@ -31,18 +38,30 @@ export default function SpendingRecordItem({ consumption }: SpendingRecordItemPr
     </>
   );
 
-  if (consumption.placeId === undefined || consumption.placeId === null) {
-    return <li className="flex items-center gap-3">{content}</li>;
-  }
-
+  const row = !isPositiveSafeInteger(consumption.placeId) ? (
+    <div className="flex items-center gap-3">{content}</div>
+  ) : (
+    <Link
+      className="flex items-center gap-3 rounded-08 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2"
+      to={ROUTE_PATHS.shopDetail(String(consumption.placeId))}
+    >
+      {content}
+    </Link>
+  );
+  const id = consumption.id;
   return (
     <li>
-      <Link
-        className="flex items-center gap-3 rounded-08 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2"
-        to={ROUTE_PATHS.shopDetail(String(consumption.placeId))}
-      >
-        {content}
-      </Link>
+      {isPositiveSafeInteger(id) && onEditRecord && onDeleteRecord ? (
+        <SwipeActions
+          label={consumption.placeName?.trim() || '알 수 없는 장소'}
+          onEdit={() => onEditRecord(id, consumption.purchaseDate)}
+          onDelete={() => onDeleteRecord(id)}
+        >
+          {row}
+        </SwipeActions>
+      ) : (
+        row
+      )}
     </li>
   );
 }

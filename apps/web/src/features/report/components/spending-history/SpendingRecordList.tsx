@@ -2,12 +2,13 @@ import type { SpendingRecordGroup } from '@/features/report/types';
 import { formatPurchaseDateLabel } from '@/features/report/utils/consumptions';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { cn } from '@/shared/lib/cn';
+import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 
 import SpendingRecordItem from './SpendingRecordItem';
 
-type SpendingRecordListProps = {
+type SpendingRecordListProps = ConsumptionActions & {
   groups: readonly SpendingRecordGroup[];
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
@@ -19,6 +20,8 @@ type SpendingRecordListProps = {
 
 /** 소비 기록을 날짜별로 묶어 제목과 항목 목록을 표시합니다. */
 export default function SpendingRecordList({
+  onEditRecord,
+  onDeleteRecord,
   groups,
   hasNextPage,
   isFetchingNextPage,
@@ -59,7 +62,12 @@ export default function SpendingRecordList({
               </h2>
               <ul className="space-y-3">
                 {group.consumptions.map((consumption) => (
-                  <SpendingRecordItem key={consumption.id} consumption={consumption} />
+                  <SpendingRecordItem
+                    key={consumption.id}
+                    consumption={consumption}
+                    onEditRecord={onEditRecord}
+                    onDeleteRecord={onDeleteRecord}
+                  />
                 ))}
               </ul>
             </section>

@@ -21,6 +21,10 @@ import HomePage from './HomePage';
 
 import type { ReactNode } from 'react';
 
+jest.mock('@/features/record/components/ConsumptionRecordActions', () => ({
+  __esModule: true,
+  default: ({ children }: { children: (actions: object) => ReactNode }) => children({}),
+}));
 jest.mock('@/features/map', () => ({
   ...jest.requireActual('@/features/map'),
   GoogleMapView: () => null,

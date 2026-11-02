@@ -11,6 +11,7 @@ import {
 } from '@/features/report/utils/consumptions';
 import { parseSpendingMonthFromDate } from '@/features/report/utils/parseSpendingMonthFromDate';
 import { cn } from '@/shared/lib/cn';
+import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { StateView } from '@/shared/ui/state-view';
 import {
@@ -25,7 +26,7 @@ import SpendingRecordList from './SpendingRecordList';
 
 import type { ReactNode } from 'react';
 
-type SpendingHistoryProps = {
+type SpendingHistoryProps = ConsumptionActions & {
   containedScroll?: boolean;
   contentBottomPaddingClassName?: string;
   headerDescription?: string;
@@ -64,6 +65,8 @@ const getSupportedMonthFromDate = (
  * @param props.scrollToDate - 진입 후 스크롤할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
  */
 export default function SpendingHistory({
+  onEditRecord,
+  onDeleteRecord,
   containedScroll = false,
   contentBottomPaddingClassName = 'pb-8',
   headerDescription,
@@ -255,6 +258,8 @@ export default function SpendingHistory({
 
           {!consumptionsQuery.isPending && recordGroups.length > 0 && (
             <SpendingRecordList
+              onEditRecord={onEditRecord}
+              onDeleteRecord={onDeleteRecord}
               groups={recordGroups}
               hasNextPage={!shouldFetchMoreForDate && consumptionsQuery.hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
