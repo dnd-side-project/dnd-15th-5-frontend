@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { getConsumption } from '@/features/record/apis/clients';
+import { getGetConsumptionQueryKey } from '@/features/record/apis/queryKeys';
 
 import ConsumptionSticker from './ConsumptionSticker';
 
@@ -12,9 +13,32 @@ jest.mock('@/shared/assets/images/ios-stickers/img-coffee.png', () => 'coffee-st
 
 const setup = (children: ReactNode) => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={client}>{children}</QueryClientProvider>);
+  return {
+    client,
+    ...render(<QueryClientProvider client={client}>{children}</QueryClientProvider>),
+  };
 };
 beforeEach(() => jest.clearAllMocks());
+
+it('재시도를 소진해도 새 조회가 같은 정적 URL을 반환하면 이미지를 다시 표시한다', async () => {
+  const response = { data: { stickerName: '커피', stickerItemId: 22 } };
+  jest.mocked(getConsumption).mockResolvedValue(response);
+  const { client } = setup(<ConsumptionSticker consumptionId={1} />);
+  fireEvent.error(await screen.findByAltText('기록에 사용한 스티커'));
+  fireEvent.error(await screen.findByAltText('기록에 사용한 스티커'));
+  expect(screen.getByRole('img', { name: '기록 스티커 없음' })).toBeInTheDocument();
+  const key = getGetConsumptionQueryKey(1);
+  act(() =>
+    client.setQueryData(key, response, {
+      updatedAt: client.getQueryState(key)!.dataUpdatedAt + 1,
+    })
+  );
+  const recovered = await screen.findByAltText('기록에 사용한 스티커');
+  expect(recovered).toHaveAttribute('src', 'coffee-sticker.png');
+  fireEvent.load(recovered);
+  expect(screen.queryByRole('img', { name: '기록 스티커 없음' })).not.toBeInTheDocument();
+  expect(getConsumption).toHaveBeenCalledTimes(2);
+});
 
 it('기록 ID별로 사진 스티커와 기본 스티커를 표시하고 매장 썸네일은 사용하지 않는다', async () => {
   jest.mocked(getConsumption).mockImplementation(async (id) => ({

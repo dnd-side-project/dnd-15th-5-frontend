@@ -13,8 +13,13 @@ type ConsumptionStickerProps = {
 function ConsumptionStickerImage({ consumptionId }: ConsumptionStickerProps) {
   const containerRef = useRef<HTMLSpanElement>(null);
   const [isVisible, setIsVisible] = useState(() => typeof IntersectionObserver === 'undefined');
-  const { data: image, isPending, refetch } = useConsumptionStickerQuery(consumptionId, isVisible);
-  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const {
+    data: image,
+    dataUpdatedAt,
+    isPending,
+    refetch,
+  } = useConsumptionStickerQuery(consumptionId, isVisible);
+  const [failedImage, setFailedImage] = useState<{ url: string; updatedAt: number } | null>(null);
   const [isRecovering, setIsRecovering] = useState(false);
   const [imageAttempt, setImageAttempt] = useState(0);
   const retryCount = useRef(0);
@@ -36,14 +41,14 @@ function ConsumptionStickerImage({ consumptionId }: ConsumptionStickerProps) {
   const handleImageError = async () => {
     if (!image || isRecovering) return;
     if (retryCount.current >= MAX_IMAGE_RECOVERY_ATTEMPTS) {
-      setFailedImage(image);
+      setFailedImage({ url: image, updatedAt: dataUpdatedAt });
       return;
     }
     retryCount.current += 1;
     setIsRecovering(true);
     try {
       const refreshed = await refetch();
-      if (refreshed.isError) setFailedImage(image);
+      if (refreshed.isError) setFailedImage({ url: image, updatedAt: refreshed.dataUpdatedAt });
       // NOTE: 같은 URL이 반환돼도 img를 다시 마운트해 일시적인 로딩 실패를 한 번 복구합니다.
       setImageAttempt((attempt) => attempt + 1);
     } finally {
@@ -59,7 +64,7 @@ function ConsumptionStickerImage({ consumptionId }: ConsumptionStickerProps) {
           aria-label="스티커 불러오는 중"
           className="size-10 shrink-0 animate-pulse rounded-08 bg-neutral-100 motion-reduce:animate-none"
         />
-      ) : !image || image === failedImage ? (
+      ) : !image || (image === failedImage?.url && dataUpdatedAt === failedImage.updatedAt) ? (
         <span
           role="img"
           aria-label="기록 스티커 없음"
