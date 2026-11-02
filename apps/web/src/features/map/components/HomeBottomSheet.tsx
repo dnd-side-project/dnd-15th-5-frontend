@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { useSelectedPlaceExpandTransition } from '@/features/map/hooks/useSelectedPlaceExpandTransition';
 import {
   getHomeBottomSheetSnapPoint,
   useHomeBottomSheetStore,
@@ -21,6 +22,7 @@ import type { ReactNode, UIEvent } from 'react';
 type TabValue = 'frequentShops' | 'history';
 
 type HomeBottomSheetProps = {
+  onSelectedPlaceExpand?: (placeId: string) => void;
   renderFrequentShops: (headerContent: ReactNode) => ReactNode;
   renderSelectedPlace: (placeId: string) => ReactNode;
   renderSpendingHistory: (headerContent: ReactNode) => ReactNode;
@@ -127,9 +129,11 @@ function useSheetContentTransitionClassName(transitionKey: string) {
  * @param props - 홈 바텀시트 속성입니다.
  * @param props.renderFrequentShops - 세그먼트 토글과 자주 소비한 곳을 하나의 sticky 헤더로 조립합니다.
  * @param props.renderSelectedPlace - 선택한 장소 ID로 상세 요약을 조립합니다.
+ * @param props.onSelectedPlaceExpand - 선택한 가게 시트를 위로 올렸을 때 상세 화면 이동을 요청합니다.
  * @param props.renderSpendingHistory - 세그먼트 토글과 소비내역을 하나의 sticky 헤더로 조립합니다.
  */
 export default function HomeBottomSheet({
+  onSelectedPlaceExpand,
   renderFrequentShops,
   renderSelectedPlace,
   renderSpendingHistory,
@@ -224,6 +228,13 @@ export default function HomeBottomSheet({
     setSnapPoint('medium');
   };
 
+  const { sheetRef, expandSelectedPlace } = useSelectedPlaceExpandTransition({
+    placeId: activeSheet.type === 'selectedPlace' ? activeSheet.stickerId : undefined,
+    onExpanded: onSelectedPlaceExpand,
+  });
+  const handleSelectedPlaceExpand =
+    activeSheet.type === 'selectedPlace' && onSelectedPlaceExpand ? expandSelectedPlace : undefined;
+
   const contentTransitionClassName = useSheetContentTransitionClassName(
     getSheetTransitionKey(activeSheet)
   );
@@ -290,11 +301,13 @@ export default function HomeBottomSheet({
 
   return (
     <BottomSheet
+      rootRef={sheetRef}
       snapPoint={isHomeSheet ? snapPoint : 'medium'}
       snapPoints={isHomeSheet ? undefined : MODAL_SHEET_SNAP_POINTS}
       onSnapPointChange={isHomeSheet ? setSnapPoint : handleModalSheetSnapPointChange}
       onHandleClick={isHomeSheet ? advance : showHome}
       fitContent={!isHomeSheet}
+      onExpand={handleSelectedPlaceExpand}
       contentClassName={sheetPresentation.contentClassName}
       fullTopBoundaryPx={fullTopBoundaryPx}
       onContentPullDown={

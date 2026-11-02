@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { BOTTOM_SHEET_PULL_THRESHOLD_PX } from './constants';
+
 import type { BottomSheetSnapPoint, BottomSheetSnapPoints } from './types';
 import type {
   KeyboardEvent as ReactKeyboardEvent,
@@ -17,12 +19,14 @@ type DragStart = {
   pointerY: number;
   heightPx: number;
   hasDragged: boolean;
+  draggedUpBy: number;
 };
 
 type UseBottomSheetDragOptions = {
   fitContent: boolean;
   getSnapPointHeightPx: (snapPoint: BottomSheetSnapPoint) => number;
   onHandleClick?: () => void;
+  onExpand?: () => void;
   onSnapPointChange?: (snapPoint: BottomSheetSnapPoint) => void;
   sheetElementRef: RefObject<HTMLDivElement | null>;
   snapPoint: BottomSheetSnapPoint;
@@ -44,11 +48,13 @@ type UseBottomSheetDragOptions = {
  * @param options.getSnapPointHeightPx - 각 스냅 포인트를 현재 뷰포트의 픽셀 높이로 변환합니다.
  * @param options.sheetElementRef - 드래그 중 높이를 직접 반영할 시트 루트 요소입니다.
  * @param options.snapPoints - 드래그 종료·키보드 조작 시 선택할 수 있는 단계입니다.
+ * @param options.onExpand - 콘텐츠 맞춤 시트를 위로 64px 넘게 당기고 놓았을 때 실행합니다.
  */
 export const useBottomSheetDrag = ({
   fitContent,
   getSnapPointHeightPx,
   onHandleClick,
+  onExpand,
   onSnapPointChange,
   sheetElementRef,
   snapPoint,
@@ -101,7 +107,7 @@ export const useBottomSheetDrag = ({
   );
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (fitContent && !canDismissFitContent) {
+    if (fitContent && !canDismissFitContent && !onExpand) {
       return;
     }
 
@@ -115,6 +121,7 @@ export const useBottomSheetDrag = ({
       pointerY: event.clientY,
       heightPx: startHeightPx,
       hasDragged: false,
+      draggedUpBy: 0,
     };
     dragHeightRef.current = startHeightPx;
     setDragStartHeightPx(startHeightPx);
@@ -152,6 +159,11 @@ export const useBottomSheetDrag = ({
         ignoreClickTimeoutRef.current = null;
       }, 0);
 
+      if (fitContent && dragStart.draggedUpBy > BOTTOM_SHEET_PULL_THRESHOLD_PX && onExpand) {
+        onExpand();
+        return;
+      }
+
       const candidates: [BottomSheetSnapPoint, number][] = resolvedSnapPoints.map((point) => [
         point,
         fitContent && point !== 'hidden' ? dragStart.heightPx : getSnapPointHeightPx(point),
@@ -173,12 +185,19 @@ export const useBottomSheetDrag = ({
 
       pointerEvent.preventDefault();
       const draggedUpBy = dragStart.pointerY - pointerEvent.clientY;
+      dragStart.draggedUpBy = draggedUpBy;
       if (Math.abs(draggedUpBy) >= DRAG_THRESHOLD_PX) {
         dragStart.hasDragged = true;
       }
 
-      const fullHeightPx = fitContent ? dragStart.heightPx : getSnapPointHeightPx('full');
-      const nextHeightPx = Math.min(fullHeightPx, Math.max(0, dragStart.heightPx + draggedUpBy));
+      const fullHeightPx = fitContent
+        ? Math.max(dragStart.heightPx, onExpand ? getSnapPointHeightPx('full') : dragStart.heightPx)
+        : getSnapPointHeightPx('full');
+      const minimumHeightPx = fitContent && !canDismissFitContent ? dragStart.heightPx : 0;
+      const nextHeightPx = Math.min(
+        fullHeightPx,
+        Math.max(minimumHeightPx, dragStart.heightPx + draggedUpBy)
+      );
       dragHeightRef.current = nextHeightPx;
       scheduleHeightUpdate(nextHeightPx);
     }
@@ -207,7 +226,15 @@ export const useBottomSheetDrag = ({
   };
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (fitContent || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) {
+    if (fitContent) {
+      if (event.key === 'ArrowUp' && onExpand) {
+        event.preventDefault();
+        onExpand();
+      }
+      return;
+    }
+
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
       return;
     }
 

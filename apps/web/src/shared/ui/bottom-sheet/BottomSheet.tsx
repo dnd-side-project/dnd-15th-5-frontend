@@ -4,7 +4,7 @@ import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion'
 import { cn } from '@/shared/lib/cn';
 
 import { BOTTOM_SHEET_HEIGHT_RATIO, BOTTOM_SHEET_TRANSITION_MS } from './constants';
-import { useBottomSheetContentPullDown } from './useBottomSheetContentPullDown';
+import { useBottomSheetContentPull } from './useBottomSheetContentPull';
 import { useBottomSheetDrag } from './useBottomSheetDrag';
 import { useBottomSheetVisibleHeight } from './useBottomSheetVisibleHeight';
 
@@ -23,6 +23,8 @@ type BottomSheetProps = {
   snapPoints?: BottomSheetSnapPoints;
   onSnapPointChange?: (snapPoint: BottomSheetSnapPoint) => void;
   onHandleClick?: () => void;
+  /** 콘텐츠 맞춤 시트를 위로 64px 넘게 당기거나 핸들에서 ArrowUp을 누르면 호출합니다. */
+  onExpand?: () => void;
   /** 콘텐츠 높이에 맞추고 내부 스크롤을 사용하지 않습니다. `hidden` 지정 시 아래로 드래그해 닫을 수 있습니다. */
   fitContent?: boolean;
   showHandle?: boolean;
@@ -74,10 +76,12 @@ const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
  * @param props.onSnapPointChange - 드래그를 놓아 스냅될 때 호출됩니다. 드래그가 끝난 위치와
  * 가장 가까운 단계로 알려줍니다.
  * @param props.onHandleClick - 핸들을 클릭했을 때 호출됩니다. 클릭으로 단계를 순환시키는 등에 사용합니다.
+ * @param props.onExpand - 콘텐츠 맞춤 시트를 위로 당겼을 때 실행할 동작입니다.
  * @param props.fitContent - `true`이면 콘텐츠 높이에 맞추고 내부 스크롤을 사용하지 않습니다.
  * `snapPoints`에 `hidden`을 명시하면 현재 콘텐츠 높이와 숨김 단계 사이를 드래그할 수 있습니다.
- * 실제 열린 높이는 항상 콘텐츠 크기로 고정되므로 `snapPoint`는 `medium`, `large`, `full` 중
- * 무엇을 넘겨도 결과가 같고, `hidden` 여부만 의미가 있습니다.
+ * 드래그하지 않을 때의 열린 높이는 콘텐츠 크기로 고정되므로 `snapPoint`는 `medium`, `large`,
+ * `full` 중 무엇을 넘겨도 결과가 같고, `hidden` 여부만 의미가 있습니다.
+ * `onExpand`를 지정하면 위로 끌어올리는 동안 높이가 늘어나고 놓을 때 확장 동작을 요청합니다.
  * @param props.children - 바텀시트 안에 표시할 내용입니다.
  * @param props.contentClassName - 콘텐츠 영역에 추가할 스타일입니다.
  * @param props.rootRef - 바텀시트 루트 요소를 참조합니다.
@@ -91,6 +95,7 @@ export function BottomSheet({
   snapPoints,
   onSnapPointChange,
   onHandleClick,
+  onExpand,
   fitContent = false,
   showHandle = true,
   children,
@@ -127,6 +132,7 @@ export function BottomSheet({
     fitContent,
     getSnapPointHeightPx,
     onHandleClick,
+    onExpand,
     onSnapPointChange,
     sheetElementRef,
     snapPoint,
@@ -134,7 +140,8 @@ export function BottomSheet({
   });
   const prefersReducedMotion = usePrefersReducedMotion();
   const isHidden = !isDragging && snapPoint === 'hidden';
-  const isHandleInteractive = !fitContent || canDismissFitContent || Boolean(onHandleClick);
+  const isHandleInteractive =
+    !fitContent || canDismissFitContent || Boolean(onHandleClick) || Boolean(onExpand);
   const handleClassName =
     'flex w-full shrink-0 touch-none select-none items-center justify-center py-3';
   const handleBar = <span className="h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true" />;
@@ -149,8 +156,11 @@ export function BottomSheet({
     },
     [rootRef]
   );
-  const { handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel } =
-    useBottomSheetContentPullDown({ onContentPullDown });
+  const { handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel } =
+    useBottomSheetContentPull({
+      onContentPullDown,
+      onContentPullUp: fitContent ? onExpand : undefined,
+    });
 
   useBottomSheetVisibleHeight({
     elementRef: sheetElementRef,
@@ -197,7 +207,7 @@ export function BottomSheet({
         ))}
       <div
         onScroll={onContentScroll}
-        onTouchCancel={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         onTouchEnd={handleTouchEnd}
         onTouchMove={handleTouchMove}
         onTouchStart={handleTouchStart}
