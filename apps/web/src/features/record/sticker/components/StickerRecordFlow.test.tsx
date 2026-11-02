@@ -79,6 +79,56 @@ afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
+it.each([false, true])(
+  '기존 기본 스티커로 돌아오면 서버 ID를 복원하고 미디어 변경을 해제한다: %s',
+  async (changeFirst) => {
+    const initialValue = createEditConsumptionInitialValue({
+      ...TEST_CONSUMPTION_DETAIL,
+      imageId: null,
+      imageUrl: null,
+      stickerItemId: 5,
+      stickerName: '케이크',
+    })!;
+    const onDirtyChange = jest.fn();
+    const onSubmit = jest.fn();
+    render(
+      <StickerRecordFlow
+        initialValue={initialValue}
+        selectedShop={initialValue.draft.shop}
+        onDirtyChange={onDirtyChange}
+        onSubmit={onSubmit}
+        onClose={mockClose}
+      />
+    );
+    const selectSticker = async (name: string) => {
+      fireEvent.click(screen.getByRole('button', { name: '이미지 변경' }));
+      fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
+      fireEvent.click(await screen.findByRole('button', { name: `${name} 스티커` }));
+      fireEvent.click(screen.getByRole('button', { name: '이 스티커로 기록하기' }));
+      await screen.findByRole('button', { name: '수정완료' });
+    };
+    if (changeFirst) {
+      await selectSticker('커피');
+      expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+    }
+    await selectSticker('케이크');
+    expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+    expect(screen.getByRole('button', { name: '수정완료' })).toBeDisabled();
+    expect(screen.getByAltText('기록에 적용한 스티커')).toHaveAttribute(
+      'src',
+      initialValue.sticker
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+      target: { value: '메모만 수정' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '수정완료' }));
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ source: 'saved', stickerItemId: 5 }),
+      expect.anything()
+    );
+  }
+);
+
 it('수정 중 사진 자르기와 미확정 미리보기도 변경으로 알리고 취소하면 복원한다', async () => {
   const onDirtyChange = jest.fn();
   render(

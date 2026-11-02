@@ -260,6 +260,19 @@ export const useStickerRecordFlow = (initialValue?: StickerRecordInitialValue) =
     if (isProcessing) return;
     const request = startRequest('process');
     try {
+      if (
+        initialValue?.media.source === 'saved' &&
+        initialValue.media.stickerItemId !== undefined &&
+        initialValue.defaultSticker?.id === sticker.id
+      ) {
+        commitResult({
+          ...initialValue.media,
+          original: initialValue.sticker,
+          sticker: initialValue.sticker,
+          defaultSticker: initialValue.defaultSticker,
+        });
+        return;
+      }
       const stickerBlob = await loadDefaultSticker(sticker.image, request.signal);
       if (request.signal.aborted) return;
       commitResult({

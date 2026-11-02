@@ -5,17 +5,27 @@ import { useState } from 'react';
 import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router-dom';
 
 import { useGetConsumption } from '@/features/record/apis/queries';
+import { removeStickerBackground } from '@/features/record/sticker/background-removal/removeStickerBackground';
+import {
+  cropStickerImage,
+  prepareStickerImage,
+  composeSticker,
+} from '@/features/record/sticker/image/stickerImage';
 import { TEST_CONSUMPTION_DETAIL } from '@/features/record/testFixtures';
 
 import EditConsumption from './EditConsumption';
 
 // NOTE: jsdom에 없는 Fetch Request는 실행 중인 Node의 표준 구현을 사용합니다.
 const originalRequest = globalThis.Request;
+const originalCreateObjectURL = URL.createObjectURL;
+const originalRevokeObjectURL = URL.revokeObjectURL;
 beforeAll(() => {
   globalThis.Request = runInThisContext('Request') as typeof Request;
 });
 afterAll(() => {
   globalThis.Request = originalRequest;
+  URL.createObjectURL = originalCreateObjectURL;
+  URL.revokeObjectURL = originalRevokeObjectURL;
 });
 
 const mockSubmit = jest.fn();
@@ -29,6 +39,13 @@ jest.mock('@/features/record/hooks/useScanReceipt', () => ({
 jest.mock('@/features/record/sticker/background-removal/removeStickerBackground', () => ({
   prepareStickerBackground: jest.fn(),
   disposeStickerBackground: jest.fn(),
+  removeStickerBackground: jest.fn(),
+}));
+jest.mock('@/features/record/sticker/image/stickerImage', () => ({
+  ...jest.requireActual('@/features/record/sticker/image/stickerImage'),
+  cropStickerImage: jest.fn(),
+  prepareStickerImage: jest.fn(),
+  composeSticker: jest.fn(),
 }));
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: () => false }));
 
@@ -137,6 +154,35 @@ it('변경 후 닫으면 확인창에서 계속 수정하거나 변경을 버리
   fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
   fireEvent.click(await screen.findByRole('button', { name: '그만하기' }));
   await waitFor(() => expect(screen.getByText('기록 목록')).toBeInTheDocument());
+});
+
+it('사진 생성 후 사용을 확정하기 전에 닫아도 변경 확인을 표시하고 미리보기를 유지한다', async () => {
+  let sequence = 0;
+  URL.createObjectURL = jest.fn(() => `blob:edit-photo-${sequence++}`);
+  URL.revokeObjectURL = jest.fn();
+  const photo = new File(['photo'], 'photo.png', { type: 'image/png' });
+  jest.mocked(cropStickerImage).mockResolvedValue(photo);
+  jest.mocked(prepareStickerImage).mockResolvedValue(new Blob());
+  jest.mocked(composeSticker).mockResolvedValue(new Blob());
+  jest.mocked(removeStickerBackground).mockResolvedValue(new Blob());
+  setup();
+  fireEvent.change(screen.getByLabelText('사진 가져오기'), { target: { files: [photo] } });
+  const cropImage = screen.getByAltText('자를 사진');
+  Object.defineProperties(cropImage, {
+    naturalWidth: { value: 300 },
+    naturalHeight: { value: 400 },
+  });
+  fireEvent.load(cropImage);
+  fireEvent.click(screen.getByRole('button', { name: '자르기 완료' }));
+  const preview = await screen.findByAltText('흰색 테두리가 적용된 스티커');
+  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+  expect(await screen.findByRole('dialog', { name: '수정을 그만할까요?' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '계속 수정하기' }));
+  expect(screen.getByAltText('흰색 테두리가 적용된 스티커')).toBe(preview);
+  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+  fireEvent.click(await screen.findByRole('button', { name: '그만하기' }));
+  expect(await screen.findByText('기록 목록')).toBeInTheDocument();
+  expect(mockSubmit).not.toHaveBeenCalled();
 });
 
 it('가게 검색을 오가도 이미지와 입력값을 유지한다', () => {

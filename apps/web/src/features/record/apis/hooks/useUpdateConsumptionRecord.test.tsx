@@ -1,7 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, QueryObserver } from '@tanstack/react-query';
 import { act, renderHook } from '@testing-library/react';
 
 import { findStickers, upload } from '@/features/record/apis/clients';
+import { getGetConsumptionQueryKey } from '@/features/record/apis/queryKeys';
 import { TEST_CONSUMPTION_DETAIL } from '@/features/record/testFixtures';
 import { createEditConsumptionInitialValue } from '@/features/record/utils/createEditConsumptionInitialValue';
 
@@ -44,10 +45,21 @@ it('기존 사진을 재업로드하지 않고 ID·방문 시각을 유지하며
     '/v1/reports/current',
   ];
   related.forEach((key) => client.setQueryData([key], {}));
+  const detailKey = getGetConsumptionQueryKey(196);
+  client.setQueryData(detailKey, { data: TEST_CONSUMPTION_DETAIL });
+  const refetchDetail = jest.fn().mockResolvedValue({ data: TEST_CONSUMPTION_DETAIL });
+  const detailObserver = new QueryObserver(client, {
+    queryKey: detailKey,
+    queryFn: refetchDetail,
+    staleTime: Infinity,
+  });
+  const unsubscribe = detailObserver.subscribe(() => {});
+  const invalidate = jest.spyOn(client, 'invalidateQueries');
   client.setQueryData(['/v1/reports/monthly'], {});
   await act(async () => {
     await result.current.submit(initial.media, { ...initial.draft, amount: '', memo: '' });
   });
+  unsubscribe();
   expect(upload).not.toHaveBeenCalled();
   expect(findStickers).not.toHaveBeenCalled();
   expect(mockUpdate).toHaveBeenCalledWith({
@@ -57,6 +69,13 @@ it('기존 사진을 재업로드하지 않고 ID·방문 시각을 유지하며
   expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty('amount');
   expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty('memo');
   related.forEach((key) => expect(client.getQueryState([key])?.isInvalidated).toBe(true));
+  expect(client.getQueryState(detailKey)?.isInvalidated).toBe(true);
+  expect(invalidate).toHaveBeenCalledWith({
+    queryKey: detailKey,
+    exact: true,
+    refetchType: 'none',
+  });
+  expect(refetchDetail).not.toHaveBeenCalled();
   expect(client.getQueryState(['/v1/reports/monthly'])?.isInvalidated).toBe(false);
   expect(onSuccess).toHaveBeenCalledTimes(1);
   expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
