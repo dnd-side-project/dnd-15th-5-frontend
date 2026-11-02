@@ -46,7 +46,12 @@ export const useStickerRecordFlow = (initialValue?: StickerRecordInitialValue) =
   const [stage, setStage] = useState<Stage>(initialValue ? 'record' : 'select');
   const [result, setResult] = useState<Result | null>(() =>
     initialValue
-      ? { ...initialValue.media, sticker: initialValue.sticker, original: initialValue.sticker }
+      ? {
+          ...initialValue.media,
+          sticker: initialValue.sticker,
+          original: initialValue.sticker,
+          defaultSticker: initialValue.defaultSticker,
+        }
       : null
   );
   const [recordResult, setRecordResult] = useState<Result | null>(result);

@@ -14,7 +14,7 @@ import { Button } from '@/shared/ui/button';
 import { CategoryChip } from '@/shared/ui/category-chip';
 
 type DefaultStickerPickerProps = {
-  initialSticker?: DefaultSticker;
+  initialSticker?: DefaultSticker | null;
   onClose: () => void;
   onConfirm: (sticker: DefaultSticker) => void;
   isProcessing: boolean;
@@ -31,7 +31,9 @@ export default function DefaultStickerPicker({
   const [category, setCategory] = useState<DefaultStickerCategory>(
     initialSticker?.category ?? '카페'
   );
-  const [selectedId, setSelectedId] = useState<string | null>(initialSticker?.id ?? 'coffee');
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialSticker === null ? null : (initialSticker?.id ?? 'coffee')
+  );
   const stickers = DEFAULT_STICKERS.filter((sticker) => sticker.category === category);
   const selectedSticker = stickers.find((sticker) => sticker.id === selectedId);
 

@@ -3,6 +3,7 @@ import { parseReceiptVisitDateTime, RECORD_CATEGORIES } from '@chapchap/shared/r
 import type { ConsumptionDetailResponse } from '@/features/record/apis/dto';
 import type { StickerRecordInitialValue, StickerRecordMedia } from '@/features/record/types';
 import { isValidStickerRecordShop } from '@/features/record/utils/createStickerConsumptionRequest';
+import { DEFAULT_STICKERS } from '@/shared/assets/images/ios-stickers/catalog';
 import { getStickerImageByName } from '@/shared/assets/images/stickers';
 import { isPositiveSafeInteger } from '@/shared/utils/isPositiveSafeInteger';
 
@@ -46,6 +47,13 @@ export const createEditConsumptionInitialValue = (
     return null;
   return {
     sticker,
+    defaultSticker: hasSticker
+      ? DEFAULT_STICKERS.find(
+          (item) =>
+            item.category === (detail.stickerCategory ?? category) &&
+            item.name === detail.stickerName
+        )
+      : undefined,
     media,
     draft: {
       shop,

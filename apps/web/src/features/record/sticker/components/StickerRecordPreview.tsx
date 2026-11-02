@@ -119,6 +119,10 @@ export default function StickerRecordPreview({
   const isDirty = Boolean(
     initialDraft &&
     (selectedShop?.id !== initialDraft.shop.id ||
+      selectedShop?.name !== initialDraft.shop.name ||
+      selectedShop?.address !== initialDraft.shop.address ||
+      selectedShop?.latitude !== initialDraft.shop.latitude ||
+      selectedShop?.longitude !== initialDraft.shop.longitude ||
       amount !== initialDraft.amount ||
       memo !== initialDraft.memo ||
       category !== initialDraft.category ||

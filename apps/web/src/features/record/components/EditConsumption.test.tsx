@@ -1,6 +1,7 @@
 import { runInThisContext } from 'node:vm';
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { useState } from 'react';
 import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router-dom';
 
 import { useGetConsumption } from '@/features/record/apis/queries';
@@ -100,6 +101,30 @@ it('기존 입력값을 복원하고 값이 바뀐 경우에만 저장할 수 �
     target: { value: '기존 메모' },
   });
   expect(submit).toBeDisabled();
+});
+
+it('백그라운드 재조회가 실패해도 작성 중인 입력과 변경 확인을 유지한다', async () => {
+  let failRefetch = () => {};
+  jest.mocked(useGetConsumption).mockImplementation(() => {
+    const [isError, setIsError] = useState(false);
+    failRefetch = () => setIsError(true);
+    return {
+      data: { data: TEST_CONSUMPTION_DETAIL },
+      isPending: false,
+      isError,
+      isFetchedAfterMount: true,
+      isFetching: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useGetConsumption>;
+  });
+  setup();
+  const memo = screen.getByRole('textbox', { name: '메모' });
+  fireEvent.change(memo, { target: { value: '유실되면 안 되는 메모' } });
+  act(() => failRefetch());
+  expect(screen.getByRole('textbox', { name: '메모' })).toBe(memo);
+  expect(memo).toHaveValue('유실되면 안 되는 메모');
+  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+  expect(await screen.findByRole('dialog', { name: '수정을 그만할까요?' })).toBeInTheDocument();
 });
 
 it('변경 후 닫으면 확인창에서 계속 수정하거나 변경을 버리고 나간다', async () => {

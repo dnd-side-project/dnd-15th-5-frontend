@@ -1,3 +1,5 @@
+import type { DefaultSticker } from '@/shared/assets/images/ios-stickers/catalog';
+
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 
@@ -14,6 +16,7 @@ export type StickerRecordMedia =
 /** 수정 화면에서 기존 서버 이미지와 입력값을 복원하는 초기값입니다. */
 export type StickerRecordInitialValue = {
   sticker: string;
+  defaultSticker?: DefaultSticker;
   media: StickerRecordMedia;
   draft: StickerRecordDraft;
 };

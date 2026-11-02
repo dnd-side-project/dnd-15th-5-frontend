@@ -87,7 +87,8 @@ export default function StickerRecordFlow({
     selectDefaultSticker,
   } = useStickerRecordFlow(initialValue);
   const hasMediaChanges = Boolean(initialValue && recordResult?.source !== 'saved');
-  const hasChanges = isFormDirty || hasMediaChanges;
+  const hasPendingPhoto = Boolean(initialValue && (stage === 'crop' || stage === 'preview'));
+  const hasChanges = isFormDirty || hasMediaChanges || hasPendingPhoto;
   const defaultStickerCategory =
     recordResult && isDefaultStickerMedia(recordResult) ? recordResult.category : undefined;
   useEffect(() => {
@@ -121,7 +122,11 @@ export default function StickerRecordFlow({
       />
       {stage === 'default' && (
         <DefaultStickerPicker
-          initialSticker={recordResult?.defaultSticker}
+          initialSticker={
+            recordResult && isDefaultStickerMedia(recordResult)
+              ? (recordResult.defaultSticker ?? null)
+              : undefined
+          }
           onClose={cancelImageSelection}
           onConfirm={(sticker) => void selectDefaultSticker(sticker)}
           isProcessing={isProcessing}

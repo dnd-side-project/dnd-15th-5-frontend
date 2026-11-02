@@ -111,7 +111,7 @@ export default function EditConsumption(props: EditConsumptionProps) {
       </div>
     );
   const initialValue = query.data?.data ? createEditConsumptionInitialValue(query.data.data) : null;
-  if (!isValidId || query.isError || !initialValue)
+  if (!isValidId || !initialValue)
     return (
       <main className="px-4">
         <RecordNavigationHeader title="기록 수정" onBack={props.onClose} onClose={props.onClose} />

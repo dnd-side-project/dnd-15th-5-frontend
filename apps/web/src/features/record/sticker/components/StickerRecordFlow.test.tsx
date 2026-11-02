@@ -11,6 +11,8 @@ import {
   FULL_STICKER_CROP,
   prepareStickerImage,
 } from '@/features/record/sticker/image/stickerImage';
+import { TEST_CONSUMPTION_DETAIL } from '@/features/record/testFixtures';
+import { createEditConsumptionInitialValue } from '@/features/record/utils/createEditConsumptionInitialValue';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
 import StickerRecordFlow from './StickerRecordFlow';
@@ -76,6 +78,64 @@ beforeEach(() => {
 afterEach(() => {
   globalThis.fetch = originalFetch;
 });
+
+it('수정 중 사진 자르기와 미확정 미리보기도 변경으로 알리고 취소하면 복원한다', async () => {
+  const onDirtyChange = jest.fn();
+  render(
+    <StickerRecordFlow
+      initialValue={createEditConsumptionInitialValue(TEST_CONSUMPTION_DETAIL)!}
+      selectedShop={createEditConsumptionInitialValue(TEST_CONSUMPTION_DETAIL)!.draft.shop}
+      onDirtyChange={onDirtyChange}
+      onClose={mockClose}
+    />
+  );
+  expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  selectPhoto();
+  expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+  fireEvent.click(screen.getByRole('button', { name: '사진 다시 선택' }));
+  expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  upload();
+  await screen.findByAltText('흰색 테두리가 적용된 스티커');
+  expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+  expect(mockClose).toHaveBeenCalled();
+  expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+});
+
+it.each(['케이크', '도넛'])(
+  '저장된 기본 스티커 선택을 복원하고 알 수 없는 항목은 자동 선택하지 않는다: %s',
+  async (stickerName) => {
+    const initialValue = createEditConsumptionInitialValue({
+      ...TEST_CONSUMPTION_DETAIL,
+      imageId: null,
+      imageUrl: null,
+      stickerItemId: 5,
+      stickerName,
+    })!;
+    render(
+      <StickerRecordFlow
+        initialValue={initialValue}
+        selectedShop={initialValue.draft.shop}
+        onClose={mockClose}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: '이미지 변경' }));
+    fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
+    expect(await screen.findByRole('button', { name: '커피 스티커' })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+    if (stickerName === '케이크') {
+      expect(screen.getByRole('button', { name: '케이크 스티커' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(screen.getByRole('button', { name: '이 스티커로 기록하기' })).toBeEnabled();
+    } else {
+      expect(screen.getByRole('button', { name: '이 스티커로 기록하기' })).toBeDisabled();
+    }
+  }
+);
 
 it('사진 선택부터 기록 미리보기와 PNG 다운로드까지 이어진다', async () => {
   const { unmount } = render(<StickerRecordFlow onClose={mockClose} />);
