@@ -30,16 +30,17 @@ export default function ConsumptionRecordActions({ children }: ConsumptionRecord
     const returnState = {
       ...(location.state && typeof location.state === 'object' ? location.state : {}),
       scrollToConsumptionId: id,
+      returnEntryKey: location.key,
       ...(purchaseDate ? { scrollToDate: purchaseDate } : {}),
     };
     // NOTE: 돌아왔을 때 수정하던 기록의 월·날짜를 다시 보여주도록 현재 히스토리에 보존합니다.
-    if (purchaseDate) {
-      await navigate(returnTo, {
-        replace: true,
-        state: returnState,
-      });
-    }
-    navigate(ROUTE_PATHS.editRecord(String(id)), { state: { returnTo, returnState } });
+    await navigate(returnTo, {
+      replace: true,
+      state: returnState,
+    });
+    navigate(ROUTE_PATHS.editRecord(String(id)), {
+      state: { returnTo, returnState, returnEntryKey: location.key },
+    });
   };
 
   const handleRequestDelete = (id: number) => {

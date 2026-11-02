@@ -5,6 +5,7 @@ import AnalyticsIdentity from '@/app/providers/AnalyticsIdentity';
 import AnalyticsTracker from '@/app/providers/AnalyticsTracker';
 import ScrollToTop from '@/app/routes/ScrollToTop';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
+import RouteHistoryProvider from '@/shared/layout/RouteHistoryProvider';
 import { notifyNative } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 
@@ -38,7 +39,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   }, [pathname]);
 
   return (
-    <>
+    <RouteHistoryProvider>
       <AnalyticsIdentity />
       <AnalyticsTracker />
       <ScrollToTop />
@@ -53,6 +54,6 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
           {children ?? <Outlet />}
         </div>
       </div>
-    </>
+    </RouteHistoryProvider>
   );
 }

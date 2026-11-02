@@ -17,7 +17,7 @@ function LocationProbe() {
     <>
       <p>{location.pathname}</p>
       <p>{location.state?.scrollToDate}</p>
-      <p>{JSON.stringify(location.state?.returnState)}</p>
+      <p data-testid="return-state">{JSON.stringify(location.state?.returnState)}</p>
       <button onClick={() => navigate(-1)}>돌아가기</button>
     </>
   );
@@ -50,14 +50,11 @@ it('수정 화면에 진입하고 돌아오면 선택한 기록 날짜를 복원
   setup();
   fireEvent.click(screen.getByRole('button', { name: '수정' }));
   expect(await screen.findByText('/record/196/edit')).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      JSON.stringify({
-        scrollToConsumptionId: 196,
-        scrollToDate: '2020-06-01',
-      })
-    )
-  ).toBeInTheDocument();
+  expect(JSON.parse(screen.getByTestId('return-state').textContent!)).toMatchObject({
+    scrollToConsumptionId: 196,
+    scrollToDate: '2020-06-01',
+    returnEntryKey: expect.any(String),
+  });
   fireEvent.click(screen.getByRole('button', { name: '돌아가기' }));
   expect(await screen.findByText('2020-06-01')).toBeInTheDocument();
 });

@@ -1,3 +1,5 @@
+import { isPositiveSafeInteger } from './isPositiveSafeInteger';
+
 /** 수정 화면에서 돌아갈 수 있는 앱 내부 경로를 라우트 상태에서 읽습니다. */
 export const getConsumptionReturnPath = (state: unknown) => {
   if (!state || typeof state !== 'object' || !('returnTo' in state)) return undefined;
@@ -12,8 +14,6 @@ export const getConsumptionScrollDate = (state: unknown) => {
   if (!state || typeof state !== 'object' || !('scrollToDate' in state)) return undefined;
   return typeof state.scrollToDate === 'string' ? state.scrollToDate : undefined;
 };
-import { isPositiveSafeInteger } from './isPositiveSafeInteger';
-
 /** 같은 날짜에 여러 기록이 있어도 수정한 방문을 정확히 찾습니다. */
 export const getConsumptionScrollId = (state: unknown) => {
   if (!state || typeof state !== 'object' || !('scrollToConsumptionId' in state)) return undefined;
@@ -26,4 +26,10 @@ export const getConsumptionScrollId = (state: unknown) => {
 export const getConsumptionReturnState = (state: unknown) => {
   if (!state || typeof state !== 'object' || !('returnState' in state)) return undefined;
   return state.returnState && typeof state.returnState === 'object' ? state.returnState : undefined;
+};
+
+/** 편집 진입 직전 목록 항목에 저장한 식별자를 읽습니다. */
+export const getConsumptionReturnEntryKey = (state: unknown) => {
+  if (!state || typeof state !== 'object' || !('returnEntryKey' in state)) return undefined;
+  return typeof state.returnEntryKey === 'string' ? state.returnEntryKey : undefined;
 };
