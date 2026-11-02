@@ -264,6 +264,9 @@ describe('ShopDetail', () => {
     const shopInformation = screen.getByRole('heading', { level: 1, name: '투썸플레이스' })
       .parentElement!.parentElement!;
     const panel = shopInformation.parentElement!;
+    const cornerClass = 'rounded-t-[calc(var(--radius-30)*var(--shop-header-rounding,1))]';
+    expect(panel).toHaveClass(cornerClass);
+    expect(shopInformation).toHaveClass(cornerClass);
     jest
       .spyOn(scrollRegion, 'getBoundingClientRect')
       .mockReturnValue({ ...scrollRegion.getBoundingClientRect(), top: 58 });

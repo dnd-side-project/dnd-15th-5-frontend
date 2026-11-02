@@ -10,6 +10,7 @@ import {
   getShopStickerSlotStyle,
   getShopStickerStampDuration,
   mixShopStickerImages,
+  SHOP_STICKER_HERO_WIDTH,
 } from './shopStickerHeroLayout';
 
 import './shopStickerHero.css';
@@ -38,10 +39,6 @@ export default function ShopStickerHero({
   stickerImages,
 }: ShopStickerHeroProps) {
   const mixedStickerImages = mixShopStickerImages(stickerImages);
-  const placements = useMemo(
-    () => createShopStickerPlacements(placeId, mixedStickerImages.length),
-    [placeId, mixedStickerImages.length]
-  );
   const stampDelays = useMemo(
     () => createShopStickerStampDelays(mixedStickerImages.length, newestStickerIndex),
     [newestStickerIndex, mixedStickerImages.length]
@@ -65,7 +62,7 @@ export default function ShopStickerHero({
           key={stickerSetKey}
           newestStickerIndex={newestStickerIndex}
           onAnimationStart={handleAnimationStart}
-          placements={placements}
+          placeId={placeId}
           skipAnimation={hasPlayedInCurrentMount}
           stampDelays={stampDelays}
           stickerImages={mixedStickerImages}
@@ -78,7 +75,7 @@ export default function ShopStickerHero({
 type ShopStickerCanvasProps = {
   newestStickerIndex?: number;
   onAnimationStart: () => void;
-  placements: ReturnType<typeof createShopStickerPlacements>;
+  placeId: number;
   skipAnimation: boolean;
   stampDelays: readonly number[];
   stickerImages: readonly string[];
@@ -88,18 +85,38 @@ type ShopStickerCanvasProps = {
 function ShopStickerCanvas({
   newestStickerIndex,
   onAnimationStart,
-  placements,
+  placeId,
   skipAnimation,
   stampDelays,
   stickerImages,
 }: ShopStickerCanvasProps) {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [heroWidth, setHeroWidth] = useState(SHOP_STICKER_HERO_WIDTH);
+  const [aspectRatios, setAspectRatios] = useState(() => stickerImages.map(() => 1));
+  const placements = useMemo(
+    () => createShopStickerPlacements(placeId, stickerImages.length, aspectRatios, heroWidth),
+    [placeId, stickerImages.length, aspectRatios, heroWidth]
+  );
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const measureWidth = () => {
+      const width = canvas.getBoundingClientRect().width;
+      if (width > 0) setHeroWidth(width);
+    };
+    measureWidth();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measureWidth);
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, []);
   // NOTE: 이 캔버스가 마운트된 뒤 부모에서 현재 진입의 재생 완료 상태가 바뀌더라도 애니메이션은
   // 끝까지 유지한다. 이미지 집합이 바뀌어 key로 새 캔버스가 생길 때만 최신 상태를 반영한다.
   const [shouldAnimate] = useState(() => !skipAnimation && stickerImages.length > 0);
   const [isReady, setIsReady] = useState(() => !shouldAnimate);
   const [replaySequences, setReplaySequences] = useState(() => stickerImages.map(() => 0));
   const hasStartedRef = useRef(isReady);
-  const loadedCountRef = useRef(0);
+  const loadedIndicesRef = useRef(new Set<number>());
   const nextReplaySequenceRef = useRef(0);
   const startAnimation = useCallback(() => {
     if (hasStartedRef.current) return;
@@ -119,9 +136,16 @@ function ShopStickerCanvas({
     return () => window.clearTimeout(timeoutId);
   }, [shouldAnimate, startAnimation, stickerImages.length]);
 
-  const handleStickerLoad = () => {
-    loadedCountRef.current += 1;
-    if (loadedCountRef.current < stickerImages.length) return;
+  const handleStickerLoad = (index: number, aspectRatio: number) => {
+    if (Number.isFinite(aspectRatio) && aspectRatio > 0) {
+      setAspectRatios((current) =>
+        current[index] === aspectRatio
+          ? current
+          : current.map((ratio, currentIndex) => (currentIndex === index ? aspectRatio : ratio))
+      );
+    }
+    loadedIndicesRef.current.add(index);
+    if (loadedIndicesRef.current.size < stickerImages.length) return;
     startAnimation();
   };
   const createReplaySequence = () => {
@@ -140,7 +164,7 @@ function ShopStickerCanvas({
   };
 
   return (
-    <div role="group" aria-label="획득한 스티커" className="absolute inset-0">
+    <div ref={canvasRef} role="group" aria-label="획득한 스티커" className="absolute inset-0">
       <button
         type="button"
         aria-label="모든 스티커 다시 붙이기"
@@ -161,11 +185,12 @@ function ShopStickerCanvas({
             delayMs={replaySequence > 0 ? 0 : (stampDelays[index] ?? 0)}
             isNewest={index === newestStickerIndex}
             isReady={isReady}
-            onLoad={handleStickerLoad}
+            onLoad={(aspectRatio) => handleStickerLoad(index, aspectRatio)}
             onReplay={() => replaySticker(index)}
             playbackSequence={replaySequence}
             shouldAnimate={shouldAnimate || replaySequence > 0}
             placement={placement}
+            heroWidth={heroWidth}
             src={stickerImage}
           />
         );
@@ -179,11 +204,12 @@ type ShopStickerStampProps = {
   delayMs: number;
   isNewest: boolean;
   isReady: boolean;
-  onLoad: () => void;
+  onLoad: (aspectRatio: number) => void;
   onReplay: () => void;
   playbackSequence: number;
   shouldAnimate: boolean;
   placement: ReturnType<typeof createShopStickerPlacements>[number];
+  heroWidth: number;
   src: string;
 };
 
@@ -203,10 +229,10 @@ function ShopStickerStamp({
   playbackSequence,
   shouldAnimate,
   placement,
+  heroWidth,
   src,
 }: ShopStickerStampProps) {
   const [completedPlaybackSequence, setCompletedPlaybackSequence] = useState<number | null>(null);
-  const [aspectRatio, setAspectRatio] = useState(1);
   const isPlaying = shouldAnimate && isReady && completedPlaybackSequence !== playbackSequence;
 
   return (
@@ -215,7 +241,7 @@ function ShopStickerStamp({
       aria-label={ariaLabel}
       className="absolute cursor-pointer rounded-full border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
       onClick={onReplay}
-      style={getShopStickerSlotStyle(placement, aspectRatio)}
+      style={getShopStickerSlotStyle(placement, heroWidth)}
     >
       <img
         key={playbackSequence}
@@ -228,8 +254,7 @@ function ShopStickerStamp({
         onAnimationEnd={() => setCompletedPlaybackSequence(playbackSequence)}
         onLoad={(event) => {
           const { naturalWidth, naturalHeight } = event.currentTarget;
-          if (naturalWidth > 0 && naturalHeight > 0) setAspectRatio(naturalWidth / naturalHeight);
-          onLoad();
+          onLoad(naturalWidth / naturalHeight);
         }}
         src={src}
         style={{
