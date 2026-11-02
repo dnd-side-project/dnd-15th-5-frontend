@@ -2,13 +2,14 @@ import CameraIcon from '@chapchap/shared/assets/icons/ic-sticker-camera.svg?reac
 import {
   createInitialVisitDateTime,
   formatAmount,
+  formatPurchaseDateTime,
   formatVisitDateTime,
   MAX_RECORD_AMOUNT,
   parseReceiptVisitDateTime,
   RECORD_CATEGORIES,
   sanitizeAmount,
 } from '@chapchap/shared/record';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import RecordNavigationHeader from '@/features/record/components/RecordNavigationHeader';
 import VisitDateTimeSheet from '@/features/record/components/visit-date-time-sheet/VisitDateTimeSheet';
@@ -19,6 +20,7 @@ import ReceiptScanIcon from '@/shared/assets/icons/ic-receipt-scan.svg?react';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
+import { PlaceCard } from '@/shared/ui/card';
 import { CategoryChip } from '@/shared/ui/category-chip';
 
 import type { ReceiptScanData } from '@chapchap/shared/bridge';
@@ -27,6 +29,10 @@ import type { ShopSearchResult } from '@chapchap/shared/shop';
 import type { FormEvent, ReactNode } from 'react';
 
 type StickerRecordPreviewProps = {
+  initialDraft?: StickerRecordDraft;
+  isEditing?: boolean;
+  hasMediaChanges?: boolean;
+  onDirtyChange?: (dirty: boolean) => void;
   sticker: string;
   isDefaultSticker: boolean;
   defaultStickerCategory?: RecordCategory;
@@ -55,7 +61,7 @@ function RecordField({ label, required = false, children }: RecordFieldProps) {
     <fieldset className="min-w-0">
       <legend className="mb-2 text-body-02-semibold text-neutral-700">
         {required && (
-          <span aria-hidden="true" className="mr-1 text-notification">
+          <span aria-hidden="true" className="mr-1 text-red">
             *
           </span>
         )}
@@ -68,6 +74,10 @@ function RecordField({ label, required = false, children }: RecordFieldProps) {
 
 /** 스티커와 소비 정보를 확인하고 최종 기록 등록을 요청하는 폼입니다. */
 export default function StickerRecordPreview({
+  initialDraft,
+  isEditing = false,
+  hasMediaChanges = false,
+  onDirtyChange,
   sticker,
   isDefaultSticker,
   defaultStickerCategory,
@@ -89,17 +99,37 @@ export default function StickerRecordPreview({
   isCapturing = false,
 }: StickerRecordPreviewProps) {
   const isApp = isNativeApp();
-  const [photoCategory, setPhotoCategory] = useState<RecordCategory>(initialCategory);
+  const [photoCategory, setPhotoCategory] = useState<RecordCategory>(
+    initialDraft?.category ?? initialCategory
+  );
   const category = defaultStickerCategory ?? photoCategory;
   const [visitDateTime, setVisitDateTime] = useState(
-    () => initialVisitDateTime ?? createInitialVisitDateTime()
+    () => initialDraft?.visitDateTime ?? initialVisitDateTime ?? createInitialVisitDateTime()
   );
   const [isDateSheetOpen, setIsDateSheetOpen] = useState(false);
-  const [amount, setAmount] = useState('');
-  const [memo, setMemo] = useState('');
+  const [amount, setAmount] = useState(initialDraft?.amount ?? '');
+  const [memo, setMemo] = useState(initialDraft?.memo ?? '');
   const [receiptImageId, setReceiptImageId] = useState<number>();
-  const [purchaseTime, setPurchaseTime] = useState<string>();
+  const [purchaseTime, setPurchaseTime] = useState<string | undefined>(initialDraft?.purchaseTime);
   const isAmountTooLarge = Number(amount) > MAX_RECORD_AMOUNT;
+  const initialDateTime = initialDraft
+    ? formatPurchaseDateTime(initialDraft.visitDateTime)
+    : undefined;
+  const currentDateTime = formatPurchaseDateTime(visitDateTime);
+  const isDirty = Boolean(
+    initialDraft &&
+    (selectedShop?.id !== initialDraft.shop.id ||
+      amount !== initialDraft.amount ||
+      memo !== initialDraft.memo ||
+      category !== initialDraft.category ||
+      currentDateTime.purchaseDate !== initialDateTime?.purchaseDate ||
+      (purchaseTime ?? currentDateTime.purchaseTime) !==
+        (initialDraft.purchaseTime ?? initialDateTime?.purchaseTime) ||
+      receiptImageId !== undefined)
+  );
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const canSubmit = Boolean(
     onSubmit &&
@@ -108,7 +138,8 @@ export default function StickerRecordPreview({
     memo.length <= 1000 &&
     !isSubmitting &&
     !isOpeningReceipt &&
-    !isCapturing
+    !isCapturing &&
+    (!isEditing || isDirty || hasMediaChanges)
   );
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -151,7 +182,11 @@ export default function StickerRecordPreview({
     <section className="flex min-h-dvh flex-1 flex-col bg-primary-50 text-neutral-700">
       <fieldset disabled={isSubmitting} className="contents">
         <header className="shrink-0 px-4 pt-8">
-          <RecordNavigationHeader title="기록하기" onBack={onBack} onClose={onClose} />
+          <RecordNavigationHeader
+            title={isEditing ? '기록 수정' : '기록하기'}
+            onBack={onBack}
+            onClose={onClose}
+          />
         </header>
 
         <div className="flex flex-col items-center gap-4 pt-8 pb-10">
@@ -185,7 +220,7 @@ export default function StickerRecordPreview({
             </p>
           )}
           {imageError && (
-            <p role="alert" className="px-4 text-body-02-regular text-notification">
+            <p role="alert" className="px-4 text-body-02-regular text-red">
               {imageError}
             </p>
           )}
@@ -214,7 +249,7 @@ export default function StickerRecordPreview({
             </button>
           )}
           {isApp && receiptError && (
-            <p role="alert" className="mt-2 text-body-02-regular text-notification">
+            <p role="alert" className="mt-2 text-body-02-regular text-red">
               {receiptError}
             </p>
           )}
@@ -227,17 +262,36 @@ export default function StickerRecordPreview({
           >
             <div className="flex flex-col gap-8">
               <RecordField label="가게 정보" required>
-                <button
-                  type="button"
-                  aria-label="가게 정보 검색"
-                  onClick={onSearchShop}
-                  className="flex h-14 w-full items-center justify-between gap-3 rounded-08 border border-neutral-300 px-4 text-left text-body-01-regular"
-                >
-                  <span className={cn('truncate', !selectedShop && 'text-neutral-400')}>
-                    {selectedShop?.name ?? '가게명 검색하기'}
-                  </span>
-                  <SearchIcon aria-hidden="true" className="size-6 shrink-0 text-neutral-600" />
-                </button>
+                {selectedShop ? (
+                  <div className="flex w-full items-center rounded-16 border border-neutral-300 p-2">
+                    <div className="min-w-0 flex-1 overflow-hidden" data-mp-mask="">
+                      <PlaceCard
+                        thumbnailSrc={selectedShop.photoUrl}
+                        title={selectedShop.name}
+                        location={selectedShop.address}
+                        showLocationIcon={false}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="가게 정보 검색"
+                      onClick={onSearchShop}
+                      className="ml-4 min-h-10 shrink-0 rounded-05 p-2 text-body-02-regular text-primary-500 outline-none hover:bg-primary-50 focus-visible:ring-2 focus-visible:ring-primary-300"
+                    >
+                      변경
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label="가게 정보 검색"
+                    onClick={onSearchShop}
+                    className="flex h-14 w-full items-center justify-between gap-3 rounded-08 border border-neutral-300 px-4 text-left text-body-01-regular"
+                  >
+                    <span className="truncate text-neutral-400">가게명 검색하기</span>
+                    <SearchIcon aria-hidden="true" className="size-6 shrink-0 text-neutral-600" />
+                  </button>
+                )}
               </RecordField>
 
               <RecordField label="방문 일시" required>
@@ -279,7 +333,7 @@ export default function StickerRecordPreview({
                 <label
                   className={cn(
                     'flex h-13 items-center rounded-08 border px-4 focus-within:ring-2 focus-within:ring-primary-300',
-                    isAmountTooLarge ? 'border-notification' : 'border-neutral-300'
+                    isAmountTooLarge ? 'border-red' : 'border-neutral-300'
                   )}
                 >
                   <input
@@ -299,7 +353,7 @@ export default function StickerRecordPreview({
                   <p
                     id="sticker-amount-error"
                     role="alert"
-                    className="mt-2 text-body-02-regular text-notification"
+                    className="mt-2 text-body-02-regular text-red"
                   >
                     {formatAmount(String(MAX_RECORD_AMOUNT))}원 이하로 입력해주세요.
                   </p>
@@ -319,7 +373,7 @@ export default function StickerRecordPreview({
             </div>
             <div className="mt-18 px-0.5">
               {submitError && (
-                <p role="alert" className="mb-4 text-body-02-regular text-notification">
+                <p role="alert" className="mb-4 text-body-02-regular text-red">
                   {submitError}
                 </p>
               )}
@@ -329,7 +383,7 @@ export default function StickerRecordPreview({
                 disabled={!canSubmit}
                 className="data-disabled:bg-neutral-400"
               >
-                기록하기
+                {isEditing ? '수정완료' : '기록하기'}
               </Button>
             </div>
           </form>

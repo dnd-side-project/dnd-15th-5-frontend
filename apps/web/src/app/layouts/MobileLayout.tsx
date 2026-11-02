@@ -21,11 +21,13 @@ type MobileLayoutProps = PropsWithChildren;
  */
 export default function MobileLayout({ children }: MobileLayoutProps) {
   const { pathname } = useLocation();
+  const isEditRecord = Boolean(matchPath(ROUTE_PATTERNS.editRecord, pathname));
   const isShopDetail = Boolean(matchPath(ROUTE_PATTERNS.shopDetail, pathname));
   const isSharedReport = Boolean(matchPath(ROUTE_PATTERNS.sharedReport, pathname));
   const usesOwnBottomSafeArea =
     pathname === ROUTE_PATHS.home ||
     pathname === ROUTE_PATHS.record ||
+    isEditRecord ||
     isShopDetail ||
     isSharedReport;
 

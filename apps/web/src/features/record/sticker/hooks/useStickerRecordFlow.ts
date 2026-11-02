@@ -12,7 +12,11 @@ import {
 import type { StickerCrop } from '@/features/record/sticker/image/stickerImage';
 import { createPhotoSticker } from '@/features/record/sticker/utils/createPhotoSticker';
 import { loadDefaultSticker } from '@/features/record/sticker/utils/loadDefaultSticker';
-import type { StickerPhotoSource, StickerRecordMedia } from '@/features/record/types';
+import type {
+  StickerPhotoSource,
+  StickerRecordInitialValue,
+  StickerRecordMedia,
+} from '@/features/record/types';
 import type { DefaultSticker } from '@/shared/assets/images/ios-stickers/catalog';
 import { isNativeApp } from '@/shared/lib/bridge';
 
@@ -36,12 +40,16 @@ type Result = {
  * 새 결과 확정·초기화·언마운트 시 더 이상 필요하지 않은 URL을 해제합니다.
  * 반환된 blob URL의 수명은 이 훅에서 관리합니다.
  */
-export const useStickerRecordFlow = () => {
+export const useStickerRecordFlow = (initialValue?: StickerRecordInitialValue) => {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [cropSource, setCropSource] = useState<CropSource | null>(null);
-  const [stage, setStage] = useState<Stage>('select');
-  const [result, setResult] = useState<Result | null>(null);
-  const [recordResult, setRecordResult] = useState<Result | null>(null);
+  const [stage, setStage] = useState<Stage>(initialValue ? 'record' : 'select');
+  const [result, setResult] = useState<Result | null>(() =>
+    initialValue
+      ? { ...initialValue.media, sticker: initialValue.sticker, original: initialValue.sticker }
+      : null
+  );
+  const [recordResult, setRecordResult] = useState<Result | null>(result);
   const [original, setOriginal] = useState('');
   const [photoSource, setPhotoSource] = useState<StickerPhotoSource>('gallery');
   const [message, setMessage] = useState('');

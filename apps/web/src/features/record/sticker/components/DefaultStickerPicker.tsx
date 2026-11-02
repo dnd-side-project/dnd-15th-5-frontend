@@ -111,7 +111,7 @@ export default function DefaultStickerPicker({
 
       <footer className="mt-auto px-5 pt-8 pb-[max(32px,env(safe-area-inset-bottom))]">
         {error && (
-          <p role="alert" className="mb-4 text-body-02-regular text-notification">
+          <p role="alert" className="mb-4 text-body-02-regular text-red">
             {error}
           </p>
         )}

@@ -6,6 +6,7 @@ import {
 
 import type { ConsumptionSaveRequest } from '@/features/record/apis/dto';
 import type { StickerRecordDraft } from '@/features/record/types';
+import { isPositiveSafeInteger } from '@/shared/utils/isPositiveSafeInteger';
 
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 
@@ -55,7 +56,7 @@ export const createStickerConsumptionRequest = (
   validateStickerRecordDraft(draft);
   const ids = [media.imageId, media.stickerItemId].filter((id) => id !== undefined);
   const [id] = ids;
-  if (ids.length !== 1 || id === undefined || !Number.isSafeInteger(id) || id <= 0)
+  if (ids.length !== 1 || !isPositiveSafeInteger(id))
     throw new Error('기록할 이미지 또는 이모지를 다시 선택해주세요.');
   const { shop, visitDateTime, amount, memo, category, receiptImageId, purchaseTime } = draft;
   return {

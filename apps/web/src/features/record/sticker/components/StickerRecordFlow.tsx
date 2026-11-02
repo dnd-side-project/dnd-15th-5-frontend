@@ -1,11 +1,16 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   STICKER_FLOW_HEADER_HEIGHT_CLASS,
   STICKER_FLOW_HEADER_TOP_CLASS,
 } from '@/features/record/sticker/constants';
 import { useStickerRecordFlow } from '@/features/record/sticker/hooks/useStickerRecordFlow';
-import type { StickerRecordDraft, StickerRecordMedia } from '@/features/record/types';
+import type {
+  StickerRecordDraft,
+  StickerRecordInitialValue,
+  StickerRecordMedia,
+} from '@/features/record/types';
+import { isDefaultStickerMedia } from '@/features/record/utils/isDefaultStickerMedia';
 import PageHeader from '@/shared/layout/PageHeader';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
@@ -23,6 +28,8 @@ import type { ShopSearchResult } from '@chapchap/shared/shop';
 import type { ChangeEvent } from 'react';
 
 type StickerRecordFlowProps = {
+  initialValue?: StickerRecordInitialValue;
+  onDirtyChange?: (dirty: boolean) => void;
   onClose: () => void;
   onSearchShop?: () => void;
   onScanReceipt?: () => Promise<ReceiptScanData | null> | void;
@@ -38,6 +45,8 @@ type StickerRecordFlowProps = {
 };
 
 export default function StickerRecordFlow({
+  initialValue,
+  onDirtyChange,
   onClose,
   onSearchShop,
   onScanReceipt,
@@ -54,6 +63,7 @@ export default function StickerRecordFlow({
   const isApp = isNativeApp();
   const galleryInput = useRef<HTMLInputElement>(null);
   const [isImageChangeOpen, setIsImageChangeOpen] = useState(false);
+  const [isFormDirty, setIsFormDirty] = useState(false);
   const {
     stage,
     isCapturing,
@@ -75,7 +85,14 @@ export default function StickerRecordFlow({
     confirm,
     openDefaultStickers,
     selectDefaultSticker,
-  } = useStickerRecordFlow();
+  } = useStickerRecordFlow(initialValue);
+  const hasMediaChanges = Boolean(initialValue && recordResult?.source !== 'saved');
+  const hasChanges = isFormDirty || hasMediaChanges;
+  const defaultStickerCategory =
+    recordResult && isDefaultStickerMedia(recordResult) ? recordResult.category : undefined;
+  useEffect(() => {
+    onDirtyChange?.(hasChanges);
+  }, [hasChanges, onDirtyChange]);
   const isPreview = stage === 'preview';
   const isDark = isPreview || stage === 'crop';
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -164,12 +181,10 @@ export default function StickerRecordFlow({
         <div hidden={stage !== 'record'} inert={isImageChangeOpen}>
           <StickerRecordPreview
             sticker={recordResult.sticker}
-            isDefaultSticker={recordResult.source === 'default'}
-            defaultStickerCategory={
-              recordResult.source === 'default' ? recordResult.category : undefined
-            }
+            isDefaultSticker={defaultStickerCategory !== undefined}
+            defaultStickerCategory={defaultStickerCategory}
             onChangeImage={() => setIsImageChangeOpen(true)}
-            onBack={backToImageSelection}
+            onBack={initialValue ? onClose : backToImageSelection}
             onClose={onClose}
             onSearchShop={onSearchShop}
             onScanReceipt={onScanReceipt}
@@ -180,6 +195,10 @@ export default function StickerRecordFlow({
             selectedShop={selectedShop}
             initialCategory={initialCategory}
             initialVisitDateTime={initialVisitDateTime}
+            initialDraft={initialValue?.draft}
+            isEditing={Boolean(initialValue)}
+            hasMediaChanges={hasMediaChanges}
+            onDirtyChange={setIsFormDirty}
             isOpeningReceipt={isOpeningReceipt}
             receiptError={receiptError}
             imageError={stage === 'record' ? error : ''}
@@ -196,7 +215,7 @@ export default function StickerRecordFlow({
         />
       )}
       {(stage === 'select' || stage === 'crop') && error && (
-        <p role="alert" className="px-4 pb-5 text-body-02-regular text-notification">
+        <p role="alert" className="px-4 pb-5 text-body-02-regular text-red">
           {error}
         </p>
       )}
