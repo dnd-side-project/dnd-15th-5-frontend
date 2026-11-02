@@ -109,7 +109,7 @@ export default function VisitHistoryList({
               >
                 {isPositiveSafeInteger(id) && onEditRecord && onDeleteRecord ? (
                   <SwipeActions
-                    label={placeName ?? formatVisitDate(visit.visitedAt)}
+                    label={[placeName, formatVisitDate(visit.visitedAt)].filter(Boolean).join(' ')}
                     onEdit={() => onEditRecord(id, visit.visitedAt?.slice(0, 10))}
                     onDelete={() => onDeleteRecord(id)}
                   >

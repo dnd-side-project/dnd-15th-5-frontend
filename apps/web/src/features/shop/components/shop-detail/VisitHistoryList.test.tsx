@@ -23,6 +23,45 @@ describe('VisitHistoryList', () => {
     });
   });
 
+  it('방문 날짜로 액션 이름을 구분하고 수정·삭제에 해당 행의 ID를 전달한다', () => {
+    jest.useFakeTimers().setSystemTime(new Date(2026, 7, 27));
+    try {
+      const onEditRecord = jest.fn();
+      const onDeleteRecord = jest.fn();
+      render(
+        <VisitHistoryList
+          visits={[
+            { consumptionId: 1, visitedAt: '2026-08-23T12:00:00' },
+            { consumptionId: 2, visitedAt: '2026-08-22T12:00:00' },
+          ]}
+          placeName="테스트 카페"
+          onEditRecord={onEditRecord}
+          onDeleteRecord={onDeleteRecord}
+          isLoading={false}
+          isError={false}
+          isFetchNextPageError={false}
+          hasNextPage={false}
+          isFetchingNextPage={false}
+          onLoadMore={jest.fn()}
+          onRetry={jest.fn()}
+          scrollRootRef={{ current: null }}
+        />
+      );
+      fireEvent.keyDown(screen.getByRole('group', { name: '테스트 카페 8월 23일 기록 관리' }), {
+        key: 'ArrowLeft',
+      });
+      fireEvent.click(screen.getByRole('button', { name: '테스트 카페 8월 23일 기록 수정' }));
+      fireEvent.keyDown(screen.getByRole('group', { name: '테스트 카페 8월 22일 기록 관리' }), {
+        key: 'ArrowLeft',
+      });
+      fireEvent.click(screen.getByRole('button', { name: '테스트 카페 8월 22일 기록 삭제' }));
+      expect(onEditRecord).toHaveBeenCalledWith(1, '2026-08-23');
+      expect(onDeleteRecord).toHaveBeenCalledWith(2);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('목록 끝 감지 요소가 보이면 다음 방문 기록을 요청한다', () => {
     const onLoadMore = jest.fn();
     const scrollRootRef = { current: document.createElement('div') } as RefObject<HTMLElement>;
