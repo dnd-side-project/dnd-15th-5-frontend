@@ -21,6 +21,8 @@ type ShopDetailProps = ConsumptionActions & {
   placeId: number;
   recordShop?: ShopSearchResult;
   renderVisitSticker?: (consumptionId: number) => ReactNode;
+  scrollToDate?: string;
+  scrollToConsumptionId?: number;
 };
 
 export default function ShopDetail({
@@ -31,6 +33,8 @@ export default function ShopDetail({
   placeId,
   recordShop,
   renderVisitSticker,
+  scrollToDate,
+  scrollToConsumptionId,
 }: ShopDetailProps) {
   const isValidPlaceId = isPositiveSafeInteger(placeId);
   const placeDetailQuery = useGetPlaceDetail(placeId, {
@@ -100,6 +104,8 @@ export default function ShopDetail({
       place={place}
       recordLocationState={recordLocationState}
       stickerImages={stickerImages}
+      scrollToDate={scrollToDate}
+      scrollToConsumptionId={scrollToConsumptionId}
       visitHistory={{
         onEditRecord,
         onDeleteRecord,

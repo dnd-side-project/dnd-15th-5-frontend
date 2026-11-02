@@ -2,6 +2,7 @@ import { useRef } from 'react';
 
 import type { PlaceDetailResponse } from '@/features/shop/apis/dto';
 import { useShopStickerCollapse } from '@/features/shop/hooks/useShopStickerCollapse';
+import { useVisitHistoryRestore } from '@/features/shop/hooks/useVisitHistoryRestore';
 import { LocationPinIcon } from '@/shared/assets/icons';
 import { cn } from '@/shared/lib/cn';
 import type { RecordLocationState } from '@/shared/types/recordNavigation';
@@ -24,6 +25,8 @@ type ShopDetailViewProps = {
   place: PlaceDetailResponse;
   recordLocationState?: RecordLocationState;
   stickerImages: readonly string[];
+  scrollToDate?: string;
+  scrollToConsumptionId?: number;
   visitHistory: Omit<ComponentProps<typeof VisitHistoryList>, 'scrollRootRef'>;
 };
 
@@ -36,10 +39,20 @@ export default function ShopDetailView({
   recordLocationState,
   stickerImages,
   visitHistory,
+  scrollToDate,
+  scrollToConsumptionId,
 }: ShopDetailViewProps) {
   const scrollRootRef = useRef<HTMLDivElement>(null);
   const informationPanelRef = useRef<HTMLDivElement>(null);
+  const stickyHeaderRef = useRef<HTMLDivElement>(null);
   useShopStickerCollapse({ scrollRootRef, informationPanelRef });
+  useVisitHistoryRestore({
+    ...visitHistory,
+    scrollRootRef,
+    stickyHeaderRef,
+    scrollToDate,
+    scrollToConsumptionId,
+  });
   const hasRecordedVisits =
     (place.stats?.totalVisitCount ?? 0) > 0 || visitHistory.visits.length > 0;
 
@@ -76,6 +89,7 @@ export default function ShopDetailView({
           className={cn('relative z-10 -mt-8.25 min-h-full bg-neutral-00', HEADER_CORNER_CLASS)}
         >
           <div
+            ref={stickyHeaderRef}
             className={cn('sticky top-0 z-20 bg-neutral-00 px-4 pt-8 pb-6', HEADER_CORNER_CLASS)}
           >
             <div className="flex min-w-0 items-center gap-2">

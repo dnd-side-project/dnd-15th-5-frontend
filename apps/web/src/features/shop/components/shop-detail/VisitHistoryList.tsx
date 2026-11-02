@@ -102,7 +102,11 @@ export default function VisitHistoryList({
               </div>
             );
             return (
-              <li key={id ?? `${visit.visitedAt ?? 'visit'}-${index}`}>
+              <li
+                key={id ?? `${visit.visitedAt ?? 'visit'}-${index}`}
+                data-visit-id={id}
+                data-visit-date={visit.visitedAt?.slice(0, 10)}
+              >
                 {isPositiveSafeInteger(id) && onEditRecord && onDeleteRecord ? (
                   <SwipeActions
                     label={placeName ?? formatVisitDate(visit.visitedAt)}

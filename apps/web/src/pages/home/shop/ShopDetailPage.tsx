@@ -10,6 +10,10 @@ import ConsumptionSticker from '@/features/record/components/ConsumptionSticker'
 import { ShopDetail } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { BackButton } from '@/shared/ui/back-button';
+import {
+  getConsumptionScrollDate,
+  getConsumptionScrollId,
+} from '@/shared/utils/consumptionNavigation';
 import { getRecordShopFromLocationState } from '@/shared/utils/recordNavigation';
 
 export default function ShopDetailPage() {
@@ -55,6 +59,8 @@ export default function ShopDetailPage() {
             {...actions}
             placeId={placeId}
             recordShop={recordShop}
+            scrollToDate={getConsumptionScrollDate(location.state)}
+            scrollToConsumptionId={getConsumptionScrollId(location.state)}
             renderVisitSticker={(consumptionId) => (
               <ConsumptionSticker consumptionId={consumptionId} />
             )}

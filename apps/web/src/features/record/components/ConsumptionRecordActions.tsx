@@ -27,17 +27,19 @@ export default function ConsumptionRecordActions({ children }: ConsumptionRecord
   const handleEditRecord = async (id: number, purchaseDate?: string) => {
     if (isDeleting || !isPositiveSafeInteger(id)) return;
     const returnTo = `${location.pathname}${location.search}`;
+    const returnState = {
+      ...(location.state && typeof location.state === 'object' ? location.state : {}),
+      scrollToConsumptionId: id,
+      ...(purchaseDate ? { scrollToDate: purchaseDate } : {}),
+    };
     // NOTE: 돌아왔을 때 수정하던 기록의 월·날짜를 다시 보여주도록 현재 히스토리에 보존합니다.
     if (purchaseDate) {
       await navigate(returnTo, {
         replace: true,
-        state: {
-          ...(typeof location.state === 'object' ? location.state : {}),
-          scrollToDate: purchaseDate,
-        },
+        state: returnState,
       });
     }
-    navigate(ROUTE_PATHS.editRecord(String(id)), { state: { returnTo } });
+    navigate(ROUTE_PATHS.editRecord(String(id)), { state: { returnTo, returnState } });
   };
 
   const handleRequestDelete = (id: number) => {

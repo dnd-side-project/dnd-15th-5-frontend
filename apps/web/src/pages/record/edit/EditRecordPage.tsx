@@ -3,7 +3,10 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import EditConsumption from '@/features/record/components/EditConsumption';
 import { ShopSearch } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import { getConsumptionReturnPath } from '@/shared/utils/consumptionNavigation';
+import {
+  getConsumptionReturnPath,
+  getConsumptionReturnState,
+} from '@/shared/utils/consumptionNavigation';
 
 export default function EditRecordPage() {
   const { consumptionId } = useParams();
@@ -11,8 +14,10 @@ export default function EditRecordPage() {
   const navigate = useNavigate();
   const handleClose = () => {
     const returnTo = getConsumptionReturnPath(location.state);
-    if (returnTo && window.history.state?.idx > 0) navigate(-1);
-    else navigate(ROUTE_PATHS.home, { replace: true });
+    navigate(returnTo ?? ROUTE_PATHS.home, {
+      replace: true,
+      state: returnTo ? getConsumptionReturnState(location.state) : undefined,
+    });
   };
   return (
     <EditConsumption

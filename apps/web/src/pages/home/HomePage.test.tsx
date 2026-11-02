@@ -15,15 +15,19 @@ import {
   trackUtTaskCompleted,
 } from '@/shared/lib/analytics/mixpanel';
 import { UT_MISSION_IDS, UT_SCREEN_NAMES } from '@/shared/lib/analytics/screens';
+import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { useToast } from '@/shared/ui/toast';
 
 import HomePage from './HomePage';
 
 import type { ReactNode } from 'react';
 
+const mockEditRecord = jest.fn();
+const mockDeleteRecord = jest.fn();
 jest.mock('@/features/record/components/ConsumptionRecordActions', () => ({
   __esModule: true,
-  default: ({ children }: { children: (actions: object) => ReactNode }) => children({}),
+  default: ({ children }: { children: (actions: ConsumptionActions) => ReactNode }) =>
+    children({ onEditRecord: mockEditRecord, onDeleteRecord: mockDeleteRecord }),
 }));
 jest.mock('@/features/map', () => ({
   ...jest.requireActual('@/features/map'),
@@ -31,9 +35,16 @@ jest.mock('@/features/map', () => ({
   HomeMapOverlay: () => null,
   HomeBottomSheet: ({
     renderFrequentShops,
+    renderSpendingHistory,
   }: {
     renderFrequentShops: (headerContent: null) => ReactNode;
-  }) => renderFrequentShops(null),
+    renderSpendingHistory: (headerContent: null) => ReactNode;
+  }) => (
+    <>
+      {renderFrequentShops(null)}
+      {renderSpendingHistory(null)}
+    </>
+  ),
 }));
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 jest.mock('@/shared/lib/analytics/mixpanel', () => ({
@@ -50,7 +61,12 @@ jest.mock('@/features/report', () => ({
       자주 소비한 가게 선택
     </button>
   ),
-  SpendingHistory: () => null,
+  SpendingHistory: ({ onEditRecord, onDeleteRecord }: ConsumptionActions) => (
+    <>
+      <button onClick={() => onEditRecord?.(196, '2026-11-01')}>홈 기록 수정</button>
+      <button onClick={() => onDeleteRecord?.(196)}>홈 기록 삭제</button>
+    </>
+  ),
 }));
 jest.mock('@/features/shop', () => ({
   SelectedPlaceSheet: () => null,
@@ -78,6 +94,14 @@ const renderHomePage = (createdPlace?: {
   );
 
 describe('<HomePage />', () => {
+  it('소비내역에 수정·삭제 액션을 전달한다', async () => {
+    const user = userEvent.setup();
+    renderHomePage();
+    await user.click(screen.getByRole('button', { name: '홈 기록 수정' }));
+    await user.click(screen.getByRole('button', { name: '홈 기록 삭제' }));
+    expect(mockEditRecord).toHaveBeenCalledWith(196, '2026-11-01');
+    expect(mockDeleteRecord).toHaveBeenCalledWith(196);
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockShowToast.mockReturnValue('toast-1');

@@ -8,28 +8,52 @@ import {
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
 import { TEST_MAP_STICKERS } from '@/features/map/testFixtures';
+import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 
 import ShopDetailPage from './ShopDetailPage';
 
 import type { ReactNode } from 'react';
 
+const mockEditRecord = jest.fn();
+const mockDeleteRecord = jest.fn();
 jest.mock('@/features/record/components/ConsumptionRecordActions', () => ({
   __esModule: true,
-  default: ({ children }: { children: (actions: object) => ReactNode }) => children({}),
+  default: ({ children }: { children: (actions: ConsumptionActions) => ReactNode }) =>
+    children({ onEditRecord: mockEditRecord, onDeleteRecord: mockDeleteRecord }),
+}));
+jest.mock('@/features/record/components/ConsumptionSticker', () => ({
+  __esModule: true,
+  default: ({ consumptionId }: { consumptionId: number }) => (
+    <span>방문 스티커 {consumptionId}</span>
+  ),
 }));
 jest.mock('@/features/shop', () => ({
   ShopDetail: ({
     headerContent,
     onViewOnMap,
     recordShop,
+    onEditRecord,
+    onDeleteRecord,
+    renderVisitSticker,
+    scrollToDate,
+    scrollToConsumptionId,
   }: {
     headerContent: ReactNode;
     onViewOnMap: () => void;
     recordShop?: { id: string };
-  }) => (
+    renderVisitSticker?: (id: number) => ReactNode;
+    scrollToDate?: string;
+    scrollToConsumptionId?: number;
+  } & ConsumptionActions) => (
     <>
       {headerContent}
       <p>{recordShop ? `기록 가게 ${recordShop.id}` : '기록 가게 없음'}</p>
+      <button onClick={() => onEditRecord?.(196, '2026-11-01')}>방문 기록 수정</button>
+      <button onClick={() => onDeleteRecord?.(196)}>방문 기록 삭제</button>
+      {renderVisitSticker?.(196)}
+      <p>
+        {scrollToDate}:{scrollToConsumptionId}
+      </p>
       <button type="button" onClick={onViewOnMap}>
         지도에서 가게 보기
       </button>
@@ -41,6 +65,29 @@ jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 
 describe('ShopDetailPage', () => {
+  it('수정·삭제 액션과 방문별 스티커, 복귀 대상을 매장 상세에 전달한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/home/shop/101',
+            state: { scrollToDate: '2026-11-01', scrollToConsumptionId: 196 },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/home/shop/:shopId" element={<ShopDetailPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    await user.click(screen.getByRole('button', { name: '방문 기록 수정' }));
+    await user.click(screen.getByRole('button', { name: '방문 기록 삭제' }));
+    expect(mockEditRecord).toHaveBeenCalledWith(196, '2026-11-01');
+    expect(mockDeleteRecord).toHaveBeenCalledWith(196);
+    expect(screen.getByText('방문 스티커 196')).toBeInTheDocument();
+    expect(screen.getByText('2026-11-01:196')).toBeInTheDocument();
+  });
   beforeEach(() => {
     window.history.replaceState({ idx: 0 }, '', '/');
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });

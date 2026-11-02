@@ -12,3 +12,18 @@ export const getConsumptionScrollDate = (state: unknown) => {
   if (!state || typeof state !== 'object' || !('scrollToDate' in state)) return undefined;
   return typeof state.scrollToDate === 'string' ? state.scrollToDate : undefined;
 };
+import { isPositiveSafeInteger } from './isPositiveSafeInteger';
+
+/** 같은 날짜에 여러 기록이 있어도 수정한 방문을 정확히 찾습니다. */
+export const getConsumptionScrollId = (state: unknown) => {
+  if (!state || typeof state !== 'object' || !('scrollToConsumptionId' in state)) return undefined;
+  return isPositiveSafeInteger(state.scrollToConsumptionId)
+    ? state.scrollToConsumptionId
+    : undefined;
+};
+
+/** 명시적인 복귀 이동에도 원래 화면의 가게 정보와 스크롤 대상을 보존합니다. */
+export const getConsumptionReturnState = (state: unknown) => {
+  if (!state || typeof state !== 'object' || !('returnState' in state)) return undefined;
+  return state.returnState && typeof state.returnState === 'object' ? state.returnState : undefined;
+};
