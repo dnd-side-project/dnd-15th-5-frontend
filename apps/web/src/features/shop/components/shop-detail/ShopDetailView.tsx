@@ -28,6 +28,7 @@ type ShopDetailViewProps = {
   scrollToDate?: string;
   scrollToConsumptionId?: number;
   visitHistory: Omit<ComponentProps<typeof VisitHistoryList>, 'scrollRootRef'>;
+  loadedVisitPageCount: number;
 };
 
 /** 가게 정보와 방문 기록, 획득한 스티커를 표시하는 상세 화면입니다. */
@@ -39,6 +40,7 @@ export default function ShopDetailView({
   recordLocationState,
   stickerImages,
   visitHistory,
+  loadedVisitPageCount,
   scrollToDate,
   scrollToConsumptionId,
 }: ShopDetailViewProps) {
@@ -52,6 +54,7 @@ export default function ShopDetailView({
     stickyHeaderRef,
     scrollToDate,
     scrollToConsumptionId,
+    loadedPageCount: loadedVisitPageCount,
   });
   const hasRecordedVisits =
     (place.stats?.totalVisitCount ?? 0) > 0 || visitHistory.visits.length > 0;

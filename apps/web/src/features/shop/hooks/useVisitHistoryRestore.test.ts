@@ -15,6 +15,7 @@ const setup = (overrides: Partial<Options> = {}) => {
     scrollToConsumptionId: 196,
     scrollToDate: '2026-11-01',
     visits: [],
+    loadedPageCount: 1,
     hasNextPage: false,
     isLoading: false,
     isError: false,
@@ -56,12 +57,32 @@ it('캐시가 없으면 필요한 페이지를 순서대로 읽고 대상이 나
   expect(options.onLoadMore).toHaveBeenCalledTimes(1);
   rerender({ ...options, isFetchingNextPage: true });
   expect(options.onLoadMore).toHaveBeenCalledTimes(1);
-  rerender({ ...options, visits: [{ consumptionId: 195 }] });
+  rerender({ ...options, loadedPageCount: 2, visits: [{ consumptionId: 195 }] });
   expect(options.onLoadMore).toHaveBeenCalledTimes(2);
   addRow(196);
-  rerender({ ...options, visits: [{ consumptionId: 195 }, { consumptionId: 196 }] });
+  rerender({
+    ...options,
+    loadedPageCount: 3,
+    visits: [{ consumptionId: 195 }, { consumptionId: 196 }],
+  });
   expect(options.onLoadMore).toHaveBeenCalledTimes(2);
   expect(root.scrollTop).toBe(500);
+});
+
+it('빈 중간 페이지 뒤에도 다음 페이지를 읽고 수정한 방문을 복원한다', () => {
+  const { root, options, addRow } = setup({ hasNextPage: true });
+  const { rerender } = renderHook((props: Options) => useVisitHistoryRestore(props), {
+    initialProps: options,
+  });
+  expect(options.onLoadMore).toHaveBeenCalledTimes(1);
+  rerender({ ...options, loadedPageCount: 2 });
+  expect(options.onLoadMore).toHaveBeenCalledTimes(2);
+  rerender({ ...options, loadedPageCount: 2 });
+  expect(options.onLoadMore).toHaveBeenCalledTimes(2);
+  addRow(196);
+  rerender({ ...options, loadedPageCount: 3, visits: [{ consumptionId: 196 }] });
+  expect(root.scrollTop).toBe(500);
+  expect(options.onLoadMore).toHaveBeenCalledTimes(2);
 });
 
 it.each([{ isError: true }, { isFetchNextPageError: true }, { hasNextPage: false }])(

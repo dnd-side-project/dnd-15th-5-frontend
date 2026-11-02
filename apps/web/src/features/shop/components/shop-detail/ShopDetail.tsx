@@ -104,6 +104,7 @@ export default function ShopDetail({
       place={place}
       recordLocationState={recordLocationState}
       stickerImages={stickerImages}
+      loadedVisitPageCount={placeVisitsQuery.data?.pages.length ?? 0}
       scrollToDate={scrollToDate}
       scrollToConsumptionId={scrollToConsumptionId}
       visitHistory={{

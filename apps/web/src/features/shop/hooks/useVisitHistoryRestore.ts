@@ -10,6 +10,7 @@ type VisitHistoryRestoreOptions = {
   scrollToDate?: string;
   scrollToConsumptionId?: number;
   visits: readonly PlaceVisitResponse[];
+  loadedPageCount: number;
   isLoading: boolean;
   isError: boolean;
   isFetchNextPageError: boolean;
@@ -25,6 +26,7 @@ export const useVisitHistoryRestore = ({
   scrollToDate,
   scrollToConsumptionId,
   visits,
+  loadedPageCount,
   isLoading,
   isError,
   isFetchNextPageError,
@@ -66,7 +68,7 @@ export const useVisitHistoryRestore = ({
       restoredTarget.current = targetKey;
       root.dispatchEvent(new Event('scroll'));
     } else if (hasNextPage && !isFetchingNextPage) {
-      const pageKey = `${targetKey}:${visits.length}`;
+      const pageKey = `${targetKey}:${loadedPageCount}`;
       if (lastRequestedPage.current === pageKey) return;
       lastRequestedPage.current = pageKey;
       onLoadMore();
@@ -77,6 +79,7 @@ export const useVisitHistoryRestore = ({
     scrollToDate,
     scrollToConsumptionId,
     visits,
+    loadedPageCount,
     isLoading,
     isError,
     isFetchNextPageError,
