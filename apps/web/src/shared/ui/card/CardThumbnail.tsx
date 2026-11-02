@@ -27,7 +27,7 @@ export function CardThumbnail({ src, radius = 'small', size = 'default' }: CardT
   const resolvedRadius = size === 'large' ? 'large' : radius;
   const className = cn(
     'shrink-0',
-    size === 'default' ? 'size-15' : 'size-22.5',
+    size === 'large' ? 'size-22.5' : 'size-15',
     resolvedRadius === 'small'
       ? 'rounded-05'
       : resolvedRadius === 'medium'

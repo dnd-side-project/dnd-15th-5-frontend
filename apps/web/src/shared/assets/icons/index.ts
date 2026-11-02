@@ -20,6 +20,7 @@ import ChevronRightIcon from './ic-chevron-right.svg?react';
 import ContactIcon from './ic-contact.svg?react';
 import CrownIcon from './ic-crown.svg?react';
 import CurrentLocationIcon from './ic-current-location.svg?react';
+import DeleteIcon from './ic-delete.svg?react';
 import EditIcon from './ic-edit.svg?react';
 import FilterIcon from './ic-filter.svg?react';
 import GoogleIcon from './ic-google.svg?react';
@@ -68,6 +69,7 @@ export {
   ContactIcon,
   CrownIcon,
   CurrentLocationIcon,
+  DeleteIcon,
   EditIcon,
   FilterIcon,
   GoogleIcon,
