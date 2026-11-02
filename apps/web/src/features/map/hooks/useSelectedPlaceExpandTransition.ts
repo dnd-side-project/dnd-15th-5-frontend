@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 
@@ -21,7 +21,7 @@ export const useSelectedPlaceExpandTransition = ({
   const hasRequestedExpandRef = useRef(false);
   const prefersReducedMotion = usePrefersReducedMotion();
 
-  useEffect(
+  useLayoutEffect(
     () => () => {
       hasRequestedExpandRef.current = false;
       const animation = animationRef.current;

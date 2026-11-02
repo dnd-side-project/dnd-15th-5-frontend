@@ -28,6 +28,9 @@
   --color-primary-100: #e5eaff;
   --color-primary-50: #f4f6ff;
 
+  /* Map */
+  --color-map-sticker-glass: rgb(217 217 217 / 20%);
+
   /* Report */
   --color-report-card-night-front: #2b4689;
   --color-report-card-night-back: #2c478b;
@@ -54,6 +57,12 @@
   --color-report-category-beauty: #e5eaff;
 
   /* Gradient */
+  --background-image-map-sticker-glass-sheen: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-neutral-00) 32%, transparent),
+    color-mix(in srgb, var(--color-neutral-00) 4%, transparent) 45%,
+    transparent 70%
+  );
   --background-image-report-hero: linear-gradient(
     to bottom,
     var(--color-neutral-00) 0%,

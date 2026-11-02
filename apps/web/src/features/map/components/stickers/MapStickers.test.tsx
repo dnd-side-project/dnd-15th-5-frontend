@@ -280,6 +280,52 @@ describe('MapStickers', () => {
   );
 
   it.each([
+    {
+      width: 800,
+      height: 400,
+      hitArea: { left: '2px', top: '2px', width: '80px', height: '62px' },
+    },
+    {
+      width: 400,
+      height: 800,
+      hitArea: { left: '2px', top: '-16px', width: '62px', height: '80px' },
+    },
+  ])(
+    '돌출된 $width × $height 이미지 영역을 눌러도 해당 장소를 선택한다',
+    async ({ width, height, hitArea }) => {
+      const user = userEvent.setup();
+      render(<MapStickers />);
+      const sticker = TEST_MAP_STICKERS[0]!;
+      const stickerButton = screen.getByRole('button', { name: `${sticker.label} 스티커` });
+      const image = stickerButton.querySelector('img')!;
+      Object.defineProperties(image, {
+        naturalWidth: { value: width },
+        naturalHeight: { value: height },
+      });
+      fireEvent.load(image);
+      await user.click(stickerButton);
+
+      const protrudingHitArea = stickerButton.querySelector<HTMLElement>(
+        '[data-map-sticker-hit-area]'
+      )!;
+      expect(protrudingHitArea).toHaveStyle(hitArea);
+      expect(protrudingHitArea.parentElement).toHaveClass('size-16.5');
+      expect(stickerButton).toHaveAttribute('data-anchor-left', '-50%');
+      expect(stickerButton).toHaveAttribute('data-anchor-top', 'calc(-100% - 8px)');
+
+      moveCamera.mockClear();
+      await user.click(protrudingHitArea);
+
+      expect(moveCamera).toHaveBeenCalledTimes(1);
+      expect(moveCamera).toHaveBeenCalledWith({ center: sticker.position, zoom: 16 });
+      expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+        type: 'selectedPlace',
+        stickerId: sticker.id,
+      });
+    }
+  );
+
+  it.each([
     [1, null],
     [2, '+1'],
     [4, '+3'],

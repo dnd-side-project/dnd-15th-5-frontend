@@ -66,11 +66,11 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
             aria-hidden="true"
             data-map-sticker-glass
             className={cn(
-              'pointer-events-none absolute inset-0 z-0 rounded-full bg-[#d9d9d9]/20',
+              'pointer-events-none absolute inset-0 z-0 rounded-full bg-map-sticker-glass',
               'backdrop-blur-[1.78px] backdrop-saturate-[1.15]',
-              'shadow-[inset_1px_1px_1px_rgb(255_255_255/0.45),inset_-1px_-1px_2px_rgb(255_255_255/0.2)]',
+              'shadow-map-sticker-glass',
               "after:absolute after:inset-0 after:rounded-[inherit] after:content-['']",
-              'after:bg-[linear-gradient(135deg,rgb(255_255_255/0.32),rgb(255_255_255/0.04)_45%,transparent_70%)]'
+              'after:bg-map-sticker-glass-sheen'
             )}
           />
         )}
@@ -128,6 +128,14 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
             clipPath={`url(#${clipId})`}
           />
         </svg>
+        {isProtruding && (
+          <span
+            aria-hidden="true"
+            data-map-sticker-hit-area
+            className="absolute z-10"
+            style={{ left: imageX, top: imageY, width: imageWidth, height: imageHeight }}
+          />
+        )}
         <img
           src={image}
           alt=""
