@@ -117,3 +117,42 @@ it('화면을 나가면 진행 중인 전환과 이벤트 처리를 해제한다
   expect(wheel(root, 100).defaultPrevented).toBe(false);
   expect(jest.getTimerCount()).toBe(0);
 });
+
+it('접히는 동안 세로 터치 이동을 막고 가로 이동·멀티터치·취소 불가 이벤트는 허용한다', () => {
+  const { root } = setup();
+  fireEvent.touchStart(root, { touches: [{ clientX: 100, clientY: 300 }] });
+  const move = (touches: { clientX: number; clientY: number }[], cancelable = true) => {
+    const event = new TouchEvent('touchmove', {
+      touches: touches as Touch[],
+      bubbles: true,
+      cancelable,
+    });
+    fireEvent(root, event);
+    return event.defaultPrevented;
+  };
+  expect(move([{ clientX: 100, clientY: 200 }])).toBe(false);
+  root.scrollTop = 64;
+  fireEvent.scroll(root);
+  expect(move([{ clientX: 100, clientY: 200 }])).toBe(true);
+  expect(move([{ clientX: 250, clientY: 290 }])).toBe(false);
+  expect(move([{ clientX: 100, clientY: 200 }], false)).toBe(false);
+  expect(
+    move([
+      { clientX: 100, clientY: 200 },
+      { clientX: 200, clientY: 200 },
+    ])
+  ).toBe(false);
+  act(() => jest.advanceTimersByTime(300));
+  expect(move([{ clientX: 100, clientY: 100 }])).toBe(false);
+  root.scrollTop = 0;
+  fireEvent.scroll(root);
+  root.scrollTop = 64;
+  fireEvent.scroll(root);
+  fireEvent.touchStart(root, {
+    touches: [
+      { clientX: 100, clientY: 300 },
+      { clientX: 200, clientY: 300 },
+    ],
+  });
+  expect(move([{ clientX: 100, clientY: 200 }])).toBe(false);
+});

@@ -115,7 +115,7 @@ function ShopStickerCanvas({
   const [shouldAnimate] = useState(() => !skipAnimation && stickerImages.length > 0);
   const [isReady, setIsReady] = useState(() => !shouldAnimate);
   const [replaySequences, setReplaySequences] = useState(() => stickerImages.map(() => 0));
-  const hasStartedRef = useRef(isReady);
+  const hasStartedRef = useRef(false);
   const loadedIndicesRef = useRef(new Set<number>());
   const nextReplaySequenceRef = useRef(0);
   const startAnimation = useCallback(() => {
@@ -137,7 +137,7 @@ function ShopStickerCanvas({
   }, [shouldAnimate, startAnimation, stickerImages.length]);
 
   const handleStickerLoad = (index: number, aspectRatio: number) => {
-    if (Number.isFinite(aspectRatio) && aspectRatio > 0) {
+    if (!hasStartedRef.current && Number.isFinite(aspectRatio) && aspectRatio > 0) {
       setAspectRatios((current) =>
         current[index] === aspectRatio
           ? current
@@ -153,10 +153,12 @@ function ShopStickerCanvas({
     return nextReplaySequenceRef.current;
   };
   const replayAllStickers = () => {
+    startAnimation();
     const replaySequence = createReplaySequence();
     setReplaySequences((current) => current.map(() => replaySequence));
   };
   const replaySticker = (targetIndex: number) => {
+    startAnimation();
     const replaySequence = createReplaySequence();
     setReplaySequences((current) =>
       current.map((sequence, index) => (index === targetIndex ? replaySequence : sequence))

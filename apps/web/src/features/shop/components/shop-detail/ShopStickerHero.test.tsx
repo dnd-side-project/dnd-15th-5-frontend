@@ -111,6 +111,7 @@ describe('ShopStickerHero', () => {
         const style = getShopStickerSlotStyle(placement, heroWidth);
         expect(style.width).toBe(`${placement.width}px`);
         expect(style.height).toBe(`${placement.height}px`);
+        expect(style.transform).toBe(`translateX(-50%) rotate(${placement.rotate}deg)`);
         expect(style.left).toContain(`clamp(${boundingWidth / 2 - 20}px,`);
       });
     }
@@ -240,6 +241,20 @@ describe('ShopStickerHero', () => {
     expect(firstImage).toHaveClass('shop-sticker-hero__stamp--playing');
   });
 
+  it('폴백으로 애니메이션을 시작한 뒤 늦게 로드된 이미지가 스티커 배치를 바꾸지 않는다', () => {
+    jest.useFakeTimers();
+    const { container } = render(
+      <ShopStickerHero headerContent={null} placeId={106} stickerImages={STICKER_IMAGES} />
+    );
+    act(() => jest.advanceTimersByTime(400));
+    const originalStyles = getStickerStyles(container);
+    const image = container.querySelector('img')!;
+    Object.defineProperties(image, { naturalWidth: { value: 900 }, naturalHeight: { value: 400 } });
+    fireEvent.load(image);
+    expect(image).toHaveClass('shop-sticker-hero__stamp--playing');
+    expect(getStickerStyles(container)).toEqual(originalStyles);
+  });
+
   it('빈 목록에서 스티커가 추가되면 새 이미지 로드를 기다린 뒤 애니메이션을 재생한다', () => {
     const { container, rerender } = render(
       <ShopStickerHero headerContent={null} placeId={101} stickerImages={[]} />
@@ -274,6 +289,22 @@ describe('ShopStickerHero', () => {
     replacedImages.forEach((image) => {
       expect(image).not.toHaveClass('shop-sticker-hero__stamp--playing');
     });
+  });
+
+  it('애니메이션을 생략하는 새 이미지 집합도 최초 로드 시 실제 비율로 배치한다', () => {
+    const { container, rerender } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={['old.png']} />
+    );
+    fireEvent.load(container.querySelector('img')!);
+    rerender(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={['new-landscape.png']} />
+    );
+    const image = container.querySelector('img')!;
+    Object.defineProperties(image, { naturalWidth: { value: 900 }, naturalHeight: { value: 400 } });
+    fireEvent.load(image);
+    const slot = image.parentElement!;
+    expect(parseFloat(slot.style.width) / parseFloat(slot.style.height)).toBeCloseTo(2.25);
+    expect(image).not.toHaveClass('shop-sticker-hero__stamp--playing');
   });
 
   it('newestStickerIndex로 지정한 스티커는 나머지가 다 찍힌 뒤 강조 애니메이션으로 재생한다', () => {
