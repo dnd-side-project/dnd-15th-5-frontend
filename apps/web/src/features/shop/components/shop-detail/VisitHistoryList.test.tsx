@@ -118,4 +118,31 @@ describe('VisitHistoryList', () => {
 
     jest.useRealTimers();
   });
+  it('각 방문 기록 ID를 스티커 렌더러에 전달한다', () => {
+    const renderVisitSticker = jest.fn((id: number) => (
+      <img alt={`기록 ${id} 스티커`} src={`sticker-${id}.png`} />
+    ));
+    render(
+      <VisitHistoryList
+        visits={[
+          { consumptionId: 1, visitedAt: '2026-08-23', amount: 5000 },
+          { consumptionId: 2, visitedAt: '2026-08-22', amount: 6000 },
+        ]}
+        placeName="테스트 카페"
+        renderVisitSticker={renderVisitSticker}
+        isLoading={false}
+        isError={false}
+        isFetchNextPageError={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onLoadMore={jest.fn()}
+        onRetry={jest.fn()}
+        scrollRootRef={{ current: null }}
+      />
+    );
+    expect(renderVisitSticker).toHaveBeenCalledWith(1);
+    expect(renderVisitSticker).toHaveBeenCalledWith(2);
+    expect(screen.getByAltText('기록 1 스티커')).toHaveAttribute('src', 'sticker-1.png');
+    expect(screen.getByAltText('기록 2 스티커')).toHaveAttribute('src', 'sticker-2.png');
+  });
 });

@@ -13,6 +13,10 @@ import ShopDetailPage from './ShopDetailPage';
 
 import type { ReactNode } from 'react';
 
+jest.mock('@/features/record/components/ConsumptionRecordActions', () => ({
+  __esModule: true,
+  default: ({ children }: { children: (actions: object) => ReactNode }) => children({}),
+}));
 jest.mock('@/features/shop', () => ({
   ShopDetail: ({
     headerContent,

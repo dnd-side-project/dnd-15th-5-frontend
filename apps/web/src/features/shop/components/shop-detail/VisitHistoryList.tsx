@@ -1,12 +1,17 @@
 import type { PlaceVisitResponse } from '@/features/shop/apis/dto';
 import { formatVisitAmount, formatVisitDate } from '@/features/shop/utils/formatVisit';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
+import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
+import SwipeActions from '@/shared/ui/swipe-actions/SwipeActions';
+import { isPositiveSafeInteger } from '@/shared/utils/isPositiveSafeInteger';
 
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 
-type VisitHistoryListProps = {
+type VisitHistoryListProps = ConsumptionActions & {
+  placeName?: string;
+  renderVisitSticker?: (consumptionId: number) => ReactNode;
   hasNextPage: boolean;
   isError: boolean;
   isFetchNextPageError: boolean;
@@ -19,6 +24,10 @@ type VisitHistoryListProps = {
 };
 
 export default function VisitHistoryList({
+  onEditRecord,
+  onDeleteRecord,
+  placeName,
+  renderVisitSticker,
   hasNextPage,
   isError,
   isFetchNextPageError,
@@ -65,18 +74,49 @@ export default function VisitHistoryList({
       )}
 
       {!isLoading && !isError && visits.length > 0 && (
-        <ul className="mt-4 space-y-5">
-          {visits.map((visit, index) => (
-            <li
-              key={`${visit.visitedAt ?? 'visit'}-${visit.amount ?? 'amount'}-${index}`}
-              className="flex items-center gap-4 text-body-01-medium text-neutral-700"
-              data-mp-mask=""
-            >
-              <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-neutral-500" />
-              <time className="min-w-0 flex-1">{formatVisitDate(visit.visitedAt)}</time>
-              <span className="shrink-0 tabular-nums">{formatVisitAmount(visit.amount)}</span>
-            </li>
-          ))}
+        <ul className="mt-4 flex flex-col gap-4">
+          {visits.map((visit, index) => {
+            const id = visit.consumptionId;
+            const content = (
+              <div
+                className="flex items-center gap-3 py-1 text-body-01-medium text-neutral-700"
+                data-mp-mask=""
+              >
+                {isPositiveSafeInteger(id) && renderVisitSticker ? (
+                  renderVisitSticker(id)
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="size-2 shrink-0 rounded-full bg-neutral-500"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  {placeName && <p className="truncate text-body-01-semibold">{placeName}</p>}
+                  <time
+                    className={placeName ? 'text-caption-01-regular text-neutral-500' : undefined}
+                  >
+                    {formatVisitDate(visit.visitedAt)}
+                  </time>
+                </div>
+                <span className="shrink-0 tabular-nums">{formatVisitAmount(visit.amount)}</span>
+              </div>
+            );
+            return (
+              <li key={id ?? `${visit.visitedAt ?? 'visit'}-${index}`}>
+                {isPositiveSafeInteger(id) && onEditRecord && onDeleteRecord ? (
+                  <SwipeActions
+                    label={placeName ?? formatVisitDate(visit.visitedAt)}
+                    onEdit={() => onEditRecord(id, visit.visitedAt?.slice(0, 10))}
+                    onDelete={() => onDeleteRecord(id)}
+                  >
+                    {content}
+                  </SwipeActions>
+                ) : (
+                  content
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
 

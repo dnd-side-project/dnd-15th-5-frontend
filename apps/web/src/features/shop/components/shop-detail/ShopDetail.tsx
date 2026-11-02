@@ -2,32 +2,37 @@ import { useCallback } from 'react';
 
 import { usePlaceVisitsInfiniteQuery } from '@/features/shop/apis/hooks/usePlaceVisitsInfiniteQuery';
 import { useGetPlaceDetail } from '@/features/shop/apis/queries';
+import type { ShopSearchResult } from '@/features/shop/types';
+import { createShopRecordLocationState } from '@/features/shop/utils/createShopRecordLocationState';
 import { getStickerImages } from '@/shared/assets/images/stickers';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { StateView } from '@/shared/ui/state-view';
-
-import { createShopRecordLocationState } from '../../utils/createShopRecordLocationState';
+import { isPositiveSafeInteger } from '@/shared/utils/isPositiveSafeInteger';
 
 import ShopDetailSkeleton from './ShopDetailSkeleton';
 import ShopDetailView from './ShopDetailView';
 
-import type { ShopSearchResult } from '../../types';
 import type { ReactNode } from 'react';
 
-type ShopDetailProps = {
+type ShopDetailProps = ConsumptionActions & {
   headerContent: ReactNode;
   onViewOnMap: () => void;
   placeId: number;
   recordShop?: ShopSearchResult;
+  renderVisitSticker?: (consumptionId: number) => ReactNode;
 };
 
 export default function ShopDetail({
+  onEditRecord,
+  onDeleteRecord,
   headerContent,
   onViewOnMap,
   placeId,
   recordShop,
+  renderVisitSticker,
 }: ShopDetailProps) {
-  const isValidPlaceId = Number.isSafeInteger(placeId) && placeId > 0;
+  const isValidPlaceId = isPositiveSafeInteger(placeId);
   const placeDetailQuery = useGetPlaceDetail(placeId, {
     query: { enabled: isValidPlaceId },
   });
@@ -88,6 +93,7 @@ export default function ShopDetail({
 
   return (
     <ShopDetailView
+      key={placeId}
       headerContent={headerContent}
       onViewOnMap={onViewOnMap}
       placeId={placeId}
@@ -95,6 +101,10 @@ export default function ShopDetail({
       recordLocationState={recordLocationState}
       stickerImages={stickerImages}
       visitHistory={{
+        onEditRecord,
+        onDeleteRecord,
+        placeName: place.placeName,
+        renderVisitSticker,
         visits,
         isLoading: placeVisitsQuery.isPending,
         isError: placeVisitsQuery.isError && !placeVisitsQuery.isFetchNextPageError,

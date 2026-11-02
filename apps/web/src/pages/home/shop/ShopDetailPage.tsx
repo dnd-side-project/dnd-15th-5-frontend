@@ -5,6 +5,8 @@ import {
   useOpenVisitedPlaceOnMap,
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
+import ConsumptionRecordActions from '@/features/record/components/ConsumptionRecordActions';
+import ConsumptionSticker from '@/features/record/components/ConsumptionSticker';
 import { ShopDetail } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { BackButton } from '@/shared/ui/back-button';
@@ -46,13 +48,21 @@ export default function ShopDetailPage() {
   };
 
   return (
-    <main>
-      <ShopDetail
-        placeId={placeId}
-        recordShop={recordShop}
-        onViewOnMap={() => void handleViewOnMap()}
-        headerContent={<BackButton onClick={() => void handleBack()} />}
-      />
-    </main>
+    <ConsumptionRecordActions>
+      {(actions) => (
+        <main>
+          <ShopDetail
+            {...actions}
+            placeId={placeId}
+            recordShop={recordShop}
+            renderVisitSticker={(consumptionId) => (
+              <ConsumptionSticker consumptionId={consumptionId} />
+            )}
+            onViewOnMap={() => void handleViewOnMap()}
+            headerContent={<BackButton onClick={() => void handleBack()} />}
+          />
+        </main>
+      )}
+    </ConsumptionRecordActions>
   );
 }

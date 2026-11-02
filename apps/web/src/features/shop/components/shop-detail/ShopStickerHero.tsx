@@ -14,7 +14,7 @@ import {
 
 import './shopStickerHero.css';
 
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 const STICKER_LOAD_FALLBACK_MS = 400;
 
@@ -152,7 +152,6 @@ function ShopStickerCanvas({
         const placement = placements[index];
         if (!placement) return null;
 
-        const slotStyle = getShopStickerSlotStyle(placement) satisfies CSSProperties;
         const replaySequence = replaySequences[index] ?? 0;
 
         return (
@@ -166,7 +165,7 @@ function ShopStickerCanvas({
             onReplay={() => replaySticker(index)}
             playbackSequence={replaySequence}
             shouldAnimate={shouldAnimate || replaySequence > 0}
-            slotStyle={slotStyle}
+            placement={placement}
             src={stickerImage}
           />
         );
@@ -184,7 +183,7 @@ type ShopStickerStampProps = {
   onReplay: () => void;
   playbackSequence: number;
   shouldAnimate: boolean;
-  slotStyle: CSSProperties;
+  placement: ReturnType<typeof createShopStickerPlacements>[number];
   src: string;
 };
 
@@ -203,10 +202,11 @@ function ShopStickerStamp({
   onReplay,
   playbackSequence,
   shouldAnimate,
-  slotStyle,
+  placement,
   src,
 }: ShopStickerStampProps) {
   const [completedPlaybackSequence, setCompletedPlaybackSequence] = useState<number | null>(null);
+  const [aspectRatio, setAspectRatio] = useState(1);
   const isPlaying = shouldAnimate && isReady && completedPlaybackSequence !== playbackSequence;
 
   return (
@@ -215,7 +215,7 @@ function ShopStickerStamp({
       aria-label={ariaLabel}
       className="absolute cursor-pointer rounded-full border-0 bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
       onClick={onReplay}
-      style={slotStyle}
+      style={getShopStickerSlotStyle(placement, aspectRatio)}
     >
       <img
         key={playbackSequence}
@@ -226,7 +226,11 @@ function ShopStickerStamp({
         )}
         draggable={false}
         onAnimationEnd={() => setCompletedPlaybackSequence(playbackSequence)}
-        onLoad={onLoad}
+        onLoad={(event) => {
+          const { naturalWidth, naturalHeight } = event.currentTarget;
+          if (naturalWidth > 0 && naturalHeight > 0) setAspectRatio(naturalWidth / naturalHeight);
+          onLoad();
+        }}
         src={src}
         style={{
           animationDelay: `${delayMs}ms`,

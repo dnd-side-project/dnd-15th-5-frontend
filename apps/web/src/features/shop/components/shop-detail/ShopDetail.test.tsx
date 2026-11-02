@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -99,7 +99,7 @@ describe('ShopDetail', () => {
     jest.useRealTimers();
   });
 
-  it('매장 정보는 고정 영역에 두고 주소 아래를 방문 기록 스크롤 영역으로 표시한다', () => {
+  it('스티커·가게 정보·방문 기록을 함께 스크롤하고 뒤로 가기는 스크롤 밖에 둔다', () => {
     jest.useFakeTimers().setSystemTime(new Date(2026, 7, 27));
 
     render(
@@ -121,6 +121,13 @@ describe('ShopDetail', () => {
     const scrollRegion = screen.getByRole('region', { name: '방문 요약과 방문 기록' });
     expect(scrollRegion.closest('article')).toHaveClass('h-dvh');
     expect(scrollRegion).toHaveClass('overflow-y-auto', 'pb-safe-bottom');
+    expect(
+      within(scrollRegion).getByRole('heading', { level: 1, name: '투썸플레이스' })
+    ).toBeInTheDocument();
+    expect(
+      within(scrollRegion).getAllByRole('button', { name: /번째 스티커 다시 붙이기/ }).length
+    ).toBeGreaterThan(0);
+    expect(scrollRegion).not.toContainElement(screen.getByRole('button', { name: '뒤로 가기' }));
     const visitTitle = within(scrollRegion).getByRole('heading', {
       name: '총 8번 방문하셨네요!',
     });
@@ -242,5 +249,45 @@ describe('ShopDetail', () => {
     );
     expect(screen.getByText('기록한 이미지를 아직 표시할 수 없어요')).toBeInTheDocument();
     expect(screen.queryByText('아직 획득한 스티커가 없어요')).not.toBeInTheDocument();
+  });
+  it('상단에 가까워질수록 모서리를 펴고 다시 내려오면 둥근 모서리를 복원한다', () => {
+    render(
+      <MemoryRouter>
+        <ShopDetail
+          placeId={101}
+          headerContent={<button>뒤로 가기</button>}
+          onViewOnMap={jest.fn()}
+        />
+      </MemoryRouter>
+    );
+    const scrollRegion = screen.getByRole('region', { name: '방문 요약과 방문 기록' });
+    const shopInformation = screen.getByRole('heading', { level: 1, name: '투썸플레이스' })
+      .parentElement!.parentElement!;
+    const panel = shopInformation.parentElement!;
+    jest
+      .spyOn(scrollRegion, 'getBoundingClientRect')
+      .mockReturnValue({ ...scrollRegion.getBoundingClientRect(), top: 58 });
+    const panelRect = jest.spyOn(panel, 'getBoundingClientRect');
+    const originalRect = panel.getBoundingClientRect();
+
+    panelRect.mockReturnValue({ ...originalRect, top: 154 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('1');
+
+    panelRect.mockReturnValue({ ...originalRect, top: 106 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('0.5');
+
+    panelRect.mockReturnValue({ ...originalRect, top: 58 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('0');
+
+    panelRect.mockReturnValue({ ...originalRect, top: -20 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('0');
+
+    panelRect.mockReturnValue({ ...originalRect, top: 154 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('1');
   });
 });

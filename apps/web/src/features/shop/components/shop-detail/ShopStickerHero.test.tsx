@@ -5,6 +5,7 @@ import ShopStickerHero from './ShopStickerHero';
 import {
   createShopStickerPlacements,
   createShopStickerStampDelays,
+  getShopStickerDimensions,
   mixShopStickerImages,
 } from './shopStickerHeroLayout';
 
@@ -81,6 +82,53 @@ describe('ShopStickerHero', () => {
     );
 
     expect(container.querySelectorAll('img')).toHaveLength(7);
+  });
+
+  it('가로형과 세로형의 비율을 유지하면서 같은 표시 면적으로 맞춘다', () => {
+    const landscape = getShopStickerDimensions(1.25);
+    const portrait = getShopStickerDimensions(0.8);
+    const square = getShopStickerDimensions(1);
+
+    expect(landscape.width / landscape.height).toBeCloseTo(1.25);
+    expect(portrait.width / portrait.height).toBeCloseTo(0.8);
+    expect(landscape.width * landscape.height).toBeCloseTo(square.width * square.height);
+    expect(portrait.width * portrait.height).toBeCloseTo(square.width * square.height);
+
+    const narrow = getShopStickerDimensions(0.2);
+    expect(narrow.height).toBeLessThanOrEqual(160);
+    expect(narrow.width / narrow.height).toBeCloseTo(0.2);
+  });
+
+  it('실제 이미지 비율로 크기를 보정해 쿠키와 버블티의 표시 면적 차이를 줄인다', () => {
+    const { container } = render(
+      <ShopStickerHero
+        headerContent={null}
+        placeId={101}
+        stickerImages={['cookie.png', 'bubble-tea.png']}
+      />
+    );
+    const images = Array.from(container.querySelectorAll('img'));
+    const dimensions = [
+      { width: 512, height: 482 },
+      { width: 289, height: 512 },
+    ];
+    images.forEach((image, index) => {
+      Object.defineProperties(image, {
+        naturalWidth: { value: dimensions[index]!.width },
+        naturalHeight: { value: dimensions[index]!.height },
+      });
+      fireEvent.load(image);
+    });
+
+    const [cookie, bubbleTea] = getStickerSlots(container).map((slot) => ({
+      width: parseFloat(slot.style.width),
+      height: parseFloat(slot.style.height),
+    }));
+    expect(cookie!.width / cookie!.height).toBeCloseTo(512 / 482);
+    expect(bubbleTea!.width / bubbleTea!.height).toBeCloseTo(289 / 512);
+    const areaRatio = (cookie!.width * cookie!.height) / (bubbleTea!.width * bubbleTea!.height);
+    expect(areaRatio).toBeGreaterThanOrEqual(1);
+    expect(areaRatio).toBeLessThan(1.25);
   });
 
   it('같은 종류가 묶여 있어도 종류별로 한 장씩 섞어서 표시한다', () => {

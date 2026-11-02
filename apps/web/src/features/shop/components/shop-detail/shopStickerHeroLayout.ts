@@ -1,7 +1,7 @@
 const HERO_WIDTH = 375;
 const HERO_HEIGHT = 301;
-const MIN_STICKER_SIZE = 120;
-const MAX_STICKER_SIZE = 148;
+const STICKER_SIZE = 132;
+const MAX_STICKER_EDGE = 160;
 const MIN_STICKER_ROTATION = -30;
 const MAX_STICKER_ROTATION = 30;
 const MIN_STICKER_TOP = 20;
@@ -80,7 +80,7 @@ export const createShopStickerPlacements = (placeId: number, count: number) => {
   const placements: StickerPlacement[] = [];
 
   const createCandidate = (): StickerPlacement => {
-    const size = getRandomBetween(MIN_STICKER_SIZE, MAX_STICKER_SIZE);
+    const size = STICKER_SIZE;
 
     return {
       left: getRandomBetween(-MAX_HORIZONTAL_OVERFLOW, HERO_WIDTH - size + MAX_HORIZONTAL_OVERFLOW),
@@ -135,11 +135,30 @@ export const createShopStickerStampDelays = (visibleCount: number, newestSticker
 export const getShopStickerStampDuration = (isNewest: boolean) =>
   isNewest ? NEWEST_STAMP_DURATION_MS : STAMP_DURATION_MS;
 
-/** 픽셀 단위 스티커 배치를 반응형 히어로에서 사용할 퍼센트 좌표로 변환합니다. */
-export const getShopStickerSlotStyle = (placement: StickerPlacement) => ({
-  left: `${(placement.left / HERO_WIDTH) * 100}%`,
-  top: `${(placement.top / HERO_HEIGHT) * 100}%`,
-  width: `${(placement.size / HERO_WIDTH) * 100}%`,
-  height: `${(placement.size / HERO_HEIGHT) * 100}%`,
-  transform: `rotate(${placement.rotate}deg)`,
-});
+/** 이미지 비율을 유지하면서 표시 면적을 맞추고 긴 변의 과도한 확대를 제한합니다. */
+export const getShopStickerDimensions = (aspectRatio: number) => {
+  const ratio = Number.isFinite(aspectRatio) && aspectRatio > 0 ? aspectRatio : 1;
+  const width = STICKER_SIZE * Math.sqrt(ratio);
+  const height = STICKER_SIZE / Math.sqrt(ratio);
+  const scale = Math.min(1, MAX_STICKER_EDGE / Math.max(width, height));
+  return { width: width * scale, height: height * scale };
+};
+
+/** 고정 높이의 히어로에서 화면 폭과 무관하게 스티커 비율과 표시 면적을 유지합니다. */
+export const getShopStickerSlotStyle = (placement: StickerPlacement, aspectRatio = 1) => {
+  const { width, height } = getShopStickerDimensions(aspectRatio);
+  const top = Math.max(
+    MIN_STICKER_TOP,
+    Math.min(
+      placement.top + (placement.size - height) / 2,
+      HERO_HEIGHT - height - BOTTOM_STICKER_INSET
+    )
+  );
+  return {
+    left: `${((placement.left + placement.size / 2) / HERO_WIDTH) * 100}%`,
+    top: `${(top / HERO_HEIGHT) * 100}%`,
+    width: `${width}px`,
+    height: `${height}px`,
+    transform: `translateX(-50%) rotate(${placement.rotate}deg)`,
+  };
+};
