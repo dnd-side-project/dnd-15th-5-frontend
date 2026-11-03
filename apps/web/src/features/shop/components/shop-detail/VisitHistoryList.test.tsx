@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 
 import VisitHistoryList from './VisitHistoryList';
 
@@ -183,5 +183,60 @@ describe('VisitHistoryList', () => {
     expect(renderVisitSticker).toHaveBeenCalledWith(2);
     expect(screen.getByAltText('기록 1 스티커')).toHaveAttribute('src', 'sticker-1.png');
     expect(screen.getByAltText('기록 2 스티커')).toHaveAttribute('src', 'sticker-2.png');
+  });
+
+  it('각 행에 해당 기록의 날짜·오전/오후·카테고리를 표시한다', () => {
+    jest.useFakeTimers().setSystemTime(new Date(2026, 7, 27));
+    try {
+      render(
+        <VisitHistoryList
+          visits={[
+            {
+              consumptionId: 1,
+              visitedAt: '2026-08-23',
+              visitedTime: '11:59:59',
+              category: '카페',
+            },
+            {
+              consumptionId: 2,
+              visitedAt: '2026-08-22',
+              visitedTime: '12:00:00',
+              category: '음식점',
+            },
+            {
+              consumptionId: 3,
+              visitedAt: '2025-08-21',
+              visitedTime: '00:00:00',
+              category: '쇼핑',
+            },
+            { consumptionId: 4, visitedAt: '2026-08-20', category: '  ' },
+          ]}
+          placeName="테스트 카페"
+          isLoading={false}
+          isError={false}
+          isFetchNextPageError={false}
+          hasNextPage={false}
+          isFetchingNextPage={false}
+          onLoadMore={jest.fn()}
+          onRetry={jest.fn()}
+          scrollRootRef={{ current: null }}
+        />
+      );
+      const rows = screen.getAllByRole('listitem');
+      expect(within(rows[0]!).getByText('8월 23일').parentElement).toHaveTextContent(
+        '8월 23일 · 오전 · 카페'
+      );
+      expect(within(rows[1]!).getByText('8월 22일').parentElement).toHaveTextContent(
+        '8월 22일 · 오후 · 음식점'
+      );
+      expect(within(rows[2]!).getByText('2025년 8월 21일').parentElement).toHaveTextContent(
+        '2025년 8월 21일 · 오전 · 쇼핑'
+      );
+      expect(within(rows[3]!).getByText('8월 20일').parentElement).toHaveTextContent(
+        '8월 20일 · 기타'
+      );
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

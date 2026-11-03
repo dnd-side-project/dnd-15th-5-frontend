@@ -5,6 +5,7 @@ import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 import SwipeActions from '@/shared/ui/swipe-actions/SwipeActions';
+import { formatTimePeriod } from '@/shared/utils/formatTimePeriod';
 import { isPositiveSafeInteger } from '@/shared/utils/isPositiveSafeInteger';
 
 import type { ReactNode, RefObject } from 'react';
@@ -77,6 +78,7 @@ export default function VisitHistoryList({
         <ul className="mt-4 flex flex-col gap-4">
           {visits.map((visit, index) => {
             const id = visit.consumptionId;
+            const period = formatTimePeriod(visit.visitedTime);
             const content = (
               <div
                 className="flex items-center gap-3 py-1 text-body-01-medium text-neutral-700"
@@ -92,11 +94,10 @@ export default function VisitHistoryList({
                 )}
                 <div className="min-w-0 flex-1">
                   {placeName && <p className="truncate text-body-01-semibold">{placeName}</p>}
-                  <time
-                    className={placeName ? 'text-caption-01-regular text-neutral-500' : undefined}
-                  >
-                    {formatVisitDate(visit.visitedAt)}
-                  </time>
+                  <p className="truncate text-caption-01-regular text-neutral-500">
+                    <time>{formatVisitDate(visit.visitedAt)}</time>
+                    {period && ` · ${period}`} · {visit.category?.trim() || '기타'}
+                  </p>
                 </div>
                 <span className="shrink-0 tabular-nums">{formatVisitAmount(visit.amount)}</span>
               </div>
