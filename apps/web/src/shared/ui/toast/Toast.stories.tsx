@@ -36,8 +36,8 @@ function InteractivePreview() {
   const { closeToast, showToast } = useToast();
   const latestToastId = useRef<string | undefined>(undefined);
 
-  const handleShowToast = (type: ToastType) => {
-    latestToastId.current = showToast({ message: messages[type], type });
+  const handleShowToast = (type: ToastType, message = messages[type]) => {
+    latestToastId.current = showToast({ message, type });
   };
 
   return (
@@ -49,7 +49,16 @@ function InteractivePreview() {
         오류 Toast 열기
       </Button>
       <Button size="small" onClick={() => handleShowToast('info')}>
-        안내 Toast 열기
+        파란 안내 Toast 열기
+      </Button>
+      <Button size="small" onClick={() => handleShowToast('info-neutral')}>
+        회색 안내 Toast 열기
+      </Button>
+      <Button size="small" onClick={() => handleShowToast('like')}>
+        좋아요 추가 Toast 열기
+      </Button>
+      <Button size="small" onClick={() => handleShowToast('like', '좋아요 목록에서 삭제했어요')}>
+        좋아요 취소 Toast 열기
       </Button>
       <Button variant="secondary" size="small" onClick={() => closeToast(latestToastId.current)}>
         최근 Toast 닫기

@@ -14,11 +14,11 @@ export const toastVariants = cva(
   {
     variants: {
       type: {
-        success: 'toast-default',
-        error: 'toast-default',
-        info: 'toast-info w-fit px-7.5',
-        'info-neutral': 'toast-info-neutral w-fit px-7.5',
-        like: 'toast-default px-7.5',
+        success: 'toast-neutral w-full',
+        error: 'toast-neutral w-full',
+        info: 'toast-primary w-fit px-7.5',
+        'info-neutral': 'toast-neutral w-fit px-7.5',
+        like: 'toast-neutral w-fit px-7.5',
       },
     },
     defaultVariants: {

@@ -27,19 +27,14 @@
   gap: 8px;
 }
 
-/* 성공·오류 Toast의 공통 배경 */
-@utility toast-default {
-  width: 100%;
-  background-color: var(--color-neutral-600);
+/* 기본 회색 배경을 사용하는 Toast surface */
+@utility toast-neutral {
+  background-color: color-mix(in srgb, var(--color-neutral-600) 80%, transparent);
 }
 
-/* 안내 Toast의 강조 배경 */
-@utility toast-info {
-  background-color: var(--color-primary-500);
-}
-
-@utility toast-info-neutral {
-  background-color: var(--color-neutral-600);
+/* Primary 색상 배경 */
+@utility toast-primary {
+  background-color: color-mix(in srgb, var(--color-primary-500) 80%, transparent);
 }
 
 /* Toast 메시지의 공통 타이포그래피와 색상 */

@@ -40,11 +40,11 @@ const toastIcons: Record<ToastType, typeof StatusSuccessIcon | null> = {
 };
 
 const toastSurfaceClasses: Record<ToastType, string> = {
-  success: 'toast-default',
-  error: 'toast-default',
-  info: 'toast-info px-7.5',
-  'info-neutral': 'toast-info-neutral px-7.5',
-  like: 'toast-default',
+  success: 'toast-neutral w-full',
+  error: 'toast-neutral w-full',
+  info: 'toast-primary px-7.5',
+  'info-neutral': 'toast-neutral px-7.5',
+  like: 'toast-neutral px-7.5',
 };
 
 function ToastIcon({ type }: { type: ToastType }) {
