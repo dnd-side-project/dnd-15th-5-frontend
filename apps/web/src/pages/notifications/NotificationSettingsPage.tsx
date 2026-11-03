@@ -6,6 +6,7 @@ import {
   useNotificationSettings,
 } from '@/features/notification';
 import { ChevronRightThinIcon, CircleWarningIcon } from '@/shared/assets/icons';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { BackButton } from '@/shared/ui/back-button';
 
 const NOTIFICATION_OPTIONS = [
@@ -34,7 +35,7 @@ export default function NotificationSettingsPage() {
       <header className="relative flex h-24 shrink-0 items-center justify-center px-4 pt-4">
         <BackButton
           className="absolute top-7 left-4 mt-0"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(ROUTE_PATHS.myPage, { replace: true })}
           aria-label="이전 화면으로 돌아가기"
         />
         <h1 className="text-title-02-bold tracking-[-0.02em] text-neutral-700">알림 설정</h1>
@@ -84,7 +85,7 @@ export default function NotificationSettingsPage() {
                 key={option.id}
                 option={option}
                 checked={checked}
-                disabled={settingsQuery.isPending || isSaving}
+                disabled={settingsQuery.isPending || !settingsQuery.data?.data || isSaving}
                 onCheckedChange={() => toggleSetting(option.settingKey, checked)}
               />
             );

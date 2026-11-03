@@ -15,8 +15,10 @@ export const useNotificationSettings = () => {
   const settingsQuery = useGetNotificationSettings();
   const updateSettingsMutation = useUpdateNotificationSettings({
     mutation: {
-      onSuccess: (response) => {
-        queryClient.setQueryData(getGetNotificationSettingsQueryKey(), response);
+      onSuccess: async (response) => {
+        const queryKey = getGetNotificationSettingsQueryKey();
+        await queryClient.cancelQueries({ queryKey });
+        queryClient.setQueryData(queryKey, response);
       },
       onError: () => {
         showToast({ type: 'error', message: '알림 설정을 저장하지 못했어요.' });
