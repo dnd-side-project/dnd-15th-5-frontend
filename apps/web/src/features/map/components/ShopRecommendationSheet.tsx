@@ -165,7 +165,7 @@ export default function ShopRecommendationSheet() {
         ref={carouselRef}
         aria-label="추천 가게 목록"
         onScroll={handleCarouselScroll}
-        className="scrollbar-hidden mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto"
+        className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto"
       >
         {recommendations.map(
           ({ googleMapsUri, id, isLiked, reason, place, thumbnailSrc }, index) => {

@@ -46,7 +46,7 @@ export default function MyProfileEditPage() {
   }
 
   return (
-    <main className="min-h-screen-safe-bottom flex flex-col overflow-y-auto">
+    <main className="min-h-screen-safe-bottom flex flex-col overflow-y-auto pb-page-bottom">
       <PageHeader onBack={handleBack} />
 
       <ProfileImageSelector selectedCode={profileImageCode} onSelect={setProfileImageCode} />
@@ -83,7 +83,7 @@ export default function MyProfileEditPage() {
           disabled={!canSave}
           isLoading={isSaving}
           onClick={handleSave}
-          className="mb-8 h-14 rounded-full"
+          className="h-14 rounded-full"
         >
           저장하기
         </Button>
