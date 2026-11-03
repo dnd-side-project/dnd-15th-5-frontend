@@ -156,16 +156,11 @@ const updateNearbyPlacesResponse = (
         data: response.data
           ? {
               ...response.data,
-              sameCategoryPlaces: updateRecommendedPlaces(
-                response.data.sameCategoryPlaces,
-                placeId,
-                updateLiked
-              ),
-              myTownPlaces: updateRecommendedPlaces(
-                response.data.myTownPlaces,
-                placeId,
-                updateLiked
-              ),
+              allPlaces: updateRecommendedPlaces(response.data.allPlaces, placeId, updateLiked),
+              categoryPlaces: response.data.categoryPlaces?.map((categoryPlaces) => ({
+                ...categoryPlaces,
+                places: updateRecommendedPlaces(categoryPlaces.places, placeId, updateLiked),
+              })),
             }
           : response.data,
       }
@@ -242,8 +237,10 @@ export const useTogglePlaceLikeMutation = () => {
       );
       const currentRecommendation = nearbyPlaces
         .flatMap(([, response]) => [
-          ...(response?.data?.sameCategoryPlaces ?? []),
-          ...(response?.data?.myTownPlaces ?? []),
+          ...(response?.data?.allPlaces ?? []),
+          ...(response?.data?.categoryPlaces ?? []).flatMap(
+            (categoryPlaces) => categoryPlaces.places ?? []
+          ),
         ])
         .find((place) => place.placeId === placeId);
       const currentVisitedPlace = visitedPlaces

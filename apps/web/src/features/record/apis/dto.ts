@@ -58,7 +58,7 @@ export type ConsumptionDetailResponse = {
    */
   imageId?: number | null;
   /**
-   * 업로드한 사진의 2분간 유효한 조회 URL, 스티커 기록이면 null
+   * 업로드한 사진의 10분간 유효한 조회 URL, 스티커 기록이면 null. 만료되면 imageId로 GET /v1/consumptions/images/{imageId}를 호출해 새 URL을 다시 받으세요.
    * @nullable
    */
   imageUrl?: string | null;
@@ -289,6 +289,22 @@ export type ApiResponseListStickerItemResponse = {
   code?: string;
   message?: string;
   data?: StickerItemResponse[];
+};
+
+/**
+ * 소비기록 이미지 조회 URL 재발급 결과
+ */
+export type ConsumptionImageUrlResponse = {
+  /** 요청한 이미지 ID (요청값과 동일) */
+  imageId?: number;
+  /** 이 응답 시점부터 10분간 유효한 조회 URL */
+  imageUrl?: string;
+};
+
+export type ApiResponseConsumptionImageUrlResponse = {
+  code?: string;
+  message?: string;
+  data?: ConsumptionImageUrlResponse;
 };
 
 export type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
