@@ -84,14 +84,15 @@ export default function NotificationSettingsPage() {
           </div>
         ) : (
           NOTIFICATION_OPTIONS.map((option) => {
-            const checked = settingsQuery.data?.data?.[option.settingKey] ?? false;
+            const settingValue = settingsQuery.data?.data?.[option.settingKey];
+            const checked = settingValue ?? false;
 
             return (
               <NotificationSettingRow
                 key={option.id}
                 option={option}
                 checked={checked}
-                disabled={settingsQuery.isPending || !settingsQuery.data?.data || isSaving}
+                disabled={settingsQuery.isPending || typeof settingValue !== 'boolean' || isSaving}
                 onCheckedChange={() => toggleSetting(option.settingKey, checked)}
               />
             );
