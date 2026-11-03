@@ -33,6 +33,7 @@ type SpendingHistoryProps = ConsumptionActions & {
   headerContent?: ReactNode;
   headerContentGapClassName?: string;
   scrollToDate?: string;
+  renderRecordSticker: (consumptionId: number) => ReactNode;
 };
 
 type MonthSelection = {
@@ -63,6 +64,7 @@ const getSupportedMonthFromDate = (
  * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
  * @param props.headerContentGapClassName - 상단 콘텐츠와 월 선택 영역 사이의 간격 클래스입니다.
  * @param props.scrollToDate - 진입 후 스크롤할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
+ * @param props.renderRecordSticker - 각 기록에 사용한 이모지·사진 스티커를 조립합니다.
  */
 export default function SpendingHistory({
   onEditRecord,
@@ -73,6 +75,7 @@ export default function SpendingHistory({
   headerContent,
   headerContentGapClassName = 'mt-5',
   scrollToDate,
+  renderRecordSticker,
 }: SpendingHistoryProps) {
   const currentMonth = getCurrentMonth();
   const initialMonth = parseSpendingMonthFromDate(scrollToDate);
@@ -260,13 +263,13 @@ export default function SpendingHistory({
             <SpendingRecordList
               onEditRecord={onEditRecord}
               onDeleteRecord={onDeleteRecord}
+              renderRecordSticker={renderRecordSticker}
               groups={recordGroups}
               hasNextPage={!shouldFetchMoreForDate && consumptionsQuery.hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
               isLoadMoreError={consumptionsQuery.isFetchNextPageError}
               onLoadMore={() => void fetchNextPage()}
               onRetry={() => void fetchNextPage()}
-              targetDate={targetDate}
             />
           )}
         </div>

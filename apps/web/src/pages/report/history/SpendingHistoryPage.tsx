@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import ConsumptionRecordActions from '@/features/record/components/ConsumptionRecordActions';
+import ConsumptionSticker from '@/features/record/components/ConsumptionSticker';
 import { SpendingHistory } from '@/features/report';
 import { BackButton } from '@/shared/ui/back-button';
 import { getConsumptionScrollDate } from '@/shared/utils/consumptionNavigation';
@@ -17,6 +18,9 @@ export default function SpendingHistoryPage() {
         <main className="mobile-frame pb-safe-bottom fixed inset-0 flex flex-col overflow-hidden bg-neutral-00 px-4">
           <SpendingHistory
             {...actions}
+            renderRecordSticker={(consumptionId) => (
+              <ConsumptionSticker consumptionId={consumptionId} size="large" />
+            )}
             containedScroll
             headerContent={<BackButton onClick={() => navigate(-1)} className="mt-3" />}
             scrollToDate={scrollToDate}

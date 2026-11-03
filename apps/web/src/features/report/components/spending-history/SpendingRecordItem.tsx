@@ -4,12 +4,15 @@ import type { ConsumptionResponse } from '@/features/report/apis/dto';
 import { formatPurchaseDateTimeLabel } from '@/features/report/utils/consumptions';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import type { ConsumptionActions } from '@/shared/types/consumptionActions';
-import { CardThumbnail, CardTitle } from '@/shared/ui/card';
+import { CardTitle } from '@/shared/ui/card';
 import SwipeActions from '@/shared/ui/swipe-actions/SwipeActions';
 import { isPositiveSafeInteger } from '@/shared/utils/isPositiveSafeInteger';
 
+import type { ReactNode } from 'react';
+
 type SpendingRecordItemProps = ConsumptionActions & {
   consumption: ConsumptionResponse;
+  renderRecordSticker: (consumptionId: number) => ReactNode;
 };
 
 const formatAmount = (amount?: number) => `${(amount ?? 0).toLocaleString('ko-KR')} 원`;
@@ -19,10 +22,15 @@ export default function SpendingRecordItem({
   consumption,
   onEditRecord,
   onDeleteRecord,
+  renderRecordSticker,
 }: SpendingRecordItemProps) {
   const content = (
     <>
-      <CardThumbnail src={consumption.thumbnailUrl ?? null} />
+      {isPositiveSafeInteger(consumption.id) ? (
+        renderRecordSticker(consumption.id)
+      ) : (
+        <span className="size-13 shrink-0" aria-hidden="true" />
+      )}
       <div className="min-w-0 flex-1" data-mp-mask="">
         <CardTitle weight="semibold">
           {consumption.placeName?.trim() || '알 수 없는 장소'}

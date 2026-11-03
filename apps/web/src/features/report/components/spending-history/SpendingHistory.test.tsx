@@ -21,6 +21,7 @@ const mockedUseConsumptionsInfiniteQuery = jest.mocked(useConsumptionsInfiniteQu
 const fetchNextPage = jest.fn();
 const refetch = jest.fn();
 const scrollTo = jest.fn();
+const renderRecordSticker = (consumptionId: number) => <span>기록 스티커 {consumptionId}</span>;
 
 const consumptions = [
   ...Array.from({ length: 3 }, (_, index) => ({
@@ -72,7 +73,7 @@ const firePointerEvent = (element: Element, type: string, clientY: number) => {
 const renderSpendingHistory = (scrollToDate?: string) =>
   render(
     <MemoryRouter>
-      <SpendingHistory scrollToDate={scrollToDate} />
+      <SpendingHistory scrollToDate={scrollToDate} renderRecordSticker={renderRecordSticker} />
     </MemoryRouter>
   );
 
@@ -96,7 +97,7 @@ describe('SpendingHistory', () => {
   });
 
   it('날짜별 소비 기록과 금액을 보여준다', () => {
-    const { container } = renderSpendingHistory();
+    renderSpendingHistory();
 
     expect(screen.getByRole('heading', { level: 1, name: '8월 소비 내역' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('8월');
@@ -104,16 +105,18 @@ describe('SpendingHistory', () => {
     expect(screen.getAllByText('투썸플레이스')).toHaveLength(7);
     expect(screen.getAllByText('5,500 원')).toHaveLength(7);
     expect(screen.getAllByText('2026.08.22 · 오전 · 카페')).toHaveLength(3);
-    expect(container.querySelector('img')).toHaveAttribute(
-      'src',
-      'https://example.com/consumption-01.jpg'
-    );
+    consumptions.forEach(({ id }) => {
+      expect(screen.getByText(`기록 스티커 ${id}`)).toBeInTheDocument();
+    });
   });
 
   it('화면 맥락에 맞는 소비내역 하단 여백을 적용한다', () => {
     const { container } = render(
       <MemoryRouter>
-        <SpendingHistory contentBottomPaddingClassName="pb-28" />
+        <SpendingHistory
+          contentBottomPaddingClassName="pb-28"
+          renderRecordSticker={renderRecordSticker}
+        />
       </MemoryRouter>
     );
 
@@ -126,7 +129,7 @@ describe('SpendingHistory', () => {
   it('상세 화면에서는 헤더를 고정하고 아래 콘텐츠만 스크롤한다', () => {
     const { container } = render(
       <MemoryRouter>
-        <SpendingHistory containedScroll />
+        <SpendingHistory containedScroll renderRecordSticker={renderRecordSticker} />
       </MemoryRouter>
     );
 
@@ -143,7 +146,10 @@ describe('SpendingHistory', () => {
   it('상단 안내 문구를 전달하면 월 선택 대신 안내를 보여준다', () => {
     render(
       <MemoryRouter>
-        <SpendingHistory headerDescription="이번달 작성한 소비기록을 확인해보세요" />
+        <SpendingHistory
+          headerDescription="이번달 작성한 소비기록을 확인해보세요"
+          renderRecordSticker={renderRecordSticker}
+        />
       </MemoryRouter>
     );
 
@@ -163,7 +169,10 @@ describe('SpendingHistory', () => {
 
     render(
       <MemoryRouter>
-        <SpendingHistory headerDescription="이번달 작성한 소비기록을 확인해보세요" />
+        <SpendingHistory
+          headerDescription="이번달 작성한 소비기록을 확인해보세요"
+          renderRecordSticker={renderRecordSticker}
+        />
       </MemoryRouter>
     );
 
@@ -258,8 +267,8 @@ describe('SpendingHistory', () => {
     const targetSection = screen.getByRole('heading', { name: '21일 금요일' }).closest('section');
     const otherSection = screen.getByRole('heading', { name: '22일 토요일' }).closest('section');
 
-    expect(targetSection).toHaveAttribute('aria-current', 'date');
-    expect(targetSection).toHaveClass('bg-primary-50', 'p-3');
+    expect(targetSection).not.toHaveAttribute('aria-current');
+    expect(targetSection).not.toHaveClass('bg-primary-50', 'p-3');
     expect(otherSection).not.toHaveAttribute('aria-current');
     expect(otherSection).not.toHaveClass('bg-primary-50', 'p-3');
   });
@@ -329,7 +338,7 @@ describe('SpendingHistory', () => {
 
     rerender(
       <MemoryRouter>
-        <SpendingHistory scrollToDate="2026-07-01" />
+        <SpendingHistory scrollToDate="2026-07-01" renderRecordSticker={renderRecordSticker} />
       </MemoryRouter>
     );
 
@@ -346,7 +355,7 @@ describe('SpendingHistory', () => {
     mockUseFirstAvailableYearMonthQuery.mockReturnValue({ data: { year: 2026, month: 5 } });
     rerender(
       <MemoryRouter>
-        <SpendingHistory scrollToDate="2026-04-01" />
+        <SpendingHistory scrollToDate="2026-04-01" renderRecordSticker={renderRecordSticker} />
       </MemoryRouter>
     );
 

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useHomeBottomSheetTabs } from '@/features/map/hooks/useHomeBottomSheetTabs';
 import { useSelectedPlaceExpandTransition } from '@/features/map/hooks/useSelectedPlaceExpandTransition';
 import {
   getHomeBottomSheetSnapPoint,
@@ -18,8 +19,6 @@ import LikedRecommendationSheet from './liked-places/LikedRecommendationSheet';
 import ShopRecommendationSheet from './ShopRecommendationSheet';
 
 import type { ReactNode, UIEvent } from 'react';
-
-type TabValue = 'frequentShops' | 'history';
 
 type HomeBottomSheetProps = {
   onSelectedPlaceExpand?: (placeId: string) => void;
@@ -146,13 +145,14 @@ export default function HomeBottomSheet({
   const topActionBottomPx = useHomeBottomSheetStore((state) => state.topActionBottomPx);
   const setVisibleHeight = useHomeBottomSheetStore((state) => state.setVisibleHeight);
   const snapPoint = getHomeBottomSheetSnapPoint(stepIndex);
-  const [tab, setTab] = useState<TabValue>('frequentShops');
-  const contentRootRef = useRef<HTMLDivElement>(null);
-  const scrollPositionsRef = useRef<Record<TabValue, number>>({
-    frequentShops: 0,
-    history: 0,
-  });
-  const shouldRestoreFocusRef = useRef(false);
+  const {
+    tab,
+    contentRootRef,
+    handleTabChange,
+    handleContentScroll,
+    handleScrollIntent,
+    handleContentKeyDown,
+  } = useHomeBottomSheetTabs(activeSheet.type === 'home');
 
   const handleVisibleHeightChange = useCallback(
     (heightPx: number) => {
@@ -172,32 +172,6 @@ export default function HomeBottomSheet({
     },
     [setVisibleHeight]
   );
-
-  useLayoutEffect(() => {
-    const scrollContainer = contentRootRef.current?.parentElement;
-    if (scrollContainer) {
-      scrollContainer.scrollTop = scrollPositionsRef.current[tab];
-    }
-
-    if (!shouldRestoreFocusRef.current) {
-      return;
-    }
-
-    shouldRestoreFocusRef.current = false;
-    contentRootRef.current
-      ?.querySelector<HTMLElement>('[data-active-tab-panel="true"] [data-pressed]')
-      ?.focus();
-  }, [activeSheet, tab]);
-
-  const handleTabChange = (nextTab: TabValue) => {
-    const scrollContainer = contentRootRef.current?.parentElement;
-    if (scrollContainer) {
-      scrollPositionsRef.current[tab] = scrollContainer.scrollTop;
-    }
-
-    shouldRestoreFocusRef.current = true;
-    setTab(nextTab);
-  };
 
   const renderSegmentedToggle = () => (
     <div className="pb-2">
@@ -219,6 +193,7 @@ export default function HomeBottomSheet({
   };
 
   const handleHomeSheetContentScroll = (event: UIEvent<HTMLDivElement>) => {
+    handleContentScroll(event);
     if (snapPoint === 'medium' && event.currentTarget.scrollTop > AUTO_EXPAND_SCROLL_THRESHOLD_PX) {
       setSnapPoint('full');
     }
@@ -242,6 +217,9 @@ export default function HomeBottomSheet({
   const homeSheetContent = (
     <div
       ref={contentRootRef}
+      onTouchMoveCapture={handleScrollIntent}
+      onWheelCapture={handleScrollIntent}
+      onKeyDown={handleContentKeyDown}
       className={cn('flex min-h-full flex-col bg-neutral-00', contentTransitionClassName)}
     >
       <div

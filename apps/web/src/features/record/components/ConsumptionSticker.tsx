@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useConsumptionStickerQuery } from '@/features/record/apis/hooks/useConsumptionStickerQuery';
+import { cn } from '@/shared/lib/cn';
 
 const MAX_IMAGE_RECOVERY_ATTEMPTS = 1;
 const STICKER_PREFETCH_MARGIN = '120px 0px';
 
 type ConsumptionStickerProps = {
   consumptionId: number;
+  size?: 'default' | 'large';
 };
 
 /** 방문 기록에 사용한 사진·기본 스티커를 투명 배경과 원래 비율로 표시합니다. */
-function ConsumptionStickerImage({ consumptionId }: ConsumptionStickerProps) {
+function ConsumptionStickerImage({ consumptionId, size = 'default' }: ConsumptionStickerProps) {
   const containerRef = useRef<HTMLSpanElement>(null);
   const [isVisible, setIsVisible] = useState(() => typeof IntersectionObserver === 'undefined');
   const {
@@ -57,18 +59,21 @@ function ConsumptionStickerImage({ consumptionId }: ConsumptionStickerProps) {
   };
 
   return (
-    <span ref={containerRef} className="inline-flex size-10 shrink-0">
+    <span
+      ref={containerRef}
+      className={cn('inline-flex shrink-0', size === 'large' ? 'size-13' : 'size-10')}
+    >
       {isPending || isRecovering ? (
         <span
           role="status"
           aria-label="스티커 불러오는 중"
-          className="size-10 shrink-0 animate-pulse rounded-08 bg-neutral-100 motion-reduce:animate-none"
+          className="size-full shrink-0 animate-pulse rounded-08 bg-neutral-100 motion-reduce:animate-none"
         />
       ) : !image || (image === failedImage?.url && dataUpdatedAt === failedImage.updatedAt) ? (
         <span
           role="img"
           aria-label="기록 스티커 없음"
-          className="grid size-10 shrink-0 place-items-center text-neutral-400"
+          className="grid size-full shrink-0 place-items-center text-neutral-400"
         >
           —
         </span>
@@ -79,7 +84,7 @@ function ConsumptionStickerImage({ consumptionId }: ConsumptionStickerProps) {
           alt="기록에 사용한 스티커"
           data-mp-block=""
           loading="lazy"
-          className="size-10 shrink-0 object-contain"
+          className="size-full shrink-0 object-contain"
           onLoad={() => {
             retryCount.current = 0;
           }}

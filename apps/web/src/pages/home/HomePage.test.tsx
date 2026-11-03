@@ -29,6 +29,12 @@ jest.mock('@/features/record/components/ConsumptionRecordActions', () => ({
   default: ({ children }: { children: (actions: ConsumptionActions) => ReactNode }) =>
     children({ onEditRecord: mockEditRecord, onDeleteRecord: mockDeleteRecord }),
 }));
+jest.mock('@/features/record/components/ConsumptionSticker', () => ({
+  __esModule: true,
+  default: ({ consumptionId }: { consumptionId: number }) => (
+    <span>기록 스티커 {consumptionId}</span>
+  ),
+}));
 jest.mock('@/features/map', () => ({
   ...jest.requireActual('@/features/map'),
   GoogleMapView: () => null,
@@ -64,8 +70,15 @@ jest.mock('@/features/report', () => ({
       자주 소비한 가게 선택
     </button>
   ),
-  SpendingHistory: ({ onEditRecord, onDeleteRecord }: ConsumptionActions) => (
+  SpendingHistory: ({
+    onEditRecord,
+    onDeleteRecord,
+    renderRecordSticker,
+  }: ConsumptionActions & {
+    renderRecordSticker: (id: number) => ReactNode;
+  }) => (
     <>
+      {renderRecordSticker(196)}
       <button onClick={() => onEditRecord?.(196, '2026-11-01')}>홈 기록 수정</button>
       <button onClick={() => onDeleteRecord?.(196)}>홈 기록 삭제</button>
     </>
@@ -118,6 +131,7 @@ describe('<HomePage />', () => {
   it('소비내역에 수정·삭제 액션을 전달한다', async () => {
     const user = userEvent.setup();
     renderHomePage();
+    expect(screen.getByText('기록 스티커 196')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '홈 기록 수정' }));
     await user.click(screen.getByRole('button', { name: '홈 기록 삭제' }));
     expect(mockEditRecord).toHaveBeenCalledWith(196, '2026-11-01');
