@@ -1,5 +1,15 @@
 {
   "specUrl": "https://chapchap.kr/dev/api/v3/api-docs",
+  "expectedOperations": {
+    "getPlaceDetail": {
+      "method": "GET",
+      "path": "/v1/recommendations/places/{placeId}"
+    },
+    "getPlaceDetail_1": {
+      "method": "GET",
+      "path": "/v1/consumptions/places/{placeId}"
+    }
+  },
   "features": {
     "auth": {
       "tags": ["Authentication", "Social OAuth"],
