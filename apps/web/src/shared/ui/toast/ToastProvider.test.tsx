@@ -55,6 +55,8 @@ const TOAST_PRESENTATIONS = [
   { type: 'success', surfaceClassName: 'toast-default', hasIcon: true },
   { type: 'error', surfaceClassName: 'toast-default', hasIcon: true },
   { type: 'info', surfaceClassName: 'toast-info', hasIcon: false },
+  { type: 'info-neutral', surfaceClassName: 'toast-info-neutral', hasIcon: false },
+  { type: 'like', surfaceClassName: 'toast-default', hasIcon: true },
 ] as const;
 
 describe('Toast', () => {
@@ -110,7 +112,7 @@ describe('Toast', () => {
       'calc(1.25rem + env(safe-area-inset-bottom))'
     );
     expect(screen.getByTestId('toast-viewport-above-bottom-sheet').style.bottom).toBe(
-      'calc(var(--toast-bottom-sheet-height, 0px) + 0.75rem)'
+      'calc(var(--toast-bottom-sheet-height, 0px) + 1.25rem)'
     );
   });
 
@@ -176,6 +178,9 @@ describe('Toast', () => {
           : screen.getByRole('dialog');
 
       expect(toast).toHaveClass(surfaceClassName);
+      if (type === 'like') {
+        expect(toast).toHaveClass('px-7.5');
+      }
       expect(Boolean(toast?.querySelector('svg'))).toBe(hasIcon);
     }
   );

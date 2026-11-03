@@ -298,6 +298,12 @@ export const useTogglePlaceLikeMutation = () => {
 
       updateCachedLikeState(queryClient, placeId, () => liked);
 
+      showToast({
+        type: 'like',
+        message: liked ? '좋아요 목록에 추가했어요' : '좋아요 목록에서 삭제했어요',
+        placement: 'above-bottom-sheet',
+      });
+
       if (!liked) {
         useHomeBottomSheetStore.getState().closeLikedRecommendationIfMatches(String(placeId));
       }

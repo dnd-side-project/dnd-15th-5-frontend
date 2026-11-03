@@ -5,7 +5,8 @@ import {
   MAX_VISIBLE_TOASTS,
 } from '@chapchap/shared/toast';
 
-import { StatusErrorIcon, StatusSuccessIcon } from '@/shared/assets/icons';
+import { LikeIcon, StatusErrorIcon, StatusSuccessIcon } from '@/shared/assets/icons';
+import { cn } from '@/shared/lib/cn';
 
 import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from './constants';
 import { toastVariants } from './toastVariants';
@@ -23,12 +24,16 @@ const toastIcons: Record<ToastType, typeof StatusSuccessIcon | null> = {
   success: StatusSuccessIcon,
   error: StatusErrorIcon,
   info: null,
+  'info-neutral': null,
+  like: LikeIcon,
 };
 
 function ToastIcon({ type }: { type: ToastType }) {
   const Icon = toastIcons[type];
 
-  return Icon ? <Icon className="size-5 shrink-0" aria-hidden="true" /> : null;
+  return Icon ? (
+    <Icon className={cn('size-5 shrink-0', type === 'like' && 'text-red')} aria-hidden="true" />
+  ) : null;
 }
 
 function ToastList({
@@ -66,7 +71,7 @@ function ToastViewport({ placement }: { placement: WebToastData['placement'] }) 
       className="toast-list mobile-frame z-toast pointer-events-none fixed right-0 left-0 box-border flex flex-col-reverse px-4 outline-none"
       style={{
         bottom: isAboveBottomSheet
-          ? `calc(var(${TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE}, 0px) + 0.75rem)`
+          ? `calc(var(${TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE}, 0px) + 1.25rem)`
           : 'calc(1.25rem + env(safe-area-inset-bottom))',
       }}
       data-testid={isAboveBottomSheet ? 'toast-viewport-above-bottom-sheet' : 'toast-viewport'}

@@ -7,7 +7,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { StatusErrorIcon, StatusSuccessIcon } from '@/shared/assets/icons';
+import { LikeIcon, StatusErrorIcon, StatusSuccessIcon } from '@/shared/assets/icons';
 
 import type { ShowToastOptions, ToastControls, ToastType } from '@chapchap/shared/toast';
 import type { PropsWithChildren } from 'react';
@@ -35,12 +35,16 @@ const toastIcons: Record<ToastType, typeof StatusSuccessIcon | null> = {
   success: StatusSuccessIcon,
   error: StatusErrorIcon,
   info: null,
+  'info-neutral': null,
+  like: LikeIcon,
 };
 
 const toastSurfaceClasses: Record<ToastType, string> = {
   success: 'toast-default',
   error: 'toast-default',
-  info: 'toast-info',
+  info: 'toast-info px-7.5',
+  'info-neutral': 'toast-info-neutral px-7.5',
+  like: 'toast-default',
 };
 
 function ToastIcon({ type }: { type: ToastType }) {

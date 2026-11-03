@@ -36,8 +36,10 @@
 /* 안내 Toast의 강조 배경 */
 @utility toast-info {
   background-color: var(--color-primary-500);
-  padding-right: 16px;
-  padding-left: 16px;
+}
+
+@utility toast-info-neutral {
+  background-color: var(--color-neutral-600);
 }
 
 /* Toast 메시지의 공통 타이포그래피와 색상 */

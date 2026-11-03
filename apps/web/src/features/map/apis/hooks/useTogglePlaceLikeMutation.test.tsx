@@ -70,6 +70,33 @@ describe('useTogglePlaceLikeMutation', () => {
       queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)
         ?.data.places[0]?.liked
     ).toBe(true);
+    expect(showToast).toHaveBeenCalledWith({
+      type: 'like',
+      message: '좋아요 목록에 추가했어요',
+      placement: 'above-bottom-sheet',
+    });
+  });
+
+  it('좋아요 취소 성공 시 취소 안내 토스트를 표시한다', async () => {
+    mockedToggleLike.mockResolvedValue({ data: { liked: false } });
+    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    queryClient.setQueryData(LIKED_PLACES_INFINITE_QUERY_KEY, {
+      pages: [{ data: { places: [{ placeId: 101 }] } }],
+      pageParams: [undefined],
+    } as InfiniteData<ApiResponseLikedPlaceScrollResponse>);
+    const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ placeId: 101 });
+    });
+
+    expect(showToast).toHaveBeenCalledWith({
+      type: 'like',
+      message: '좋아요 목록에서 삭제했어요',
+      placement: 'above-bottom-sheet',
+    });
   });
 
   it('요청이 실패하면 이전 캐시를 복구하고 오류 토스트를 표시한다', async () => {

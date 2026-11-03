@@ -16,7 +16,9 @@ export const toastVariants = cva(
       type: {
         success: 'toast-default',
         error: 'toast-default',
-        info: 'toast-info w-fit',
+        info: 'toast-info w-fit px-7.5',
+        'info-neutral': 'toast-info-neutral w-fit px-7.5',
+        like: 'toast-default px-7.5',
       },
     },
     defaultVariants: {
