@@ -2,6 +2,7 @@ import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/us
 import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
+import GoogleMapsLinkButton from '@/features/map/components/GoogleMapsLinkButton';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
@@ -79,7 +80,7 @@ export default function LikedRecommendationSheet({
     );
   }
 
-  const { id, place, thumbnailSrc } = recommendation;
+  const { googleMapsUri, id, place, thumbnailSrc } = recommendation;
   // TODO: placeId 기반 백엔드 상세 API가 googlePlaceId, 가게명, 도로명 주소, 좌표, 사진 URL(최대 3장)을 제공하면 Google Places 조회를 제거하고 기록 작성과 바텀시트에 사용한다.
   const fallbackPhotoUrl = recordShopQuery.data?.photoUrl ?? thumbnailSrc;
   const photoUrls = getLikedPlacePhotoUrls(recordShopQuery.data?.photoUrls, fallbackPhotoUrl);
@@ -115,24 +116,31 @@ export default function LikedRecommendationSheet({
         onUnlike={handleUnlike}
         headingAs="h1"
       />
-      {isResolvingRecordShop ? (
-        <Button isLoading size="large" className="mt-4">
-          기록하기
-        </Button>
-      ) : recordLocationState ? (
-        <LinkButton
-          to={ROUTE_PATHS.record}
-          state={recordLocationState}
-          size="large"
-          className="mt-4"
-        >
-          기록하기
-        </LinkButton>
-      ) : (
-        <Button disabled size="large" className="mt-4">
-          기록하기
-        </Button>
-      )}
+      <div className="mt-4 flex gap-2">
+        <GoogleMapsLinkButton
+          address={address}
+          googleMapsUri={googleMapsUri}
+          placeName={place.name}
+        />
+        {isResolvingRecordShop ? (
+          <Button isLoading size="large" className="w-auto min-w-0 flex-1">
+            기록하기
+          </Button>
+        ) : recordLocationState ? (
+          <LinkButton
+            to={ROUTE_PATHS.record}
+            state={recordLocationState}
+            size="large"
+            className="w-auto min-w-0 flex-1"
+          >
+            기록하기
+          </LinkButton>
+        ) : (
+          <Button disabled size="large" className="w-auto min-w-0 flex-1">
+            기록하기
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
