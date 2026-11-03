@@ -3,6 +3,7 @@ type NotificationToggleProps = {
   label: string;
   checked: boolean;
   onCheckedChange: () => void;
+  disabled?: boolean;
 };
 
 export default function NotificationToggle({
@@ -10,6 +11,7 @@ export default function NotificationToggle({
   label,
   checked,
   onCheckedChange,
+  disabled = false,
 }: NotificationToggleProps) {
   return (
     <button
@@ -18,8 +20,9 @@ export default function NotificationToggle({
       role="switch"
       aria-checked={checked}
       aria-label={label}
+      disabled={disabled}
       onClick={onCheckedChange}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 ${
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 ${
         checked ? 'bg-primary-500' : 'bg-neutral-300'
       }`}
     >

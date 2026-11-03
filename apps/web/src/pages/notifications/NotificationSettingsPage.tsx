@@ -1,31 +1,50 @@
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
-import { NotificationToggle } from '@/features/notification';
+import {
+  NotificationToggle,
+  useGetNotificationSettings,
+  useUpdateNotificationSettings,
+} from '@/features/notification';
+import type { NotificationSettingsUpdateRequest } from '@/features/notification/apis/dto';
+import { getGetNotificationSettingsQueryKey } from '@/features/notification/apis/queryKeys';
 import { ChevronRightThinIcon, CircleWarningIcon } from '@/shared/assets/icons';
 import { useNativeAppActive } from '@/shared/hooks/useNativeAppActive';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 import { BackButton } from '@/shared/ui/back-button';
+import { useToast } from '@/shared/ui/toast';
 
 const NOTIFICATION_OPTIONS = [
   {
     id: 'consumption-record',
     title: '소비 기록 알림',
     description: '잊고 있던 소비 기록을 챙겨드려요.',
-    defaultChecked: false,
+    settingKey: 'consumptionReminderEnabled',
   },
   {
     id: 'monthly-report',
     title: '월간 리포트 알림',
     description: '이번 달 소비 취향 리포트가 나오면 알려드려요.',
-    defaultChecked: true,
+    settingKey: 'monthlyReportEnabled',
   },
 ] as const;
 
 export default function NotificationSettingsPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const isInNativeApp = isNativeApp();
+  const notificationSettingsQuery = useGetNotificationSettings();
+  const updateNotificationSettingsMutation = useUpdateNotificationSettings({
+    mutation: {
+      onSuccess: (response) => {
+        queryClient.setQueryData(getGetNotificationSettingsQueryKey(), response);
+      },
+      onError: () => {
+        showToast({ type: 'error', message: '알림 설정을 저장하지 못했어요.' });
+      },
+    },
+  });
   const notificationPermissionQuery = useQuery({
     queryKey: ['native-notification-permission'],
     queryFn: () => requestToNative('getNotificationPermissionStatus', {}),
@@ -79,18 +98,55 @@ export default function NotificationSettingsPage() {
       )}
 
       <div className={isInNativeApp && !hasNotificationPermission ? 'mt-8' : 'mt-3'}>
-        {NOTIFICATION_OPTIONS.map((option) => (
-          <NotificationSettingRow key={option.id} option={option} />
-        ))}
+        {notificationSettingsQuery.isError ? (
+          <div className="px-4 py-6 text-center text-body-02-regular text-neutral-500" role="alert">
+            <p>알림 설정을 불러오지 못했어요.</p>
+            <button
+              type="button"
+              className="mt-2 text-primary-600 underline"
+              onClick={() => void notificationSettingsQuery.refetch()}
+            >
+              다시 불러오기
+            </button>
+          </div>
+        ) : (
+          NOTIFICATION_OPTIONS.map((option) => {
+            const checked = notificationSettingsQuery.data?.data?.[option.settingKey] ?? false;
+
+            return (
+              <NotificationSettingRow
+                key={option.id}
+                option={option}
+                checked={checked}
+                disabled={
+                  notificationSettingsQuery.isPending ||
+                  updateNotificationSettingsMutation.isPending
+                }
+                onCheckedChange={() =>
+                  updateNotificationSettingsMutation.mutate({
+                    data: { [option.settingKey]: !checked } as NotificationSettingsUpdateRequest,
+                  })
+                }
+              />
+            );
+          })
+        )}
       </div>
     </main>
   );
 }
 
-function NotificationSettingRow({ option }: { option: (typeof NOTIFICATION_OPTIONS)[number] }) {
-  // TODO: 백엔드 알림 설정 API가 추가되면 서버 값 조회와 변경 저장을 연결합니다.
-  const [checked, setChecked] = useState(option.defaultChecked);
-
+function NotificationSettingRow({
+  option,
+  checked,
+  disabled,
+  onCheckedChange,
+}: {
+  option: (typeof NOTIFICATION_OPTIONS)[number];
+  checked: boolean;
+  disabled: boolean;
+  onCheckedChange: () => void;
+}) {
   return (
     <div className="flex min-h-19 items-center justify-between gap-3 border-b border-neutral-100 px-4 pt-6 pb-4 last:border-b-0">
       <div className="min-w-0">
@@ -101,7 +157,8 @@ function NotificationSettingRow({ option }: { option: (typeof NOTIFICATION_OPTIO
         id={option.id}
         label={option.title}
         checked={checked}
-        onCheckedChange={() => setChecked((current) => !current)}
+        disabled={disabled}
+        onCheckedChange={onCheckedChange}
       />
     </div>
   );
