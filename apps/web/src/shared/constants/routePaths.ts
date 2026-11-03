@@ -47,7 +47,9 @@ export const ROUTE_PATHS = {
   notifications: NOTIFICATION_ALLOWED_PATHS.notifications,
   notificationSettings: '/my-page/notifications',
   myPage: '/my-page',
+  myPageLikes: '/my-page/likes',
   myPageProfile: '/my-page/profile',
+  myPagePolicies: '/my-page/policies',
 } as const;
 
 /** 선택한 연월을 유지해야 하는 기록 경로에 `yearMonth` 검색 파라미터를 추가합니다. */

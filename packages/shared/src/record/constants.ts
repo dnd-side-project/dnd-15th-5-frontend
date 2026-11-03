@@ -1,8 +1,6 @@
 import { SPENDING_CATEGORIES } from '../common/constants';
 
-import type { SpendingCategory } from '../common/types';
-
-/** 웹 수기 입력과 앱 영수증 입력에서 공통으로 사용하는 소비 카테고리. */
+/** 웹·앱 기록과 리포트에서 같은 카테고리와 표시 순서를 사용합니다. */
 export const RECORD_CATEGORIES = SPENDING_CATEGORIES;
 
 /** 소비 기록 금액의 최댓값(원). 비정상적으로 큰 입력을 막기 위한 상한이다. */
@@ -23,4 +21,4 @@ export const CREATED_CONSUMPTION_QUERY_KEYS = {
   longitude: 'createdPlaceLng',
 } as const;
 
-export type RecordCategory = SpendingCategory;
+export type RecordCategory = (typeof RECORD_CATEGORIES)[number];

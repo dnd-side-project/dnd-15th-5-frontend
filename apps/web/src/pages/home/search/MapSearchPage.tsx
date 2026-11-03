@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOpenVisitedPlaceOnMap } from '@/features/map';
 import { VisitedPlaceSearch } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import { BackButton } from '@/shared/ui/back-button';
+import PageHeader from '@/shared/layout/PageHeader';
 
 export default function MapSearchPage() {
   const navigate = useNavigate();
@@ -16,9 +16,9 @@ export default function MapSearchPage() {
 
   return (
     <main className="flex min-h-full flex-col">
-      <BackButton onClick={() => navigate(-1)} />
+      <PageHeader onBack={() => navigate(-1)} />
 
-      <div className="mt-4">
+      <div>
         <VisitedPlaceSearch onSelectPlace={(placeId) => void handleSelectPlace(placeId)} />
       </div>
     </main>

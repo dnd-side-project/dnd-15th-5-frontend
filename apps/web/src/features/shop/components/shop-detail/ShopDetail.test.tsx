@@ -196,4 +196,51 @@ describe('ShopDetail', () => {
 
     expect(screen.getByLabelText('획득한 스티커').querySelectorAll('img')).toHaveLength(6);
   });
+
+  it('집계가 비어 있어도 최근 스티커가 있으면 빈 안내 대신 이미지를 표시한다', () => {
+    mockedUseGetPlaceDetail.mockReturnValue({
+      data: {
+        data: {
+          placeId: 101,
+          placeName: '투썸플레이스',
+          stickerSummary: [],
+          recentStickers: [{ itemName: '커피' }],
+        },
+      },
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useGetPlaceDetail>);
+    render(
+      <MemoryRouter>
+        <ShopDetail placeId={101} headerContent={null} onViewOnMap={jest.fn()} />
+      </MemoryRouter>
+    );
+    expect(screen.getByLabelText('획득한 스티커').querySelectorAll('img')).toHaveLength(1);
+    expect(screen.queryByText('아직 획득한 스티커가 없어요')).not.toBeInTheDocument();
+  });
+
+  it('방문 기록이 있으면 이미지가 없어도 스티커 미획득으로 안내하지 않는다', () => {
+    mockedUseGetPlaceDetail.mockReturnValue({
+      data: {
+        data: {
+          placeId: 101,
+          placeName: '투썸플레이스',
+          stats: { totalVisitCount: 1 },
+          stickerSummary: [],
+          recentStickers: [],
+        },
+      },
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useGetPlaceDetail>);
+    render(
+      <MemoryRouter>
+        <ShopDetail placeId={101} headerContent={null} onViewOnMap={jest.fn()} />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('기록한 이미지를 아직 표시할 수 없어요')).toBeInTheDocument();
+    expect(screen.queryByText('아직 획득한 스티커가 없어요')).not.toBeInTheDocument();
+  });
 });

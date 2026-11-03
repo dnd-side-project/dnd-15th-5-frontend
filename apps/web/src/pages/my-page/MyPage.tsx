@@ -49,10 +49,17 @@ export default function MyPage() {
       <section className="min-h-[calc(100dvh-211px)] rounded-t-30 bg-neutral-00 shadow-my-page-sheet">
         <h2 className="sr-only">마이페이지 메뉴</h2>
 
-        <MyPageShortcutMenu onRecordClick={() => navigate(ROUTE_PATHS.spendingHistory)} />
+        <MyPageShortcutMenu
+          onLikeClick={() => navigate(ROUTE_PATHS.myPageLikes)}
+          onRecordClick={() => navigate(ROUTE_PATHS.spendingHistory)}
+        />
 
         <MyPageMenuSection>
-          <MyPageMenuItem icon={TermsIcon} label="이용약관 및 개인정보처리방침" />
+          <MyPageMenuItem
+            icon={TermsIcon}
+            label="이용약관 및 개인정보처리방침"
+            onClick={() => navigate(ROUTE_PATHS.myPagePolicies)}
+          />
           <ContactButton />
         </MyPageMenuSection>
 

@@ -33,7 +33,7 @@ type VisitDateTimePickerProps = {
 
 const getWeekdayTextClassName = (weekday: number) => {
   if (weekday === SUNDAY_INDEX) {
-    return 'text-notification';
+    return 'text-red';
   }
   if (weekday === SATURDAY_INDEX) {
     return 'text-primary-500';
@@ -49,7 +49,7 @@ const getDayTextClassName = (weekday: number, selected: boolean, disabled: boole
     return 'text-neutral-00';
   }
   if (weekday === SUNDAY_INDEX) {
-    return 'text-notification';
+    return 'text-red';
   }
   if (weekday === SATURDAY_INDEX) {
     return 'text-primary-500';

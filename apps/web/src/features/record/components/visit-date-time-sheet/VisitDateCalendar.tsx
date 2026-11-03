@@ -13,7 +13,7 @@ const SUNDAY_INDEX = 0;
 const SATURDAY_INDEX = 6;
 
 const getWeekdayLabelClassName = (index: number) => {
-  if (index === SUNDAY_INDEX) return 'text-notification';
+  if (index === SUNDAY_INDEX) return 'text-red';
   if (index === SATURDAY_INDEX) return 'text-primary-500';
   return 'text-neutral-500';
 };
@@ -21,7 +21,7 @@ const getWeekdayLabelClassName = (index: number) => {
 const getCalendarDayClassName = (weekday: number, isSelected: boolean, isDisabled: boolean) => {
   if (isDisabled) return 'text-neutral-300';
   if (isSelected) return 'bg-primary-500 text-neutral-00';
-  if (weekday === SUNDAY_INDEX) return 'text-notification hover:bg-neutral-50';
+  if (weekday === SUNDAY_INDEX) return 'text-red hover:bg-neutral-50';
   if (weekday === SATURDAY_INDEX) return 'text-primary-500 hover:bg-neutral-50';
   return 'text-neutral-700 hover:bg-neutral-50';
 };

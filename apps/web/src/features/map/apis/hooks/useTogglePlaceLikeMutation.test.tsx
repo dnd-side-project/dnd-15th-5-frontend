@@ -2,7 +2,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { toggleLike } from '@/features/map/apis/clients';
-import type { ApiResponseNearbyPlacesResponse } from '@/features/map/apis/dto';
+import type {
+  ApiResponseLikedPlaceScrollResponse,
+  ApiResponseNearbyPlacesResponse,
+} from '@/features/map/apis/dto';
+import { LIKED_PLACES_INFINITE_QUERY_KEY } from '@/features/map/apis/hooks/useLikedPlacesInfiniteQuery';
 import {
   getGetNearbyPlacesQueryKey,
   getGetVisitedPlaceMarkersQueryKey,
@@ -11,6 +15,7 @@ import { useToast } from '@/shared/ui/toast';
 
 import { useTogglePlaceLikeMutation } from './useTogglePlaceLikeMutation';
 
+import type { InfiniteData } from '@tanstack/react-query';
 import type { PropsWithChildren } from 'react';
 
 jest.mock('@/features/map/apis/clients', () => ({ toggleLike: jest.fn() }));
@@ -145,5 +150,77 @@ describe('useTogglePlaceLikeMutation', () => {
         ?.sameCategoryPlaces;
     expect(places?.find(({ placeId }) => placeId === 101)?.liked).toBe(false);
     expect(places?.find(({ placeId }) => placeId === 202)?.liked).toBe(true);
+  });
+
+  it('페이지 구성이 바뀌어도 기존 이웃 장소가 있는 페이지에 복구한다', async () => {
+    let rejectRequest: ((reason: Error) => void) | undefined;
+    mockedToggleLike.mockImplementation(
+      () =>
+        new Promise((_, reject) => {
+          rejectRequest = reject;
+        })
+    );
+    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const likedPlacesKey = [
+      ...LIKED_PLACES_INFINITE_QUERY_KEY,
+      { category: undefined, size: 5 },
+    ] as const;
+    type LikedPlacesInfiniteData = InfiniteData<
+      ApiResponseLikedPlaceScrollResponse,
+      { cursorId?: number }
+    >;
+    queryClient.setQueryData<LikedPlacesInfiniteData>(likedPlacesKey, {
+      pages: [
+        {
+          data: {
+            places: [
+              { placeId: 101, name: '장소 A' },
+              { placeId: 202, name: '장소 B' },
+            ],
+          },
+        },
+        { data: { places: [{ placeId: 303, name: '장소 C' }] } },
+      ],
+      pageParams: [{}, { cursorId: 202 }],
+    });
+    const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    let request: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    await act(async () => {
+      request = result.current.mutateAsync({ placeId: 101 });
+      await Promise.resolve();
+    });
+
+    // 다른 조회가 페이지 구성을 바꿔 기존 이웃 장소가 두 번째 페이지로 이동한 상황을 만든다.
+    queryClient.setQueryData<LikedPlacesInfiniteData>(likedPlacesKey, {
+      pages: [
+        {
+          data: {
+            places: [
+              { placeId: 303, name: '장소 C' },
+              { placeId: 404, name: '장소 D' },
+            ],
+          },
+        },
+        { data: { places: [{ placeId: 202, name: '장소 B' }] } },
+      ],
+      pageParams: [{}, { cursorId: 404 }],
+    });
+
+    rejectRequest?.(new Error('unlike failed'));
+    await act(async () => {
+      await expect(request).rejects.toThrow('unlike failed');
+    });
+
+    const pages = queryClient.getQueryData<LikedPlacesInfiniteData>(likedPlacesKey)?.pages ?? [];
+    const placeIds = pages.flatMap(
+      (page) => page.data?.places?.map((place) => place.placeId) ?? []
+    );
+
+    expect(pages[0]?.data?.places?.map(({ placeId }) => placeId)).toEqual([303, 404]);
+    expect(pages[1]?.data?.places?.map(({ placeId }) => placeId)).toEqual([101, 202]);
+    expect(placeIds.filter((placeId) => placeId === 101)).toHaveLength(1);
   });
 });

@@ -14,6 +14,7 @@ describe('receipt review route params', () => {
       period: 'afternoon',
     });
     expect(isRecordCategory('카페')).toBe(true);
+    expect(isRecordCategory('쇼핑')).toBe(true);
     expect(isRecordCategory('알 수 없음')).toBe(false);
   });
 

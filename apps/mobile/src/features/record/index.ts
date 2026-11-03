@@ -14,7 +14,6 @@ export {
   isRecordCategory,
   parseVisitDateTime,
 } from './utils/receiptReviewParams';
-export { parseReceiptVisitDateTime } from './utils/parseReceiptVisitDateTime';
 export { createRecordCreatedHomePath } from './utils/createRecordCreatedHomePath';
 
 export type { ReceiptDraft, ReceiptReviewRouteParams, ReceiptReviewState } from './types';

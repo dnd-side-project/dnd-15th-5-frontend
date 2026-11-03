@@ -24,9 +24,6 @@ type UseCreatedConsumptionResultOptions = {
   onHandled: () => void;
 };
 
-const getCreatedPlaceKey = ({ placeName, latitude, longitude }: CreatedConsumptionPlace) =>
-  `${placeName}:${latitude}:${longitude}`;
-
 /**
  * 소비 기록 생성 뒤 최신 방문 장소를 찾아 지도 포커스·상세 시트·완료 Toast를 동기화합니다.
  *
@@ -44,13 +41,21 @@ export const useCreatedConsumptionResult = ({
   const { showToast } = useToast();
   const handledKeyRef = useRef<string | null>(null);
   const processingTokenRef = useRef<symbol | null>(null);
+  const cachedStickersRef = useRef(stickers);
+  const placeName = createdPlace?.placeName;
+  const latitude = createdPlace?.latitude;
+  const longitude = createdPlace?.longitude;
 
   useEffect(() => {
-    if (!createdPlace) {
+    cachedStickersRef.current = stickers;
+  }, [stickers]);
+
+  useEffect(() => {
+    if (placeName === undefined || latitude === undefined || longitude === undefined) {
       return;
     }
 
-    const createdPlaceKey = getCreatedPlaceKey(createdPlace);
+    const createdPlaceKey = `${placeName}:${latitude}:${longitude}`;
     if (handledKeyRef.current === createdPlaceKey || processingTokenRef.current) {
       return;
     }
@@ -60,19 +65,24 @@ export const useCreatedConsumptionResult = ({
     let isCancelled = false;
 
     const handleCreatedConsumption = async () => {
-      let latestStickers = stickers;
+      let latestStickers;
 
       try {
         latestStickers = await refetchStickers();
       } catch {
         // NOTE: 갱신 요청이 실패해도 이미 캐시된 마커가 있으면 완료 흐름을 이어갑니다.
+        latestStickers = cachedStickersRef.current;
       }
 
       if (isCancelled) {
         return;
       }
 
-      const matchedSticker = findCreatedConsumptionSticker(latestStickers, createdPlace);
+      const matchedSticker = findCreatedConsumptionSticker(latestStickers, {
+        placeName,
+        latitude,
+        longitude,
+      });
       handledKeyRef.current = createdPlaceKey;
 
       if (matchedSticker) {
@@ -122,13 +132,14 @@ export const useCreatedConsumptionResult = ({
       }
     };
   }, [
-    createdPlace,
+    latitude,
+    longitude,
     onHandled,
+    placeName,
     recordMethod,
     refetchStickers,
     setSelectedPlaceFocus,
     showSelectedPlace,
     showToast,
-    stickers,
   ]);
 };

@@ -6,16 +6,18 @@
 import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type {
+  ApiResponseLikedPlaceScrollResponse,
   ApiResponseNearbyPlacesResponse,
   ApiResponsePlaceLikeResponse,
   ApiResponseVisitedPlaceMarkerResponse,
+  GetLikedPlacesParams,
   GetNearbyPlacesParams,
   GetVisitedPlaceMarkersParams,
   SecondParameter,
 } from '@/features/map/apis/dto';
 
 /**
- * 좋아요 상태를 등록하고 취소한다
+ * 좋아요 상태를 등록하고 취소합니다. 동시 등록·해제 충돌은 409(PLACE007)를 반환합니다.
  * @summary 가게 좋아요 토글
  */
 export const toggleLike = (
@@ -40,6 +42,21 @@ export const getNearbyPlaces = (
 ) => {
   return apiClient<ApiResponseNearbyPlacesResponse>(
     { url: `/v1/recommendations/nearby-places`, method: 'GET', params, signal },
+    options
+  );
+};
+
+/**
+ * 최근 좋아요순으로 조회합니다. category를 생략하면 전체를 조회합니다. categories는 페이지·필터와 무관하게 내 좋아요 전체에 존재하는 대표 카테고리입니다. 대표 카테고리는 전체 소비기록 수 기준이며 동률이면 이름순입니다. 기록이 없으면 null입니다. 필터를 바꾸면 cursorId를 생략하고 처음부터 조회합니다. 사진은 장소당 최대 3개입니다.
+ * @summary 좋아요한 가게 목록
+ */
+export const getLikedPlaces = (
+  params?: GetLikedPlacesParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseLikedPlaceScrollResponse>(
+    { url: `/v1/places/likes`, method: 'GET', params, signal },
     options
   );
 };
