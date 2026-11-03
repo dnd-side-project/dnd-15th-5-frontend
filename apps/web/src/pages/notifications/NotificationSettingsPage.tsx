@@ -26,9 +26,15 @@ const NOTIFICATION_OPTIONS = [
 
 export default function NotificationSettingsPage() {
   const navigate = useNavigate();
-  const { isInNativeApp, hasNotificationPermission, openNotificationSettings } =
-    useNativeNotificationPermission();
+  const {
+    isInNativeApp,
+    isNotificationPermissionKnown,
+    hasNotificationPermission,
+    openNotificationSettings,
+  } = useNativeNotificationPermission();
   const { settingsQuery, isSaving, toggleSetting } = useNotificationSettings();
+  const shouldShowNotificationPermissionNotice =
+    isInNativeApp && isNotificationPermissionKnown && !hasNotificationPermission;
 
   return (
     <main className="mobile-frame fixed inset-0 flex flex-col overflow-y-auto bg-neutral-00">
@@ -41,7 +47,7 @@ export default function NotificationSettingsPage() {
         <h1 className="text-title-02-bold tracking-[-0.02em] text-neutral-700">알림 설정</h1>
       </header>
 
-      {isInNativeApp && !hasNotificationPermission && (
+      {shouldShowNotificationPermissionNotice && (
         <section
           aria-label="스마트폰 알림 안내"
           className="mx-4 mt-3 rounded-16 bg-neutral-50 px-4 py-4"
@@ -64,7 +70,7 @@ export default function NotificationSettingsPage() {
         </section>
       )}
 
-      <div className={isInNativeApp && !hasNotificationPermission ? 'mt-8' : 'mt-3'}>
+      <div className={shouldShowNotificationPermissionNotice ? 'mt-8' : 'mt-3'}>
         {settingsQuery.isError ? (
           <div className="px-4 py-6 text-center text-body-02-regular text-neutral-500" role="alert">
             <p>알림 설정을 불러오지 못했어요.</p>

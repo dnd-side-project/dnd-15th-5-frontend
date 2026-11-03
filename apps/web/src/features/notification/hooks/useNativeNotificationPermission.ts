@@ -29,6 +29,7 @@ export const useNativeNotificationPermission = () => {
 
   return {
     isInNativeApp,
+    isNotificationPermissionKnown: permissionQuery.isSuccess,
     hasNotificationPermission: permissionQuery.data?.granted === true,
     openNotificationSettings,
   };
