@@ -1,6 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 
-import { NotificationToggle, useNotificationSettings } from '@/features/notification';
+import {
+  NotificationToggle,
+  useNativeNotificationPermission,
+  useNotificationSettings,
+} from '@/features/notification';
 import { ChevronRightThinIcon, CircleWarningIcon } from '@/shared/assets/icons';
 import { BackButton } from '@/shared/ui/back-button';
 
@@ -21,14 +25,9 @@ const NOTIFICATION_OPTIONS = [
 
 export default function NotificationSettingsPage() {
   const navigate = useNavigate();
-  const {
-    isInNativeApp,
-    hasNotificationPermission,
-    settingsQuery,
-    isSaving,
-    openNotificationSettings,
-    toggleSetting,
-  } = useNotificationSettings();
+  const { isInNativeApp, hasNotificationPermission, openNotificationSettings } =
+    useNativeNotificationPermission();
+  const { settingsQuery, isSaving, toggleSetting } = useNotificationSettings();
 
   return (
     <main className="mobile-frame fixed inset-0 flex flex-col overflow-y-auto bg-neutral-00">
