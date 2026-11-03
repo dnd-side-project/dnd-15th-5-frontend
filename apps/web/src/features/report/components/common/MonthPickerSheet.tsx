@@ -49,10 +49,7 @@ export default function MonthPickerSheet({
       >
         월 선택하기
       </h2>
-      <ul
-        onScroll={handleMonthListScroll}
-        className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto px-4 pb-8"
-      >
+      <ul onScroll={handleMonthListScroll} className="min-h-0 flex-1 overflow-y-auto px-4 pb-8">
         {months.map((month) => {
           const isSelected = isSameMonth(month, selectedMonth);
 

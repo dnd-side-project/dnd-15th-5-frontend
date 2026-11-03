@@ -206,7 +206,7 @@ export function BottomSheet({
           'px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]',
           fitContent
             ? 'shrink-0 overflow-visible'
-            : 'scrollbar-hidden min-h-0 flex-1 overflow-y-auto overscroll-y-contain',
+            : 'min-h-0 flex-1 overflow-y-auto overscroll-y-contain',
           contentClassName
         )}
       >

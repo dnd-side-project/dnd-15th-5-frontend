@@ -68,7 +68,7 @@ export default function ShopDetailView({
           ref={scrollRootRef}
           role="region"
           aria-label="방문 요약과 방문 기록"
-          className="scrollbar-hidden pb-safe-bottom -mx-4 mt-6 min-h-0 flex-1 overflow-y-auto px-4"
+          className="pb-safe-bottom -mx-4 mt-6 min-h-0 flex-1 overflow-y-auto px-4"
         >
           <VisitSummaryCard
             firstVisitedDate={place.stats?.firstVisitedDate}

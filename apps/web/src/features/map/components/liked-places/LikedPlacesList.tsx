@@ -158,7 +158,7 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
 
       <nav
         aria-label="좋아요 카테고리 필터"
-        className="scrollbar-hidden flex shrink-0 gap-2 overflow-x-auto pt-6 pb-3"
+        className="flex shrink-0 gap-2 overflow-x-auto pt-6 pb-3"
       >
         {availableCategories.map((category) => (
           <CategoryChip
@@ -180,7 +180,7 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
       <section
         ref={listRef}
         aria-label="좋아요한 가게 목록"
-        className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto pb-page-bottom"
+        className="min-h-0 flex-1 overflow-y-auto pb-page-bottom"
       >
         {isPending ||
         isPlaceholderData ||

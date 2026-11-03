@@ -78,7 +78,7 @@ export default function FrequentShopList({
       <header className="z-sticky-header shrink-0 bg-neutral-00 pt-4">
         {headerContent}
         <div className="relative -mx-4 mt-4 h-15.5 border-b border-neutral-200 bg-neutral-00">
-          <div className="scrollbar-hidden flex h-full items-center gap-1.5 overflow-x-auto px-4 pr-20">
+          <div className="flex h-full items-center gap-1.5 overflow-x-auto px-4 pr-20">
             {CATEGORY_FILTERS.map((category) => (
               <CategoryChip
                 key={category}
