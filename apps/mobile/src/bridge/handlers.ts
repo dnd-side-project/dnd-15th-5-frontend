@@ -73,9 +73,17 @@ export const BRIDGE_HANDLERS: BridgeHandlerMap = {
     return { cleared: true };
   },
   getPushToken: () => getPushToken(),
-  getNotificationPermissionStatus: async () => ({
-    granted: (await Notifications.getPermissionsAsync()).granted,
-  }),
+  getNotificationPermissionStatus: async () => {
+    const permission = await Notifications.getPermissionsAsync();
+    const notificationChannel =
+      Platform.OS === 'android' ? await Notifications.getNotificationChannelAsync('default') : null;
+
+    return {
+      granted:
+        permission.granted &&
+        notificationChannel?.importance !== Notifications.AndroidImportance.NONE,
+    };
+  },
   openNotificationSettings: async () => {
     await Linking.openSettings();
 
