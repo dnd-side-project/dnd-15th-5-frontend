@@ -51,6 +51,18 @@ const countNodesByType = (node: unknown, type: string): number => {
   return (element.type === type ? 1 : 0) + (childCount ?? 0);
 };
 
+const findNodeByType = (
+  node: unknown,
+  type: string
+): { props?: Record<string, unknown> } | undefined => {
+  if (!node || typeof node !== 'object') return undefined;
+
+  const element = node as { type?: unknown; props?: Record<string, unknown>; children?: unknown[] };
+  if (element.type === type) return element;
+
+  return element.children?.map((child) => findNodeByType(child, type)).find(Boolean);
+};
+
 describe('ToastProvider', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -154,6 +166,11 @@ describe('ToastProvider', () => {
 
       expect(toast).toHaveProp('className', expect.stringContaining(surfaceClassName));
       expect(countNodesByType(toJSON(), 'SvgMock')).toBe(hasIcon ? 1 : 0);
+      if (type === 'like') {
+        expect(findNodeByType(toJSON(), 'SvgMock')?.props).toMatchObject({
+          className: 'text-red',
+        });
+      }
     }
   );
 });

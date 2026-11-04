@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { toggleLike } from '@/features/map/apis/clients';
@@ -99,22 +99,46 @@ describe('useTogglePlaceLikeMutation', () => {
     });
   });
 
-  it('성공 응답에 liked 값이 없으면 좋아요 토스트를 표시하지 않는다', async () => {
+  it('성공 응답에 liked 값이 없어도 재조회된 상태로 토스트를 표시한다', async () => {
     mockedToggleLike.mockResolvedValue({});
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const recommendationKey = getGetNearbyPlacesQueryKey({ lat: 37.5, lng: 127 });
+    let serverLiked = true;
+    queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
+      data: { sameCategoryPlaces: [{ placeId: 101, name: '투썸플레이스', liked: true }] },
+    });
     queryClient.setQueryData(LIKED_PLACES_INFINITE_QUERY_KEY, {
       pages: [{ data: { places: [{ placeId: 101 }] } }],
       pageParams: [undefined],
     } as InfiniteData<ApiResponseLikedPlaceScrollResponse>);
-    const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
-      wrapper: createWrapper(queryClient),
-    });
+    const { result } = renderHook(
+      () => {
+        useQuery({
+          queryKey: recommendationKey,
+          queryFn: async () => ({
+            data: {
+              sameCategoryPlaces: [{ placeId: 101, name: '투썸플레이스', liked: serverLiked }],
+            },
+          }),
+        });
 
+        return useTogglePlaceLikeMutation();
+      },
+      {
+        wrapper: createWrapper(queryClient),
+      }
+    );
+
+    serverLiked = false;
     await act(async () => {
       await result.current.mutateAsync({ placeId: 101 });
     });
 
-    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'like' }));
+    expect(showToast).toHaveBeenCalledWith({
+      type: 'like',
+      message: '좋아요 목록에서 삭제했어요',
+      placement: 'above-bottom-sheet',
+    });
   });
 
   it('같은 장소의 오래된 응답은 캐시와 토스트를 갱신하지 않는다', async () => {
@@ -138,15 +162,18 @@ describe('useTogglePlaceLikeMutation', () => {
       newerRequest = result.current.mutateAsync({ placeId: 101 });
       await Promise.resolve();
     });
+    await waitFor(() => expect(pendingResponses).toHaveLength(1));
+
+    pendingResponses[0]?.({ data: { liked: true } });
+    await act(async () => {
+      await olderRequest;
+    });
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'like' }));
     await waitFor(() => expect(pendingResponses).toHaveLength(2));
 
     pendingResponses[1]?.({ data: { liked: false } });
     await act(async () => {
       await newerRequest;
-    });
-    pendingResponses[0]?.({ data: { liked: true } });
-    await act(async () => {
-      await olderRequest;
     });
 
     expect(showToast).toHaveBeenCalledTimes(1);
@@ -155,6 +182,52 @@ describe('useTogglePlaceLikeMutation', () => {
       message: '좋아요 목록에서 삭제했어요',
       placement: 'above-bottom-sheet',
     });
+    expect(
+      queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)
+        ?.data.places[0]?.liked
+    ).toBe(false);
+  });
+
+  it('같은 장소 요청이 모두 실패하면 최초 확정 상태로 되돌린다', async () => {
+    const pendingResponses: Array<{
+      resolve: (response: Awaited<ReturnType<typeof toggleLike>>) => void;
+      reject: (reason: Error) => void;
+    }> = [];
+    mockedToggleLike.mockImplementation(
+      () =>
+        new Promise((resolve, reject) => {
+          pendingResponses.push({ resolve, reject });
+        })
+    );
+    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const visitedPlacesKey = getGetVisitedPlaceMarkersQueryKey();
+    queryClient.setQueryData(visitedPlacesKey, {
+      data: { places: [{ placeId: 101, placeName: '투썸플레이스', liked: false }] },
+    });
+    const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    let olderRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    let newerRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    await act(async () => {
+      olderRequest = result.current.mutateAsync({ placeId: 101 });
+      newerRequest = result.current.mutateAsync({ placeId: 101 });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(pendingResponses).toHaveLength(1));
+
+    pendingResponses[0]?.reject(new Error('older request failed'));
+    await act(async () => {
+      await expect(olderRequest).rejects.toThrow('older request failed');
+    });
+    await waitFor(() => expect(pendingResponses).toHaveLength(2));
+
+    pendingResponses[1]?.reject(new Error('newer request failed'));
+    await act(async () => {
+      await expect(newerRequest).rejects.toThrow('newer request failed');
+    });
+
     expect(
       queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)
         ?.data.places[0]?.liked
