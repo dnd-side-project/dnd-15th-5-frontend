@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import {
   useHomeBottomSheetStore,
@@ -8,6 +8,8 @@ import {
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
 import { TEST_MAP_STICKERS } from '@/features/map/testFixtures';
+import SpendingRecordItem from '@/features/report/components/spending-history/SpendingRecordItem';
+import RouteHistoryProvider from '@/shared/layout/RouteHistoryProvider';
 import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 
 import ShopDetailPage from './ShopDetailPage';
@@ -77,7 +79,64 @@ jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 
+function ConsumptionListProbe() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return (
+    <>
+      <p>
+        소비 목록 {location.pathname}
+        {location.search}:{location.state?.scrollToDate}:{location.state?.scrollToConsumptionId}
+      </p>
+      <button onClick={() => navigate(1)}>상세 앞으로</button>
+      <ul>
+        <SpendingRecordItem
+          consumption={{
+            id: 196,
+            placeId: 101,
+            placeName: '복귀 가게',
+            purchaseDate: '2026-07-21',
+          }}
+          renderRecordSticker={() => null}
+        />
+      </ul>
+    </>
+  );
+}
+
 describe('ShopDetailPage', () => {
+  it.each(['/home', '/report/history'])(
+    '%s 소비 기록에서 진입하면 가게 시트를 선택하지 않고 원래 목록 이력으로 돌아간다',
+    async (pathname) => {
+      const user = userEvent.setup();
+      useHomeBottomSheetStore.setState({
+        tab: 'history',
+        scrollPositions: { history: 240, frequentShops: 0 },
+      });
+      render(
+        <MemoryRouter initialEntries={[`${pathname}?filter=keep`]}>
+          <RouteHistoryProvider>
+            <Routes>
+              <Route path={pathname} element={<ConsumptionListProbe />} />
+              <Route path="/home/shop/:shopId" element={<ShopDetailPage />} />
+            </Routes>
+          </RouteHistoryProvider>
+        </MemoryRouter>
+      );
+      await user.click(screen.getByRole('link', { name: /복귀 가게/ }));
+      await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
+      expect(
+        await screen.findByText(`소비 목록 ${pathname}?filter=keep:2026-07-21:196`)
+      ).toBeInTheDocument();
+      expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
+      expect(useHomeBottomSheetStore.getState().tab).toBe('history');
+      expect(useHomeBottomSheetStore.getState().scrollPositions.history).toBe(240);
+      expect(useMapFocusStore.getState().focusPosition).toBeNull();
+      await user.click(screen.getByRole('button', { name: '상세 앞으로' }));
+      expect(screen.getByRole('button', { name: '뒤로 가기' })).toBeInTheDocument();
+    }
+  );
+
   it('수정·삭제 액션과 방문별 스티커, 복귀 대상을 매장 상세에 전달한다', async () => {
     const user = userEvent.setup();
     render(

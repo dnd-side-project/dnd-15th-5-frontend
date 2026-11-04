@@ -33,6 +33,7 @@ type SpendingHistoryProps = ConsumptionActions & {
   headerContent?: ReactNode;
   headerContentGapClassName?: string;
   scrollToDate?: string;
+  scrollToConsumptionId?: number;
   autoScrollToDate?: boolean;
   renderRecordSticker: (consumptionId: number) => ReactNode;
 };
@@ -65,6 +66,7 @@ const getSupportedMonthFromDate = (
  * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
  * @param props.headerContentGapClassName - 상단 콘텐츠와 월 선택 영역 사이의 간격 클래스입니다.
  * @param props.scrollToDate - 진입 후 스크롤할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
+ * @param props.scrollToConsumptionId - 같은 날짜에 여러 기록이 있어도 클릭한 기록까지 조회·스크롤합니다.
  * @param props.autoScrollToDate - 부모가 스크롤을 복원하면 `false`로 지정해 월·날짜 조회만 복원합니다.
  * @param props.renderRecordSticker - 각 기록에 사용한 이모지·사진 스티커를 조립합니다.
  */
@@ -77,6 +79,7 @@ export default function SpendingHistory({
   headerContent,
   headerContentGapClassName = 'mt-5',
   scrollToDate,
+  scrollToConsumptionId,
   autoScrollToDate = true,
   renderRecordSticker,
 }: SpendingHistoryProps) {
@@ -85,6 +88,7 @@ export default function SpendingHistory({
   const initialSelectedMonth =
     getSupportedMonthFromDate(scrollToDate, currentMonth) ?? currentMonth;
   const hasScrolledToDateRef = useRef(false);
+  const contentRootRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [monthSelection, setMonthSelection] = useState<MonthSelection>(() => ({
     dateValue: scrollToDate,
@@ -122,11 +126,13 @@ export default function SpendingHistory({
     scrollToDate && initialMonth && isSameMonth(selectedMonth, initialMonth)
       ? scrollToDate
       : undefined;
-  const hasTargetDate = recordGroups.some(({ purchaseDate }) => purchaseDate === targetDate);
+  const hasScrollTarget = scrollToConsumptionId
+    ? consumptions.some(({ id }) => id === scrollToConsumptionId)
+    : recordGroups.some(({ purchaseDate }) => purchaseDate === targetDate);
   const lastLoadedDate = consumptions.at(-1)?.purchaseDate;
   const shouldFetchMoreForDate = Boolean(
     targetDate &&
-    !hasTargetDate &&
+    !hasScrollTarget &&
     consumptionsQuery.hasNextPage &&
     (!lastLoadedDate || lastLoadedDate >= targetDate)
   );
@@ -139,19 +145,28 @@ export default function SpendingHistory({
 
   useEffect(() => {
     hasScrolledToDateRef.current = false;
-  }, [scrollToDate]);
+  }, [scrollToDate, scrollToConsumptionId]);
 
   useEffect(() => {
     if (!autoScrollToDate || !targetDate || hasScrolledToDateRef.current) return;
 
-    const targetHeading = document.getElementById(`date-${targetDate}-heading`);
-    if (!targetHeading) return;
+    const targetRecord = scrollToConsumptionId
+      ? contentRootRef.current?.querySelector<HTMLElement>(
+          `[data-consumption-id="${scrollToConsumptionId}"]`
+        )
+      : null;
+    const targetElement =
+      targetRecord ??
+      (!shouldFetchMoreForDate
+        ? contentRootRef.current?.querySelector<HTMLElement>(`#date-${targetDate}-heading`)
+        : null);
+    if (!targetElement) return;
 
     const scrollContainer = scrollContainerRef.current;
 
     if (containedScroll && scrollContainer) {
       const targetTop =
-        targetHeading.getBoundingClientRect().top -
+        targetElement.getBoundingClientRect().top -
         scrollContainer.getBoundingClientRect().top +
         scrollContainer.scrollTop -
         scrollContainer.clientHeight * TARGET_DATE_VIEWPORT_POSITION_RATIO;
@@ -159,7 +174,7 @@ export default function SpendingHistory({
       scrollContainer.scrollTo({ behavior: 'smooth', top: Math.max(0, targetTop) });
     } else {
       const targetTop =
-        targetHeading.getBoundingClientRect().top +
+        targetElement.getBoundingClientRect().top +
         window.scrollY -
         window.innerHeight * TARGET_DATE_VIEWPORT_POSITION_RATIO;
 
@@ -167,7 +182,14 @@ export default function SpendingHistory({
     }
 
     hasScrolledToDateRef.current = true;
-  }, [autoScrollToDate, containedScroll, recordGroups, targetDate]);
+  }, [
+    autoScrollToDate,
+    containedScroll,
+    recordGroups,
+    targetDate,
+    scrollToConsumptionId,
+    shouldFetchMoreForDate,
+  ]);
 
   useEffect(() => {
     if (shouldFetchMoreForDate && !isFetchingNextPage && !consumptionsQuery.isFetchNextPageError) {
@@ -190,7 +212,10 @@ export default function SpendingHistory({
   };
 
   return (
-    <div className={cn('flex flex-1 flex-col', containedScroll && 'min-h-0 overflow-hidden')}>
+    <div
+      ref={contentRootRef}
+      className={cn('flex flex-1 flex-col', containedScroll && 'min-h-0 overflow-hidden')}
+    >
       <header
         className={cn(
           'z-sticky-header bg-neutral-00',

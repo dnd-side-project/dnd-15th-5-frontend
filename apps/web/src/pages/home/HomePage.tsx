@@ -17,7 +17,10 @@ import ConsumptionSticker from '@/features/record/components/ConsumptionSticker'
 import { FrequentShopSummary, SpendingHistory } from '@/features/report';
 import { SelectedPlaceSheet } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import { getConsumptionScrollDate } from '@/shared/utils/consumptionNavigation';
+import {
+  getConsumptionScrollDate,
+  getConsumptionScrollId,
+} from '@/shared/utils/consumptionNavigation';
 
 import type { CreatedConsumptionPlace } from '@chapchap/shared/record';
 
@@ -79,6 +82,7 @@ export default function HomePage() {
               <SpendingHistory
                 {...actions}
                 scrollToDate={getConsumptionScrollDate(location.state)}
+                scrollToConsumptionId={getConsumptionScrollId(location.state)}
                 autoScrollToDate={false}
                 renderRecordSticker={(consumptionId) => (
                   <ConsumptionSticker consumptionId={consumptionId} size="large" />

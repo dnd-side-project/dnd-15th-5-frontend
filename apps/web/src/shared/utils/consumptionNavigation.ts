@@ -1,3 +1,5 @@
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+
 import { isPositiveSafeInteger } from './isPositiveSafeInteger';
 
 /** 수정 화면에서 돌아갈 수 있는 앱 내부 경로를 라우트 상태에서 읽습니다. */
@@ -32,4 +34,19 @@ export const getConsumptionReturnState = (state: unknown) => {
 export const getConsumptionReturnEntryKey = (state: unknown) => {
   if (!state || typeof state !== 'object' || !('returnEntryKey' in state)) return undefined;
   return typeof state.returnEntryKey === 'string' ? state.returnEntryKey : undefined;
+};
+
+/** 가게 상세에 진입하기 전 소비 기록 목록의 복귀 정보를 읽습니다. 편집 화면의 복귀 정보와 분리합니다. */
+export const getConsumptionListReturn = (state: unknown) => {
+  if (!state || typeof state !== 'object' || !('consumptionListReturn' in state)) return undefined;
+  const target = state.consumptionListReturn;
+  const returnTo = getConsumptionReturnPath(target);
+  if (!returnTo) return undefined;
+  const pathname = returnTo.split('?')[0];
+  if (pathname !== ROUTE_PATHS.home && pathname !== ROUTE_PATHS.spendingHistory) return undefined;
+  return {
+    returnTo,
+    returnState: getConsumptionReturnState(target),
+    returnEntryKey: getConsumptionReturnEntryKey(target),
+  };
 };

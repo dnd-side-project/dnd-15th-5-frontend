@@ -1,8 +1,12 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import { useConsumptionsInfiniteQuery } from '@/features/report/apis/hooks/useConsumptionsInfiniteQuery';
+import {
+  getConsumptionScrollDate,
+  getConsumptionScrollId,
+} from '@/shared/utils/consumptionNavigation';
 
 import SpendingHistory from './SpendingHistory';
 
@@ -77,7 +81,98 @@ const renderSpendingHistory = (scrollToDate?: string) =>
     </MemoryRouter>
   );
 
+function HistoryRouteFixture() {
+  const location = useLocation();
+  return (
+    <div
+      ref={(element) => {
+        const scrollContainer = element?.querySelector<HTMLElement>('.overflow-y-auto');
+        if (scrollContainer) {
+          scrollContainer.scrollTo = scrollTo;
+          Object.defineProperty(scrollContainer, 'clientHeight', {
+            configurable: true,
+            value: 800,
+          });
+        }
+      }}
+    >
+      <SpendingHistory
+        containedScroll
+        scrollToDate={getConsumptionScrollDate(location.state)}
+        scrollToConsumptionId={getConsumptionScrollId(location.state)}
+        renderRecordSticker={renderRecordSticker}
+      />
+    </div>
+  );
+}
+
+function DetailRouteFixture() {
+  const navigate = useNavigate();
+  return <button onClick={() => navigate(-1)}>목록으로 돌아가기</button>;
+}
+
 describe('SpendingHistory', () => {
+  it('과거 월의 기록에서 상세에 다녀오면 같은 월의 클릭한 행으로 복원한다', async () => {
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 });
+    jest.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element
+    ) {
+      return { top: this.getAttribute('data-consumption-id') === '9' ? 900 : 0 } as DOMRect;
+    });
+    mockedUseConsumptionsInfiniteQuery.mockImplementation((month) =>
+      month === '2026-07'
+        ? ({
+            ...createQueryResult(month),
+            data: {
+              pages: [
+                {
+                  data: {
+                    consumptions: [
+                      { id: 8, placeId: 101, placeName: '다른 기록', purchaseDate: '2026-07-21' },
+                      { id: 9, placeId: 101, placeName: '클릭한 기록', purchaseDate: '2026-07-21' },
+                    ],
+                  },
+                },
+              ],
+            },
+          } as ReturnType<typeof useConsumptionsInfiniteQuery>)
+        : createQueryResult(month)
+    );
+    render(
+      <MemoryRouter initialEntries={['/report/history']}>
+        <Routes>
+          <Route path="/report/history" element={<HistoryRouteFixture />} />
+          <Route path="/home/shop/:shopId" element={<DetailRouteFixture />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    await user.click(screen.getByRole('button', { name: '이전 달 보기' }));
+    await user.click(screen.getByRole('link', { name: /클릭한 기록/ }));
+    const backButton = await screen.findByRole('button', { name: '목록으로 돌아가기' });
+    scrollTo.mockClear();
+    await user.click(backButton);
+    expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('7월');
+    expect(scrollTo).toHaveBeenCalledWith({ behavior: 'smooth', top: 540 });
+  });
+
+  it('같은 날짜의 앞 기록만 조회됐으면 클릭한 ID가 나올 때까지 다음 페이지를 읽는다', () => {
+    mockedUseConsumptionsInfiniteQuery.mockReturnValue({
+      ...createQueryResult('2026-08'),
+      hasNextPage: true,
+    } as ReturnType<typeof useConsumptionsInfiniteQuery>);
+    render(
+      <MemoryRouter>
+        <SpendingHistory
+          scrollToDate="2026-08-20"
+          scrollToConsumptionId={99}
+          renderRecordSticker={renderRecordSticker}
+        />
+      </MemoryRouter>
+    );
+    expect(fetchNextPage).toHaveBeenCalledTimes(1);
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
   beforeAll(() => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-08-25T12:00:00+09:00'));
