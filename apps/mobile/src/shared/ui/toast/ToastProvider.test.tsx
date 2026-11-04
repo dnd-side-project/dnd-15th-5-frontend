@@ -34,7 +34,7 @@ const TOAST_PRESENTATIONS = [
   { type: 'error', surfaceClassName: 'toast-neutral w-full', hasIcon: true },
   { type: 'info', surfaceClassName: 'toast-primary', hasIcon: false },
   { type: 'info-neutral', surfaceClassName: 'toast-neutral', hasIcon: false },
-  { type: 'like', surfaceClassName: 'toast-neutral', hasIcon: true },
+  { type: 'like', surfaceClassName: 'toast-neutral px-7.5', hasIcon: true },
 ] as const;
 
 const countNodesByType = (node: unknown, type: string): number => {

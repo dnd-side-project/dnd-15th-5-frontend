@@ -192,7 +192,7 @@ describe('Toast', () => {
           : screen.getByRole('dialog');
 
       expect(toast).toHaveClass(surfaceClassName);
-      if (type === 'like') {
+      if (type === 'like' || type === 'info-neutral') {
         expect(toast).toHaveClass('px-7.5');
       }
       expect(Boolean(toast?.querySelector('svg'))).toBe(hasIcon);
