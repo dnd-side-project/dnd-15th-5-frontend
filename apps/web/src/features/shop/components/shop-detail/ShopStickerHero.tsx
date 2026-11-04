@@ -116,7 +116,7 @@ function ShopStickerCanvas({
   const [isReady, setIsReady] = useState(() => !shouldAnimate);
   const [replaySequences, setReplaySequences] = useState(() => stickerImages.map(() => 0));
   const hasStartedRef = useRef(false);
-  const loadedIndicesRef = useRef(new Set<number>());
+  const settledIndicesRef = useRef(new Set<number>());
   const nextReplaySequenceRef = useRef(0);
   const startAnimation = useCallback(() => {
     if (hasStartedRef.current) return;
@@ -130,13 +130,13 @@ function ShopStickerCanvas({
     if (!shouldAnimate) return;
 
     // NOTE: WebView 초기 로딩이 느려 이미지가 뜨기 전에 애니메이션이 끝나는 것을 막기 위해
-    // 모든 이미지의 onLoad를 기다리되, 캐시 등으로 onLoad가 안 오는 경우를 대비한 폴백을 둔다.
+    // 모든 이미지의 로드·실패를 기다리되, 이벤트가 오지 않는 경우를 대비한 폴백을 둔다.
     const timeoutId = window.setTimeout(startAnimation, STICKER_LOAD_FALLBACK_MS);
 
     return () => window.clearTimeout(timeoutId);
   }, [shouldAnimate, startAnimation, stickerImages.length]);
 
-  const handleStickerLoad = (index: number, aspectRatio: number) => {
+  const handleStickerSettled = (index: number, aspectRatio: number) => {
     if (!hasStartedRef.current && Number.isFinite(aspectRatio) && aspectRatio > 0) {
       setAspectRatios((current) =>
         current[index] === aspectRatio
@@ -144,8 +144,8 @@ function ShopStickerCanvas({
           : current.map((ratio, currentIndex) => (currentIndex === index ? aspectRatio : ratio))
       );
     }
-    loadedIndicesRef.current.add(index);
-    if (loadedIndicesRef.current.size < stickerImages.length) return;
+    settledIndicesRef.current.add(index);
+    if (settledIndicesRef.current.size < stickerImages.length) return;
     startAnimation();
   };
   const createReplaySequence = () => {
@@ -187,7 +187,7 @@ function ShopStickerCanvas({
             delayMs={replaySequence > 0 ? 0 : (stampDelays[index] ?? 0)}
             isNewest={index === newestStickerIndex}
             isReady={isReady}
-            onLoad={(aspectRatio) => handleStickerLoad(index, aspectRatio)}
+            onSettled={(aspectRatio) => handleStickerSettled(index, aspectRatio)}
             onReplay={() => replaySticker(index)}
             playbackSequence={replaySequence}
             shouldAnimate={shouldAnimate || replaySequence > 0}
@@ -206,7 +206,7 @@ type ShopStickerStampProps = {
   delayMs: number;
   isNewest: boolean;
   isReady: boolean;
-  onLoad: (aspectRatio: number) => void;
+  onSettled: (aspectRatio: number) => void;
   onReplay: () => void;
   playbackSequence: number;
   shouldAnimate: boolean;
@@ -226,7 +226,7 @@ function ShopStickerStamp({
   delayMs,
   isNewest,
   isReady,
-  onLoad,
+  onSettled,
   onReplay,
   playbackSequence,
   shouldAnimate,
@@ -235,7 +235,21 @@ function ShopStickerStamp({
   src,
 }: ShopStickerStampProps) {
   const [completedPlaybackSequence, setCompletedPlaybackSequence] = useState<number | null>(null);
+  const [hasImageError, setHasImageError] = useState(false);
   const isPlaying = shouldAnimate && isReady && completedPlaybackSequence !== playbackSequence;
+
+  if (hasImageError) {
+    return (
+      <span
+        role="img"
+        aria-label="스티커를 불러오지 못했어요"
+        className="absolute grid place-items-center rounded-08 bg-neutral-100 text-neutral-400"
+        style={getShopStickerSlotStyle(placement, heroWidth)}
+      >
+        —
+      </span>
+    );
+  }
 
   return (
     <button
@@ -256,7 +270,11 @@ function ShopStickerStamp({
         onAnimationEnd={() => setCompletedPlaybackSequence(playbackSequence)}
         onLoad={(event) => {
           const { naturalWidth, naturalHeight } = event.currentTarget;
-          onLoad(naturalWidth / naturalHeight);
+          onSettled(naturalWidth / naturalHeight);
+        }}
+        onError={() => {
+          setHasImageError(true);
+          onSettled(1);
         }}
         src={src}
         style={{
