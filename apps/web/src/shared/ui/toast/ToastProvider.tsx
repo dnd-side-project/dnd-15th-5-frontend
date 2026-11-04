@@ -71,7 +71,7 @@ function ToastViewport({ placement }: { placement: WebToastData['placement'] }) 
       className="toast-list mobile-frame z-toast pointer-events-none fixed right-0 left-0 box-border flex flex-col-reverse px-4 outline-none"
       style={{
         bottom: isAboveBottomSheet
-          ? `calc(var(${TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE}, 0px) + 1.25rem)`
+          ? `calc(var(${TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE}, env(safe-area-inset-bottom, 0px)) + 1.25rem)`
           : 'calc(1.25rem + env(safe-area-inset-bottom))',
       }}
       data-testid={isAboveBottomSheet ? 'toast-viewport-above-bottom-sheet' : 'toast-viewport'}

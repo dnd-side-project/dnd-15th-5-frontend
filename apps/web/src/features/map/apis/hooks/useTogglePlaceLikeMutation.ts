@@ -292,8 +292,8 @@ export const useTogglePlaceLikeMutation = () => {
       }
       showToast({ type: 'error', message: LIKE_ERROR_MESSAGE });
     },
-    onSuccess: (response, { placeId }) => {
-      const liked = response.data?.liked;
+    onSuccess: (response, { placeId }, context) => {
+      const liked = response.data?.liked ?? context?.optimisticLiked;
       if (liked === undefined) return;
 
       updateCachedLikeState(queryClient, placeId, () => liked);

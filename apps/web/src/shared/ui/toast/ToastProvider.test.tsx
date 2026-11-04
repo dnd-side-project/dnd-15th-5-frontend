@@ -112,7 +112,21 @@ describe('Toast', () => {
       'calc(1.25rem + env(safe-area-inset-bottom))'
     );
     expect(screen.getByTestId('toast-viewport-above-bottom-sheet').style.bottom).toBe(
-      'calc(var(--toast-bottom-sheet-height, 0px) + 1.25rem)'
+      'calc(var(--toast-bottom-sheet-height, env(safe-area-inset-bottom, 0px)) + 1.25rem)'
+    );
+  });
+
+  it('바텀시트가 없으면 위 배치 Toast에도 하단 Safe Area를 반영한다', () => {
+    render(
+      <ToastProvider duration={0}>
+        <ToastFixture />
+      </ToastProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '바텀시트 위 열기' }));
+
+    expect(screen.getByTestId('toast-viewport-above-bottom-sheet').style.bottom).toBe(
+      'calc(var(--toast-bottom-sheet-height, env(safe-area-inset-bottom, 0px)) + 1.25rem)'
     );
   });
 

@@ -50,7 +50,9 @@ const toastSurfaceClasses: Record<ToastType, string> = {
 function ToastIcon({ type }: { type: ToastType }) {
   const Icon = toastIcons[type];
 
-  return Icon ? <Icon width={20} height={20} /> : null;
+  return Icon ? (
+    <Icon width={20} height={20} className={type === 'like' ? 'text-red' : undefined} />
+  ) : null;
 }
 
 /**
