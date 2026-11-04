@@ -3,9 +3,10 @@ import { useLayoutEffect, useRef } from 'react';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import type { HomeBottomSheetTab } from '@/features/map/stores/homeBottomSheetStore';
 
-import type { KeyboardEvent, UIEvent } from 'react';
+import type { KeyboardEvent, TouchEvent, UIEvent, WheelEvent } from 'react';
 
 const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
+const TOUCH_SCROLL_INTENT_THRESHOLD_PX = 8;
 
 /**
  * 홈 시트의 선택 탭과 탭별 스크롤·포커스를 복원합니다.
@@ -19,11 +20,42 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
   const pendingScrollTopRef = useRef<number | null>(null);
   const observerRef = useRef<ResizeObserver | null>(null);
   const shouldRestoreFocusRef = useRef(false);
+  const touchStartRef = useRef<{ x: number; y: number; identifier: number } | null>(null);
 
-  const handleScrollIntent = () => {
+  const cancelScrollRestoration = () => {
     pendingScrollTopRef.current = null;
     observerRef.current?.disconnect();
     observerRef.current = null;
+  };
+
+  const handleContentTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches.length === 1 ? event.touches[0] : undefined;
+    touchStartRef.current = touch
+      ? { x: touch.clientX, y: touch.clientY, identifier: touch.identifier }
+      : null;
+  };
+
+  const handleContentTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 1) {
+      touchStartRef.current = null;
+      return;
+    }
+    const start = touchStartRef.current;
+    const touch = event.touches[0];
+    if (!start || !touch || touch.identifier !== start.identifier) return;
+    const verticalDistance = Math.abs(touch.clientY - start.y);
+    if (
+      verticalDistance >= TOUCH_SCROLL_INTENT_THRESHOLD_PX &&
+      verticalDistance > Math.abs(touch.clientX - start.x)
+    ) {
+      cancelScrollRestoration();
+    }
+  };
+
+  const handleContentWheel = (event: WheelEvent<HTMLDivElement>) => {
+    if (!event.ctrlKey && !event.shiftKey && Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+      cancelScrollRestoration();
+    }
   };
 
   useLayoutEffect(() => {
@@ -83,7 +115,18 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
   };
 
   const handleContentKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (!event.defaultPrevented && SCROLL_KEYS.has(event.key)) handleScrollIntent();
+    if (
+      event.defaultPrevented ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.metaKey ||
+      !SCROLL_KEYS.has(event.key) ||
+      (event.target instanceof Element &&
+        event.target.closest('button, a[href], input, textarea, select, [contenteditable]'))
+    )
+      return;
+
+    cancelScrollRestoration();
   };
 
   return {
@@ -91,7 +134,9 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
     contentRootRef,
     handleTabChange,
     handleContentScroll,
-    handleScrollIntent,
+    handleContentTouchStart,
+    handleContentTouchMove,
+    handleContentWheel,
     handleContentKeyDown,
   };
 };

@@ -150,7 +150,9 @@ export default function HomeBottomSheet({
     contentRootRef,
     handleTabChange,
     handleContentScroll,
-    handleScrollIntent,
+    handleContentTouchStart,
+    handleContentTouchMove,
+    handleContentWheel,
     handleContentKeyDown,
   } = useHomeBottomSheetTabs(activeSheet.type === 'home');
 
@@ -217,8 +219,9 @@ export default function HomeBottomSheet({
   const homeSheetContent = (
     <div
       ref={contentRootRef}
-      onTouchMoveCapture={handleScrollIntent}
-      onWheelCapture={handleScrollIntent}
+      onTouchStartCapture={handleContentTouchStart}
+      onTouchMoveCapture={handleContentTouchMove}
+      onWheelCapture={handleContentWheel}
       onKeyDown={handleContentKeyDown}
       className={cn('flex min-h-full flex-col bg-neutral-00', contentTransitionClassName)}
     >
