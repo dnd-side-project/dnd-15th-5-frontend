@@ -81,7 +81,7 @@ export default function ShopDetailView({
           // NOTE: 스크롤 위치는 CSS 변수로 전달해 스티커와 방문 목록의 재렌더링을 줄입니다.
           panel.style.setProperty('--shop-header-rounding', String(progress));
         }}
-        className="scrollbar-hidden pb-safe-bottom min-h-0 flex-1 overflow-y-auto overscroll-y-contain scroll-auto"
+        className="pb-safe-bottom min-h-0 flex-1 overflow-y-auto overscroll-y-contain scroll-auto"
       >
         <ShopStickerHero
           key={placeId}

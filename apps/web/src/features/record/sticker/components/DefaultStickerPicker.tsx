@@ -61,7 +61,7 @@ export default function DefaultStickerPicker({
         role="group"
         aria-label="스티커 카테고리"
         inert={isProcessing}
-        className="scrollbar-hidden mt-9 flex gap-2 overflow-x-auto px-4 py-0.5"
+        className="mt-9 flex gap-2 overflow-x-auto px-4 py-0.5"
       >
         {DEFAULT_STICKER_CATEGORIES.map((item) => (
           <CategoryChip

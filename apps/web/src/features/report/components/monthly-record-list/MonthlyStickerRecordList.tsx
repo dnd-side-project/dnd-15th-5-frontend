@@ -88,7 +88,7 @@ export default function MonthlyStickerRecordList({ headerContent }: MonthlyStick
             variant="error"
           />
         ) : recordGroups.length > 0 ? (
-          <div className="flex flex-col gap-6.75 pb-8">
+          <div className="flex flex-col gap-6.75 pb-page-bottom">
             {recordGroups.map(({ acquiredDate, stickerImages }) => {
               const acquiredDateLabel = formatAcquiredDateLabel(acquiredDate);
 

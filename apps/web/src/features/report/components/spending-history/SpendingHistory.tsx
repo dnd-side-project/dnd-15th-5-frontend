@@ -74,7 +74,7 @@ export default function SpendingHistory({
   onEditRecord,
   onDeleteRecord,
   containedScroll = false,
-  contentBottomPaddingClassName = 'pb-8',
+  contentBottomPaddingClassName = 'pb-page-bottom',
   headerDescription,
   headerContent,
   headerContentGapClassName = 'mt-5',

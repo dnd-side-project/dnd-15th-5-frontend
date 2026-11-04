@@ -49,7 +49,7 @@ export default function HomeCategoryFilter() {
     <div
       role="group"
       aria-label="가게 추천 및 카테고리 필터"
-      className="scrollbar-hidden overflow-x-auto px-4 py-1.5"
+      className="overflow-x-auto px-4 py-1.5"
     >
       <div className="flex w-max flex-nowrap gap-2">
         <CategoryChip
