@@ -17,6 +17,7 @@ import ConsumptionSticker from '@/features/record/components/ConsumptionSticker'
 import { FrequentShopSummary, SpendingHistory } from '@/features/report';
 import { SelectedPlaceSheet } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { getConsumptionScrollDate } from '@/shared/utils/consumptionNavigation';
 
 import type { CreatedConsumptionPlace } from '@chapchap/shared/record';
 
@@ -77,13 +78,15 @@ export default function HomePage() {
             renderSpendingHistory={(headerContent) => (
               <SpendingHistory
                 {...actions}
+                scrollToDate={getConsumptionScrollDate(location.state)}
+                autoScrollToDate={false}
                 renderRecordSticker={(consumptionId) => (
                   <ConsumptionSticker consumptionId={consumptionId} size="large" />
                 )}
                 contentBottomPaddingClassName="pb-28"
                 headerContent={headerContent}
                 headerContentGapClassName="mt-2"
-                headerDescription="이번달 작성한 소비기록을 확인해보세요"
+                headerDescription="작성한 소비기록을 확인해보세요"
               />
             )}
           />

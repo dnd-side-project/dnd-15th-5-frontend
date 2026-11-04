@@ -74,11 +74,18 @@ jest.mock('@/features/report', () => ({
     onEditRecord,
     onDeleteRecord,
     renderRecordSticker,
+    scrollToDate,
+    autoScrollToDate,
   }: ConsumptionActions & {
     renderRecordSticker: (id: number) => ReactNode;
+    scrollToDate?: string;
+    autoScrollToDate?: boolean;
   }) => (
     <>
       {renderRecordSticker(196)}
+      <p>
+        {scrollToDate}:{String(autoScrollToDate)}
+      </p>
       <button onClick={() => onEditRecord?.(196, '2026-11-01')}>홈 기록 수정</button>
       <button onClick={() => onDeleteRecord?.(196)}>홈 기록 삭제</button>
     </>
@@ -115,6 +122,14 @@ const renderHomePage = (createdPlace?: {
   );
 
 describe('<HomePage />', () => {
+  it('편집 복귀 날짜를 전달하고 스크롤은 홈 바텀시트가 복원하도록 한다', () => {
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/home', state: { scrollToDate: '2026-10-31' } }]}>
+        <HomePage />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('2026-10-31:false')).toBeInTheDocument();
+  });
   it('지도 시트를 펼치면 상세 진입 애니메이션 상태를 전달하며 가게 상세로 이동한다', async () => {
     const user = userEvent.setup();
     render(

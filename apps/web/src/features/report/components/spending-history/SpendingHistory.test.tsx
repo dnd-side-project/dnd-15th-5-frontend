@@ -273,6 +273,21 @@ describe('SpendingHistory', () => {
     expect(otherSection).not.toHaveClass('bg-primary-50', 'p-3');
   });
 
+  it('부모가 스크롤을 복원하면 복귀할 월만 선택하고 페이지 스크롤을 변경하지 않는다', () => {
+    render(
+      <MemoryRouter>
+        <SpendingHistory
+          scrollToDate="2026-07-21"
+          autoScrollToDate={false}
+          renderRecordSticker={renderRecordSticker}
+        />
+      </MemoryRouter>
+    );
+    expect(mockedUseConsumptionsInfiniteQuery).toHaveBeenLastCalledWith('2026-07');
+    expect(screen.getByRole('button', { name: '월 선택' })).toHaveTextContent('7월');
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
   it('날짜 링크로 진입한 뒤 다른 월을 선택하면 다음 페이지를 불러온다', async () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
     let intersectionCallback: IntersectionObserverCallback = jest.fn();

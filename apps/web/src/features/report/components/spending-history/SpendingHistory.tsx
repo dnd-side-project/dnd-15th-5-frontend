@@ -33,6 +33,7 @@ type SpendingHistoryProps = ConsumptionActions & {
   headerContent?: ReactNode;
   headerContentGapClassName?: string;
   scrollToDate?: string;
+  autoScrollToDate?: boolean;
   renderRecordSticker: (consumptionId: number) => ReactNode;
 };
 
@@ -64,6 +65,7 @@ const getSupportedMonthFromDate = (
  * @param props.headerContent - 월 선택 영역과 함께 고정할 상단 콘텐츠입니다.
  * @param props.headerContentGapClassName - 상단 콘텐츠와 월 선택 영역 사이의 간격 클래스입니다.
  * @param props.scrollToDate - 진입 후 스크롤할 소비 기록 날짜입니다. `YYYY-MM-DD` 형식을 사용합니다.
+ * @param props.autoScrollToDate - 부모가 스크롤을 복원하면 `false`로 지정해 월·날짜 조회만 복원합니다.
  * @param props.renderRecordSticker - 각 기록에 사용한 이모지·사진 스티커를 조립합니다.
  */
 export default function SpendingHistory({
@@ -75,6 +77,7 @@ export default function SpendingHistory({
   headerContent,
   headerContentGapClassName = 'mt-5',
   scrollToDate,
+  autoScrollToDate = true,
   renderRecordSticker,
 }: SpendingHistoryProps) {
   const currentMonth = getCurrentMonth();
@@ -139,7 +142,7 @@ export default function SpendingHistory({
   }, [scrollToDate]);
 
   useEffect(() => {
-    if (!targetDate || hasScrolledToDateRef.current) return;
+    if (!autoScrollToDate || !targetDate || hasScrolledToDateRef.current) return;
 
     const targetHeading = document.getElementById(`date-${targetDate}-heading`);
     if (!targetHeading) return;
@@ -164,7 +167,7 @@ export default function SpendingHistory({
     }
 
     hasScrolledToDateRef.current = true;
-  }, [containedScroll, recordGroups, targetDate]);
+  }, [autoScrollToDate, containedScroll, recordGroups, targetDate]);
 
   useEffect(() => {
     if (shouldFetchMoreForDate && !isFetchingNextPage && !consumptionsQuery.isFetchNextPageError) {
