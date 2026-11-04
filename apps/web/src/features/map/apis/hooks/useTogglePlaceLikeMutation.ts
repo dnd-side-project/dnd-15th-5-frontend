@@ -120,22 +120,23 @@ export const useTogglePlaceLikeMutation = () => {
   return useMutation<
     Awaited<ReturnType<typeof toggleLike>>,
     Error,
-    { placeId: number },
+    { placeId: number; currentLiked?: boolean },
     LikeMutationContext
   >({
     mutationKey: TOGGLE_PLACE_LIKE_MUTATION_KEY,
     mutationFn: ({ placeId }) => toggleLikeInSequence(queryClient, placeId),
-    onMutate: async ({ placeId }) => {
+    onMutate: async ({ placeId, currentLiked }) => {
       const state = getPlaceLikeMutationState(queryClient, placeId);
       const requestSequence = state.latestSequence + 1;
       state.latestSequence = requestSequence;
       let baseline = state.baseline;
       if (!baseline) {
-        const confirmedLiked = getCachedLikedState(
+        const cachedLiked = getCachedLikedState(
           queryClient,
           placeId,
           LIKED_PLACES_INFINITE_QUERY_KEY
         );
+        const confirmedLiked = currentLiked ?? cachedLiked;
         baseline = {
           confirmedLiked,
           optimisticLiked: confirmedLiked ?? false,
@@ -194,21 +195,43 @@ export const useTogglePlaceLikeMutation = () => {
           liked === context.optimisticLiked ? context.baseline.confirmedLiked : liked
         );
         context.baseline.previousLikedPlaces.forEach(([queryKey, previousData]) => {
-          queryClient.setQueryData<LikedPlacesInfiniteData>(queryKey, (currentData) =>
-            restoreLikedPlace(currentData, previousData, placeId)
-          );
+          queryClient.setQueryData<LikedPlacesInfiniteData>(queryKey, (currentData) => {
+            if (context.baseline.confirmedLiked === false && currentData) {
+              return {
+                ...currentData,
+                pages: currentData.pages.map((page) => ({
+                  ...page,
+                  data: page.data
+                    ? {
+                        ...page.data,
+                        places: page.data.places?.filter((place) => place.placeId !== placeId),
+                      }
+                    : page.data,
+                })),
+              };
+            }
+
+            return restoreLikedPlace(currentData, previousData, placeId);
+          });
         });
       }
       showToast({ type: 'error', message: LIKE_ERROR_MESSAGE });
     },
     onSuccess: (response, { placeId }, context) => {
-      const liked = response.data?.liked;
-      if (liked !== undefined && context) {
-        context.baseline.confirmedLiked = liked;
+      const responseLiked = response.data?.liked;
+      if (context && responseLiked !== undefined) {
+        context.baseline.confirmedLiked = responseLiked;
         if (isLatestLikeRequest(queryClient, placeId, context.requestSequence)) {
-          context.baseline.optimisticLiked = liked;
+          context.baseline.optimisticLiked = responseLiked;
+        }
+      } else if (context && context.baseline.confirmedLiked !== undefined) {
+        // PUT은 토글이므로, 알려진 직전 상태에서 성공 결과를 계산해 후속 실패의 롤백 기준으로 씁니다.
+        context.baseline.confirmedLiked = !context.baseline.confirmedLiked;
+        if (isLatestLikeRequest(queryClient, placeId, context.requestSequence)) {
+          context.baseline.optimisticLiked = context.baseline.confirmedLiked;
         }
       }
+      const liked = responseLiked;
       if (
         liked === undefined ||
         !context ||
@@ -250,14 +273,15 @@ export const useTogglePlaceLikeMutation = () => {
             LIKED_PLACES_INFINITE_QUERY_KEY,
             true
           );
-          if (liked !== undefined) {
+          const resolvedLiked = liked ?? state.baseline?.confirmedLiked;
+          if (resolvedLiked !== undefined) {
             const baseline = state.baseline;
             if (baseline) {
-              baseline.confirmedLiked = liked;
-              baseline.optimisticLiked = liked;
-              updateCachedLikeState(queryClient, pendingPlaceId, () => liked);
+              baseline.confirmedLiked = resolvedLiked;
+              baseline.optimisticLiked = resolvedLiked;
+              updateCachedLikeState(queryClient, pendingPlaceId, () => resolvedLiked);
             }
-            showLikeToast(pendingPlaceId, liked, showToast);
+            showLikeToast(pendingPlaceId, resolvedLiked, showToast);
           }
         }
         state.pendingToastSequence = undefined;

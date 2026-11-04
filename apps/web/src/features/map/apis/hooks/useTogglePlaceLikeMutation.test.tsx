@@ -11,6 +11,7 @@ import {
   getGetNearbyPlacesQueryKey,
   getGetVisitedPlaceMarkersQueryKey,
 } from '@/features/map/apis/queryKeys';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useToast } from '@/shared/ui/toast';
 
 import { useTogglePlaceLikeMutation } from './useTogglePlaceLikeMutation';
@@ -141,6 +142,26 @@ describe('useTogglePlaceLikeMutation', () => {
     });
   });
 
+  it('응답과 캐시 상태가 없어도 호출 시 전달한 상태로 취소 토스트를 표시하고 좋아요 시트를 닫는다', async () => {
+    mockedToggleLike.mockResolvedValue({});
+    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    useHomeBottomSheetStore.getState().showLikedRecommendation('101');
+    const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ placeId: 101, currentLiked: true });
+    });
+
+    expect(showToast).toHaveBeenCalledWith({
+      type: 'like',
+      message: '좋아요 목록에서 삭제했어요',
+      placement: 'above-bottom-sheet',
+    });
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
+  });
+
   it('같은 장소의 오래된 응답은 캐시와 토스트를 갱신하지 않는다', async () => {
     const pendingResponses: Array<(response: Awaited<ReturnType<typeof toggleLike>>) => void> = [];
     mockedToggleLike.mockImplementation(
@@ -232,6 +253,103 @@ describe('useTogglePlaceLikeMutation', () => {
       queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)
         ?.data.places[0]?.liked
     ).toBe(false);
+  });
+
+  it('먼저 해제가 성공한 뒤 다음 토글이 실패해도 좋아요 목록에서 장소를 되살리지 않는다', async () => {
+    const pendingResponses: Array<{
+      resolve: (response: Awaited<ReturnType<typeof toggleLike>>) => void;
+      reject: (reason: Error) => void;
+    }> = [];
+    mockedToggleLike.mockImplementation(
+      () =>
+        new Promise((resolve, reject) => {
+          pendingResponses.push({ resolve, reject });
+        })
+    );
+    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const likedPlacesKey = [
+      ...LIKED_PLACES_INFINITE_QUERY_KEY,
+      { category: undefined, size: 5 },
+    ] as const;
+    queryClient.setQueryData<InfiniteData<ApiResponseLikedPlaceScrollResponse>>(likedPlacesKey, {
+      pages: [{ data: { places: [{ placeId: 101, name: '투썸플레이스' }] } }],
+      pageParams: [undefined],
+    });
+    const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    let unlikeRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    let nextRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    await act(async () => {
+      unlikeRequest = result.current.mutateAsync({ placeId: 101, currentLiked: true });
+      nextRequest = result.current.mutateAsync({ placeId: 101, currentLiked: false });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(pendingResponses).toHaveLength(1));
+
+    pendingResponses[0]?.resolve({ data: { liked: false } });
+    await act(async () => {
+      await unlikeRequest;
+    });
+    await waitFor(() => expect(pendingResponses).toHaveLength(2));
+
+    pendingResponses[1]?.reject(new Error('next toggle failed'));
+    await act(async () => {
+      await expect(nextRequest).rejects.toThrow('next toggle failed');
+    });
+
+    expect(
+      queryClient
+        .getQueryData<InfiniteData<ApiResponseLikedPlaceScrollResponse>>(likedPlacesKey)
+        ?.pages.flatMap((page) => page.data?.places ?? [])
+    ).toEqual([]);
+  });
+
+  it('liked 응답이 없는 성공 뒤 다음 요청이 실패하면 성공한 토글 상태로 복구한다', async () => {
+    const pendingResponses: Array<{
+      resolve: (response: Awaited<ReturnType<typeof toggleLike>>) => void;
+      reject: (reason: Error) => void;
+    }> = [];
+    mockedToggleLike.mockImplementation(
+      () =>
+        new Promise((resolve, reject) => {
+          pendingResponses.push({ resolve, reject });
+        })
+    );
+    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const visitedPlacesKey = getGetVisitedPlaceMarkersQueryKey();
+    queryClient.setQueryData(visitedPlacesKey, {
+      data: { places: [{ placeId: 101, placeName: '투썸플레이스', liked: false }] },
+    });
+    const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    let firstRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    let nextRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    await act(async () => {
+      firstRequest = result.current.mutateAsync({ placeId: 101 });
+      nextRequest = result.current.mutateAsync({ placeId: 101 });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(pendingResponses).toHaveLength(1));
+
+    pendingResponses[0]?.resolve({});
+    await act(async () => {
+      await firstRequest;
+    });
+    await waitFor(() => expect(pendingResponses).toHaveLength(2));
+
+    pendingResponses[1]?.reject(new Error('next toggle failed'));
+    await act(async () => {
+      await expect(nextRequest).rejects.toThrow('next toggle failed');
+    });
+
+    expect(
+      queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)
+        ?.data.places[0]?.liked
+    ).toBe(true);
   });
 
   it('요청이 실패하면 이전 캐시를 복구하고 오류 토스트를 표시한다', async () => {
