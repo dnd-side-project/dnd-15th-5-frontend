@@ -6,6 +6,7 @@ import {
   useOpenVisitedPlaceOnMap,
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
+import { useConsumptionReturnTarget } from '@/features/record/apis/hooks/useConsumptionReturnTarget';
 import ConsumptionRecordActions from '@/features/record/components/ConsumptionRecordActions';
 import ConsumptionSticker from '@/features/record/components/ConsumptionSticker';
 import { ShopDetail } from '@/features/shop';
@@ -34,6 +35,11 @@ export default function ShopDetailPage() {
   const pageRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
   const placeId = Number(shopId);
+  const returnTarget = useConsumptionReturnTarget({
+    consumptionId: getConsumptionScrollId(location.state),
+    fallbackDate: getConsumptionScrollDate(location.state),
+    placeId,
+  });
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
   const { stickers } = useVisitedPlaceStickersQuery();
   const recordShop =
@@ -84,8 +90,7 @@ export default function ShopDetailPage() {
             {...actions}
             placeId={placeId}
             recordShop={recordShop}
-            scrollToDate={getConsumptionScrollDate(location.state)}
-            scrollToConsumptionId={getConsumptionScrollId(location.state)}
+            {...returnTarget}
             renderVisitSticker={(consumptionId) => (
               <ConsumptionSticker consumptionId={consumptionId} />
             )}

@@ -27,6 +27,7 @@ type ShopDetailViewProps = {
   stickerImages: readonly string[];
   scrollToDate?: string;
   scrollToConsumptionId?: number;
+  isRestoreTargetPending?: boolean;
   visitHistory: Omit<ComponentProps<typeof VisitHistoryList>, 'scrollRootRef'>;
   loadedVisitPageCount: number;
 };
@@ -43,6 +44,7 @@ export default function ShopDetailView({
   loadedVisitPageCount,
   scrollToDate,
   scrollToConsumptionId,
+  isRestoreTargetPending,
 }: ShopDetailViewProps) {
   const scrollRootRef = useRef<HTMLDivElement>(null);
   const informationPanelRef = useRef<HTMLDivElement>(null);
@@ -54,6 +56,7 @@ export default function ShopDetailView({
     stickyHeaderRef,
     scrollToDate,
     scrollToConsumptionId,
+    isRestoreTargetPending,
     loadedPageCount: loadedVisitPageCount,
   });
   const hasRecordedVisits =

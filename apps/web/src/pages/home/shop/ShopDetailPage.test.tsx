@@ -16,6 +16,19 @@ import type { ReactNode } from 'react';
 
 const mockEditRecord = jest.fn();
 const mockDeleteRecord = jest.fn();
+jest.mock('@/features/record/apis/hooks/useConsumptionReturnTarget', () => ({
+  useConsumptionReturnTarget: ({
+    consumptionId,
+    fallbackDate,
+  }: {
+    consumptionId?: number;
+    fallbackDate?: string;
+  }) => ({
+    isRestoreTargetPending: false,
+    scrollToConsumptionId: consumptionId,
+    scrollToDate: fallbackDate,
+  }),
+}));
 jest.mock('@/features/record/components/ConsumptionRecordActions', () => ({
   __esModule: true,
   default: ({ children }: { children: (actions: ConsumptionActions) => ReactNode }) =>

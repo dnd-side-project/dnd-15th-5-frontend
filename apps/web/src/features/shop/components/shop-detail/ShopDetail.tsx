@@ -23,6 +23,7 @@ type ShopDetailProps = ConsumptionActions & {
   renderVisitSticker?: (consumptionId: number) => ReactNode;
   scrollToDate?: string;
   scrollToConsumptionId?: number;
+  isRestoreTargetPending?: boolean;
 };
 
 export default function ShopDetail({
@@ -35,6 +36,7 @@ export default function ShopDetail({
   renderVisitSticker,
   scrollToDate,
   scrollToConsumptionId,
+  isRestoreTargetPending,
 }: ShopDetailProps) {
   const isValidPlaceId = isPositiveSafeInteger(placeId);
   const placeDetailQuery = useGetPlaceDetail(placeId, {
@@ -107,6 +109,7 @@ export default function ShopDetail({
       loadedVisitPageCount={placeVisitsQuery.data?.pages.length ?? 0}
       scrollToDate={scrollToDate}
       scrollToConsumptionId={scrollToConsumptionId}
+      isRestoreTargetPending={isRestoreTargetPending || placeVisitsQuery.isRefetching}
       visitHistory={{
         onEditRecord,
         onDeleteRecord,

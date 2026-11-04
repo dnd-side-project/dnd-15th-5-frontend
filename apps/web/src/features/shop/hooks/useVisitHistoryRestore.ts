@@ -9,6 +9,7 @@ type VisitHistoryRestoreOptions = {
   stickyHeaderRef: RefObject<HTMLElement | null>;
   scrollToDate?: string;
   scrollToConsumptionId?: number;
+  isRestoreTargetPending?: boolean;
   visits: readonly PlaceVisitResponse[];
   loadedPageCount: number;
   isLoading: boolean;
@@ -19,12 +20,13 @@ type VisitHistoryRestoreOptions = {
   onLoadMore: () => void;
 };
 
-/** 캐시가 없어도 수정한 방문까지 페이지를 읽고 고정 헤더 아래로 한 번 복원합니다. */
+/** 최신 복귀 날짜까지만 페이지를 읽고 수정한 방문 또는 같은 날짜의 기록으로 한 번 복원합니다. */
 export const useVisitHistoryRestore = ({
   scrollRootRef,
   stickyHeaderRef,
   scrollToDate,
   scrollToConsumptionId,
+  isRestoreTargetPending = false,
   visits,
   loadedPageCount,
   isLoading,
@@ -43,6 +45,7 @@ export const useVisitHistoryRestore = ({
       !root ||
       (!scrollToDate && !scrollToConsumptionId) ||
       restoredTarget.current === targetKey ||
+      isRestoreTargetPending ||
       isLoading ||
       isError ||
       isFetchNextPageError
@@ -52,8 +55,13 @@ export const useVisitHistoryRestore = ({
     const row = scrollToConsumptionId
       ? rows.find((item) => item.dataset.visitId === String(scrollToConsumptionId))
       : rows.find((item) => item.dataset.visitDate === scrollToDate);
+    const lastLoadedDate = visits.at(-1)?.visitedAt?.slice(0, 10);
+    const hasPassedTargetDate = Boolean(
+      scrollToDate && lastLoadedDate && lastLoadedDate < scrollToDate
+    );
+    const canLoadMore = hasNextPage && !hasPassedTargetDate;
     const fallback =
-      !hasNextPage && scrollToDate
+      !canLoadMore && scrollToDate
         ? rows.find((item) => item.dataset.visitDate === scrollToDate)
         : undefined;
     const target = row ?? fallback;
@@ -67,7 +75,7 @@ export const useVisitHistoryRestore = ({
       );
       restoredTarget.current = targetKey;
       root.dispatchEvent(new Event('scroll'));
-    } else if (hasNextPage && !isFetchingNextPage) {
+    } else if (canLoadMore && !isFetchingNextPage) {
       const pageKey = `${targetKey}:${loadedPageCount}`;
       if (lastRequestedPage.current === pageKey) return;
       lastRequestedPage.current = pageKey;
@@ -78,6 +86,7 @@ export const useVisitHistoryRestore = ({
     stickyHeaderRef,
     scrollToDate,
     scrollToConsumptionId,
+    isRestoreTargetPending,
     visits,
     loadedPageCount,
     isLoading,

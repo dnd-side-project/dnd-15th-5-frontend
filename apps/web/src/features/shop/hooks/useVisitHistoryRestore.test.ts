@@ -100,3 +100,33 @@ it('기록이 삭제되거나 다른 가게로 옮겨졌으면 마지막 페이�
   renderHook(() => useVisitHistoryRestore(options));
   expect(root.scrollTop).toBe(500);
 });
+
+it('복귀할 기록의 최신 가게·날짜를 확인하는 동안에는 페이지를 미리 읽지 않는다', () => {
+  const { options } = setup({ hasNextPage: true, isRestoreTargetPending: true });
+  renderHook(() => useVisitHistoryRestore(options));
+  expect(options.onLoadMore).not.toHaveBeenCalled();
+});
+
+it('수정한 기록이 없어도 대상 날짜를 지나면 전체 이력을 조회하지 않고 날짜로 복원한다', () => {
+  const { root, options, addRow } = setup({
+    hasNextPage: true,
+    visits: [
+      { consumptionId: 195, visitedAt: '2026-11-01' },
+      { consumptionId: 190, visitedAt: '2026-10-31' },
+    ],
+  });
+  addRow(195);
+  addRow(190, '2026-10-31');
+  renderHook(() => useVisitHistoryRestore(options));
+  expect(options.onLoadMore).not.toHaveBeenCalled();
+  expect(root.scrollTop).toBe(500);
+});
+
+it('대상 날짜에 다른 기록도 없으면 날짜를 지난 시점에 자동 조회를 멈춘다', () => {
+  const { options } = setup({
+    hasNextPage: true,
+    visits: [{ consumptionId: 190, visitedAt: '2026-10-31' }],
+  });
+  renderHook(() => useVisitHistoryRestore(options));
+  expect(options.onLoadMore).not.toHaveBeenCalled();
+});
