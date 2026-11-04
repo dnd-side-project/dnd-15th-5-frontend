@@ -99,7 +99,7 @@ describe('useTogglePlaceLikeMutation', () => {
     });
   });
 
-  it('성공 응답에 liked 값이 없어도 낙관적 취소 상태로 토스트를 표시한다', async () => {
+  it('성공 응답에 liked 값이 없으면 좋아요 토스트를 표시하지 않는다', async () => {
     mockedToggleLike.mockResolvedValue({});
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
     queryClient.setQueryData(LIKED_PLACES_INFINITE_QUERY_KEY, {
@@ -114,11 +114,51 @@ describe('useTogglePlaceLikeMutation', () => {
       await result.current.mutateAsync({ placeId: 101 });
     });
 
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'like' }));
+  });
+
+  it('같은 장소의 오래된 응답은 캐시와 토스트를 갱신하지 않는다', async () => {
+    const pendingResponses: Array<(response: Awaited<ReturnType<typeof toggleLike>>) => void> = [];
+    mockedToggleLike.mockImplementation(
+      () => new Promise((resolve) => pendingResponses.push(resolve))
+    );
+    const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+    const visitedPlacesKey = getGetVisitedPlaceMarkersQueryKey();
+    queryClient.setQueryData(visitedPlacesKey, {
+      data: { places: [{ placeId: 101, placeName: '투썸플레이스', liked: false }] },
+    });
+    const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    let olderRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    let newerRequest: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
+    await act(async () => {
+      olderRequest = result.current.mutateAsync({ placeId: 101 });
+      newerRequest = result.current.mutateAsync({ placeId: 101 });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(pendingResponses).toHaveLength(2));
+
+    pendingResponses[1]?.({ data: { liked: false } });
+    await act(async () => {
+      await newerRequest;
+    });
+    pendingResponses[0]?.({ data: { liked: true } });
+    await act(async () => {
+      await olderRequest;
+    });
+
+    expect(showToast).toHaveBeenCalledTimes(1);
     expect(showToast).toHaveBeenCalledWith({
       type: 'like',
       message: '좋아요 목록에서 삭제했어요',
       placement: 'above-bottom-sheet',
     });
+    expect(
+      queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)
+        ?.data.places[0]?.liked
+    ).toBe(false);
   });
 
   it('요청이 실패하면 이전 캐시를 복구하고 오류 토스트를 표시한다', async () => {

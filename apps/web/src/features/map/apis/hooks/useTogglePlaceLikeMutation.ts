@@ -26,10 +26,13 @@ const LIKE_ERROR_MESSAGE = '좋아요 상태를 변경하지 못했어요. 잠�
 export const TOGGLE_PLACE_LIKE_MUTATION_KEY = ['toggle-place-like'] as const;
 const NEARBY_PLACES_QUERY_KEY = getGetNearbyPlacesQueryKey();
 const VISITED_PLACES_QUERY_KEY = getGetVisitedPlaceMarkersQueryKey();
+let nextLikeRequestSequence = 0;
+const latestLikeRequestSequences = new Map<number, number>();
 
 type LikeMutationContext = {
   optimisticLiked: boolean;
   previousLiked: boolean | undefined;
+  requestSequence: number;
   previousLikedPlaces: Array<
     [
       readonly unknown[],
@@ -222,6 +225,9 @@ export const useTogglePlaceLikeMutation = () => {
     mutationKey: TOGGLE_PLACE_LIKE_MUTATION_KEY,
     mutationFn: ({ placeId }) => toggleLike(placeId),
     onMutate: async ({ placeId }) => {
+      const requestSequence = ++nextLikeRequestSequence;
+      latestLikeRequestSequences.set(placeId, requestSequence);
+
       await Promise.all([
         queryClient.cancelQueries({ queryKey: NEARBY_PLACES_QUERY_KEY }),
         queryClient.cancelQueries({ queryKey: VISITED_PLACES_QUERY_KEY }),
@@ -254,9 +260,11 @@ export const useTogglePlaceLikeMutation = () => {
         : (currentRecommendation?.liked ?? currentVisitedPlace?.liked);
       const optimisticLiked = !(previousLiked ?? false);
 
-      updateCachedLikeState(queryClient, placeId, () => optimisticLiked);
+      if (latestLikeRequestSequences.get(placeId) === requestSequence) {
+        updateCachedLikeState(queryClient, placeId, () => optimisticLiked);
+      }
 
-      if (!optimisticLiked) {
+      if (!optimisticLiked && latestLikeRequestSequences.get(placeId) === requestSequence) {
         queryClient.setQueriesData<LikedPlacesInfiniteData>(
           { queryKey: LIKED_PLACES_INFINITE_QUERY_KEY },
           (data) =>
@@ -277,9 +285,11 @@ export const useTogglePlaceLikeMutation = () => {
         );
       }
 
-      return { optimisticLiked, previousLiked, previousLikedPlaces };
+      return { optimisticLiked, previousLiked, previousLikedPlaces, requestSequence };
     },
     onError: (_error, { placeId }, context) => {
+      if (context && latestLikeRequestSequences.get(placeId) !== context.requestSequence) return;
+
       if (context) {
         updateCachedLikeState(queryClient, placeId, (liked) =>
           liked === context.optimisticLiked ? context.previousLiked : liked
@@ -293,8 +303,14 @@ export const useTogglePlaceLikeMutation = () => {
       showToast({ type: 'error', message: LIKE_ERROR_MESSAGE });
     },
     onSuccess: (response, { placeId }, context) => {
-      const liked = response.data?.liked ?? context?.optimisticLiked;
-      if (liked === undefined) return;
+      const liked = response.data?.liked;
+      if (
+        liked === undefined ||
+        !context ||
+        latestLikeRequestSequences.get(placeId) !== context.requestSequence
+      ) {
+        return;
+      }
 
       updateCachedLikeState(queryClient, placeId, () => liked);
 
@@ -308,7 +324,11 @@ export const useTogglePlaceLikeMutation = () => {
         useHomeBottomSheetStore.getState().closeLikedRecommendationIfMatches(String(placeId));
       }
     },
-    onSettled: async () => {
+    onSettled: async (_response, _error, { placeId }, context) => {
+      if (context && latestLikeRequestSequences.get(placeId) === context.requestSequence) {
+        latestLikeRequestSequences.delete(placeId);
+      }
+
       // 진행 중인 좋아요 변경이 남아 있으면 재조회가 다른 장소의 낙관적 상태를 덮을 수 있습니다.
       if (queryClient.isMutating({ mutationKey: TOGGLE_PLACE_LIKE_MUTATION_KEY }) > 1) return;
 
