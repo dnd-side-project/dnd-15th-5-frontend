@@ -141,12 +141,12 @@ import { getStartQueryKey } from '@/features/auth/apis/queryKeys';
 | feature   | operationId                                                                                   |
 | --------- | --------------------------------------------------------------------------------------------- |
 | auth      | refreshApp, refreshWeb, exchangeSocialLoginCode, agree, logoutApp, logoutWeb, start, callback |
-| map       | getVisitedPlaceMarkers, getNearbyPlaces                                                       |
-| my-page   | getMyAccount, updateMyAccount, withdrawMyAccount                                               |
+| map       | getVisitedPlaceMarkers, getNearbyPlaces, getLikedPlaces, toggleLike                           |
+| my-page   | getMyAccount, updateMyAccount, updateMyProfile, withdrawMyAccount                              |
 | notification | unregisterDeviceToken, registerDeviceToken, getNotifications, hasUnread                    |
-| record    | createConsumption, recognizeReceipt                                                            |
+| record    | createConsumption, recognizeReceipt, getConsumption, updateConsumption, deleteConsumption, upload, findStickers |
 | report    | getMonthlyReport, getCurrentStatus, getConsumptions, getFrequentPlaces, issueShareLink, getSharedPersonaCard, aggregateMonthlyReport |
-| shop      | getPlaceDetail_1, getPlaceVisits, toggleLike, searchVisitedPlaces                              |
+| shop      | getPlaceDetail_1, getPlaceVisits, searchVisitedPlaces                                          |
 
 명세에 등록된 operationId가 사라지거나 변경되면 생성 단계가 실패한다. 새로운 API는
 `openapiFeatureMap.json`에 소유 feature를 지정한 뒤 생성한다.
