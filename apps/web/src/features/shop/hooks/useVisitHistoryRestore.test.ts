@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { fireEvent, renderHook } from '@testing-library/react';
 
 import { useVisitHistoryRestore } from './useVisitHistoryRestore';
 
@@ -129,4 +129,61 @@ it('대상 날짜에 다른 기록도 없으면 날짜를 지난 시점에 자�
   });
   renderHook(() => useVisitHistoryRestore(options));
   expect(options.onLoadMore).not.toHaveBeenCalled();
+});
+
+it('대상 방문을 기다리다 직접 스크롤하면 추가 조회와 늦은 복원을 중단한다', () => {
+  const { root, options, addRow } = setup({ hasNextPage: true });
+  const { rerender } = renderHook((props: Options) => useVisitHistoryRestore(props), {
+    initialProps: options,
+  });
+  expect(options.onLoadMore).toHaveBeenCalledTimes(1);
+  root.scrollTop = 120;
+  fireEvent.scroll(root);
+  rerender({ ...options, loadedPageCount: 2 });
+  expect(options.onLoadMore).toHaveBeenCalledTimes(1);
+  addRow(196);
+  rerender({ ...options, loadedPageCount: 3, visits: [{ consumptionId: 196 }] });
+  expect(root.scrollTop).toBe(120);
+});
+
+it('최신 기록 조회 중 스크롤한 경우에도 자동 복원을 취소하고 새로운 대상은 복원한다', () => {
+  const { root, options, addRow } = setup({ isRestoreTargetPending: true });
+  const { rerender } = renderHook((props: Options) => useVisitHistoryRestore(props), {
+    initialProps: options,
+  });
+  root.scrollTop = 120;
+  fireEvent.scroll(root);
+  addRow(196);
+  rerender({ ...options, isRestoreTargetPending: false });
+  expect(root.scrollTop).toBe(120);
+  addRow(197);
+  rerender({ ...options, isRestoreTargetPending: false, scrollToConsumptionId: 197 });
+  expect(root.scrollTop).toBe(620);
+});
+
+it('위치 변화 없는 스크롤 이벤트와 안쪽 목록 스크롤은 복원을 취소하지 않는다', () => {
+  const { root, options, addRow } = setup({ hasNextPage: true });
+  const { rerender } = renderHook((props: Options) => useVisitHistoryRestore(props), {
+    initialProps: options,
+  });
+  fireEvent.scroll(root);
+  const child = document.createElement('div');
+  root.append(child);
+  child.scrollTop = 40;
+  fireEvent.scroll(child, { bubbles: true });
+  addRow(196);
+  rerender({ ...options, loadedPageCount: 2, visits: [{ consumptionId: 196 }] });
+  expect(root.scrollTop).toBe(500);
+});
+
+it('스크롤 이벤트가 전달되기 전에 페이지가 도착해도 이동한 위치를 덮어쓰지 않는다', () => {
+  const { root, options, addRow } = setup({ hasNextPage: true });
+  const { rerender } = renderHook((props: Options) => useVisitHistoryRestore(props), {
+    initialProps: options,
+  });
+  root.scrollTop = 120;
+  addRow(196);
+  rerender({ ...options, loadedPageCount: 2, visits: [{ consumptionId: 196 }] });
+  expect(root.scrollTop).toBe(120);
+  expect(options.onLoadMore).toHaveBeenCalledTimes(1);
 });

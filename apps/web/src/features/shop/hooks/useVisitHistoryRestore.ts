@@ -20,7 +20,7 @@ type VisitHistoryRestoreOptions = {
   onLoadMore: () => void;
 };
 
-/** 최신 복귀 날짜까지만 페이지를 읽고 수정한 방문 또는 같은 날짜의 기록으로 한 번 복원합니다. */
+/** 최신 복귀 날짜까지만 페이지를 읽어 한 번 복원하며, 대기 중 직접 스크롤하면 중단합니다. */
 export const useVisitHistoryRestore = ({
   scrollRootRef,
   stickyHeaderRef,
@@ -37,7 +37,25 @@ export const useVisitHistoryRestore = ({
   onLoadMore,
 }: VisitHistoryRestoreOptions) => {
   const restoredTarget = useRef<string | null>(null);
+  const cancelledTarget = useRef<string | null>(null);
   const lastRequestedPage = useRef<string | null>(null);
+  const initialScrollTopRef = useRef(0);
+
+  useLayoutEffect(() => {
+    const root = scrollRootRef.current;
+    if (!root || (!scrollToDate && !scrollToConsumptionId)) return;
+    const targetKey = `${scrollToConsumptionId ?? ''}:${scrollToDate ?? ''}`;
+    cancelledTarget.current = null;
+    const initialScrollTop = root.scrollTop;
+    initialScrollTopRef.current = initialScrollTop;
+    const handleScroll = (event: Event) => {
+      if (event.target !== root || restoredTarget.current === targetKey) return;
+      if (root.scrollTop !== initialScrollTop) cancelledTarget.current = targetKey;
+    };
+    root.addEventListener('scroll', handleScroll, { passive: true });
+    return () => root.removeEventListener('scroll', handleScroll);
+  }, [scrollRootRef, scrollToDate, scrollToConsumptionId]);
+
   useLayoutEffect(() => {
     const root = scrollRootRef.current;
     const targetKey = `${scrollToConsumptionId ?? ''}:${scrollToDate ?? ''}`;
@@ -45,12 +63,18 @@ export const useVisitHistoryRestore = ({
       !root ||
       (!scrollToDate && !scrollToConsumptionId) ||
       restoredTarget.current === targetKey ||
+      cancelledTarget.current === targetKey ||
       isRestoreTargetPending ||
       isLoading ||
       isError ||
       isFetchNextPageError
     )
       return;
+    // NOTE: scroll 이벤트보다 다음 페이지 렌더링이 먼저 도착해도 이동한 위치를 지킵니다.
+    if (root.scrollTop !== initialScrollTopRef.current) {
+      cancelledTarget.current = targetKey;
+      return;
+    }
     const rows = Array.from(root.querySelectorAll<HTMLElement>('[data-visit-id]'));
     const row = scrollToConsumptionId
       ? rows.find((item) => item.dataset.visitId === String(scrollToConsumptionId))
@@ -66,6 +90,7 @@ export const useVisitHistoryRestore = ({
         : undefined;
     const target = row ?? fallback;
     if (target) {
+      restoredTarget.current = targetKey;
       root.scrollTop = Math.max(
         0,
         root.scrollTop +
@@ -73,7 +98,6 @@ export const useVisitHistoryRestore = ({
           root.getBoundingClientRect().top -
           (stickyHeaderRef.current?.getBoundingClientRect().height ?? 0)
       );
-      restoredTarget.current = targetKey;
       root.dispatchEvent(new Event('scroll'));
     } else if (canLoadMore && !isFetchingNextPage) {
       const pageKey = `${targetKey}:${loadedPageCount}`;
