@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { createPortal } from 'react-dom';
 
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 
@@ -25,6 +26,12 @@ function TabsFixture() {
       >
         <button onClick={() => handleTabChange('history')}>소비 기록</button>
         <input aria-label="검색" />
+        <ul data-testid="month-list" style={{ overflowY: 'auto' }}>
+          <li>
+            <button>11월</button>
+          </li>
+        </ul>
+        {createPortal(<button>별도 시트</button>, document.body)}
       </div>
     </div>
   );
@@ -99,6 +106,8 @@ it.each([
 
 it.each([
   ['버튼의 Space', 'button', { key: ' ' }, false],
+  ['버튼의 방향키', 'button', { key: 'ArrowDown' }, true],
+  ['버튼의 PageDown', 'button', { key: 'PageDown' }, true],
   ['입력창의 방향키', 'input', { key: 'ArrowDown' }, false],
   ['스크롤 영역의 방향키', 'content', { key: 'ArrowDown' }, true],
   ['단축키 조합', 'content', { key: 'End', ctrlKey: true }, false],
@@ -117,3 +126,75 @@ it.each([
     expect(container.scrollTop).toBe(shouldCancel ? 0 : 240);
   }
 );
+
+it.each([false, true])(
+  '핀치 뒤 남은 한 손가락의 기준점을 잡고 추가 이동 시에만 복원을 취소한다: %s',
+  (shouldMove) => {
+    const { container, content, completeLayout } = setupPendingRestoration();
+    const touch = (clientY: number) => ({ identifier: 1, clientX: 100, clientY });
+    fireEvent.touchStart(content, { touches: [touch(100)] });
+    fireEvent.touchMove(content, { touches: [touch(110), { ...touch(120), identifier: 2 }] });
+    fireEvent.touchMove(content, { touches: [touch(140)] });
+    if (shouldMove) fireEvent.touchMove(content, { touches: [touch(160)] });
+    completeLayout();
+    expect(container.scrollTop).toBe(shouldMove ? 0 : 240);
+  }
+);
+
+it.each([
+  ['wheel', 100, 120, false],
+  ['wheel', 100, -120, false],
+  ['wheel', 0, -120, true],
+  ['wheel', 200, 120, true],
+  ['wheel', 0, 120, false],
+  ['wheel', 200, -120, false],
+  ['touch', 100, 40, false],
+  ['touch', 100, -40, false],
+  ['touch', 0, -40, true],
+  ['touch', 200, 40, true],
+  ['key', 100, 1, false],
+  ['key', 200, 1, true],
+  ['key', 0, -1, true],
+] as const)(
+  '중첩 목록의 %s 이동을 방향과 경계에 따라 처리한다: top=%s, delta=%s',
+  (type, top, delta, shouldCancel) => {
+    const { container, completeLayout } = setupPendingRestoration();
+    const list = screen.getByTestId('month-list');
+    Object.defineProperties(list, { scrollHeight: { value: 300 }, clientHeight: { value: 100 } });
+    list.scrollTop = top;
+    const row = screen.getByRole('button', { name: '11월' });
+    if (type === 'wheel') {
+      fireEvent.wheel(row, { deltaY: delta });
+    } else if (type === 'touch') {
+      fireEvent.touchStart(row, { touches: [{ identifier: 1, clientX: 100, clientY: 100 }] });
+      fireEvent.touchMove(row, {
+        touches: [{ identifier: 1, clientX: 100, clientY: 100 - delta }],
+      });
+    } else {
+      fireEvent.keyDown(row, { key: delta > 0 ? 'ArrowDown' : 'ArrowUp' });
+    }
+    completeLayout();
+    expect(container.scrollTop).toBe(shouldCancel ? 0 : 240);
+  }
+);
+
+it('포털의 다른 시트에서 스크롤해도 홈 시트 복원은 유지한다', () => {
+  const { container, completeLayout } = setupPendingRestoration();
+  fireEvent.wheel(screen.getByRole('button', { name: '별도 시트' }), { deltaY: 120 });
+  completeLayout();
+  expect(container.scrollTop).toBe(240);
+});
+
+it('안쪽 목록의 끝에서 이동 방향을 바꾸면 새 방향으로 스크롤할 수 있는지 확인한다', () => {
+  const { container, completeLayout } = setupPendingRestoration();
+  const list = screen.getByTestId('month-list');
+  Object.defineProperties(list, { scrollHeight: { value: 300 }, clientHeight: { value: 100 } });
+  list.scrollTop = 100;
+  const touch = (clientY: number) => ({ identifier: 1, clientX: 100, clientY });
+  fireEvent.touchStart(list, { touches: [touch(100)] });
+  fireEvent.touchMove(list, { touches: [touch(60)] });
+  list.scrollTop = 200;
+  fireEvent.touchMove(list, { touches: [touch(80)] });
+  completeLayout();
+  expect(container.scrollTop).toBe(240);
+});

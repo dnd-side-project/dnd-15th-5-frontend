@@ -8,6 +8,32 @@ import type { KeyboardEvent, TouchEvent, UIEvent, WheelEvent } from 'react';
 const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
 const TOUCH_SCROLL_INTENT_THRESHOLD_PX = 8;
 
+/** 안쪽 목록이 이동을 소비하면 바깥 시트의 복원 대기를 유지합니다. */
+const canScrollReachContainer = (
+  target: EventTarget | null,
+  container: HTMLElement | null | undefined,
+  deltaY: number
+) => {
+  if (!(target instanceof Element) || !container?.contains(target)) return false;
+
+  for (
+    let element: Element | null = target;
+    element && element !== container;
+    element = element.parentElement
+  ) {
+    if (!(element instanceof HTMLElement)) continue;
+    if (!/^(auto|scroll|overlay)$/.test(window.getComputedStyle(element).overflowY)) continue;
+    const maxScrollTop = element.scrollHeight - element.clientHeight;
+    if (
+      maxScrollTop > 0 &&
+      (deltaY < 0 ? element.scrollTop > 0 : element.scrollTop < maxScrollTop)
+    ) {
+      return false;
+    }
+  }
+  return true;
+};
+
 /**
  * 홈 시트의 선택 탭과 탭별 스크롤·포커스를 복원합니다.
  * 목록 높이가 늦게 확보되면 복원을 재시도하며, 복원 완료 또는 직접 스크롤 시 관찰을 중단합니다.
@@ -42,18 +68,36 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
     }
     const start = touchStartRef.current;
     const touch = event.touches[0];
-    if (!start || !touch || touch.identifier !== start.identifier) return;
+    if (!touch) return;
+    if (!start || touch.identifier !== start.identifier) {
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY, identifier: touch.identifier };
+      return;
+    }
     const verticalDistance = Math.abs(touch.clientY - start.y);
     if (
       verticalDistance >= TOUCH_SCROLL_INTENT_THRESHOLD_PX &&
       verticalDistance > Math.abs(touch.clientX - start.x)
     ) {
-      cancelScrollRestoration();
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY, identifier: touch.identifier };
+      if (
+        canScrollReachContainer(
+          event.target,
+          contentRootRef.current?.parentElement,
+          start.y - touch.clientY
+        )
+      ) {
+        cancelScrollRestoration();
+      }
     }
   };
 
   const handleContentWheel = (event: WheelEvent<HTMLDivElement>) => {
-    if (!event.ctrlKey && !event.shiftKey && Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+    if (
+      !event.ctrlKey &&
+      !event.shiftKey &&
+      Math.abs(event.deltaY) > Math.abs(event.deltaX) &&
+      canScrollReachContainer(event.target, contentRootRef.current?.parentElement, event.deltaY)
+    ) {
       cancelScrollRestoration();
     }
   };
@@ -122,11 +166,20 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
       event.metaKey ||
       !SCROLL_KEYS.has(event.key) ||
       (event.target instanceof Element &&
-        event.target.closest('button, a[href], input, textarea, select, [contenteditable]'))
+        (event.target.closest(
+          'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
+        ) ||
+          (event.key === ' ' && event.target.closest('button, [role="button"]'))))
     )
       return;
 
-    cancelScrollRestoration();
+    const deltaY =
+      ['ArrowUp', 'PageUp', 'Home'].includes(event.key) || (event.key === ' ' && event.shiftKey)
+        ? -1
+        : 1;
+    if (canScrollReachContainer(event.target, contentRootRef.current?.parentElement, deltaY)) {
+      cancelScrollRestoration();
+    }
   };
 
   return {
