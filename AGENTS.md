@@ -42,6 +42,7 @@ pnpm preview       # 웹 빌드 결과 미리보기
 
 ## Architecture & Code Style
 
+- 디자인 토큰과 공통 UI 사용 기준: [DESIGN.md](DESIGN.md)
 - 웹 디렉토리 구조, 의존 방향(`app → pages → features → shared`), 상태관리 규칙: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 모바일 디렉토리 구조(`app`/`screens`/`features`/`bridge`/`native`/`shared`): [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 네이밍, Import(`@/` alias), Props/Type, TSDoc, 주석 규칙: [docs/CONVENTIONS.md](docs/CONVENTIONS.md)
