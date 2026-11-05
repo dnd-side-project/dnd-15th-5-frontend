@@ -63,10 +63,16 @@
     color-mix(in srgb, var(--color-neutral-00) 4%, transparent) 45%,
     transparent 70%
   );
-  --background-image-report-hero: linear-gradient(
+  --background-report-hero: linear-gradient(
     to bottom,
     var(--color-neutral-00) 0%,
     var(--color-primary-100) 100%
+  );
+  --background-report-page-banner: linear-gradient(
+    135deg,
+    #5c7aff 0%,
+    #a6b6ff 45%,
+    var(--color-neutral-00) 100%
   );
   --background-image-monthly-report-hero: linear-gradient(
     to bottom,
