@@ -25,4 +25,9 @@ export const Default: Story = {
 /** 버튼 안에서 쓰는 작은 진행 표시입니다. */
 export const Compact: Story = {
   args: { className: 'size-4 text-neutral-00' },
+  render: (args) => (
+    <div className="inline-flex items-center rounded-08 bg-neutral-700 p-2">
+      <Spinner {...args} />
+    </div>
+  ),
 };

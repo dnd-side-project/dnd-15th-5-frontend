@@ -18,7 +18,7 @@ const meta = {
     animated: false,
     ariaLabelledBy: 'picker-sheet-title',
     snapPoint: 'medium',
-    children: '선택 항목',
+    children: null,
     onClose: fn(),
   },
 } satisfies Meta<typeof PickerSheet>;
