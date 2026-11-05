@@ -22,8 +22,8 @@ export default function ReportPage() {
 
   if (hasReportError) {
     return (
-      <main className="flex min-h-dvh flex-col px-4">
-        <PageHeader title="리포트" />
+      <main className="flex min-h-dvh flex-col bg-primary-50 px-4">
+        <PageHeader className="pb-3" title="리포트" />
         <div className="flex flex-1 items-center">
           <StateView
             actionLabel="다시 불러오기"
@@ -49,15 +49,15 @@ export default function ReportPage() {
   } = report;
 
   return (
-    <main aria-busy={isPending} className="overflow-hidden">
-      <PageHeader title="리포트" />
+    <main aria-busy={isPending} className="overflow-hidden bg-primary-50">
+      <PageHeader className="pb-3" title="리포트" />
       {isPending && (
         <span className="sr-only" role="status">
           리포트를 불러오는 중입니다.
         </span>
       )}
 
-      <ReportHeroSection monthlyReportPath={ROUTE_PATHS.monthlyReport} monthLabel={monthLabel} />
+      <ReportHeroSection to={ROUTE_PATHS.monthlyReport} monthLabel={monthLabel} />
 
       <div className="relative rounded-t-30 bg-neutral-00 pt-10 pr-4 pb-[calc(var(--spacing-page-bottom)+6.5rem)] pl-4.25">
         <div className="flex flex-col gap-6">
