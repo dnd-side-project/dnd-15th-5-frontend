@@ -1,6 +1,6 @@
 import { MemoryRouter } from 'react-router-dom';
 
-import { AddIcon, ExternalLinkIcon, NavigationHomeIcon } from '@/shared/assets/icons';
+import { AddIcon, NavigationHomeIcon } from '@/shared/assets/icons';
 
 import { LinkButton } from './LinkButton';
 
@@ -99,7 +99,7 @@ export const External: Story = {
     children: (
       <>
         Google 지도에서 열기
-        <ExternalLinkIcon aria-hidden="true" className="size-4" />
+        <span aria-hidden="true">↗</span>
       </>
     ),
   },

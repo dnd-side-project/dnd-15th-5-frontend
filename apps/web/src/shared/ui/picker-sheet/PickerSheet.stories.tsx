@@ -18,6 +18,7 @@ const meta = {
     animated: false,
     ariaLabelledBy: 'picker-sheet-title',
     snapPoint: 'medium',
+    children: '선택 항목',
     onClose: fn(),
   },
 } satisfies Meta<typeof PickerSheet>;
@@ -58,7 +59,7 @@ export const Default: Story = {
 
 /** 드래그 가능한 높이 단계를 제한하는 예시입니다. */
 export const FitContent: Story = {
-  args: { fitContent: true, snapPoints: ['hidden', 'medium'] },
+  args: { fitContent: true, snapPoints: ['hidden', 'medium'] as const },
   render: (args) => (
     <div className="min-h-dvh bg-neutral-100">
       <PickerSheet {...args}>
