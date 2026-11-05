@@ -13,6 +13,7 @@ import {
 } from '@/features/report';
 import { ChevronRightIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import PageHeader from '@/shared/layout/PageHeader';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { StateView } from '@/shared/ui/state-view';
 
@@ -21,15 +22,18 @@ export default function ReportPage() {
 
   if (hasReportError) {
     return (
-      <main className="flex min-h-dvh items-center px-4">
-        <StateView
-          actionLabel="다시 불러오기"
-          description="잠시 후 다시 시도해주세요."
-          headingAs="h1"
-          onAction={() => void refetch()}
-          title="리포트를 불러오지 못했어요"
-          variant="error"
-        />
+      <main className="flex min-h-dvh flex-col px-4">
+        <PageHeader title="리포트" />
+        <div className="flex flex-1 items-center">
+          <StateView
+            actionLabel="다시 불러오기"
+            description="잠시 후 다시 시도해주세요."
+            headingAs="h2"
+            onAction={() => void refetch()}
+            title="리포트를 불러오지 못했어요"
+            variant="error"
+          />
+        </div>
       </main>
     );
   }
@@ -46,6 +50,7 @@ export default function ReportPage() {
 
   return (
     <main aria-busy={isPending} className="overflow-hidden">
+      <PageHeader title="리포트" />
       {isPending && (
         <span className="sr-only" role="status">
           리포트를 불러오는 중입니다.
