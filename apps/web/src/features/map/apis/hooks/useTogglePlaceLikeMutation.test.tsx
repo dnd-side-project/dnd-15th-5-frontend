@@ -48,7 +48,9 @@ describe('useTogglePlaceLikeMutation', () => {
     queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
       data: {
         allPlaces: [{ placeId: 101, name: '투썸플레이스', liked: false }],
-        categoryPlaces: [],
+        categoryPlaces: [
+          { category: '카페', places: [{ placeId: 101, name: '투썸플레이스', liked: false }] },
+        ],
       },
     });
     queryClient.setQueryData(visitedPlacesKey, {
@@ -67,24 +69,49 @@ describe('useTogglePlaceLikeMutation', () => {
         ?.allPlaces?.[0]?.liked
     ).toBe(true);
     expect(
+      queryClient.getQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey)?.data
+        ?.categoryPlaces?.[0]?.places?.[0]?.liked
+    ).toBe(true);
+    expect(
       queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)
         ?.data.places[0]?.liked
     ).toBe(true);
   });
 
   it('요청이 실패하면 이전 캐시를 복구하고 오류 토스트를 표시한다', async () => {
-    mockedToggleLike.mockRejectedValue(new Error('network error'));
+    let rejectRequest: ((reason: Error) => void) | undefined;
+    mockedToggleLike.mockImplementation(
+      () =>
+        new Promise((_, reject) => {
+          rejectRequest = reject;
+        })
+    );
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
     const recommendationKey = getGetNearbyPlacesQueryKey({ lat: 37.5, lng: 127 });
     queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
-      data: { allPlaces: [{ placeId: 101, liked: false }] },
+      data: {
+        allPlaces: [{ placeId: 101, liked: false }],
+        categoryPlaces: [{ category: '카페', places: [{ placeId: 101, liked: false }] }],
+      },
     });
     const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
       wrapper: createWrapper(queryClient),
     });
 
+    let request: Promise<Awaited<ReturnType<typeof toggleLike>>> | undefined;
     await act(async () => {
-      await expect(result.current.mutateAsync({ placeId: 101 })).rejects.toThrow('network error');
+      request = result.current.mutateAsync({ placeId: 101 });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(mockedToggleLike).toHaveBeenCalled());
+    const optimisticData =
+      queryClient.getQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey)?.data;
+    expect(optimisticData?.allPlaces?.[0]?.liked).toBe(true);
+    expect(optimisticData?.categoryPlaces?.[0]?.places?.[0]?.liked).toBe(true);
+
+    await act(async () => {
+      rejectRequest?.(new Error('network error'));
+      await expect(request).rejects.toThrow('network error');
     });
 
     await waitFor(() =>
@@ -93,6 +120,10 @@ describe('useTogglePlaceLikeMutation', () => {
           ?.allPlaces?.[0]?.liked
       ).toBe(false)
     );
+    expect(
+      queryClient.getQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey)?.data
+        ?.categoryPlaces?.[0]?.places?.[0]?.liked
+    ).toBe(false);
     expect(showToast).toHaveBeenCalledWith({
       type: 'error',
       message: '좋아요 상태를 변경하지 못했어요. 잠시 후 다시 시도해주세요.',
