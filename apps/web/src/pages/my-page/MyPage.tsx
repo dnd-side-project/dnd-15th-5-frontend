@@ -67,7 +67,9 @@ export default function MyPage() {
           <MyPageMenuItem
             icon={NotificationDefaultIcon}
             label="알림 설정"
-            onClick={() => navigate(ROUTE_PATHS.notificationSettings)}
+            onClick={() =>
+              navigate(ROUTE_PATHS.notificationSettings, { state: { fromMyPage: true } })
+            }
           />
         </MyPageMenuSection>
 

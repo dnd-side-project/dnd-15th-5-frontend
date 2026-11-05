@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
   NotificationToggle,
@@ -26,6 +26,7 @@ const NOTIFICATION_OPTIONS = [
 
 export default function NotificationSettingsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     isInNativeApp,
     isNotificationPermissionKnown,
@@ -36,12 +37,24 @@ export default function NotificationSettingsPage() {
   const shouldShowNotificationPermissionNotice =
     isInNativeApp && isNotificationPermissionKnown && !hasNotificationPermission;
 
+  const handleBack = () => {
+    const locationState = location.state as { fromMyPage?: boolean } | null;
+    const historyIndex = window.history.state?.idx;
+
+    if (locationState?.fromMyPage && typeof historyIndex === 'number' && historyIndex > 0) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(ROUTE_PATHS.myPage, { replace: true });
+  };
+
   return (
     <main className="mobile-frame fixed inset-0 flex flex-col overflow-y-auto bg-neutral-00">
       <header className="relative flex h-24 shrink-0 items-center justify-center px-4 pt-4">
         <BackButton
           className="absolute top-7 left-4 mt-0"
-          onClick={() => navigate(ROUTE_PATHS.myPage, { replace: true })}
+          onClick={handleBack}
           aria-label="이전 화면으로 돌아가기"
         />
         <h1 className="text-title-02-bold tracking-[-0.02em] text-neutral-700">알림 설정</h1>
