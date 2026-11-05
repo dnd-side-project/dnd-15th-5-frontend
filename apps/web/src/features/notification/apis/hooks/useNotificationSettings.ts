@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useIsMutating, useQueryClient } from '@tanstack/react-query';
 
 import type { NotificationSettingsUpdateRequest } from '@/features/notification/apis/dto';
 import { useUpdateNotificationSettings } from '@/features/notification/apis/mutations';
@@ -12,6 +12,7 @@ import { useToast } from '@/shared/ui/toast';
 export const useNotificationSettings = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const pendingSettingsUpdates = useIsMutating({ mutationKey: ['updateNotificationSettings'] });
   const settingsQuery = useGetNotificationSettings();
   const updateSettingsMutation = useUpdateNotificationSettings({
     mutation: {
@@ -38,7 +39,7 @@ export const useNotificationSettings = () => {
 
   return {
     settingsQuery,
-    isSaving: updateSettingsMutation.isPending,
+    isSaving: pendingSettingsUpdates > 0 || updateSettingsMutation.isPending,
     toggleSetting,
   };
 };
