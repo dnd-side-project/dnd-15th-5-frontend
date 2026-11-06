@@ -30,11 +30,17 @@ import type {
   SecondParameter,
 } from '@/features/shop/apis/dto';
 
-import { getPlaceDetail, getPlaceVisits, searchVisitedPlaces } from '@/features/shop/apis/clients';
+import {
+  getPlaceDetail,
+  getPlaceVisits,
+  getRecommendedPlaceDetail,
+  searchVisitedPlaces,
+} from '@/features/shop/apis/clients';
 
 import {
   getGetPlaceDetailQueryKey,
   getGetPlaceVisitsQueryKey,
+  getGetRecommendedPlaceDetailQueryKey,
   getSearchVisitedPlacesQueryKey,
 } from '@/features/shop/apis/queryKeys';
 
@@ -52,6 +58,228 @@ export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { 
   }
   return result;
 };
+
+export const getGetRecommendedPlaceDetailQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetRecommendedPlaceDetailQueryKey(placeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>> = ({
+    signal,
+  }) => getRecommendedPlaceDetail(placeId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: placeId !== null && placeId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+};
+
+export type GetRecommendedPlaceDetailQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRecommendedPlaceDetail>>
+>;
+
+export type GetRecommendedPlaceDetailQueryError = ErrorType<unknown>;
+
+export function useGetRecommendedPlaceDetail<
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+          TError,
+          Awaited<ReturnType<typeof getRecommendedPlaceDetail>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetRecommendedPlaceDetail<
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+          TError,
+          Awaited<ReturnType<typeof getRecommendedPlaceDetail>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetRecommendedPlaceDetail<
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 가게 추천 상세보기
+ */
+
+export function useGetRecommendedPlaceDetail<
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetRecommendedPlaceDetailQueryOptions(placeId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetRecommendedPlaceDetailSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetRecommendedPlaceDetailQueryKey(placeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>> = ({
+    signal,
+  }) => getRecommendedPlaceDetail(placeId, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetRecommendedPlaceDetailSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRecommendedPlaceDetail>>
+>;
+
+export type GetRecommendedPlaceDetailSuspenseQueryError = ErrorType<unknown>;
+
+export function useGetRecommendedPlaceDetailSuspense<
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetRecommendedPlaceDetailSuspense<
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetRecommendedPlaceDetailSuspense<
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 가게 추천 상세보기
+ */
+
+export function useGetRecommendedPlaceDetailSuspense<
+  TData = Awaited<ReturnType<typeof getRecommendedPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecommendedPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetRecommendedPlaceDetailSuspenseQueryOptions(placeId, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
 
 export const getSearchVisitedPlacesQueryOptions = <
   TData = Awaited<ReturnType<typeof searchVisitedPlaces>>,

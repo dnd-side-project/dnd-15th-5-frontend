@@ -32,7 +32,7 @@ export const toggleLike = (
 };
 
 /**
- * 지도 중심 좌표 반경 안의 인기 가게를 조회. myTownPlaces는 전체 인기순, sameCategoryPlaces는 내가 가장 많이 방문한 카테고리로 필터링한 결과로 둘 중 중복된건 1개만 응 답
+ * 지도 중심 좌표 반경 안의 인기 가게를 조회. categoryPlaces는 카테고리 전체 목록 각각에 대해 인기순 상위 4개씩 묶어서 응답하고(해당 카테고리에 후보가 없으면 빈 배열), allPlaces는 그 카테고리별 추천을 모두 합친 것(최대 카테고리 수 × 4개)을 인기순으로 응답
  * @summary 내 주변 가게 추천
  */
 export const getNearbyPlaces = (

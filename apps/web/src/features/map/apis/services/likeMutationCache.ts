@@ -56,8 +56,8 @@ export const getCachedLikedState = (
     .flatMap(([queryKey, response]) => {
       const freshResponse = getFreshData(queryKey, response);
       return [
-        ...(freshResponse?.data?.sameCategoryPlaces ?? []),
-        ...(freshResponse?.data?.myTownPlaces ?? []),
+        ...(freshResponse?.data?.categoryPlaces?.flatMap((group) => group.places ?? []) ?? []),
+        ...(freshResponse?.data?.allPlaces ?? []),
       ];
     })
     .find((place) => place.placeId === placeId);
@@ -179,16 +179,11 @@ const updateNearbyPlacesResponse = (
         data: response.data
           ? {
               ...response.data,
-              sameCategoryPlaces: updateRecommendedPlaces(
-                response.data.sameCategoryPlaces,
-                placeId,
-                updateLiked
-              ),
-              myTownPlaces: updateRecommendedPlaces(
-                response.data.myTownPlaces,
-                placeId,
-                updateLiked
-              ),
+              categoryPlaces: response.data.categoryPlaces?.map((group) => ({
+                ...group,
+                places: updateRecommendedPlaces(group.places, placeId, updateLiked),
+              })),
+              allPlaces: updateRecommendedPlaces(response.data.allPlaces, placeId, updateLiked),
             }
           : response.data,
       }

@@ -1,4 +1,8 @@
-import type { RecommendedPlaceItem, VisitedPlaceMarkerItem } from '@/features/map/apis/dto';
+import type {
+  NearbyPlacesResponse,
+  RecommendedPlaceItem,
+  VisitedPlaceMarkerItem,
+} from '@/features/map/apis/dto';
 import { HOME_CATEGORIES } from '@/features/map/constants';
 import type {
   HomeCategory,
@@ -6,7 +10,7 @@ import type {
   ShopRecommendation,
   ShopRecommendationReason,
 } from '@/features/map/types';
-import { StickerEyesImage, getStickerImageByName } from '@/shared/assets/images/stickers';
+import { StickerEyesImage, getStickerImage } from '@/shared/assets/images/stickers';
 
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 
@@ -33,7 +37,9 @@ export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =
       return [];
     }
 
-    const image = getStickerImageByName(place.stickerName) ?? StickerEyesImage;
+    const image =
+      getStickerImage({ imageUrl: place.imageUrl, itemName: place.stickerName }) ??
+      StickerEyesImage;
     const category = normalizeHomeCategory(place.category);
 
     return [
@@ -139,7 +145,7 @@ const toRecommendation = (
   }
 
   return {
-    googleMapsUri: place.googleMapsUri ?? null,
+    googleMapsUri: null,
     id: String(place.placeId),
     isLiked: Boolean(place.liked),
     place: {
@@ -158,16 +164,14 @@ const toRecommendation = (
 };
 
 /** 추천 사유별 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
-export const toShopRecommendations = ({
-  sameCategoryPlaces,
-  myTownPlaces,
-}: {
-  sameCategoryPlaces?: RecommendedPlaceItem[];
-  myTownPlaces?: RecommendedPlaceItem[];
-}): ShopRecommendation[] => {
+export const toShopRecommendations = (response?: NearbyPlacesResponse): ShopRecommendation[] => {
   const candidates = [
-    ...(sameCategoryPlaces ?? []).map((place) => toRecommendation(place, '나의 관심 카테고리')),
-    ...(myTownPlaces ?? []).map((place) => toRecommendation(place, '내 동네에서 많이 방문한 곳')),
+    ...(response?.categoryPlaces ?? []).flatMap((group) =>
+      (group.places ?? []).map((place) => toRecommendation(place, '나의 관심 카테고리'))
+    ),
+    ...(response?.allPlaces ?? []).map((place) =>
+      toRecommendation(place, '내 동네에서 많이 방문한 곳')
+    ),
   ];
   const seenPlaceIds = new Set<string>();
 
