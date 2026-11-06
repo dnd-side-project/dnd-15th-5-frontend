@@ -25,7 +25,7 @@ export default function ReportHeroSection(props: ReportHeroSectionProps) {
           className="relative flex h-30 items-center px-5.5 text-neutral-00 outline-none focus-visible:ring-2 focus-visible:ring-neutral-00 focus-visible:ring-inset"
           to={props.to}
         >
-          <span className="relative z-report-hero-content flex flex-col items-start gap-1">
+          <span className="relative z-report-content flex flex-col items-start gap-1">
             <span className="text-heading-03-semibold">지난달 기록을 돌아보세요</span>
             <span className="text-body-01-semibold">
               지난달 리포트 보기 <span aria-hidden>→</span>
@@ -44,15 +44,15 @@ export default function ReportHeroSection(props: ReportHeroSectionProps) {
 
   return (
     <section className={REPORT_HERO_SECTION_CLASS_NAME}>
-      <div className="relative z-report-hero-content h-45">
-        <div className="absolute top-10 left-5.5 z-report-hero-content">
+      <div className="relative h-45">
+        <div className="absolute top-10 left-5.5 z-report-content">
           <h2 className="text-heading-02-semibold text-neutral-00">
             {props.monthLabel}의 기록을
             <br />
             돌아보세요
           </h2>
         </div>
-        <div className="absolute bottom-5 left-5.5 z-report-hero-content">
+        <div className="absolute bottom-5 left-5.5 z-report-content">
           <Link
             className="inline-flex items-center gap-1 text-body-01-semibold text-neutral-00 outline-none focus-visible:ring-2 focus-visible:ring-neutral-00 focus-visible:ring-offset-2 focus-visible:ring-offset-primary-400"
             to={props.to}
