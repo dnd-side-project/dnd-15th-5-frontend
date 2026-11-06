@@ -26,4 +26,4 @@ knowledge_base:
       - 'CLAUDE.md'
       - 'docs/ARCHITECTURE.md'
       - 'docs/CONVENTIONS.md'
-      - 'docs/GITFLOW.md'
+      - 'docs/GIT_WORKFLOW.md'
