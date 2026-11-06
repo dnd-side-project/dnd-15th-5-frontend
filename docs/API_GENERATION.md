@@ -143,9 +143,9 @@ import { getStartQueryKey } from '@/features/auth/apis/queryKeys';
 | --------- | --------------------------------------------------------------------------------------------- |
 | auth      | refreshApp, refreshWeb, exchangeSocialLoginCode, agree, logoutApp, logoutWeb, start, callback |
 | map       | getVisitedPlaceMarkers, getNearbyPlaces, getLikedPlaces, toggleLike                           |
-| my-page   | getMyAccount, updateMyAccount, withdrawMyAccount                                               |
+| my-page   | getMyAccount, updateMyAccount, updateMyProfile, withdrawMyAccount                              |
 | notification | unregisterDeviceToken, registerDeviceToken, getNotifications, hasUnread                    |
-| record    | createConsumption, recognizeReceipt                                                            |
+| record    | createConsumption, recognizeReceipt, getConsumption, updateConsumption, deleteConsumption, upload, findStickers |
 | report    | getMonthlyReport, getCurrentStatus, getConsumptions, getFrequentPlaces, issueShareLink, getSharedPersonaCard, aggregateMonthlyReport |
 | shop      | getPlaceDetail, getPlaceDetail_1, getPlaceVisits, searchVisitedPlaces                          |
 
