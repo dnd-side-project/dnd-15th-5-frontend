@@ -1,7 +1,5 @@
-import { SPENDING_CATEGORIES } from '@chapchap/shared/common/constants';
-
 import {
-  CategoryChart,
+  ReportCategoryDistribution,
   createFrequentShopListPath,
   ReportContentSkeleton,
   ReportHeroSection,
@@ -40,20 +38,7 @@ export default function ReportPage() {
     );
   }
 
-  const { monthLabel, monthlyCategoryCounts, weeklyPeriodLabel, weeklyRecords } = report;
-  const categoryCounts = monthlyCategoryCounts ?? {};
-  const totalCategoryCount = Object.values(categoryCounts).reduce(
-    (total, count) => total + count,
-    0
-  );
-  const categories = SPENDING_CATEGORIES.map((category) => {
-    const count = categoryCounts[category] ?? 0;
-
-    return {
-      category,
-      percentage: totalCategoryCount > 0 ? Math.round((count / totalCategoryCount) * 100) : 0,
-    };
-  }).filter(({ percentage }) => percentage > 0);
+  const { monthLabel, weeklyPeriodLabel, weeklyRecords } = report;
 
   return (
     <main aria-busy={isPending} className="overflow-hidden bg-primary-50 px-4">
@@ -64,43 +49,41 @@ export default function ReportPage() {
         </span>
       )}
 
-      <ReportHeroSection to={ROUTE_PATHS.monthlyReport} monthLabel={monthLabel} />
-      <div className="mt-5">
+      <div className="flex flex-col gap-5 pb-[calc(var(--spacing-page-bottom)+6.5rem)]">
+        <ReportHeroSection to={ROUTE_PATHS.monthlyReport} monthLabel={monthLabel} />
         <ReportLoyaltySummary />
-      </div>
 
-      <div className="mt-5 rounded-16 bg-neutral-00 p-3.5">
-        <ReportSection title="이 주의 소비 기록">
-          {isPending ? (
-            <ReportContentSkeleton variant="weekly" />
-          ) : (
-            <WeeklyRecordCalendar
-              historyPath={ROUTE_PATHS.spendingHistory}
-              periodLabel={weeklyPeriodLabel}
-              records={weeklyRecords}
-            />
-          )}
-        </ReportSection>
-      </div>
+        <div className="rounded-16 bg-neutral-00 p-3.5">
+          <ReportSection title="이 주의 소비 기록">
+            {isPending ? (
+              <ReportContentSkeleton variant="weekly" />
+            ) : (
+              <WeeklyRecordCalendar
+                historyPath={ROUTE_PATHS.spendingHistory}
+                periodLabel={weeklyPeriodLabel}
+                records={weeklyRecords}
+              />
+            )}
+          </ReportSection>
+        </div>
 
-      <div className="mt-5 rounded-16 bg-neutral-00 p-3.5">
-        <CategoryChart categories={categories} />
-      </div>
+        <ReportCategoryDistribution />
 
-      <div className="mt-5 grid w-full grid-cols-2 gap-4 pb-[calc(var(--spacing-page-bottom)+6.5rem)]">
-        <ReportLinkButton image={ReportSpendingRecordLinkImage} to={ROUTE_PATHS.spendingHistory}>
-          소비 기록
-          <br />
-          보러가기
-        </ReportLinkButton>
-        <ReportLinkButton
-          image={ReportFavoriteShopsLinkImage}
-          to={createFrequentShopListPath('all')}
-        >
-          단골리스트
-          <br />
-          보러가기
-        </ReportLinkButton>
+        <div className="grid grid-cols-2 gap-4">
+          <ReportLinkButton image={ReportSpendingRecordLinkImage} to={ROUTE_PATHS.spendingHistory}>
+            소비 기록
+            <br />
+            보러가기
+          </ReportLinkButton>
+          <ReportLinkButton
+            image={ReportFavoriteShopsLinkImage}
+            to={createFrequentShopListPath('all')}
+          >
+            단골리스트
+            <br />
+            보러가기
+          </ReportLinkButton>
+        </div>
       </div>
     </main>
   );
