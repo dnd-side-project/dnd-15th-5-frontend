@@ -46,7 +46,7 @@ export const TEST_SHOP_RECOMMENDATIONS: readonly ShopRecommendation[] = [
     isLiked: index === 1,
     place: sticker.place,
     position: sticker.position,
-    reason: '나의 관심 카테고리' as const,
+    reason: '카테고리별 인기 가게' as const,
     thumbnailSrc: null,
     visitCount: sticker.visitCount,
   })),

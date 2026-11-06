@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/cn';
+import { StickerImage } from '@/shared/ui/sticker-image/StickerImage';
 
 import '@/shared/styles/stickerStamp.css';
 
@@ -99,7 +100,7 @@ function ShopStickerCanvas({
   const [isReady, setIsReady] = useState(() => !shouldAnimate);
   const [replaySequences, setReplaySequences] = useState(() => stickerImages.map(() => 0));
   const hasStartedRef = useRef(isReady);
-  const loadedCountRef = useRef(0);
+  const loadedStickerIndicesRef = useRef(new Set<number>());
   const nextReplaySequenceRef = useRef(0);
   const startAnimation = useCallback(() => {
     if (hasStartedRef.current) return;
@@ -119,9 +120,9 @@ function ShopStickerCanvas({
     return () => window.clearTimeout(timeoutId);
   }, [shouldAnimate, startAnimation, stickerImages.length]);
 
-  const handleStickerLoad = () => {
-    loadedCountRef.current += 1;
-    if (loadedCountRef.current < stickerImages.length) return;
+  const handleStickerLoad = (index: number) => {
+    loadedStickerIndicesRef.current.add(index);
+    if (loadedStickerIndicesRef.current.size < stickerImages.length) return;
     startAnimation();
   };
   const createReplaySequence = () => {
@@ -162,7 +163,7 @@ function ShopStickerCanvas({
             delayMs={replaySequence > 0 ? 0 : (stampDelays[index] ?? 0)}
             isNewest={index === newestStickerIndex}
             isReady={isReady}
-            onLoad={handleStickerLoad}
+            onLoad={() => handleStickerLoad(index)}
             onReplay={() => replaySticker(index)}
             playbackSequence={replaySequence}
             shouldAnimate={shouldAnimate || replaySequence > 0}
@@ -217,8 +218,8 @@ function ShopStickerStamp({
       onClick={onReplay}
       style={slotStyle}
     >
-      <img
-        key={playbackSequence}
+      <StickerImage
+        animationKey={playbackSequence}
         alt=""
         className={cn(
           'shop-sticker-hero__stamp pointer-events-none h-full w-full object-contain',

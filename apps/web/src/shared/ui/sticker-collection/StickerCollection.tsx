@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { cn } from '@/shared/lib/cn';
+import { StickerImage } from '@/shared/ui/sticker-image/StickerImage';
 
 import '@/shared/styles/stickerStamp.css';
 import './StickerCollection.css';
@@ -82,8 +83,10 @@ export default function StickerCollection({
                   onClick={() => playStampAnimation(index, stickerImage)}
                   className="rounded-full outline-none hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 active:bg-neutral-200"
                 >
-                  <img
-                    key={isCurrentPlayback ? `${index}-${stampPlayback.sequence}` : `${index}-idle`}
+                  <StickerImage
+                    animationKey={
+                      isCurrentPlayback ? `${index}-${stampPlayback.sequence}` : `${index}-idle`
+                    }
                     src={stickerImage}
                     alt=""
                     className={cn(
@@ -101,7 +104,7 @@ export default function StickerCollection({
                   />
                 </button>
               ) : (
-                <img
+                <StickerImage
                   src={stickerImage}
                   alt=""
                   className={cn('object-contain', isCompact ? 'size-13.75' : 'size-18')}

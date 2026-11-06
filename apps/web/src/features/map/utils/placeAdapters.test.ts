@@ -1,6 +1,49 @@
 import { toMapStickers, toShopRecommendations, toShopSearchResult } from './placeAdapters';
 
 describe('placeAdapters', () => {
+  it.each([
+    [undefined, true, true],
+    [undefined, false, false],
+    [false, true, false],
+    [true, false, true],
+    [true, undefined, true],
+    [false, undefined, false],
+    [undefined, undefined, false],
+  ])(
+    '중복 장소의 liked %p / %p에서 처음 정의된 값 %p를 유지한다',
+    (categoryLiked, allLiked, expectedLiked) => {
+      const place = { placeId: 101, name: '카페', latitude: 37.5, longitude: 127 };
+      const recommendations = toShopRecommendations({
+        categoryPlaces: [{ category: '카페', places: [{ ...place, liked: categoryLiked }] }],
+        allPlaces: [{ ...place, liked: allLiked }],
+      });
+      expect(recommendations).toHaveLength(1);
+      expect(recommendations[0]?.isLiked).toBe(expectedLiked);
+    }
+  );
+
+  it('전체 카테고리 추천을 개인 관심 카테고리로 안내하지 않는다', () => {
+    const place = { placeId: 101, name: '카페', latitude: 37.5, longitude: 127 };
+    expect(
+      toShopRecommendations({ categoryPlaces: [{ category: '카페', places: [place] }] })[0]?.reason
+    ).toBe('카테고리별 인기 가게');
+  });
+  it('사진 URL이 있는 방문 장소는 기본 스티커 이름보다 사진을 우선 표시한다', () => {
+    const [sticker] = toMapStickers([
+      {
+        placeId: 101,
+        placeName: '사진으로 기록한 가게',
+        latitude: 37.5,
+        longitude: 127,
+        visitCount: 1,
+        stickerName: '커피',
+        imageUrl: 'https://example.com/photo-sticker.png',
+      },
+    ]);
+
+    expect(sticker?.image).toBe('https://example.com/photo-sticker.png');
+    expect(sticker?.place.stickerImages).toEqual(['https://example.com/photo-sticker.png']);
+  });
   it('필수 좌표가 있는 방문 장소만 지도 스티커로 변환한다', () => {
     const stickers = toMapStickers([
       {
@@ -76,21 +119,22 @@ describe('placeAdapters', () => {
       longitude: 127.02,
       liked: false,
       thumbnailUrl: 'https://example.com/twosome.jpg',
-      googleMapsUri: 'https://maps.google.com/?cid=101',
     };
     const recommendations = toShopRecommendations({
-      sameCategoryPlaces: [commonPlace, { placeId: 999, name: '좌표 없음' }],
-      myTownPlaces: [commonPlace, { ...commonPlace, placeId: 102, name: '동네 가게' }],
+      categoryPlaces: [
+        { category: '카페', places: [commonPlace, { placeId: 999, name: '좌표 없음' }] },
+      ],
+      allPlaces: [commonPlace, { ...commonPlace, placeId: 102, name: '동네 가게' }],
     });
 
     expect(recommendations).toHaveLength(2);
     expect(recommendations.map(({ id, reason }) => ({ id, reason }))).toEqual([
-      { id: '101', reason: '나의 관심 카테고리' },
+      { id: '101', reason: '카테고리별 인기 가게' },
       { id: '102', reason: '내 동네에서 많이 방문한 곳' },
     ]);
     expect(recommendations[0]?.place.category).toBe('기타');
     expect(recommendations[0]).toMatchObject({
-      googleMapsUri: 'https://maps.google.com/?cid=101',
+      googleMapsUri: null,
       thumbnailSrc: 'https://example.com/twosome.jpg',
     });
   });

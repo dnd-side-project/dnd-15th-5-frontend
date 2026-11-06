@@ -27,13 +27,16 @@ export type RecommendedPlaceItem = {
    * @nullable
    */
   thumbnailUrl?: string | null;
-  googleMapsUri?: string;
-  googlePlaceId?: string;
+};
+
+export type CategoryPlacesResponse = {
+  category?: string;
+  places?: RecommendedPlaceItem[];
 };
 
 export type NearbyPlacesResponse = {
-  myTownPlaces?: RecommendedPlaceItem[];
-  sameCategoryPlaces?: RecommendedPlaceItem[];
+  allPlaces?: RecommendedPlaceItem[];
+  categoryPlaces?: CategoryPlacesResponse[];
 };
 
 export type ApiResponseNearbyPlacesResponse = {
@@ -78,8 +81,8 @@ export type VisitedPlaceMarkerItem = {
   longitude?: number;
   visitCount?: number;
   liked?: boolean;
-  stickerCategory?: string;
   stickerName?: string;
+  imageUrl?: string;
   googlePlaceId?: string;
 };
 
@@ -105,7 +108,7 @@ export type GetNearbyPlacesParams = {
    */
   lng: number;
   /**
-   * 검색 반경(미터), 생략시 1500m / 위치기반이면 적정범위 500m~1km
+   * 검색 반경(미터), 생략시 5000m
    */
   radiusMeters?: number;
 };

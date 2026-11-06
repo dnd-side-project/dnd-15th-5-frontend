@@ -99,6 +99,8 @@ HTTP 메서드에 따른 생성 기준은 다음과 같다.
   선언된 nullable 참조는 transformer에서 생성 전에 보정한다.
 - `recognizeReceipt`는 빈 이미지 요청을 막기 위해 누락된 `requestBody.required`를 transformer에서 `true`로 보정한다.
 - React의 `useCallback`과 충돌하는 OAuth `callback` operation은 생성 설정에서 `completeSocialOAuth`로 이름을 보정한다.
+- 추천 상세 `getPlaceDetail`과 방문 상세 `getPlaceDetail_1`은 경로를 기준으로 각각
+  `getRecommendedPlaceDetail`, `getPlaceDetail`로 생성해 기존 방문 상세 훅과 쿼리 키를 유지한다.
 - 명세가 변경되면 `pnpm api:generate`를 실행하고 생성 결과를 함께 커밋한다.
 - 인증, 쿠키, 타임아웃, 공통 에러 처리는 `axiosInstance.ts`에서 관리한다.
 - 화면별 Query·Mutation 옵션, 응답 가공, 여러 API 조합은 각 feature의 `apis/hooks/`에서 작성한다.
@@ -140,12 +142,12 @@ import { getStartQueryKey } from '@/features/auth/apis/queryKeys';
 | feature   | operationId                                                                                   |
 | --------- | --------------------------------------------------------------------------------------------- |
 | auth      | refreshApp, refreshWeb, exchangeSocialLoginCode, agree, logoutApp, logoutWeb, start, callback |
-| map       | getVisitedPlaceMarkers, getNearbyPlaces                                                       |
-| my-page   | getMyAccount, updateMyAccount, withdrawMyAccount                                               |
+| map       | getVisitedPlaceMarkers, getNearbyPlaces, getLikedPlaces, toggleLike                           |
+| my-page   | getMyAccount, updateMyAccount, updateMyProfile, withdrawMyAccount                              |
 | notification | unregisterDeviceToken, registerDeviceToken, getNotifications, hasUnread                    |
-| record    | createConsumption, recognizeReceipt                                                            |
+| record    | createConsumption, recognizeReceipt, getConsumption, updateConsumption, deleteConsumption, upload, findStickers |
 | report    | getMonthlyReport, getCurrentStatus, getConsumptions, getFrequentPlaces, issueShareLink, getSharedPersonaCard, aggregateMonthlyReport |
-| shop      | getPlaceDetail, getPlaceVisits, toggleLike, searchVisitedPlaces                                |
+| shop      | getPlaceDetail, getPlaceDetail_1, getPlaceVisits, searchVisitedPlaces                          |
 
 명세에 등록된 operationId가 사라지거나 변경되면 생성 단계가 실패한다. 새로운 API는
 `openapiFeatureMap.json`에 소유 feature를 지정한 뒤 생성한다.

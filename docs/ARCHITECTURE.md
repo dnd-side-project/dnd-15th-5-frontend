@@ -186,6 +186,9 @@ pages/
 
 - 사진 촬영·이미지 선택으로 만든 스티커는 최종 PNG를
   `/v1/consumptions/images`에 업로드한 뒤, 반환된 `imageId`로 `/v1/consumptions`에 등록한다.
+- 지도 마커와 가게 상세의 스티커는 조회 응답의 `imageUrl`을 우선 표시하고, URL이 없는
+  기본 스티커는 `itemName`(지도는 `stickerName`)으로 로컬 이미지를 찾는다. 사진과 기본
+  스티커는 함께 표시하며 로딩에 실패한 이미지만 기본 대체 스티커로 바꾼다.
 - 기본 이모지는 프론트 이미지를 사용하고 `/v1/consumptions/stickers`에서 카테고리·이름으로
   찾은 `stickerItemId`를 등록한다. 이모지 이미지는 업로드하지 않으며 카테고리는 선택한 이모지와 일치한다.
   이미지·카테고리·이름의 기준은 `shared/assets/images/ios-stickers/catalog.ts`이며, 서버 목록도

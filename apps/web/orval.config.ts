@@ -42,7 +42,20 @@ const createFeatureApiConfig = (feature: string, options: FeatureApiOptions): Op
       formatter: 'prettier' as const,
       override: {
         useTypeOverInterfaces: true,
-        operationName: (operation, _route, verb) => {
+        operationName: (operation, route, verb) => {
+          // NOTE: 추천 상세와 중복되어 붙는 operationId 접미사와 관계없이 방문 상세 이름을 유지한다.
+          if (
+            route.startsWith('/v1/consumptions/places/') &&
+            operation.operationId?.startsWith('getPlaceDetail')
+          ) {
+            return 'getPlaceDetail';
+          }
+          if (
+            route.startsWith('/v1/recommendations/places/') &&
+            operation.operationId?.startsWith('getPlaceDetail')
+          ) {
+            return 'getRecommendedPlaceDetail';
+          }
           if (operation.operationId === 'callback') {
             return 'completeSocialOAuth';
           }

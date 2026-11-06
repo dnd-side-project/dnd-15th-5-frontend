@@ -28,6 +28,41 @@ const getStickerStyles = (container: HTMLElement) =>
   }));
 
 describe('ShopStickerHero', () => {
+  it('실패한 사진은 다시 붙여도 대체 스티커를 유지한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <ShopStickerHero
+        headerContent={null}
+        placeId={101}
+        stickerImages={['https://example.com/expired.png']}
+      />
+    );
+    const button = screen.getByRole('button', { name: '1번째 스티커 다시 붙이기' });
+    fireEvent.error(button.querySelector('img')!);
+    const fallback = button.querySelector('img')!.getAttribute('src');
+    fireEvent.load(button.querySelector('img')!);
+    await user.click(button);
+    expect(button.querySelector('img')).toHaveAttribute('src', fallback);
+  });
+
+  it('같은 사진의 재생 로드 이벤트를 다른 사진의 로드 완료로 세지 않는다', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <ShopStickerHero
+        headerContent={null}
+        placeId={101}
+        stickerImages={['https://example.com/first.png', 'https://example.com/slow.png']}
+      />
+    );
+    fireEvent.load(container.querySelector('img')!);
+    await user.click(screen.getByRole('button', { name: '1번째 스티커 다시 붙이기' }));
+    fireEvent.load(container.querySelector('img')!);
+    expect(container.querySelectorAll('img')[1]).not.toHaveClass(
+      'shop-sticker-hero__stamp--playing'
+    );
+    fireEvent.load(container.querySelectorAll('img')[1]!);
+    expect(container.querySelectorAll('img')[1]).toHaveClass('shop-sticker-hero__stamp--playing');
+  });
   afterEach(() => {
     jest.useRealTimers();
   });
