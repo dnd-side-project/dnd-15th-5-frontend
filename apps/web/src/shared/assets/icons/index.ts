@@ -17,6 +17,7 @@ import CaretLeftIcon from './ic-caret-left.svg?react';
 import CaretRightIcon from './ic-caret-right.svg?react';
 import CheckIcon from './ic-check.svg?react';
 import ChevronRightIcon from './ic-chevron-right.svg?react';
+import ChevronUpIcon from './ic-chevron-up.svg?react';
 import ContactIcon from './ic-contact.svg?react';
 import CrownIcon from './ic-crown.svg?react';
 import CurrentLocationIcon from './ic-current-location.svg?react';
@@ -64,6 +65,7 @@ export {
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
   CloseIcon,
   ContactIcon,
   CrownIcon,
