@@ -498,7 +498,7 @@ describe('HomeBottomSheet', () => {
     );
 
     expect(mutateLike).toHaveBeenCalledWith(
-      { placeId: Number(recommendation.id) },
+      { placeId: Number(recommendation.id), currentLiked: true },
       expect.objectContaining({ onSuccess: expect.any(Function) })
     );
     expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
@@ -629,7 +629,10 @@ describe('HomeBottomSheet', () => {
       name: `${firstRecommendation.place.name} 관심 가게`,
     });
     await user.click(likeButton);
-    expect(mutateLike).toHaveBeenCalledWith({ placeId: Number(firstRecommendation.id) });
+    expect(mutateLike).toHaveBeenCalledWith({
+      placeId: Number(firstRecommendation.id),
+      currentLiked: firstRecommendation.isLiked,
+    });
 
     const googleMapsLink = screen.getByRole('link', {
       name: `${firstRecommendation.place.name} 지도앱에서 확인하기`,

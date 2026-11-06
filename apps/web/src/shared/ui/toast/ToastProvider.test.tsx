@@ -52,9 +52,11 @@ function ToastTypeFixture({ type }: { type: ToastType }) {
 }
 
 const TOAST_PRESENTATIONS = [
-  { type: 'success', surfaceClassName: 'toast-default', hasIcon: true },
-  { type: 'error', surfaceClassName: 'toast-default', hasIcon: true },
-  { type: 'info', surfaceClassName: 'toast-info', hasIcon: false },
+  { type: 'success', surfaceClassName: 'toast-neutral w-full', hasIcon: true },
+  { type: 'error', surfaceClassName: 'toast-neutral w-full', hasIcon: true },
+  { type: 'info', surfaceClassName: 'toast-primary', hasIcon: false },
+  { type: 'info-neutral', surfaceClassName: 'toast-neutral', hasIcon: false },
+  { type: 'like', surfaceClassName: 'toast-neutral', hasIcon: true },
 ] as const;
 
 describe('Toast', () => {
@@ -110,7 +112,21 @@ describe('Toast', () => {
       'calc(1.25rem + env(safe-area-inset-bottom))'
     );
     expect(screen.getByTestId('toast-viewport-above-bottom-sheet').style.bottom).toBe(
-      'calc(var(--toast-bottom-sheet-height, 0px) + 0.75rem)'
+      'calc(var(--toast-bottom-sheet-height, env(safe-area-inset-bottom, 0px)) + 1.25rem)'
+    );
+  });
+
+  it('바텀시트가 없으면 위 배치 Toast에도 하단 Safe Area를 반영한다', () => {
+    render(
+      <ToastProvider duration={0}>
+        <ToastFixture />
+      </ToastProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '바텀시트 위 열기' }));
+
+    expect(screen.getByTestId('toast-viewport-above-bottom-sheet').style.bottom).toBe(
+      'calc(var(--toast-bottom-sheet-height, env(safe-area-inset-bottom, 0px)) + 1.25rem)'
     );
   });
 
@@ -176,6 +192,9 @@ describe('Toast', () => {
           : screen.getByRole('dialog');
 
       expect(toast).toHaveClass(surfaceClassName);
+      if (type === 'like' || type === 'info-neutral') {
+        expect(toast).toHaveClass('px-7.5');
+      }
       expect(Boolean(toast?.querySelector('svg'))).toBe(hasIcon);
     }
   );
