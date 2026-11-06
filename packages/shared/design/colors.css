@@ -49,12 +49,14 @@
   --color-report-share-food-nomad: #8e8ce0;
   --color-report-share-night-watch: #26324f;
   --color-report-question-panel: rgb(0 0 0 / 50%);
-  --color-report-category-cafe: #7a93ff;
-  --color-report-category-restaurant: #f8bb52;
-  --color-report-category-exercise: #4ca49d;
-  --color-report-category-market: #ff6243;
-  --color-report-category-entertainment: #98d7f0;
-  --color-report-category-beauty: #e5eaff;
+  --color-report-category-cafe: var(--color-primary-500);
+  --color-report-category-restaurant: #ff7a45;
+  --color-report-category-exercise: #1fbfd8;
+  --color-report-category-market: #3cc48a;
+  --color-report-category-entertainment: #ffbe3d;
+  --color-report-category-beauty: #ff7eb3;
+  --color-report-category-shopping: #9b6bff;
+  --color-report-category-other: var(--color-neutral-400);
 
   /* Gradient */
   --background-image-map-sticker-glass-sheen: linear-gradient(

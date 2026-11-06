@@ -88,8 +88,8 @@ export const REPORT_CATEGORY_COLOR_CLASS_NAMES: Record<SpendingCategory, string>
   '편의점/마트': 'bg-report-category-market',
   '취미/놀거리': 'bg-report-category-entertainment',
   '미용/뷰티': 'bg-report-category-beauty',
-  쇼핑: 'bg-neutral-500',
-  기타: 'bg-neutral-500',
+  쇼핑: 'bg-report-category-shopping',
+  기타: 'bg-report-category-other',
 };
 
 /** 요일 축약 표기를 접근성 안내에 사용하는 전체 이름으로 변환합니다. */
