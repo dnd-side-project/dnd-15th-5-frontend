@@ -165,13 +165,19 @@ const toRecommendation = (
 
 /** 추천 사유별 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
 export const toShopRecommendations = (response?: NearbyPlacesResponse): ShopRecommendation[] => {
+  const categoryPlaces = (response?.categoryPlaces ?? []).flatMap((group) => group.places ?? []);
+  const allPlaces = response?.allPlaces ?? [];
+  const likedByPlaceId = new Map<string, boolean>();
+
+  for (const place of [...categoryPlaces, ...allPlaces]) {
+    if (place.placeId === undefined || typeof place.liked !== 'boolean') continue;
+    const id = String(place.placeId);
+    if (!likedByPlaceId.has(id)) likedByPlaceId.set(id, place.liked);
+  }
+
   const candidates = [
-    ...(response?.categoryPlaces ?? []).flatMap((group) =>
-      (group.places ?? []).map((place) => toRecommendation(place, '나의 관심 카테고리'))
-    ),
-    ...(response?.allPlaces ?? []).map((place) =>
-      toRecommendation(place, '내 동네에서 많이 방문한 곳')
-    ),
+    ...categoryPlaces.map((place) => toRecommendation(place, '카테고리별 인기 가게')),
+    ...allPlaces.map((place) => toRecommendation(place, '내 동네에서 많이 방문한 곳')),
   ];
   const seenPlaceIds = new Set<string>();
 
@@ -181,6 +187,11 @@ export const toShopRecommendations = (response?: NearbyPlacesResponse): ShopReco
     }
 
     seenPlaceIds.add(recommendation.id);
-    return [recommendation];
+    return [
+      {
+        ...recommendation,
+        isLiked: likedByPlaceId.get(recommendation.id) ?? recommendation.isLiked,
+      },
+    ];
   });
 };

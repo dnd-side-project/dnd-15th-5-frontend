@@ -18,16 +18,20 @@ describe('useNearbyPlaceRecommendationsQuery', () => {
       data: {
         data: {
           categoryPlaces: [{ category: '카페', places: [place] }],
-          allPlaces: [place, { ...place, placeId: 102 }],
+          allPlaces: [
+            { ...place, liked: true },
+            { ...place, placeId: 102 },
+          ],
         },
       },
     } as unknown as ReturnType<typeof useGetNearbyPlaces>);
 
     const { result } = renderHook(() => useNearbyPlaceRecommendationsQuery());
     expect(result.current.recommendations.map(({ id, reason }) => ({ id, reason }))).toEqual([
-      { id: '101', reason: '나의 관심 카테고리' },
+      { id: '101', reason: '카테고리별 인기 가게' },
       { id: '102', reason: '내 동네에서 많이 방문한 곳' },
     ]);
+    expect(result.current.recommendations[0]?.isLiked).toBe(true);
   });
   it('지도 위치와 무관하게 토크히어 좌표로 반경 1km 추천을 요청한다', () => {
     mockedUseGetNearbyPlaces.mockReturnValue({

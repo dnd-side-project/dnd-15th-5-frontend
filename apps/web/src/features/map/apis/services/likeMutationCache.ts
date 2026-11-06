@@ -60,7 +60,7 @@ export const getCachedLikedState = (
         ...(freshResponse?.data?.allPlaces ?? []),
       ];
     })
-    .find((place) => place.placeId === placeId);
+    .find((place) => place.placeId === placeId && typeof place.liked === 'boolean');
   const visitedPlace = queryClient
     .getQueriesData<ApiResponseVisitedPlaceMarkerResponse>({ queryKey: VISITED_PLACES_QUERY_KEY })
     .flatMap(([queryKey, response]) => getFreshData(queryKey, response)?.data?.places ?? [])

@@ -1,6 +1,33 @@
 import { toMapStickers, toShopRecommendations, toShopSearchResult } from './placeAdapters';
 
 describe('placeAdapters', () => {
+  it.each([
+    [undefined, true, true],
+    [undefined, false, false],
+    [false, true, false],
+    [true, false, true],
+    [true, undefined, true],
+    [false, undefined, false],
+    [undefined, undefined, false],
+  ])(
+    '중복 장소의 liked %p / %p에서 처음 정의된 값 %p를 유지한다',
+    (categoryLiked, allLiked, expectedLiked) => {
+      const place = { placeId: 101, name: '카페', latitude: 37.5, longitude: 127 };
+      const recommendations = toShopRecommendations({
+        categoryPlaces: [{ category: '카페', places: [{ ...place, liked: categoryLiked }] }],
+        allPlaces: [{ ...place, liked: allLiked }],
+      });
+      expect(recommendations).toHaveLength(1);
+      expect(recommendations[0]?.isLiked).toBe(expectedLiked);
+    }
+  );
+
+  it('전체 카테고리 추천을 개인 관심 카테고리로 안내하지 않는다', () => {
+    const place = { placeId: 101, name: '카페', latitude: 37.5, longitude: 127 };
+    expect(
+      toShopRecommendations({ categoryPlaces: [{ category: '카페', places: [place] }] })[0]?.reason
+    ).toBe('카테고리별 인기 가게');
+  });
   it('사진 URL이 있는 방문 장소는 기본 스티커 이름보다 사진을 우선 표시한다', () => {
     const [sticker] = toMapStickers([
       {
@@ -102,7 +129,7 @@ describe('placeAdapters', () => {
 
     expect(recommendations).toHaveLength(2);
     expect(recommendations.map(({ id, reason }) => ({ id, reason }))).toEqual([
-      { id: '101', reason: '나의 관심 카테고리' },
+      { id: '101', reason: '카테고리별 인기 가게' },
       { id: '102', reason: '내 동네에서 많이 방문한 곳' },
     ]);
     expect(recommendations[0]?.place.category).toBe('기타');
