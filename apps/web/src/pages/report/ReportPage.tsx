@@ -6,6 +6,7 @@ import {
   RecentDiscoveryPanel,
   ReportContentSkeleton,
   ReportHeroSection,
+  ReportLoyaltySummary,
   ReportLinkButton,
   ReportSection,
   WeeklyRecordCalendar,
@@ -49,7 +50,7 @@ export default function ReportPage() {
   } = report;
 
   return (
-    <main aria-busy={isPending} className="overflow-hidden bg-primary-50">
+    <main aria-busy={isPending} className="overflow-hidden bg-primary-50 px-4">
       <PageHeader className="pb-3" title="리포트" />
       {isPending && (
         <span className="sr-only" role="status">
@@ -58,6 +59,9 @@ export default function ReportPage() {
       )}
 
       <ReportHeroSection to={ROUTE_PATHS.monthlyReport} monthLabel={monthLabel} />
+      <div className="mt-5">
+        <ReportLoyaltySummary />
+      </div>
 
       <div className="relative rounded-t-30 bg-neutral-00 pt-10 pr-4 pb-[calc(var(--spacing-page-bottom)+6.5rem)] pl-4.25">
         <div className="flex flex-col gap-6">
