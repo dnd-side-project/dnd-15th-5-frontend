@@ -1,4 +1,3 @@
-import { cva } from 'class-variance-authority';
 import { Link } from 'react-router-dom';
 
 import { ReportCardStackImage } from '@/shared/assets/images/report-page';
@@ -14,26 +13,14 @@ type ReportHeroSectionProps =
       monthLabel: string;
     };
 
-const reportHeroSectionVariants = cva(
-  '[background:var(--background-report-page-banner)] relative mx-4 overflow-hidden rounded-16',
-  {
-    variants: {
-      variant: {
-        current: 'mb-5',
-        previous: '',
-      },
-    },
-    defaultVariants: {
-      variant: 'current',
-    },
-  }
-);
+const REPORT_HERO_SECTION_CLASS_NAME =
+  '[background:var(--background-report-page-banner)] relative overflow-hidden rounded-16';
 
 /** 리포트 페이지 상단에서 월간 기록을 돌아보는 진입 배너를 보여줍니다. */
 export default function ReportHeroSection(props: ReportHeroSectionProps) {
   if (props.variant === 'previous') {
     return (
-      <section className={reportHeroSectionVariants({ variant: 'previous' })}>
+      <section className={REPORT_HERO_SECTION_CLASS_NAME}>
         <Link
           className="relative flex h-30 items-center px-5.5 text-neutral-00 outline-none focus-visible:ring-2 focus-visible:ring-neutral-00 focus-visible:ring-inset"
           to={props.to}
@@ -56,7 +43,7 @@ export default function ReportHeroSection(props: ReportHeroSectionProps) {
   }
 
   return (
-    <section className={reportHeroSectionVariants({ variant: 'current' })}>
+    <section className={REPORT_HERO_SECTION_CLASS_NAME}>
       <div className="relative z-report-hero-content h-45">
         <div className="absolute top-10 left-5.5 z-report-hero-content">
           <h2 className="text-heading-02-semibold text-neutral-00">
