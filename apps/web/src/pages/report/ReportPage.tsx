@@ -1,9 +1,8 @@
-import { Link } from 'react-router-dom';
+import { SPENDING_CATEGORIES } from '@chapchap/shared/common/constants';
 
 import {
+  CategoryChart,
   createFrequentShopListPath,
-  MonthlyStickerSummary,
-  RecentDiscoveryPanel,
   ReportContentSkeleton,
   ReportHeroSection,
   ReportLoyaltySummary,
@@ -12,10 +11,12 @@ import {
   WeeklyRecordCalendar,
   useCurrentReportQuery,
 } from '@/features/report';
-import { ChevronRightIcon } from '@/shared/assets/icons';
+import {
+  ReportFavoriteShopsLinkImage,
+  ReportSpendingRecordLinkImage,
+} from '@/shared/assets/images/report-page';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import PageHeader from '@/shared/layout/PageHeader';
-import { Skeleton } from '@/shared/ui/skeleton';
 import { StateView } from '@/shared/ui/state-view';
 
 export default function ReportPage() {
@@ -39,15 +40,20 @@ export default function ReportPage() {
     );
   }
 
-  const {
-    monthLabel,
-    monthlyAdditionalStickerCount,
-    monthlyCount,
-    monthlyStickerImages,
-    recentDiscoveryMessage,
-    weeklyPeriodLabel,
-    weeklyRecords,
-  } = report;
+  const { monthLabel, monthlyCategoryCounts, weeklyPeriodLabel, weeklyRecords } = report;
+  const categoryCounts = monthlyCategoryCounts ?? {};
+  const totalCategoryCount = Object.values(categoryCounts).reduce(
+    (total, count) => total + count,
+    0
+  );
+  const categories = SPENDING_CATEGORIES.map((category) => {
+    const count = categoryCounts[category] ?? 0;
+
+    return {
+      category,
+      percentage: totalCategoryCount > 0 ? Math.round((count / totalCategoryCount) * 100) : 0,
+    };
+  }).filter(({ percentage }) => percentage > 0);
 
   return (
     <main aria-busy={isPending} className="overflow-hidden bg-primary-50 px-4">
@@ -63,77 +69,38 @@ export default function ReportPage() {
         <ReportLoyaltySummary />
       </div>
 
-      <div className="relative rounded-t-30 bg-neutral-00 pt-10 pr-4 pb-[calc(var(--spacing-page-bottom)+6.5rem)] pl-4.25">
-        <div className="flex flex-col gap-6">
-          <ReportSection title="이 주의 소비 기록">
-            {isPending ? (
-              <ReportContentSkeleton variant="weekly" />
-            ) : (
-              <WeeklyRecordCalendar
-                historyPath={ROUTE_PATHS.spendingHistory}
-                periodLabel={weeklyPeriodLabel}
-                records={weeklyRecords}
-              />
-            )}
-          </ReportSection>
+      <div className="mt-5 rounded-16 bg-neutral-00 p-3.5">
+        <ReportSection title="이 주의 소비 기록">
+          {isPending ? (
+            <ReportContentSkeleton variant="weekly" />
+          ) : (
+            <WeeklyRecordCalendar
+              historyPath={ROUTE_PATHS.spendingHistory}
+              periodLabel={weeklyPeriodLabel}
+              records={weeklyRecords}
+            />
+          )}
+        </ReportSection>
+      </div>
 
-          <ReportSection
-            action={
-              <Link
-                className="flex shrink-0 items-center gap-1 text-body-02-medium text-neutral-500 outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
-                to={ROUTE_PATHS.monthlyRecordList}
-              >
-                전체보기
-                <ChevronRightIcon aria-hidden className="size-4 text-neutral-400" />
-              </Link>
-            }
-            title={
-              <>
-                이번달{' '}
-                {isPending ? (
-                  <Skeleton
-                    as="span"
-                    className="inline-block h-5 w-8 rounded-05 bg-primary-100 align-text-bottom"
-                  />
-                ) : (
-                  <span className="text-primary-500">{monthlyCount}개</span>
-                )}
-                의 기록이 쌓이고 있어요 !
-              </>
-            }
-          >
-            {isPending ? (
-              <ReportContentSkeleton variant="stickers" />
-            ) : (
-              <MonthlyStickerSummary
-                additionalCount={monthlyAdditionalStickerCount}
-                emptyActionPath={ROUTE_PATHS.record}
-                stickers={monthlyStickerImages}
-              />
-            )}
-          </ReportSection>
+      <div className="mt-5 rounded-16 bg-neutral-00 p-3.5">
+        <CategoryChart categories={categories} />
+      </div>
 
-          <ReportSection title="최근발견">
-            {isPending ? (
-              <ReportContentSkeleton variant="discovery" />
-            ) : (
-              <RecentDiscoveryPanel messages={recentDiscoveryMessage} />
-            )}
-          </ReportSection>
-
-          <div className="grid w-full grid-cols-2 gap-2">
-            <ReportLinkButton to={ROUTE_PATHS.spendingHistory}>
-              소비기록
-              <br />
-              보러가기
-            </ReportLinkButton>
-            <ReportLinkButton to={createFrequentShopListPath('all')}>
-              단골리스트
-              <br />
-              보러가기
-            </ReportLinkButton>
-          </div>
-        </div>
+      <div className="mt-5 grid w-full grid-cols-2 gap-4 pb-[calc(var(--spacing-page-bottom)+6.5rem)]">
+        <ReportLinkButton image={ReportSpendingRecordLinkImage} to={ROUTE_PATHS.spendingHistory}>
+          소비 기록
+          <br />
+          보러가기
+        </ReportLinkButton>
+        <ReportLinkButton
+          image={ReportFavoriteShopsLinkImage}
+          to={createFrequentShopListPath('all')}
+        >
+          단골리스트
+          <br />
+          보러가기
+        </ReportLinkButton>
       </div>
     </main>
   );
