@@ -20,7 +20,7 @@ export const categoryChipVariants = cva(
         ],
         compact: [
           'gap-[1.5px] border-0 px-3.5 py-2 text-body-02-medium shadow-home-overlay',
-          '[&_svg]:size-3.5 [&_svg]:text-primary-700',
+          '[&_svg]:size-3 [&_svg]:text-primary-700',
           'data-pressed:[&_svg]:text-neutral-00',
         ],
       },
