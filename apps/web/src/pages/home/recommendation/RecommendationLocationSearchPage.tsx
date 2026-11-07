@@ -52,7 +52,7 @@ export default function RecommendationLocationSearchPage() {
   };
 
   return (
-    <main className="mobile-frame fixed inset-0 z-30 mx-auto flex max-w-120 flex-col bg-neutral-00 px-4 pt-[env(safe-area-inset-top)]">
+    <main className="mobile-frame fixed inset-0 mx-auto flex max-w-120 flex-col bg-neutral-00 px-4 pt-[env(safe-area-inset-top)]">
       <PageHeader onBack={handleClose} />
       <PlaceSearchInput
         placeholder="동네를 검색해주세요"

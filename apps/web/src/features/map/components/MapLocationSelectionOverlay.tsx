@@ -44,7 +44,7 @@ export default function MapLocationSelectionOverlay({
   return (
     <section
       aria-label="위치 선택"
-      className="pointer-events-none fixed inset-0 z-20 mx-auto flex max-w-120 flex-col justify-end"
+      className="pointer-events-none fixed inset-0 z-bottom-sheet mx-auto flex max-w-120 flex-col justify-end"
     >
       {/* 핀 끝을 지도 중심에 고정해 주소 조회 좌표와 일치시킵니다. */}
       <RecommendationLocationPinIcon
@@ -55,7 +55,7 @@ export default function MapLocationSelectionOverlay({
         snapPoint="medium"
         fitContent
         showHandle={false}
-        contentClassName="pointer-events-auto flex flex-col gap-5 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))]"
+        contentClassName="pointer-events-auto flex flex-col gap-5 pt-6 pb-[calc(var(--spacing-page-bottom)+env(safe-area-inset-bottom))]"
       >
         {showLocationHint && (
           <p
