@@ -157,6 +157,11 @@ export default function HomeBottomSheet({
   const handleVisibleHeightChange = useCallback(
     (heightPx: number) => {
       setVisibleHeight(heightPx);
+      if (heightPx === 0) {
+        document.documentElement.style.removeProperty(TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE);
+        return;
+      }
+
       document.documentElement.style.setProperty(
         TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE,
         `${heightPx}px`

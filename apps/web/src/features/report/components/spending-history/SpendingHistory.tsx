@@ -65,7 +65,7 @@ const getSupportedMonthFromDate = (
  */
 export default function SpendingHistory({
   containedScroll = false,
-  contentBottomPaddingClassName = 'pb-8',
+  contentBottomPaddingClassName = 'pb-page-bottom',
   headerDescription,
   headerContent,
   headerContentGapClassName = 'mt-5',

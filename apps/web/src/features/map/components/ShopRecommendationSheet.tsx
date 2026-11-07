@@ -165,7 +165,7 @@ export default function ShopRecommendationSheet() {
         ref={carouselRef}
         aria-label="추천 가게 목록"
         onScroll={handleCarouselScroll}
-        className="scrollbar-hidden mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto"
+        className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto"
       >
         {recommendations.map(
           ({ googleMapsUri, id, isLiked, reason, place, thumbnailSrc }, index) => {
@@ -182,7 +182,9 @@ export default function ShopRecommendationSheet() {
                   type="button"
                   aria-label={`${place.name} 관심 가게`}
                   aria-pressed={isLiked}
-                  onClick={() => likeMutation.mutate({ placeId: Number(id) })}
+                  onClick={() =>
+                    likeMutation.mutate({ placeId: Number(id), currentLiked: isLiked })
+                  }
                   disabled={likeMutation.isPending}
                   className={cn(
                     'absolute top-4 right-4 flex size-7 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-300',

@@ -38,7 +38,7 @@ export default function VisitHistoryList({
   });
 
   return (
-    <section aria-labelledby="visit-history-title" className="mt-8 pb-8">
+    <section aria-labelledby="visit-history-title" className="mt-8 pb-page-bottom">
       <h2 id="visit-history-title" className="text-title-02-semibold text-neutral-700">
         방문 기록
       </h2>

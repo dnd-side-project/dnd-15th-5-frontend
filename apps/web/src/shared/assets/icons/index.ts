@@ -1,6 +1,7 @@
 import CalendarIcon from '@chapchap/shared/assets/icons/ic-calendar.svg?react';
 import ChevronLeftIcon from '@chapchap/shared/assets/icons/ic-chevron-left.svg?react';
 import CloseIcon from '@chapchap/shared/assets/icons/ic-close.svg?react';
+import LikeIcon from '@chapchap/shared/assets/icons/ic-like.svg?react';
 import LocationPinIcon from '@chapchap/shared/assets/icons/ic-location-pin.svg?react';
 import StatusErrorIcon from '@chapchap/shared/assets/icons/ic-status-error.svg?react';
 import StatusSuccessIcon from '@chapchap/shared/assets/icons/ic-status-success.svg?react';
@@ -29,7 +30,6 @@ import HobbyPinActiveIcon from './ic-hobby-pin-active.svg?react';
 import HobbyPinIcon from './ic-hobby-pin.svg?react';
 import ImageDownloadIcon from './ic-image-download.svg?react';
 import KakaoIcon from './ic-kakao.svg?react';
-import LikeIcon from './ic-like.svg?react';
 import LikedPlacePinActiveIcon from './ic-liked-place-pin-active.svg?react';
 import LikedPlacePinIcon from './ic-liked-place-pin.svg?react';
 import LogoutIcon from './ic-logout.svg?react';

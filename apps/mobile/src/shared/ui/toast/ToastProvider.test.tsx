@@ -30,9 +30,11 @@ function ToastTypeFixture({ type }: { type: ToastType }) {
 }
 
 const TOAST_PRESENTATIONS = [
-  { type: 'success', surfaceClassName: 'toast-default', hasIcon: true },
-  { type: 'error', surfaceClassName: 'toast-default', hasIcon: true },
-  { type: 'info', surfaceClassName: 'toast-info', hasIcon: false },
+  { type: 'success', surfaceClassName: 'toast-neutral w-full', hasIcon: true },
+  { type: 'error', surfaceClassName: 'toast-neutral w-full', hasIcon: true },
+  { type: 'info', surfaceClassName: 'toast-primary', hasIcon: false },
+  { type: 'info-neutral', surfaceClassName: 'toast-neutral', hasIcon: false },
+  { type: 'like', surfaceClassName: 'toast-neutral px-7.5', hasIcon: true },
 ] as const;
 
 const countNodesByType = (node: unknown, type: string): number => {
@@ -47,6 +49,18 @@ const countNodesByType = (node: unknown, type: string): number => {
   );
 
   return (element.type === type ? 1 : 0) + (childCount ?? 0);
+};
+
+const findNodeByType = (
+  node: unknown,
+  type: string
+): { props?: Record<string, unknown> } | undefined => {
+  if (!node || typeof node !== 'object') return undefined;
+
+  const element = node as { type?: unknown; props?: Record<string, unknown>; children?: unknown[] };
+  if (element.type === type) return element;
+
+  return element.children?.map((child) => findNodeByType(child, type)).find(Boolean);
 };
 
 describe('ToastProvider', () => {
@@ -152,6 +166,11 @@ describe('ToastProvider', () => {
 
       expect(toast).toHaveProp('className', expect.stringContaining(surfaceClassName));
       expect(countNodesByType(toJSON(), 'SvgMock')).toBe(hasIcon ? 1 : 0);
+      if (type === 'like') {
+        expect(findNodeByType(toJSON(), 'SvgMock')?.props).toMatchObject({
+          className: 'text-red',
+        });
+      }
     }
   );
 });
