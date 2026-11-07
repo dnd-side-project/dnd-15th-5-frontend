@@ -98,7 +98,7 @@ export default function HomePage() {
                 contentBottomPaddingClassName="pb-28"
                 headerContent={headerContent}
                 headerContentGapClassName="mt-2"
-                headerDescription="이번달 작성한 소비기록을 확인해보세요"
+                headerDescription="작성한 소비기록을 확인해보세요"
               />
             )}
           />
