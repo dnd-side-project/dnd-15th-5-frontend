@@ -63,6 +63,7 @@ export const useNeighborhoodSearch = () => {
           address: normalizedKeyword,
           componentRestrictions: { country: 'KR' },
           region: 'KR',
+          fulfillOnZeroResults: true,
         });
 
         if (requestIdRef.current !== requestId) {
