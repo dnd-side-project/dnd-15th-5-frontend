@@ -41,7 +41,10 @@ export default function NeighborhoodSearchResults({
         </li>
       )}
       {searchState.status === 'success' && searchState.results.length === 0 && (
-        <li className="py-3 text-body-02-regular text-neutral-400">검색 결과가 없습니다</li>
+        <li className="flex flex-col gap-2 py-3 text-center text-body-02-regular text-neutral-500">
+          <p className="text-body-02-medium">검색 결과가 없어요</p>
+          <p>동네 이름을 다시 입력하거나 지도로 찾아보세요.</p>
+        </li>
       )}
       {searchState.status === 'success' &&
         searchState.results.map((result) => (

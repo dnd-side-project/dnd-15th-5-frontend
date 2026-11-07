@@ -72,10 +72,9 @@ export const useNeighborhoodSearch = () => {
         const regionResults = response.results.filter((result) =>
           result.types.some((type) => REGION_COMPONENT_TYPES.includes(type))
         );
-        const matchedResults = regionResults.length > 0 ? regionResults : response.results;
         setSearchState({
           status: 'success',
-          results: matchedResults.slice(0, MAX_NEIGHBORHOOD_RESULTS).map((result) => ({
+          results: regionResults.slice(0, MAX_NEIGHBORHOOD_RESULTS).map((result) => ({
             id: result.place_id,
             address: getNeighborhoodAddress(result),
             position: {
