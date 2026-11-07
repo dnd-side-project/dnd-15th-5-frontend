@@ -11,9 +11,8 @@ export default function ShopDetailSkeleton({ headerContent }: ShopDetailSkeleton
   return (
     <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
       <span role="status" aria-label="가게 상세 불러오는 중" className="sr-only" />
-      <div className="relative h-75.25 shrink-0 bg-neutral-100">
-        <div className="absolute top-0 left-4 z-10">{headerContent}</div>
-      </div>
+      <header className="relative z-30 h-14.5 shrink-0 bg-neutral-00 px-4">{headerContent}</header>
+      <div className="h-75.25 shrink-0 bg-neutral-100" />
 
       <div className="relative z-10 -mt-8.25 flex min-h-0 flex-1 flex-col rounded-t-30 bg-neutral-00 px-4 pt-8">
         <Skeleton className="h-6.5 w-40" />

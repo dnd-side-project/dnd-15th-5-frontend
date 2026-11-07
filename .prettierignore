@@ -8,6 +8,7 @@ dist-ssr
 build
 coverage
 storybook-static
+apps/web/public/isnet-runtime/
 
 # Native generated files
 **/.expo/

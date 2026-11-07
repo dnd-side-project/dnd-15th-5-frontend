@@ -26,10 +26,12 @@ const STICKER_IMAGE_BY_NAME = new Map<string, string>([
 export const getStickerImageByName = (stickerName?: string) =>
   stickerName ? STICKER_IMAGE_BY_NAME.get(stickerName) : undefined;
 
-/** 스티커 응답 목록에서 웹이 지원하는 이미지를 각 항목의 개수만큼 펼쳐 반환합니다. */
-export const getStickerImages = (stickers: readonly { count?: number; itemName?: string }[]) =>
-  stickers.flatMap(({ count, itemName }) => {
-    const stickerImage = getStickerImageByName(itemName);
+/** 사진 URL을 우선 사용하고, 기본 스티커는 이름으로 찾아 각 항목의 개수만큼 펼쳐 반환합니다. */
+export const getStickerImages = (
+  stickers: readonly { count?: number; itemName?: string; imageUrl?: string | null }[]
+) =>
+  stickers.flatMap(({ count, itemName, imageUrl }) => {
+    const stickerImage = imageUrl?.trim() || getStickerImageByName(itemName);
     const stickerCount =
       count === undefined ? 1 : Number.isSafeInteger(count) && count > 0 ? count : 0;
 

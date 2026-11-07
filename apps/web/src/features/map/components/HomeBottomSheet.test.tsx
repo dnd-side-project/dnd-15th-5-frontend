@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
@@ -52,6 +52,11 @@ function RecordLocationProbe() {
   return <p>{shop ? `${shop.id}|${shop.name}|${shop.address}|${category}` : '선택 가게 없음'}</p>;
 }
 
+function EditRecordReturnProbe() {
+  const navigate = useNavigate();
+  return <button onClick={() => navigate(-1)}>편집 완료</button>;
+}
+
 const mockExpandAnimation = (sheet: HTMLElement) => {
   const animation = { onfinish: null, oncancel: null, cancel: jest.fn() } as unknown as Animation;
   const animate = jest.fn(() => animation);
@@ -68,6 +73,8 @@ describe('HomeBottomSheet', () => {
   beforeEach(() => {
     useHomeBottomSheetStore.setState({
       activeSheet: { type: 'home' },
+      tab: 'frequentShops',
+      scrollPositions: { frequentShops: 0, history: 0 },
       stepIndex: 0,
       topActionBottomPx: 0,
       visibleHeightPx: 0,
@@ -200,6 +207,110 @@ describe('HomeBottomSheet', () => {
 
     expect(screen.getByRole('textbox', { name: '선택한 월' })).toHaveValue('6월');
     expect(scrollContainer.scrollTop).toBe(120);
+  });
+
+  it('기록 편집으로 언마운트된 뒤 돌아오면 소비 기록 탭과 탭별 스크롤을 복원한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/home']}>
+        <Routes>
+          <Route
+            path="/home"
+            element={
+              <HomeBottomSheet
+                renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+                renderSelectedPlace={renderSelectedPlace}
+                renderSpendingHistory={(headerContent) => (
+                  <div>
+                    {headerContent}
+                    <Link to="/record/196/edit">기록 수정</Link>
+                  </div>
+                )}
+              />
+            }
+          />
+          <Route path="/record/:consumptionId/edit" element={<EditRecordReturnProbe />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    const getScrollContainer = () =>
+      screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement!
+        .lastElementChild as HTMLElement;
+    const originalContainer = getScrollContainer();
+    originalContainer.scrollTop = 40;
+    fireEvent.scroll(originalContainer);
+    await user.click(screen.getByRole('button', { name: '소비 기록' }));
+    originalContainer.scrollTop = 240;
+    fireEvent.scroll(originalContainer);
+
+    await user.click(screen.getByRole('link', { name: '기록 수정' }));
+    expect(screen.queryByRole('button', { name: '소비 기록' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '편집 완료' }));
+
+    expect(screen.getByRole('button', { name: '소비 기록' })).toHaveAttribute('data-pressed');
+    expect(getScrollContainer()).not.toBe(originalContainer);
+    expect(getScrollContainer().scrollTop).toBe(240);
+    await user.click(screen.getByRole('button', { name: '자주 소비한 곳' }));
+    expect(getScrollContainer().scrollTop).toBe(40);
+  });
+
+  it('목록 높이가 늦게 확보되어도 복원할 스크롤 값을 유지하고 다시 적용한다', async () => {
+    const user = userEvent.setup();
+    const resizeCallbacks: ResizeObserverCallback[] = [];
+    const resizeDisconnects: jest.Mock[] = [];
+    const originalResizeObserver = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = jest.fn((callback: ResizeObserverCallback) => {
+      resizeCallbacks.push(callback);
+      const disconnect = jest.fn();
+      resizeDisconnects.push(disconnect);
+      return { observe: jest.fn(), unobserve: jest.fn(), disconnect };
+    });
+    try {
+      useHomeBottomSheetStore.setState({
+        scrollPositions: { frequentShops: 0, history: 240 },
+      });
+      render(
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}소비내역 콘텐츠</div>}
+        />
+      );
+      const scrollContainer = screen.getByRole('button', { name: '바텀시트 높이 조절' })
+        .parentElement!.lastElementChild as HTMLElement;
+      let maxScrollTop = 0;
+      let scrollTop = 0;
+      Object.defineProperty(scrollContainer, 'scrollTop', {
+        configurable: true,
+        get: () => scrollTop,
+        set: (value: number) => {
+          scrollTop = Math.min(value, maxScrollTop);
+        },
+      });
+      await user.click(screen.getByRole('button', { name: '소비 기록' }));
+      fireEvent.scroll(scrollContainer);
+
+      expect(scrollContainer.scrollTop).toBe(0);
+      expect(useHomeBottomSheetStore.getState().scrollPositions.history).toBe(240);
+
+      await user.click(screen.getByRole('button', { name: '자주 소비한 곳' }));
+      expect(useHomeBottomSheetStore.getState().scrollPositions.history).toBe(240);
+      await user.click(screen.getByRole('button', { name: '소비 기록' }));
+      const disconnectRestoration = resizeDisconnects.at(-1)!;
+
+      maxScrollTop = 500;
+      act(() => resizeCallbacks.forEach((callback) => callback([], {} as ResizeObserver)));
+      expect(scrollContainer.scrollTop).toBe(240);
+      expect(disconnectRestoration).toHaveBeenCalledTimes(1);
+
+      scrollContainer.scrollTop = 100;
+      fireEvent.scroll(scrollContainer);
+      act(() => resizeCallbacks.forEach((callback) => callback([], {} as ResizeObserver)));
+      expect(scrollContainer.scrollTop).toBe(100);
+      expect(useHomeBottomSheetStore.getState().scrollPositions.history).toBe(100);
+    } finally {
+      globalThis.ResizeObserver = originalResizeObserver;
+    }
   });
 
   it('중간 높이에서 콘텐츠를 32px 넘게 스크롤하면 최대 높이로 확장한다', () => {
