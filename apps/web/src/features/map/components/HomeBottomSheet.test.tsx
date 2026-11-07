@@ -115,7 +115,7 @@ describe('HomeBottomSheet', () => {
       isPending: false,
     } as unknown as ReturnType<typeof useTogglePlaceLikeMutation>);
     mockedUseVisitedPlaceStickersQuery.mockReturnValue({
-      likedRecommendations: [],
+      likedRecommendations: [{ ...TEST_SHOP_RECOMMENDATIONS[0]!, isLiked: true }],
       isPending: false,
       isError: false,
       refetch: jest.fn(),
