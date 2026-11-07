@@ -1,5 +1,5 @@
 {
-  "specUrl": "https://chapchap.kr/api/v3/api-docs",
+  "specUrl": "https://chapchap.kr/dev/api/v3/api-docs",
   "features": {
     "auth": {
       "tags": ["Authentication", "Social OAuth"],
@@ -16,12 +16,12 @@
     },
     "map": {
       "tags": ["Consumption", "Recommendation", "Place"],
-      "operationIds": ["getVisitedPlaceMarkers", "getNearbyPlaces", "toggleLike", "findStickers"]
+      "operationIds": ["getVisitedPlaceMarkers", "getNearbyPlaces", "getLikedPlaces", "toggleLike"]
     },
     "myPage": {
       "directory": "my-page",
       "tags": ["Account"],
-      "operationIds": ["getMyAccount", "updateMyAccount", "withdrawMyAccount", "updateMyProfile"]
+      "operationIds": ["getMyAccount", "updateMyAccount", "updateMyProfile", "withdrawMyAccount"]
     },
     "notification": {
       "tags": ["notification-controller", "Account"],
@@ -40,7 +40,8 @@
         "getConsumption",
         "updateConsumption",
         "deleteConsumption",
-        "upload"
+        "upload",
+        "findStickers"
       ]
     },
     "report": {
@@ -57,7 +58,7 @@
     },
     "shop": {
       "tags": ["Consumption", "Place"],
-      "operationIds": ["getPlaceDetail", "getPlaceVisits", "searchVisitedPlaces"]
+      "operationIds": ["getPlaceDetail_1", "getPlaceVisits", "searchVisitedPlaces"]
     }
   }
 }

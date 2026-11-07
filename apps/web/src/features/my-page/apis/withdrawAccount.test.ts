@@ -17,7 +17,7 @@ describe('requestAccountWithdrawal', () => {
     mockDelete.mockResolvedValue({ status: 200, headers: {} } as never);
 
     await expect(requestAccountWithdrawal()).resolves.toEqual({ type: 'completed' });
-    expect(mockDelete).toHaveBeenCalledWith('/accounts/me');
+    expect(mockDelete).toHaveBeenCalledWith('/v1/accounts/me');
   });
 
   it('재인증이 필요하면 Location 헤더를 반환한다', async () => {

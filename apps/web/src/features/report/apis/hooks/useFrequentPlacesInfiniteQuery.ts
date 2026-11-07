@@ -3,6 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { REPORT_LIST_QUERY_CACHE_OPTIONS } from '@/features/report/apis/cacheOptions';
 import { getFrequentPlaces } from '@/features/report/apis/clients';
 import type { GetFrequentPlacesParams, GetFrequentPlacesPeriod } from '@/features/report/apis/dto';
+import { getGetFrequentPlacesQueryKey } from '@/features/report/apis/queryKeys';
 
 const FREQUENT_PLACE_PAGE_SIZE = 15;
 
@@ -45,7 +46,7 @@ export const useFrequentPlacesInfiniteQuery = ({
   size = FREQUENT_PLACE_PAGE_SIZE,
 }: UseFrequentPlacesInfiniteQueryParams) =>
   useInfiniteQuery({
-    queryKey: ['/consumptions/places/rank', 'infinite', { category, period, size }],
+    queryKey: [...getGetFrequentPlacesQueryKey(), 'infinite', { category, period, size }],
     queryFn: ({ pageParam, signal }) =>
       getFrequentPlaces({ ...pageParam, category, period, size }, undefined, signal),
     initialPageParam: {} as FrequentPlaceCursor,

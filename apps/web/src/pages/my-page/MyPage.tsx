@@ -41,19 +41,26 @@ export default function MyPage() {
       <MyPageProfileSection
         nickname={account?.nickname}
         profileImageUrl={account?.profileImageUrl}
+        profileImageCode={account?.profileImageCode}
         onBack={() => navigate(-1)}
+        onEdit={() => navigate(ROUTE_PATHS.myPageProfile)}
       />
 
       <section className="min-h-[calc(100dvh-211px)] rounded-t-30 bg-neutral-00 shadow-my-page-sheet">
         <h2 className="sr-only">마이페이지 메뉴</h2>
 
         <MyPageShortcutMenu
+          onLikeClick={() => navigate(ROUTE_PATHS.myPageLikes)}
           onRecordClick={() => navigate(ROUTE_PATHS.spendingHistory)}
           onNotificationClick={() => navigate(ROUTE_PATHS.notifications)}
         />
 
         <MyPageMenuSection>
-          <MyPageMenuItem icon={TermsIcon} label="이용약관 및 개인정보처리방침" />
+          <MyPageMenuItem
+            icon={TermsIcon}
+            label="이용약관 및 개인정보처리방침"
+            onClick={() => navigate(ROUTE_PATHS.myPagePolicies)}
+          />
           <ContactButton />
         </MyPageMenuSection>
 

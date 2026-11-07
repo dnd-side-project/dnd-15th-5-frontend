@@ -25,9 +25,12 @@ import type { ErrorType } from '@/shared/apis/orvalMutator';
 
 import type { SecondParameter } from '@/features/record/apis/dto';
 
-import { getConsumption } from '@/features/record/apis/clients';
+import { findStickers, getConsumption } from '@/features/record/apis/clients';
 
-import { getGetConsumptionQueryKey } from '@/features/record/apis/queryKeys';
+import {
+  getFindStickersQueryKey,
+  getGetConsumptionQueryKey,
+} from '@/features/record/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
   const result = { queryKey } as T & { queryKey: K };
@@ -243,6 +246,193 @@ export function useGetConsumptionSuspense<
   queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetConsumptionSuspenseQueryOptions(consumptionId, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getFindStickersQueryOptions = <
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>>;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getFindStickersQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof findStickers>>> = ({ signal }) =>
+    findStickers(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof findStickers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type FindStickersQueryResult = NonNullable<Awaited<ReturnType<typeof findStickers>>>;
+
+export type FindStickersQueryError = ErrorType<unknown>;
+
+export function useFindStickers<
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof findStickers>>,
+          TError,
+          Awaited<ReturnType<typeof findStickers>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useFindStickers<
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof findStickers>>,
+          TError,
+          Awaited<ReturnType<typeof findStickers>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useFindStickers<
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 등록용 스티커 목록 조회
+ */
+
+export function useFindStickers<
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getFindStickersQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getFindStickersSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>>;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getFindStickersQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof findStickers>>> = ({ signal }) =>
+    findStickers(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof findStickers>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type FindStickersSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof findStickers>>>;
+
+export type FindStickersSuspenseQueryError = ErrorType<unknown>;
+
+export function useFindStickersSuspense<
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useFindStickersSuspense<
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useFindStickersSuspense<
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 등록용 스티커 목록 조회
+ */
+
+export function useFindStickersSuspense<
+  TData = Awaited<ReturnType<typeof findStickers>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof findStickers>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getFindStickersSuspenseQueryOptions(options);
 
   const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
     TData,

@@ -61,7 +61,7 @@ function RequiredField({ label, children }: RequiredFieldProps) {
   return (
     <View>
       <View className="flex-row items-center">
-        <Text className="font-pretendard-semibold text-body-02-semibold text-notification">*</Text>
+        <Text className="font-pretendard-semibold text-body-02-semibold text-red">*</Text>
         <Text className="ml-1 font-pretendard-semibold text-body-02-semibold text-neutral-700">
           {label}
         </Text>
@@ -199,7 +199,7 @@ export default function ReceiptReviewForm({
             <View
               testID="shop-field"
               className={`relative mt-8 flex-row items-center rounded-16 border p-2 pr-16 ${
-                hasShopError ? 'border-notification' : 'border-neutral-300'
+                hasShopError ? 'border-red' : 'border-neutral-300'
               }`}
             >
               {initialShopPhotoUrl && hasShopPhoto ? (
@@ -223,7 +223,7 @@ export default function ReceiptReviewForm({
                   accessibilityLabel="가게 이름"
                   numberOfLines={1}
                   className={`font-pretendard-medium text-body-01-medium ${
-                    isShopValid ? 'text-neutral-700' : 'text-notification'
+                    isShopValid ? 'text-neutral-700' : 'text-red'
                   }`}
                 >
                   {isShopValid ? shopName : '가게를 찾지 못했습니다'}
@@ -280,7 +280,7 @@ export default function ReceiptReviewForm({
                 <View
                   testID="amount-field"
                   className={`flex-row items-center rounded-08 border p-4 ${
-                    hasAmountError ? 'border-notification' : 'border-neutral-300'
+                    hasAmountError ? 'border-red' : 'border-neutral-300'
                   }`}
                 >
                   <TextInput
@@ -338,7 +338,7 @@ export default function ReceiptReviewForm({
               {hasRequiredFieldError && (
                 <Text
                   accessibilityRole="alert"
-                  className="mb-4 text-center font-pretendard-regular text-body-02-regular text-notification"
+                  className="mb-4 text-center font-pretendard-regular text-body-02-regular text-red"
                 >
                   필수항목을 작성해주세요
                 </Text>

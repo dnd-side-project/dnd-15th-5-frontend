@@ -5,6 +5,8 @@ import ShopStickerHero from './ShopStickerHero';
 import {
   createShopStickerPlacements,
   createShopStickerStampDelays,
+  getShopStickerDimensions,
+  getShopStickerSlotStyle,
   mixShopStickerImages,
 } from './shopStickerHeroLayout';
 
@@ -45,31 +47,75 @@ describe('ShopStickerHero', () => {
     expect(getStickerStyles(container)).not.toEqual(initialStyles);
   });
 
-  it('스티커 6개를 전체 영역에 랜덤 배치하고 가장자리만 최대 50px 겹치게 한다', () => {
-    const placements = createShopStickerPlacements(106, STICKER_IMAGES.length);
+  it('가로형 스티커의 실제 렌더링 크기와 회전을 기준으로 겹침을 제한한다', () => {
+    const placements = createShopStickerPlacements(106, 4, [1.8, 1.8, 1.8, 1.8]);
+    const bounds = (placement: (typeof placements)[number]) => {
+      const radians = (placement.rotate * Math.PI) / 180;
+      return {
+        width:
+          placement.width * Math.abs(Math.cos(radians)) +
+          placement.height * Math.abs(Math.sin(radians)),
+        height:
+          placement.width * Math.abs(Math.sin(radians)) +
+          placement.height * Math.abs(Math.cos(radians)),
+      };
+    };
 
-    expect(placements).toHaveLength(6);
+    expect(placements).toHaveLength(4);
     expect(
       placements.every(
-        (placement) => placement.top + placement.size <= HERO_HEIGHT - BOTTOM_STICKER_INSET
+        (placement) =>
+          placement.top + placement.height / 2 + bounds(placement).height / 2 <=
+          HERO_HEIGHT - BOTTOM_STICKER_INSET
       )
     ).toBe(true);
 
     placements.forEach((placement, index) => {
       placements.slice(0, index).forEach((previousPlacement) => {
-        const centerDistance = Math.hypot(
-          placement.left +
-            placement.size / 2 -
-            (previousPlacement.left + previousPlacement.size / 2),
-          placement.top + placement.size / 2 - (previousPlacement.top + previousPlacement.size / 2)
-        );
-        const minimumCenterDistance =
-          (placement.size + previousPlacement.size) / 2 - MAX_STICKER_EDGE_OVERLAP;
-
-        expect(centerDistance).toBeGreaterThanOrEqual(minimumCenterDistance);
+        const overlapX =
+          (bounds(placement).width + bounds(previousPlacement).width) / 2 -
+          Math.abs(
+            placement.left +
+              placement.width / 2 -
+              (previousPlacement.left + previousPlacement.width / 2)
+          );
+        const overlapY =
+          (bounds(placement).height + bounds(previousPlacement).height) / 2 -
+          Math.abs(
+            placement.top +
+              placement.height / 2 -
+              (previousPlacement.top + previousPlacement.height / 2)
+          );
+        expect(Math.min(overlapX, overlapY)).toBeLessThanOrEqual(MAX_STICKER_EDGE_OVERLAP);
       });
     });
   });
+
+  it.each([320, 375])(
+    '좁은 화면에서도 회전한 스티커가 좌우로 20px 넘게 잘리지 않는다: %s',
+    (heroWidth) => {
+      const placements = createShopStickerPlacements(
+        106,
+        6,
+        [1.8, 0.6, 1.8, 1, 1.8, 0.6],
+        heroWidth
+      );
+      placements.forEach((placement) => {
+        const radians = (placement.rotate * Math.PI) / 180;
+        const boundingWidth =
+          placement.width * Math.abs(Math.cos(radians)) +
+          placement.height * Math.abs(Math.sin(radians));
+        const center = placement.left + placement.width / 2;
+        expect(center - boundingWidth / 2).toBeGreaterThanOrEqual(-20.000001);
+        expect(center + boundingWidth / 2).toBeLessThanOrEqual(heroWidth + 20.000001);
+        const style = getShopStickerSlotStyle(placement, heroWidth);
+        expect(style.width).toBe(`${placement.width}px`);
+        expect(style.height).toBe(`${placement.height}px`);
+        expect(style.transform).toBe(`translateX(-50%) rotate(${placement.rotate}deg)`);
+        expect(style.left).toContain(`clamp(${boundingWidth / 2 - 20}px,`);
+      });
+    }
+  );
 
   it('전달받은 스티커를 개수 제한 없이 모두 표시한다', () => {
     const { container } = render(
@@ -81,6 +127,53 @@ describe('ShopStickerHero', () => {
     );
 
     expect(container.querySelectorAll('img')).toHaveLength(7);
+  });
+
+  it('가로형과 세로형의 비율을 유지하면서 같은 표시 면적으로 맞춘다', () => {
+    const landscape = getShopStickerDimensions(1.25);
+    const portrait = getShopStickerDimensions(0.8);
+    const square = getShopStickerDimensions(1);
+
+    expect(landscape.width / landscape.height).toBeCloseTo(1.25);
+    expect(portrait.width / portrait.height).toBeCloseTo(0.8);
+    expect(landscape.width * landscape.height).toBeCloseTo(square.width * square.height);
+    expect(portrait.width * portrait.height).toBeCloseTo(square.width * square.height);
+
+    const narrow = getShopStickerDimensions(0.2);
+    expect(narrow.height).toBeLessThanOrEqual(160);
+    expect(narrow.width / narrow.height).toBeCloseTo(0.2);
+  });
+
+  it('실제 이미지 비율로 크기를 보정해 쿠키와 버블티의 표시 면적 차이를 줄인다', () => {
+    const { container } = render(
+      <ShopStickerHero
+        headerContent={null}
+        placeId={101}
+        stickerImages={['cookie.png', 'bubble-tea.png']}
+      />
+    );
+    const images = Array.from(container.querySelectorAll('img'));
+    const dimensions = [
+      { width: 512, height: 482 },
+      { width: 289, height: 512 },
+    ];
+    images.forEach((image, index) => {
+      Object.defineProperties(image, {
+        naturalWidth: { value: dimensions[index]!.width },
+        naturalHeight: { value: dimensions[index]!.height },
+      });
+      fireEvent.load(image);
+    });
+
+    const [cookie, bubbleTea] = getStickerSlots(container).map((slot) => ({
+      width: parseFloat(slot.style.width),
+      height: parseFloat(slot.style.height),
+    }));
+    expect(cookie!.width / cookie!.height).toBeCloseTo(512 / 482);
+    expect(bubbleTea!.width / bubbleTea!.height).toBeCloseTo(289 / 512);
+    const areaRatio = (cookie!.width * cookie!.height) / (bubbleTea!.width * bubbleTea!.height);
+    expect(areaRatio).toBeGreaterThanOrEqual(1);
+    expect(areaRatio).toBeLessThan(1.25);
   });
 
   it('같은 종류가 묶여 있어도 종류별로 한 장씩 섞어서 표시한다', () => {
@@ -148,6 +241,57 @@ describe('ShopStickerHero', () => {
     expect(firstImage).toHaveClass('shop-sticker-hero__stamp--playing');
   });
 
+  it('실패한 사진은 플레이스홀더로 바꾸고 성공·실패가 모두 끝나면 애니메이션을 시작한다', () => {
+    jest.useFakeTimers();
+    const { container } = render(
+      <ShopStickerHero
+        headerContent={null}
+        placeId={101}
+        stickerImages={['photo.png', 'sticker.png', 'last.png']}
+      />
+    );
+    const [photo, sticker, last] = Array.from(container.querySelectorAll('img'));
+    fireEvent.error(photo!);
+    expect(photo).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '스티커를 불러오지 못했어요' })).toBeInTheDocument();
+    fireEvent.load(sticker!);
+    fireEvent.load(sticker!);
+    expect(sticker).not.toHaveClass('shop-sticker-hero__stamp--playing');
+    fireEvent.load(last!);
+    expect(sticker).toHaveClass('shop-sticker-hero__stamp--playing');
+    expect(last).toHaveClass('shop-sticker-hero__stamp--playing');
+  });
+
+  it('모든 사진이 실패해도 깨진 이미지가 남지 않고 새 URL은 다시 로드한다', () => {
+    const { container, rerender } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={['expired.png']} />
+    );
+    fireEvent.error(container.querySelector('img')!);
+    expect(container.querySelector('img')).toBeNull();
+    expect(screen.getByRole('img', { name: '스티커를 불러오지 못했어요' })).toBeInTheDocument();
+    rerender(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={['renewed.png']} />
+    );
+    expect(container.querySelector('img')).toHaveAttribute('src', 'renewed.png');
+    expect(
+      screen.queryByRole('img', { name: '스티커를 불러오지 못했어요' })
+    ).not.toBeInTheDocument();
+  });
+
+  it('폴백으로 애니메이션을 시작한 뒤 늦게 로드된 이미지가 스티커 배치를 바꾸지 않는다', () => {
+    jest.useFakeTimers();
+    const { container } = render(
+      <ShopStickerHero headerContent={null} placeId={106} stickerImages={STICKER_IMAGES} />
+    );
+    act(() => jest.advanceTimersByTime(400));
+    const originalStyles = getStickerStyles(container);
+    const image = container.querySelector('img')!;
+    Object.defineProperties(image, { naturalWidth: { value: 900 }, naturalHeight: { value: 400 } });
+    fireEvent.load(image);
+    expect(image).toHaveClass('shop-sticker-hero__stamp--playing');
+    expect(getStickerStyles(container)).toEqual(originalStyles);
+  });
+
   it('빈 목록에서 스티커가 추가되면 새 이미지 로드를 기다린 뒤 애니메이션을 재생한다', () => {
     const { container, rerender } = render(
       <ShopStickerHero headerContent={null} placeId={101} stickerImages={[]} />
@@ -182,6 +326,22 @@ describe('ShopStickerHero', () => {
     replacedImages.forEach((image) => {
       expect(image).not.toHaveClass('shop-sticker-hero__stamp--playing');
     });
+  });
+
+  it('애니메이션을 생략하는 새 이미지 집합도 최초 로드 시 실제 비율로 배치한다', () => {
+    const { container, rerender } = render(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={['old.png']} />
+    );
+    fireEvent.load(container.querySelector('img')!);
+    rerender(
+      <ShopStickerHero headerContent={null} placeId={101} stickerImages={['new-landscape.png']} />
+    );
+    const image = container.querySelector('img')!;
+    Object.defineProperties(image, { naturalWidth: { value: 900 }, naturalHeight: { value: 400 } });
+    fireEvent.load(image);
+    const slot = image.parentElement!;
+    expect(parseFloat(slot.style.width) / parseFloat(slot.style.height)).toBeCloseTo(2.25);
+    expect(image).not.toHaveClass('shop-sticker-hero__stamp--playing');
   });
 
   it('newestStickerIndex로 지정한 스티커는 나머지가 다 찍힌 뒤 강조 애니메이션으로 재생한다', () => {

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
-import { StoreIcon } from '@/shared/assets/icons';
 import { cn } from '@/shared/lib/cn';
+
+import { StoreImageFallback } from './StoreImageFallback';
 
 type CardThumbnailProps = {
   src: string | null;
@@ -26,7 +27,7 @@ export function CardThumbnail({ src, radius = 'small', size = 'default' }: CardT
   const resolvedRadius = size === 'large' ? 'large' : radius;
   const className = cn(
     'shrink-0',
-    size === 'default' ? 'size-15' : 'size-22.5',
+    size === 'large' ? 'size-22.5' : 'size-15',
     resolvedRadius === 'small'
       ? 'rounded-05'
       : resolvedRadius === 'medium'
@@ -35,14 +36,7 @@ export function CardThumbnail({ src, radius = 'small', size = 'default' }: CardT
   );
 
   if (!src || isError) {
-    return (
-      <span
-        className={cn('inline-flex items-center justify-center bg-neutral-200', className)}
-        aria-hidden="true"
-      >
-        <StoreIcon className="size-1/2" aria-hidden="true" />
-      </span>
-    );
+    return <StoreImageFallback className={className} />;
   }
 
   return (

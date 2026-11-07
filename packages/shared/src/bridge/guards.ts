@@ -1,16 +1,28 @@
-import { BRIDGE_MESSAGE_KIND } from './types';
+import { BRIDGE_MESSAGE_KIND, MAX_STICKER_IMAGE_BASE64_LENGTH } from './types';
 
-import type { BridgeEvent, BridgeMessageType, BridgeRequest, BridgeResponse } from './types';
+import type {
+  BridgeEvent,
+  BridgeMessageType,
+  BridgeRequest,
+  BridgeResponse,
+  ReceiptScanData,
+} from './types';
+import type { ShopSearchResult } from '../shop/types';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
 const BRIDGE_MESSAGE_TYPES: BridgeMessageType[] = [
+  'prepareStickerBackground',
+  'removeStickerBackground',
+  'cancelStickerBackground',
   'startSocialLogin',
   'getCurrentPosition',
   'ping',
   'saveImage',
   'captureReceipt',
+  'scanReceipt',
+  'captureStickerPhoto',
   'getRefreshToken',
   'saveRefreshToken',
   'clearRefreshToken',
@@ -22,6 +34,37 @@ const isBridgeMessageType = (value: unknown): value is BridgeMessageType =>
 
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
+
+const isStickerRequestId = (value: unknown) =>
+  typeof value === 'string' && value.length > 0 && value.length <= 100;
+const isStickerBase64 = (value: unknown) =>
+  typeof value === 'string' &&
+  value.length > 0 &&
+  value.length <= MAX_STICKER_IMAGE_BASE64_LENGTH &&
+  value.length % 4 === 0 &&
+  /^[A-Za-z0-9+/]+={0,2}$/.test(value);
+const isStickerBackend = (value: unknown) => value === 'coreml' || value === 'cpu';
+
+const isReceiptShop = (shop: unknown): shop is ShopSearchResult =>
+  isRecord(shop) &&
+  typeof shop.id === 'string' &&
+  typeof shop.name === 'string' &&
+  typeof shop.address === 'string' &&
+  isFiniteNumber(shop.latitude) &&
+  Math.abs(shop.latitude) <= 90 &&
+  isFiniteNumber(shop.longitude) &&
+  Math.abs(shop.longitude) <= 180 &&
+  (shop.photoUrl === null || typeof shop.photoUrl === 'string');
+
+const isReceiptScanData = (receipt: unknown): receipt is ReceiptScanData =>
+  isRecord(receipt) &&
+  typeof receipt.receiptImageId === 'number' &&
+  Number.isInteger(receipt.receiptImageId) &&
+  receipt.receiptImageId > 0 &&
+  (receipt.purchaseDate === null || typeof receipt.purchaseDate === 'string') &&
+  (receipt.purchaseTime === null || typeof receipt.purchaseTime === 'string') &&
+  (receipt.amount === null || (isFiniteNumber(receipt.amount) && receipt.amount >= 0)) &&
+  (receipt.shop === null || isReceiptShop(receipt.shop));
 
 /**
  * 웹에서 온 값이 브릿지 요청인지 확인한다.
@@ -43,6 +86,15 @@ export const isBridgeRequest = (value: unknown): value is BridgeRequest => {
   if (value.type === 'ping') {
     return isFiniteNumber(value.payload.sentAt);
   }
+
+  if (value.type === 'removeStickerBackground') {
+    return (
+      isStickerRequestId(value.payload.requestId) &&
+      value.payload.mimeType === 'image/png' &&
+      isStickerBase64(value.payload.base64)
+    );
+  }
+  if (value.type === 'cancelStickerBackground') return isStickerRequestId(value.payload.requestId);
 
   if (value.type === 'saveImage') {
     return typeof value.payload.base64 === 'string' && typeof value.payload.fileName === 'string';
@@ -88,15 +140,53 @@ export const isBridgeResponse = (value: unknown): value is BridgeResponse => {
   }
 
   if (value.type === 'ping') {
-    return typeof value.result.platform === 'string' && isFiniteNumber(value.result.receivedAt);
+    return (
+      typeof value.result.platform === 'string' &&
+      isFiniteNumber(value.result.receivedAt) &&
+      (value.result.nativeStickerBackground === undefined ||
+        typeof value.result.nativeStickerBackground === 'boolean')
+    );
+  }
+
+  if (value.type === 'prepareStickerBackground') {
+    return value.result.ready === true && isStickerBackend(value.result.backend);
+  }
+  if (value.type === 'cancelStickerBackground') return value.result.cancelled === true;
+  if (value.type === 'removeStickerBackground') {
+    return (
+      value.result.mimeType === 'image/png' &&
+      isStickerBase64(value.result.base64) &&
+      isStickerBackend(value.result.backend) &&
+      isFiniteNumber(value.result.elapsedMs) &&
+      value.result.elapsedMs >= 0
+    );
   }
 
   if (value.type === 'saveImage') {
     return value.result.saved === true;
   }
 
+  if (value.type === 'captureStickerPhoto') {
+    if (value.result.status === 'cancelled' || value.result.status === 'permissionDenied')
+      return true;
+    return (
+      value.result.status === 'success' &&
+      value.result.mimeType === 'image/jpeg' &&
+      typeof value.result.base64 === 'string' &&
+      value.result.base64.length > 0 &&
+      value.result.base64.length <= 4 * 1024 * 1024 &&
+      /^[A-Za-z0-9+/]+={0,2}$/.test(value.result.base64)
+    );
+  }
+
   if (value.type === 'captureReceipt') {
     return value.result.opened === true;
+  }
+
+  if (value.type === 'scanReceipt') {
+    if (value.result.status === 'cancelled' || value.result.status === 'permissionDenied')
+      return true;
+    return value.result.status === 'success' && isReceiptScanData(value.result.receipt);
   }
 
   if (value.type === 'startSocialLogin') {

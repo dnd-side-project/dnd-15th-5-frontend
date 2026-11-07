@@ -7,7 +7,7 @@ type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 type ShortcutCardProps = {
   icon: IconComponent;
   label: string;
-  onClick?: () => void;
+  onClick: () => void;
 };
 
 function ShortcutCard({ icon: Icon, label, onClick }: ShortcutCardProps) {
@@ -17,14 +17,6 @@ function ShortcutCard({ icon: Icon, label, onClick }: ShortcutCardProps) {
       <span className="text-body-02-medium text-neutral-700">{label}</span>
     </>
   );
-
-  if (!onClick) {
-    return (
-      <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-2 rounded-16 bg-neutral-50 py-3">
-        {content}
-      </div>
-    );
-  }
 
   return (
     <button
@@ -38,17 +30,19 @@ function ShortcutCard({ icon: Icon, label, onClick }: ShortcutCardProps) {
 }
 
 type MyPageShortcutMenuProps = {
+  onLikeClick: () => void;
   onRecordClick: () => void;
   onNotificationClick: () => void;
 };
 
 export default function MyPageShortcutMenu({
+  onLikeClick,
   onRecordClick,
   onNotificationClick,
 }: MyPageShortcutMenuProps) {
   return (
     <div className="flex gap-2 p-4">
-      <ShortcutCard icon={LikeIcon} label="좋아요" />
+      <ShortcutCard icon={LikeIcon} label="좋아요" onClick={onLikeClick} />
       <ShortcutCard icon={AccountRecordIcon} label="누적 기록" onClick={onRecordClick} />
       <ShortcutCard
         icon={NotificationDefaultIcon}

@@ -12,6 +12,8 @@ const messages: Record<ToastType, string> = {
   success: '첫번째 방문기록이 생성되었어요!',
   error: '오류가 발생했어요. 다시 시도해 주세요.',
   info: '주요정보를 중앙에 배치시켜 촬영해주세요',
+  'info-neutral': '핀을 움직여 원하는 동네를 선택해주세요',
+  like: '좋아요 목록에 추가했어요',
 };
 
 function ToastPreview({ types }: { types: ToastType[] }) {
@@ -34,8 +36,8 @@ function InteractivePreview() {
   const { closeToast, showToast } = useToast();
   const latestToastId = useRef<string | undefined>(undefined);
 
-  const handleShowToast = (type: ToastType) => {
-    latestToastId.current = showToast({ message: messages[type], type });
+  const handleShowToast = (type: ToastType, message = messages[type]) => {
+    latestToastId.current = showToast({ message, type });
   };
 
   return (
@@ -47,7 +49,16 @@ function InteractivePreview() {
         오류 Toast 열기
       </Button>
       <Button size="small" onClick={() => handleShowToast('info')}>
-        안내 Toast 열기
+        파란 안내 Toast 열기
+      </Button>
+      <Button size="small" onClick={() => handleShowToast('info-neutral')}>
+        회색 안내 Toast 열기
+      </Button>
+      <Button size="small" onClick={() => handleShowToast('like')}>
+        좋아요 추가 Toast 열기
+      </Button>
+      <Button size="small" onClick={() => handleShowToast('like', '좋아요 목록에서 삭제했어요')}>
+        좋아요 취소 Toast 열기
       </Button>
       <Button variant="secondary" size="small" onClick={() => closeToast(latestToastId.current)}>
         최근 Toast 닫기
@@ -117,7 +128,15 @@ export const Error: Story = {
 export const Info: Story = {
   render: () => (
     <ToastProvider duration={0}>
-      <ToastPreview types={['info']} />
+      <ToastPreview types={['info', 'info-neutral']} />
+    </ToastProvider>
+  ),
+};
+
+export const Like: Story = {
+  render: () => (
+    <ToastProvider duration={0}>
+      <ToastPreview types={['like']} />
     </ToastProvider>
   ),
 };

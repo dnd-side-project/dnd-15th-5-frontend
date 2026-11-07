@@ -60,14 +60,18 @@ export type StatsResponse = {
 };
 
 export type RecentStickerResponse = {
-  itemCategory?: string;
+  category?: string;
   itemName?: string;
+  imageId?: number;
+  imageUrl?: string;
   receivedAt?: string;
 };
 
 export type StickerSummaryResponse = {
-  itemCategory?: string;
+  category?: string;
   itemName?: string;
+  imageId?: number;
+  imageUrl?: string;
   count?: number;
 };
 
@@ -91,7 +95,13 @@ export type ApiResponsePlaceDetailResponse = {
 export type PlaceVisitResponse = {
   consumptionId?: number;
   visitedAt?: string;
+  visitedTime?: string;
+  category?: string;
   amount?: number;
+  stickerItemId?: number;
+  stickerName?: string;
+  imageId?: number;
+  imageUrl?: string;
 };
 
 export type PlaceVisitScrollResponse = {

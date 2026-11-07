@@ -13,6 +13,7 @@ type SegmentedToggleProps<TValue extends string> = {
   value: TValue;
   onValueChange: (value: TValue) => void;
   className?: string;
+  ariaLabel?: string;
 };
 
 /**
@@ -38,12 +39,14 @@ type SegmentedToggleProps<TValue extends string> = {
  * @param props.onValueChange - 다른 옵션을 선택했을 때 호출됩니다. 이미 선택된 옵션을 다시 눌러도
  * 호출되지 않습니다.
  * @param props.className - 바깥 컨테이너를 확장하거나 재정의할 Tailwind CSS 클래스입니다.
+ * @param props.ariaLabel - 토글 그룹의 접근 가능한 이름입니다.
  */
 export function SegmentedToggle<TValue extends string>({
   options,
   value,
   onValueChange,
   className,
+  ariaLabel,
 }: SegmentedToggleProps<TValue>) {
   const isSecondActive = value === options[1].value;
 
@@ -55,6 +58,7 @@ export function SegmentedToggle<TValue extends string>({
           onValueChange(nextValue);
         }
       }}
+      aria-label={ariaLabel}
       className={cn('relative flex w-full rounded-30 bg-neutral-100 p-1', className)}
     >
       {/* NOTE: 옵션마다 배경을 따로 칠하면 색만 바뀌어서, 배경을 별도 요소로 분리해

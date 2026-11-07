@@ -3,16 +3,20 @@
  * Do not edit manually.
  */
 
-import type { GetNearbyPlacesParams, GetVisitedPlaceMarkersParams } from '@/features/map/apis/dto';
+import type {
+  GetLikedPlacesParams,
+  GetNearbyPlacesParams,
+  GetVisitedPlaceMarkersParams,
+} from '@/features/map/apis/dto';
 
 export const getGetNearbyPlacesQueryKey = (params?: GetNearbyPlacesParams) => {
   return [`/v1/recommendations/nearby-places`, ...(params ? [params] : [])] as const;
 };
 
-export const getGetVisitedPlaceMarkersQueryKey = (params?: GetVisitedPlaceMarkersParams) => {
-  return [`/v1/consumptions/visited-places`, ...(params ? [params] : [])] as const;
+export const getGetLikedPlacesQueryKey = (params?: GetLikedPlacesParams) => {
+  return [`/v1/places/likes`, ...(params ? [params] : [])] as const;
 };
 
-export const getFindStickersQueryKey = () => {
-  return [`/v1/consumptions/stickers`] as const;
+export const getGetVisitedPlaceMarkersQueryKey = (params?: GetVisitedPlaceMarkersParams) => {
+  return [`/v1/consumptions/visited-places`, ...(params ? [params] : [])] as const;
 };

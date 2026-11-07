@@ -276,4 +276,19 @@ export type ApiResponseConsumptionImageUploadResponse = {
   data?: ConsumptionImageUploadResponse;
 };
 
+export type StickerItemResponse = {
+  /** 소비기록 등록 시 전달할 스티커 ID */
+  stickerItemId?: number;
+  /** 스티커 선택 시 함께 지정할 소비 카테고리 */
+  category?: string;
+  /** 스티커 이름 */
+  name?: string;
+};
+
+export type ApiResponseListStickerItemResponse = {
+  code?: string;
+  message?: string;
+  data?: StickerItemResponse[];
+};
+
 export type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];

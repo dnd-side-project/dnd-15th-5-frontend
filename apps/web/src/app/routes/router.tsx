@@ -6,6 +6,7 @@ import MobileLayout from '@/app/layouts/MobileLayout';
 import { AuthenticatedRoute, GuestOnlyRoute, TermsAgreementRoute } from '@/app/routes/AuthRoute';
 import RouteErrorPage from '@/app/routes/RouteErrorPage';
 import AgreementPage from '@/pages/agreement/AgreementPage';
+import PoliciesPage from '@/pages/agreement/PoliciesPage';
 import PrivacyPolicyPage from '@/pages/agreement/PrivacyPolicyPage';
 import TermsOfServicePage from '@/pages/agreement/TermsOfServicePage';
 import AuthCallbackPage from '@/pages/auth-callback/AuthCallbackPage';
@@ -13,13 +14,16 @@ import HomePage from '@/pages/home/HomePage';
 import MapSearchPage from '@/pages/home/search/MapSearchPage';
 import ShopDetailPage from '@/pages/home/shop/ShopDetailPage';
 import LoginPage from '@/pages/login/LoginPage';
+import LikedPlacesPage from '@/pages/my-page/LikedPlacesPage';
 import MyPage from '@/pages/my-page/MyPage';
+import MyProfileEditPage from '@/pages/my-page/MyProfileEditPage';
 import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import NotificationPage from '@/pages/notifications/NotificationPage';
 import OnboardingPage from '@/pages/onboarding/OnboardingPage';
+import EditRecordPage from '@/pages/record/edit/EditRecordPage';
 import ManualRecordPage from '@/pages/record/manual/ManualRecordPage';
 import ReceiptCameraPage from '@/pages/record/receipt/ReceiptCameraPage';
-import RecordMethodPage from '@/pages/record/RecordMethodPage';
+import RecordPage from '@/pages/record/RecordPage';
 import ShopSearchPage from '@/pages/record/shop/search/ShopSearchPage';
 import FrequentShopListPage from '@/pages/report/frequent-shops/FrequentShopListPage';
 import SpendingHistoryPage from '@/pages/report/history/SpendingHistoryPage';
@@ -56,12 +60,11 @@ export const router = createSentryBrowserRouter([
           },
           {
             element: <TermsAgreementRoute />,
-            children: [
-              { path: ROUTE_PATHS.agreement, element: <AgreementPage /> },
-              { path: ROUTE_PATHS.agreementPrivacyPolicy, element: <PrivacyPolicyPage /> },
-              { path: ROUTE_PATHS.agreementTermsOfService, element: <TermsOfServicePage /> },
-            ],
+            children: [{ path: ROUTE_PATHS.agreement, element: <AgreementPage /> }],
           },
+          // 약관 원문은 가입 전·후 모두 확인할 수 있다.
+          { path: ROUTE_PATHS.agreementPrivacyPolicy, element: <PrivacyPolicyPage /> },
+          { path: ROUTE_PATHS.agreementTermsOfService, element: <TermsOfServicePage /> },
         ],
       },
       {
@@ -95,6 +98,21 @@ export const router = createSentryBrowserRouter([
               },
             ],
           },
+          // 사진 선택과 기록 입력은 화면 전체 너비와 자체 Safe Area를 사용한다.
+          {
+            path: ROUTE_PATTERNS.editRecord,
+            element: <EditRecordPage />,
+          },
+          {
+            path: ROUTE_PATHS.record,
+            element: <RecordPage />,
+            children: [
+              {
+                path: ROUTE_PATHS.recordShopSearch,
+                element: <ShopSearchPage />,
+              },
+            ],
+          },
           // 영수증 촬영은 좌우 여백 없이 전체 너비를 사용한다.
           {
             path: ROUTE_PATHS.receiptCamera,
@@ -117,20 +135,24 @@ export const router = createSentryBrowserRouter([
                 element: <MyPage />,
               },
               {
+                path: ROUTE_PATHS.myPageLikes,
+                element: <LikedPlacesPage />,
+              },
+              {
+                path: ROUTE_PATHS.myPageProfile,
+                element: <MyProfileEditPage />,
+              },
+              {
+                path: ROUTE_PATHS.myPagePolicies,
+                element: <PoliciesPage />,
+              },
+              {
                 path: ROUTE_PATTERNS.shopDetail,
                 element: <ShopDetailPage />,
               },
               {
-                path: ROUTE_PATHS.record,
-                element: <RecordMethodPage />,
-              },
-              {
                 path: ROUTE_PATHS.manualRecord,
                 element: <ManualRecordPage />,
-              },
-              {
-                path: ROUTE_PATHS.recordShopSearch,
-                element: <ShopSearchPage />,
               },
               {
                 path: ROUTE_PATHS.spendingHistory,

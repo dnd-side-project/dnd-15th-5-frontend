@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import type { ApiResponse, ConsumptionCreateRequest } from '@/features/record/apis/dto';
+import type { ApiResponse, ConsumptionSaveRequest } from '@/features/record/apis/dto';
 import { useCreateConsumption } from '@/features/record/apis/mutations';
 import { isConsumptionRelatedQuery } from '@/shared/apis/isConsumptionRelatedQuery';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
@@ -23,12 +24,20 @@ export const useCreateConsumptionMutation = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const mutation = useCreateConsumption({
     mutation: {
       onSuccess: async (_response, { data: request }) => {
         await queryClient.invalidateQueries({
           predicate: isConsumptionRelatedQuery,
         });
+        if (!mounted.current) return;
         navigate(ROUTE_PATHS.home, {
           replace: true,
           state: {
@@ -41,6 +50,7 @@ export const useCreateConsumptionMutation = () => {
         });
       },
       onError: (error: AxiosError<ApiResponse>) => {
+        if (!mounted.current) return;
         showToast({
           type: 'error',
           message: error.response?.data.message || CREATE_CONSUMPTION_ERROR_MESSAGE,
@@ -50,7 +60,9 @@ export const useCreateConsumptionMutation = () => {
   });
 
   return {
-    createConsumption: (request: ConsumptionCreateRequest) => mutation.mutate({ data: request }),
+    createConsumption: (request: ConsumptionSaveRequest) => mutation.mutate({ data: request }),
+    createConsumptionAsync: (request: ConsumptionSaveRequest) =>
+      mutation.mutateAsync({ data: request }),
     isCreatingConsumption: mutation.isPending,
   };
 };

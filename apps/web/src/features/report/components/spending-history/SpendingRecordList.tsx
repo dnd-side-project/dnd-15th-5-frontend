@@ -1,31 +1,35 @@
 import type { SpendingRecordGroup } from '@/features/report/types';
 import { formatPurchaseDateLabel } from '@/features/report/utils/consumptions';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
-import { cn } from '@/shared/lib/cn';
+import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 
 import SpendingRecordItem from './SpendingRecordItem';
 
-type SpendingRecordListProps = {
+import type { ReactNode } from 'react';
+
+type SpendingRecordListProps = ConsumptionActions & {
   groups: readonly SpendingRecordGroup[];
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   isLoadMoreError: boolean;
   onLoadMore: () => void;
   onRetry: () => void;
-  targetDate?: string;
+  renderRecordSticker: (consumptionId: number) => ReactNode;
 };
 
 /** 소비 기록을 날짜별로 묶어 제목과 항목 목록을 표시합니다. */
 export default function SpendingRecordList({
+  onEditRecord,
+  onDeleteRecord,
   groups,
   hasNextPage,
   isFetchingNextPage,
   isLoadMoreError,
   onLoadMore,
   onRetry,
-  targetDate,
+  renderRecordSticker,
 }: SpendingRecordListProps) {
   const loadMoreRef = useInfiniteScroll({
     hasNextPage,
@@ -41,17 +45,12 @@ export default function SpendingRecordList({
           const sectionId = `date-${group.purchaseDate}`;
           const headingId = `${sectionId}-heading`;
           const purchaseDateLabel = formatPurchaseDateLabel(group.purchaseDate);
-          const isTargetDate = group.purchaseDate === targetDate;
 
           return (
             <section
               key={group.purchaseDate}
               aria-labelledby={headingId}
-              aria-current={isTargetDate ? 'date' : undefined}
-              className={cn(
-                'scroll-mt-24 rounded-16 transition-colors',
-                isTargetDate && 'bg-primary-50 p-3'
-              )}
+              className="scroll-mt-24"
               id={sectionId}
             >
               <h2 id={headingId} className="mb-3 text-body-01-semibold text-neutral-900">
@@ -59,7 +58,13 @@ export default function SpendingRecordList({
               </h2>
               <ul className="space-y-3">
                 {group.consumptions.map((consumption) => (
-                  <SpendingRecordItem key={consumption.id} consumption={consumption} />
+                  <SpendingRecordItem
+                    key={consumption.id}
+                    consumption={consumption}
+                    onEditRecord={onEditRecord}
+                    onDeleteRecord={onDeleteRecord}
+                    renderRecordSticker={renderRecordSticker}
+                  />
                 ))}
               </ul>
             </section>

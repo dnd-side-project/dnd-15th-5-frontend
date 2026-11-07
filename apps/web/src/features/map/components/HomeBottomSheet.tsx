@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useHomeBottomSheetTabs } from '@/features/map/hooks/useHomeBottomSheetTabs';
+import { useSelectedPlaceExpandTransition } from '@/features/map/hooks/useSelectedPlaceExpandTransition';
 import {
   getHomeBottomSheetSnapPoint,
   useHomeBottomSheetStore,
@@ -13,14 +15,13 @@ import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 import { SegmentedToggle } from '@/shared/ui/segmented-toggle';
 import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from '@/shared/ui/toast';
 
-import LikedRecommendationSheet from './LikedRecommendationSheet';
+import LikedRecommendationSheet from './liked-places/LikedRecommendationSheet';
 import ShopRecommendationSheet from './ShopRecommendationSheet';
 
 import type { ReactNode, UIEvent } from 'react';
 
-type TabValue = 'frequentShops' | 'history';
-
 type HomeBottomSheetProps = {
+  onSelectedPlaceExpand?: (placeId: string) => void;
   renderFrequentShops: (headerContent: ReactNode) => ReactNode;
   renderSelectedPlace: (placeId: string) => ReactNode;
   renderSpendingHistory: (headerContent: ReactNode) => ReactNode;
@@ -127,9 +128,11 @@ function useSheetContentTransitionClassName(transitionKey: string) {
  * @param props - 홈 바텀시트 속성입니다.
  * @param props.renderFrequentShops - 세그먼트 토글과 자주 소비한 곳을 하나의 sticky 헤더로 조립합니다.
  * @param props.renderSelectedPlace - 선택한 장소 ID로 상세 요약을 조립합니다.
+ * @param props.onSelectedPlaceExpand - 선택한 가게 시트를 위로 올렸을 때 상세 화면 이동을 요청합니다.
  * @param props.renderSpendingHistory - 세그먼트 토글과 소비내역을 하나의 sticky 헤더로 조립합니다.
  */
 export default function HomeBottomSheet({
+  onSelectedPlaceExpand,
   renderFrequentShops,
   renderSelectedPlace,
   renderSpendingHistory,
@@ -142,17 +145,25 @@ export default function HomeBottomSheet({
   const topActionBottomPx = useHomeBottomSheetStore((state) => state.topActionBottomPx);
   const setVisibleHeight = useHomeBottomSheetStore((state) => state.setVisibleHeight);
   const snapPoint = getHomeBottomSheetSnapPoint(stepIndex);
-  const [tab, setTab] = useState<TabValue>('frequentShops');
-  const contentRootRef = useRef<HTMLDivElement>(null);
-  const scrollPositionsRef = useRef<Record<TabValue, number>>({
-    frequentShops: 0,
-    history: 0,
-  });
-  const shouldRestoreFocusRef = useRef(false);
+  const {
+    tab,
+    contentRootRef,
+    handleTabChange,
+    handleContentScroll,
+    handleContentTouchStart,
+    handleContentTouchMove,
+    handleContentWheel,
+    handleContentKeyDown,
+  } = useHomeBottomSheetTabs(activeSheet.type === 'home');
 
   const handleVisibleHeightChange = useCallback(
     (heightPx: number) => {
       setVisibleHeight(heightPx);
+      if (heightPx === 0) {
+        document.documentElement.style.removeProperty(TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE);
+        return;
+      }
+
       document.documentElement.style.setProperty(
         TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE,
         `${heightPx}px`
@@ -168,32 +179,6 @@ export default function HomeBottomSheet({
     },
     [setVisibleHeight]
   );
-
-  useLayoutEffect(() => {
-    const scrollContainer = contentRootRef.current?.parentElement;
-    if (scrollContainer) {
-      scrollContainer.scrollTop = scrollPositionsRef.current[tab];
-    }
-
-    if (!shouldRestoreFocusRef.current) {
-      return;
-    }
-
-    shouldRestoreFocusRef.current = false;
-    contentRootRef.current
-      ?.querySelector<HTMLElement>('[data-active-tab-panel="true"] [data-pressed]')
-      ?.focus();
-  }, [activeSheet, tab]);
-
-  const handleTabChange = (nextTab: TabValue) => {
-    const scrollContainer = contentRootRef.current?.parentElement;
-    if (scrollContainer) {
-      scrollPositionsRef.current[tab] = scrollContainer.scrollTop;
-    }
-
-    shouldRestoreFocusRef.current = true;
-    setTab(nextTab);
-  };
 
   const renderSegmentedToggle = () => (
     <div className="pb-2">
@@ -215,6 +200,7 @@ export default function HomeBottomSheet({
   };
 
   const handleHomeSheetContentScroll = (event: UIEvent<HTMLDivElement>) => {
+    handleContentScroll(event);
     if (snapPoint === 'medium' && event.currentTarget.scrollTop > AUTO_EXPAND_SCROLL_THRESHOLD_PX) {
       setSnapPoint('full');
     }
@@ -224,6 +210,13 @@ export default function HomeBottomSheet({
     setSnapPoint('medium');
   };
 
+  const { sheetRef, expandSelectedPlace } = useSelectedPlaceExpandTransition({
+    placeId: activeSheet.type === 'selectedPlace' ? activeSheet.stickerId : undefined,
+    onExpanded: onSelectedPlaceExpand,
+  });
+  const handleSelectedPlaceExpand =
+    activeSheet.type === 'selectedPlace' && onSelectedPlaceExpand ? expandSelectedPlace : undefined;
+
   const contentTransitionClassName = useSheetContentTransitionClassName(
     getSheetTransitionKey(activeSheet)
   );
@@ -231,6 +224,10 @@ export default function HomeBottomSheet({
   const homeSheetContent = (
     <div
       ref={contentRootRef}
+      onTouchStartCapture={handleContentTouchStart}
+      onTouchMoveCapture={handleContentTouchMove}
+      onWheelCapture={handleContentWheel}
+      onKeyDown={handleContentKeyDown}
       className={cn('flex min-h-full flex-col bg-neutral-00', contentTransitionClassName)}
     >
       <div
@@ -290,11 +287,13 @@ export default function HomeBottomSheet({
 
   return (
     <BottomSheet
+      rootRef={sheetRef}
       snapPoint={isHomeSheet ? snapPoint : 'medium'}
       snapPoints={isHomeSheet ? undefined : MODAL_SHEET_SNAP_POINTS}
       onSnapPointChange={isHomeSheet ? setSnapPoint : handleModalSheetSnapPointChange}
       onHandleClick={isHomeSheet ? advance : showHome}
       fitContent={!isHomeSheet}
+      onExpand={handleSelectedPlaceExpand}
       contentClassName={sheetPresentation.contentClassName}
       fullTopBoundaryPx={fullTopBoundaryPx}
       onContentPullDown={

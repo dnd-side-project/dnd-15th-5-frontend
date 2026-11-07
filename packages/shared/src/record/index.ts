@@ -22,6 +22,8 @@ export {
   WEEKDAY_LABELS,
 } from './visitDateTime';
 export { validateRecordRequiredFields } from './validation';
+export { parseReceiptVisitDateTime } from './receipt';
+export { ISNET_ORIGINAL_MODEL } from './isnetModel';
 
 export type { RecordCategory } from './constants';
 export type { CreatedConsumptionPlace } from './types';

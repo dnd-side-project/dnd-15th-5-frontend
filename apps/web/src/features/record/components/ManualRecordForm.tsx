@@ -50,14 +50,14 @@ function RequiredField({ children, errorId, errorMessage, label }: RequiredField
   return (
     <fieldset>
       <legend className="text-body-02-medium text-neutral-700">
-        <span className="mr-1 text-notification" aria-hidden="true">
+        <span className="mr-1 text-red" aria-hidden="true">
           *
         </span>
         {label}
       </legend>
       <div className="mt-2">{children}</div>
       {errorMessage && (
-        <p id={errorId} role="alert" className="mt-2 text-label-01-medium text-notification">
+        <p id={errorId} role="alert" className="mt-2 text-label-01-medium text-red">
           {errorMessage}
         </p>
       )}
@@ -83,7 +83,6 @@ export default function ManualRecordForm({
     selectedShop !== null &&
     Number.isFinite(selectedShop.latitude) &&
     Number.isFinite(selectedShop.longitude);
-  const { createConsumption, isCreatingConsumption } = useCreateConsumptionMutation();
   const [visitDateTime, setVisitDateTime] = useState<VisitDateTimeValue>(
     () => initialVisitDateTime ?? createInitialVisitDateTime()
   );
@@ -105,6 +104,7 @@ export default function ManualRecordForm({
     category !== initialDraft.category ||
     visitDateTime.period !== initialDraft.visitDateTime.period ||
     !isSameDate(visitDateTime.date, initialDraft.visitDateTime.date);
+  const { createConsumption, isCreatingConsumption } = useCreateConsumptionMutation();
   // NOTE: 아직 아무것도 입력하지 않은 빈 금액은 오류로 안내하지 않고, 잘못된 값을 입력했을 때만 안내한다.
   const showAmountError = amount !== '' && !isAmountValid;
   const showShopLocationError = hasSelectedShop && !hasShopLocation;
@@ -132,6 +132,7 @@ export default function ManualRecordForm({
 
   return (
     <div className="min-h-screen-safe-bottom flex flex-col">
+      {/* TODO: 브라우저·앱 뒤로가기 제스처의 미저장 변경 확인 정책을 정한다. */}
       <RecordNavigationHeader
         onBack={onBack}
         onClose={onClose}
@@ -139,7 +140,7 @@ export default function ManualRecordForm({
         confirmBeforeClose={isDraftDirty}
       />
 
-      <h1 className="mt-6 text-heading-01-bold text-neutral-700">소비 정보를 입력해주세요</h1>
+      <h1 className="mt-1.5 text-heading-01-bold text-neutral-700">소비 정보를 입력해주세요</h1>
 
       {hasSelectedShop ? (
         <div className="mt-6 flex items-center rounded-16 border border-neutral-300 p-2">
@@ -174,7 +175,7 @@ export default function ManualRecordForm({
         <p
           id="manual-record-shop-location-error"
           role="alert"
-          className="mt-2 text-label-01-medium text-notification"
+          className="mt-2 text-label-01-medium text-red"
         >
           선택한 가게의 위치 정보가 없어 기록할 수 없어요. 다른 가게를 선택해주세요.
         </p>
@@ -205,7 +206,7 @@ export default function ManualRecordForm({
           >
             <label
               className={`flex items-center rounded-08 border p-4 focus-within:ring-2 focus-within:ring-primary-300 ${
-                showAmountError ? 'border-notification' : 'border-neutral-300'
+                showAmountError ? 'border-red' : 'border-neutral-300'
               }`}
             >
               <input

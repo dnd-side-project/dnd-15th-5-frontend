@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -99,7 +99,7 @@ describe('ShopDetail', () => {
     jest.useRealTimers();
   });
 
-  it('매장 정보는 고정 영역에 두고 주소 아래를 방문 기록 스크롤 영역으로 표시한다', () => {
+  it('스티커·가게 정보·방문 기록을 함께 스크롤하고 뒤로 가기는 스크롤 밖에 둔다', () => {
     jest.useFakeTimers().setSystemTime(new Date(2026, 7, 27));
 
     render(
@@ -121,6 +121,13 @@ describe('ShopDetail', () => {
     const scrollRegion = screen.getByRole('region', { name: '방문 요약과 방문 기록' });
     expect(scrollRegion.closest('article')).toHaveClass('h-dvh');
     expect(scrollRegion).toHaveClass('overflow-y-auto', 'pb-safe-bottom');
+    expect(
+      within(scrollRegion).getByRole('heading', { level: 1, name: '투썸플레이스' })
+    ).toBeInTheDocument();
+    expect(
+      within(scrollRegion).getAllByRole('button', { name: /번째 스티커 다시 붙이기/ }).length
+    ).toBeGreaterThan(0);
+    expect(scrollRegion).not.toContainElement(screen.getByRole('button', { name: '뒤로 가기' }));
     const visitTitle = within(scrollRegion).getByRole('heading', {
       name: '총 8번 방문하셨네요!',
     });
@@ -195,5 +202,159 @@ describe('ShopDetail', () => {
     );
 
     expect(screen.getByLabelText('획득한 스티커').querySelectorAll('img')).toHaveLength(6);
+  });
+
+  it('집계가 비어 있어도 최근 스티커가 있으면 빈 안내 대신 이미지를 표시한다', () => {
+    mockedUseGetPlaceDetail.mockReturnValue({
+      data: {
+        data: {
+          placeId: 101,
+          placeName: '투썸플레이스',
+          stickerSummary: [],
+          recentStickers: [{ itemName: '커피' }],
+        },
+      },
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useGetPlaceDetail>);
+    render(
+      <MemoryRouter>
+        <ShopDetail placeId={101} headerContent={null} onViewOnMap={jest.fn()} />
+      </MemoryRouter>
+    );
+    expect(screen.getByLabelText('획득한 스티커').querySelectorAll('img')).toHaveLength(1);
+    expect(screen.queryByText('아직 획득한 스티커가 없어요')).not.toBeInTheDocument();
+  });
+
+  it('수정 전 캐시가 있어도 방문 목록 갱신이 끝난 뒤 최신 행의 위치로 복원한다', () => {
+    const query = mockedUsePlaceVisitsInfiniteQuery(101);
+    const visitsQuery = {
+      ...query,
+      data: {
+        pages: [{ data: { visits: [{ consumptionId: 196, visitedAt: '2026-11-01' }] } }],
+        pageParams: [{}],
+      },
+    } as ReturnType<typeof usePlaceVisitsInfiniteQuery>;
+    mockedUsePlaceVisitsInfiniteQuery.mockReturnValue({ ...visitsQuery, isRefetching: true });
+    const view = () => (
+      <MemoryRouter>
+        <ShopDetail
+          placeId={101}
+          headerContent={null}
+          onViewOnMap={jest.fn()}
+          scrollToConsumptionId={196}
+          scrollToDate="2026-11-01"
+        />
+      </MemoryRouter>
+    );
+    const { rerender } = render(view());
+    const root = screen.getByRole('region', { name: '방문 요약과 방문 기록' });
+    const row = root.querySelector<HTMLElement>('[data-visit-id="196"]')!;
+    const header = screen.getByRole('heading', { level: 1, name: '투썸플레이스' }).parentElement!
+      .parentElement!;
+    jest.spyOn(root, 'getBoundingClientRect').mockReturnValue({ top: 58 } as DOMRect);
+    jest.spyOn(row, 'getBoundingClientRect').mockReturnValue({ top: 678 } as DOMRect);
+    jest.spyOn(header, 'getBoundingClientRect').mockReturnValue({ height: 120 } as DOMRect);
+    expect(root.scrollTop).toBe(0);
+
+    mockedUsePlaceVisitsInfiniteQuery.mockReturnValue({ ...visitsQuery, isRefetching: false });
+    rerender(view());
+    expect(root.scrollTop).toBe(500);
+  });
+
+  it('방문 기록이 있으면 이미지가 없어도 스티커 미획득으로 안내하지 않는다', () => {
+    mockedUseGetPlaceDetail.mockReturnValue({
+      data: {
+        data: {
+          placeId: 101,
+          placeName: '투썸플레이스',
+          stats: { totalVisitCount: 1 },
+          stickerSummary: [],
+          recentStickers: [],
+        },
+      },
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useGetPlaceDetail>);
+    render(
+      <MemoryRouter>
+        <ShopDetail placeId={101} headerContent={null} onViewOnMap={jest.fn()} />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('기록한 이미지를 아직 표시할 수 없어요')).toBeInTheDocument();
+    expect(screen.queryByText('아직 획득한 스티커가 없어요')).not.toBeInTheDocument();
+  });
+
+  it.each(['stickerSummary', 'recentStickers'] as const)(
+    '%s에 사진 스티커만 있어도 상단에 표시한다',
+    (field) => {
+      mockedUseGetPlaceDetail.mockReturnValue({
+        data: {
+          data: {
+            placeId: 101,
+            placeName: '사진 가게',
+            [field]: [{ imageUrl: 'https://example.com/photo.png' }],
+          },
+        },
+        isPending: false,
+        isError: false,
+        refetch: jest.fn(),
+      } as unknown as ReturnType<typeof useGetPlaceDetail>);
+      render(
+        <MemoryRouter>
+          <ShopDetail placeId={101} headerContent={null} onViewOnMap={jest.fn()} />
+        </MemoryRouter>
+      );
+      expect(screen.getByLabelText('획득한 스티커').querySelector('img')).toHaveAttribute(
+        'src',
+        'https://example.com/photo.png'
+      );
+      expect(screen.queryByText('기록한 이미지를 아직 표시할 수 없어요')).not.toBeInTheDocument();
+    }
+  );
+  it('상단에 가까워질수록 모서리를 펴고 다시 내려오면 둥근 모서리를 복원한다', () => {
+    render(
+      <MemoryRouter>
+        <ShopDetail
+          placeId={101}
+          headerContent={<button>뒤로 가기</button>}
+          onViewOnMap={jest.fn()}
+        />
+      </MemoryRouter>
+    );
+    const scrollRegion = screen.getByRole('region', { name: '방문 요약과 방문 기록' });
+    const shopInformation = screen.getByRole('heading', { level: 1, name: '투썸플레이스' })
+      .parentElement!.parentElement!;
+    const panel = shopInformation.parentElement!;
+    const cornerClass = 'rounded-t-[calc(var(--radius-30)*var(--shop-header-rounding,1))]';
+    expect(panel).toHaveClass(cornerClass);
+    expect(shopInformation).toHaveClass(cornerClass);
+    jest
+      .spyOn(scrollRegion, 'getBoundingClientRect')
+      .mockReturnValue({ ...scrollRegion.getBoundingClientRect(), top: 58 });
+    const panelRect = jest.spyOn(panel, 'getBoundingClientRect');
+    const originalRect = panel.getBoundingClientRect();
+
+    panelRect.mockReturnValue({ ...originalRect, top: 154 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('1');
+
+    panelRect.mockReturnValue({ ...originalRect, top: 106 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('0.5');
+
+    panelRect.mockReturnValue({ ...originalRect, top: 58 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('0');
+
+    panelRect.mockReturnValue({ ...originalRect, top: -20 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('0');
+
+    panelRect.mockReturnValue({ ...originalRect, top: 154 });
+    fireEvent.scroll(scrollRegion);
+    expect(panel.style.getPropertyValue('--shop-header-rounding')).toBe('1');
   });
 });

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { TermsAgreementForm, useTermsAgreement } from '@/features/auth';
-import { BackButton } from '@/shared/ui/back-button';
+import PageHeader from '@/shared/layout/PageHeader';
 
 export default function AgreementPage() {
   const navigate = useNavigate();
@@ -9,9 +9,9 @@ export default function AgreementPage() {
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <BackButton onClick={() => navigate(-1)} />
+      <PageHeader onBack={() => navigate(-1)} />
 
-      <h1 className="mt-14 px-2 text-heading-01-bold text-neutral-700">
+      <h1 className="mt-9.5 px-2 text-heading-01-bold text-neutral-700">
         챱챱 이용을 위한
         <br />
         약관에 동의해주세요

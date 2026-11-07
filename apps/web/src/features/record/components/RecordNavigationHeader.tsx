@@ -1,14 +1,14 @@
+import { RECORD_EXIT_CONFIRM_TEXT } from '@chapchap/shared/record';
 import { useState } from 'react';
 
-import { CloseIcon } from '@/shared/assets/icons';
-import { BackButton } from '@/shared/ui/back-button';
-import { Button } from '@/shared/ui/button';
-
-import RecordExitConfirmDialog from './RecordExitConfirmDialog';
+import PageHeader from '@/shared/layout/PageHeader';
+import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 
 type PendingExitAction = 'back' | 'close' | null;
 
 type RecordNavigationHeaderProps = {
+  /** 버튼 사이 가운데에 표시할 화면 제목입니다. */
+  title?: string;
   onBack: () => void;
   onClose: () => void;
   /** 뒤로가기 전에 확인창을 띄울지 여부입니다. 기본값은 `false`입니다. */
@@ -19,6 +19,7 @@ type RecordNavigationHeaderProps = {
 
 /** 기록 플로우에서 이전 화면 이동과 홈으로 나가기를 제공하는 공통 헤더. */
 export default function RecordNavigationHeader({
+  title,
   onBack,
   onClose,
   confirmBeforeBack = false,
@@ -58,20 +59,19 @@ export default function RecordNavigationHeader({
 
   return (
     <>
-      <div className="flex items-start justify-between">
-        <BackButton onClick={handleBackClick} />
-        <Button
-          variant="icon"
-          aria-label="기록 닫고 홈으로 이동"
-          onClick={handleCloseClick}
-          className="mt-4 size-6 text-neutral-700 [&_svg]:size-3.5"
-        >
-          <CloseIcon aria-hidden="true" />
-        </Button>
-      </div>
+      <PageHeader
+        title={title}
+        onBack={handleBackClick}
+        onClose={handleCloseClick}
+        closeButtonLabel="기록 닫고 홈으로 이동"
+      />
 
       {pendingExitAction && (
-        <RecordExitConfirmDialog
+        <UnsavedChangesDialog
+          title={RECORD_EXIT_CONFIRM_TEXT.title}
+          description={RECORD_EXIT_CONFIRM_TEXT.description}
+          exitLabel={RECORD_EXIT_CONFIRM_TEXT.exit}
+          continueLabel={RECORD_EXIT_CONFIRM_TEXT.continue}
           onExit={handleExit}
           onContinue={() => setPendingExitAction(null)}
         />

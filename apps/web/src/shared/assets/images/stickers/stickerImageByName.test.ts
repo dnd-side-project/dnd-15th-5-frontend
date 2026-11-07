@@ -1,6 +1,28 @@
+import { DEFAULT_STICKERS } from '@/shared/assets/images/ios-stickers/catalog';
+
 import { getStickerImageByName, getStickerImages } from './stickerImageByName';
 
 describe('getStickerImages', () => {
+  it('사진 URL을 기본 스티커 이름보다 우선하고 이름 없는 사진도 개수만큼 표시한다', () => {
+    expect(
+      getStickerImages([
+        { itemName: '커피', imageUrl: 'https://example.com/photo-1.png' },
+        { imageUrl: 'https://example.com/photo-2.png', count: 2 },
+        { itemName: '눈', imageUrl: '  ' },
+      ])
+    ).toEqual([
+      'https://example.com/photo-1.png',
+      'https://example.com/photo-2.png',
+      'https://example.com/photo-2.png',
+      getStickerImageByName('눈'),
+    ]);
+  });
+  it('기록에서 선택한 기본 이모지와 같은 이미지를 서버 이름으로 표시한다', () => {
+    for (const sticker of DEFAULT_STICKERS) {
+      expect(getStickerImageByName(sticker.name)).toBe(sticker.image);
+    }
+    expect(getStickerImageByName('서버에 없는 이름')).toBeUndefined();
+  });
   it('지원하는 스티커의 이미지 경로만 반환한다', () => {
     expect(
       getStickerImages([

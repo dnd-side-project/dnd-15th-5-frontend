@@ -47,6 +47,10 @@ const createFeatureApiConfig = (feature: string, options: FeatureApiOptions): Op
             return 'completeSocialOAuth';
           }
 
+          if (feature === 'shop' && operation.operationId === 'getPlaceDetail_1') {
+            return 'getPlaceDetail';
+          }
+
           return operation.operationId ?? `${verb}Operation`;
         },
         mutator: {

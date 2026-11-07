@@ -16,7 +16,7 @@ describe('HomeTopBar', () => {
   ])('안 읽은 알림 상태에 맞는 알림 버튼을 표시한다', ({ hasUnreadNotification, label }) => {
     render(
       <MemoryRouter>
-        <HomeTopBar hasUnreadNotification={hasUnreadNotification} recordedShopCount={0} />
+        <HomeTopBar hasUnreadNotification={hasUnreadNotification} />
       </MemoryRouter>
     );
 
