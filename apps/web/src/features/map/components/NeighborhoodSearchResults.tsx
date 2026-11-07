@@ -1,12 +1,10 @@
-import type {
-  NeighborhoodResult,
-  NeighborhoodSearchState,
-} from '@/features/map/hooks/useNeighborhoodSearch';
+import type { NeighborhoodSearchState } from '@/features/map/apis/hooks/useNeighborhoodSearch';
 
 type NeighborhoodSearchResultsProps = {
   searchTerm: string;
   searchState: NeighborhoodSearchState;
-  onSelect: (result: NeighborhoodResult) => void;
+  isSelecting: boolean;
+  onSelect: (address: string) => void;
 };
 
 const renderMatchedNeighborhood = (address: string, keyword: string) => {
@@ -26,6 +24,7 @@ const renderMatchedNeighborhood = (address: string, keyword: string) => {
 export default function NeighborhoodSearchResults({
   searchTerm,
   searchState,
+  isSelecting,
   onSelect,
 }: NeighborhoodSearchResultsProps) {
   return (
@@ -51,8 +50,9 @@ export default function NeighborhoodSearchResults({
           <li key={result.id}>
             <button
               type="button"
+              disabled={isSelecting}
               className="block w-full text-left text-body-01-medium leading-6 text-neutral-700"
-              onClick={() => onSelect(result)}
+              onClick={() => onSelect(result.address)}
             >
               {renderMatchedNeighborhood(result.address, searchTerm)}
             </button>

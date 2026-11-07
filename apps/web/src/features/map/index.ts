@@ -13,7 +13,7 @@ export { parseCreatedConsumptionPlace } from './utils/parseCreatedConsumptionPla
 export { toShopSearchResult } from './utils/placeAdapters';
 
 export type { MapSticker } from './types';
-export { useNeighborhoodSearch } from './hooks/useNeighborhoodSearch';
+export { useNeighborhoodSearch } from './apis/hooks/useNeighborhoodSearch';
 export { useRecentNeighborhoods } from './hooks/useRecentNeighborhoods';
 export { useRecommendationLocationActions } from './hooks/useRecommendationLocationActions';
-export type { NeighborhoodResult } from './hooks/useNeighborhoodSearch';
+export { useResolveNeighborhoodPosition } from './apis/hooks/useResolveNeighborhoodPosition';

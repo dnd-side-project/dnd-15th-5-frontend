@@ -7,8 +7,8 @@ import {
   useNeighborhoodSearch,
   useRecentNeighborhoods,
   useRecommendationLocationActions,
+  useResolveNeighborhoodPosition,
 } from '@/features/map';
-import type { NeighborhoodResult } from '@/features/map';
 import { RecommendationLocationPinIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import PageHeader from '@/shared/layout/PageHeader';
@@ -23,6 +23,12 @@ export default function RecommendationLocationSearchPage() {
   const { recentNeighborhoods, addRecentNeighborhood, removeRecentNeighborhood } =
     useRecentNeighborhoods();
   const { searchTerm, searchState, searchNeighborhoods } = useNeighborhoodSearch();
+  const {
+    mutate: resolvePosition,
+    reset: resetPositionLookup,
+    isPending: isResolvingPosition,
+    isError: hasPositionError,
+  } = useResolveNeighborhoodPosition();
   const [appliedKeyword, setAppliedKeyword] = useState<{ keyword: string }>();
 
   const handleReturnHome = () => {
@@ -45,10 +51,19 @@ export default function RecommendationLocationSearchPage() {
     handleReturnHome();
   };
 
-  const handleSelectNeighborhood = ({ address, position }: NeighborhoodResult) => {
-    addRecentNeighborhood(address);
-    confirmLocation(position);
-    handleReturnHome();
+  const handleSearch = (keyword: string) => {
+    resetPositionLookup();
+    searchNeighborhoods(keyword);
+  };
+
+  const handleSelectNeighborhood = (address: string) => {
+    resolvePosition(address, {
+      onSuccess: (position) => {
+        addRecentNeighborhood(address);
+        confirmLocation(position);
+        handleReturnHome();
+      },
+    });
   };
 
   return (
@@ -56,7 +71,7 @@ export default function RecommendationLocationSearchPage() {
       <PageHeader onBack={handleClose} />
       <PlaceSearchInput
         placeholder="동네를 검색해주세요"
-        onSearch={searchNeighborhoods}
+        onSearch={handleSearch}
         appliedKeyword={appliedKeyword}
         inputClassName="text-body-01-semibold placeholder:font-normal"
         searchIconClassName="size-7.5 text-neutral-500"
@@ -73,8 +88,19 @@ export default function RecommendationLocationSearchPage() {
           <NeighborhoodSearchResults
             searchTerm={searchTerm}
             searchState={searchState}
+            isSelecting={isResolvingPosition}
             onSelect={handleSelectNeighborhood}
           />
+        )}
+        {isResolvingPosition && (
+          <p role="status" className="text-center text-body-02-regular text-neutral-500">
+            동네 위치를 확인하고 있어요.
+          </p>
+        )}
+        {hasPositionError && (
+          <p className="text-center text-body-02-regular text-neutral-500">
+            동네 위치를 확인하지 못했어요. 다시 선택하거나 지도로 찾아보세요.
+          </p>
         )}
       </section>
 
