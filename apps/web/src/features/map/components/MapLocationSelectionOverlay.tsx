@@ -55,12 +55,12 @@ export default function MapLocationSelectionOverlay({
         snapPoint="medium"
         fitContent
         showHandle={false}
-        contentClassName="pointer-events-auto flex flex-col gap-5 pt-6 pb-[max(2rem,env(safe-area-inset-bottom))]"
+        contentClassName="pointer-events-auto flex flex-col gap-5 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))]"
       >
         {showLocationHint && (
           <p
             role="status"
-            className="pointer-events-none absolute bottom-full left-1/2 mb-4 w-max max-w-[calc(100%_-_2rem)] -translate-x-1/2 rounded-16 bg-neutral-600/80 px-7.5 py-4 text-center text-body-02-regular text-neutral-00"
+            className="pointer-events-none absolute bottom-full left-1/2 mb-4 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-16 bg-neutral-600/80 px-7.5 py-4 text-center text-body-02-regular text-neutral-00"
           >
             지도를 움직여 원하는 동네를 선택해 주세요
           </p>
