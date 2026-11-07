@@ -1,10 +1,16 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
+import type { LikedPlaceMapNavigation } from '@/features/map/types';
 import { LocationPinIcon, LikeIcon } from '@/shared/assets/icons';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { cn } from '@/shared/lib/cn';
 import { StoreImageFallback } from '@/shared/ui/card';
 import { Chip } from '@/shared/ui/chip';
 
 import LikedPlacePhotoSkeleton from './LikedPlacePhotoSkeleton';
+
+import type { ReactNode } from 'react';
 
 type LikedPlaceGalleryImageProps = {
   name: string;
@@ -47,23 +53,55 @@ type LikedPlaceSummaryProps = {
   isUnlikePending: boolean;
   onUnlike: () => void;
   headingAs: 'h1' | 'h2';
+  mapNavigation?: LikedPlaceMapNavigation;
 };
 
-/** 좋아요 매장 시트와 목록에서 함께 사용하는 매장 요약 및 사진 UI입니다. */
-export default function LikedPlaceSummary({
+type LikedPlaceSummaryContentProps = Pick<
+  LikedPlaceSummaryProps,
+  'placeId' | 'name' | 'category' | 'address' | 'photoUrls' | 'isLoading' | 'headingAs'
+> & {
+  headerAction?: ReactNode;
+  headerClassName?: string;
+};
+
+function LikedPlaceLikeButton({
+  name,
+  isUnlikePending,
+  onUnlike,
+  className,
+}: Pick<LikedPlaceSummaryProps, 'name' | 'isUnlikePending' | 'onUnlike'> & {
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={`${name} 좋아요 해제`}
+      onClick={onUnlike}
+      disabled={isUnlikePending}
+      className={cn(
+        'flex size-5 shrink-0 items-center justify-center rounded-full text-red outline-none focus-visible:ring-2 focus-visible:ring-primary-300',
+        className
+      )}
+    >
+      <LikeIcon aria-hidden="true" className="size-4.75" />
+    </button>
+  );
+}
+
+function LikedPlaceSummaryContent({
   placeId,
   name,
   category,
   address,
   photoUrls,
   isLoading,
-  isUnlikePending,
-  onUnlike,
   headingAs: Heading,
-}: LikedPlaceSummaryProps) {
+  headerAction,
+  headerClassName,
+}: LikedPlaceSummaryContentProps) {
   return (
-    <section aria-labelledby={`liked-place-${placeId}`}>
-      <div className="flex min-w-0 items-center gap-2.5 pr-4">
+    <>
+      <div className={cn('flex min-w-0 items-center gap-2.5', headerClassName)}>
         <Heading
           id={`liked-place-${placeId}`}
           className="min-w-0 truncate text-body-01-semibold text-neutral-700"
@@ -72,15 +110,7 @@ export default function LikedPlaceSummary({
           {name}
         </Heading>
         <Chip>{category}</Chip>
-        <button
-          type="button"
-          aria-label={`${name} 좋아요 해제`}
-          onClick={onUnlike}
-          disabled={isUnlikePending}
-          className="ml-auto flex size-5 shrink-0 items-center justify-center rounded-full text-red outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-        >
-          <LikeIcon aria-hidden="true" className="size-4.75" />
-        </button>
+        {headerAction}
       </div>
 
       <p
@@ -109,6 +139,71 @@ export default function LikedPlaceSummary({
           <StoreImageFallback className="col-span-full h-32 w-full" iconClassName="size-12" />
         )}
       </div>
+    </>
+  );
+}
+
+/** 좋아요 매장 시트와 목록에서 공유하는 매장 정보·사진 UI입니다. 지도 이동 정보가 있으면 요약 영역을 지도 링크로 만듭니다. */
+export default function LikedPlaceSummary({
+  placeId,
+  name,
+  category,
+  address,
+  photoUrls,
+  isLoading,
+  isUnlikePending,
+  onUnlike,
+  headingAs: Heading,
+  mapNavigation,
+}: LikedPlaceSummaryProps) {
+  return (
+    <section aria-labelledby={`liked-place-${placeId}`}>
+      {mapNavigation ? (
+        <div className="relative">
+          <Link
+            to={ROUTE_PATHS.home}
+            state={{ openLikedPlace: mapNavigation }}
+            aria-label={`${name} 지도에서 보기`}
+            className="block rounded-12 text-left text-inherit outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-1"
+          >
+            <LikedPlaceSummaryContent
+              placeId={placeId}
+              name={name}
+              category={category}
+              address={address}
+              photoUrls={photoUrls}
+              isLoading={isLoading}
+              headingAs={Heading}
+              headerClassName="pr-12"
+            />
+          </Link>
+          <LikedPlaceLikeButton
+            name={name}
+            isUnlikePending={isUnlikePending}
+            onUnlike={onUnlike}
+            className="absolute top-0 right-4 z-10"
+          />
+        </div>
+      ) : (
+        <LikedPlaceSummaryContent
+          placeId={placeId}
+          name={name}
+          category={category}
+          address={address}
+          photoUrls={photoUrls}
+          isLoading={isLoading}
+          headingAs={Heading}
+          headerClassName="pr-4"
+          headerAction={
+            <LikedPlaceLikeButton
+              name={name}
+              isUnlikePending={isUnlikePending}
+              onUnlike={onUnlike}
+              className="ml-auto"
+            />
+          }
+        />
+      )}
     </section>
   );
 }

@@ -8,6 +8,7 @@ import {
   useTogglePlaceLikeMutation,
 } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
+import { normalizeHomeCategory } from '@/features/map/utils/placeAdapters';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import PageHeader from '@/shared/layout/PageHeader';
 import { Button } from '@/shared/ui/button';
@@ -29,6 +30,18 @@ function LikedPlaceCard({ likedPlace }: { likedPlace: LikedPlaceResponse }) {
     return null;
   }
   const placeId = likedPlace.placeId;
+  const { latitude, longitude } = likedPlace;
+  const mapNavigation =
+    typeof latitude === 'number' &&
+    Number.isFinite(latitude) &&
+    typeof longitude === 'number' &&
+    Number.isFinite(longitude)
+      ? {
+          placeId: String(placeId),
+          category: normalizeHomeCategory(likedPlace.category),
+          position: { lat: latitude, lng: longitude },
+        }
+      : undefined;
 
   return (
     <LikedPlaceSummary
@@ -41,6 +54,7 @@ function LikedPlaceCard({ likedPlace }: { likedPlace: LikedPlaceResponse }) {
       isUnlikePending={likeMutation.isPending}
       onUnlike={() => likeMutation.mutate({ placeId, currentLiked: true })}
       headingAs="h2"
+      mapNavigation={mapNavigation}
     />
   );
 }

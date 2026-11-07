@@ -7,6 +7,13 @@ export type MapPosition = {
 
 export type HomeCategory = (typeof HOME_CATEGORIES)[number];
 
+/** 좋아요 목록에서 홈 지도로 이동해 해당 장소를 열 때 전달하는 위치 정보입니다. */
+export type LikedPlaceMapNavigation = {
+  placeId: string;
+  category: HomeCategory;
+  position: MapPosition;
+};
+
 export type CurrentPositionError =
   | { reason: 'permissionDenied'; message: string }
   | { reason: 'positionUnavailable'; message: string }
