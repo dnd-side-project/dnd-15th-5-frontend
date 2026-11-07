@@ -3,14 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   GoogleMapView,
   MapLocationSelectionOverlay,
-  useRecommendationLocationActions,
+  useLocationSelectionStore,
 } from '@/features/map';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import PageHeader from '@/shared/layout/PageHeader';
 
 export default function RecommendationLocationMapPage() {
   const navigate = useNavigate();
-  const { resetSelection } = useRecommendationLocationActions();
+  const resetSelection = useLocationSelectionStore((state) => state.resetSelection);
   const { state: entry } = useLocation();
 
   const handleBackToSearch = () => {

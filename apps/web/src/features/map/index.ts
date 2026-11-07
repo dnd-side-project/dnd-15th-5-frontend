@@ -8,12 +8,13 @@ export { useVisitedPlaceStickersQuery } from './apis/hooks/useVisitedPlaceSticke
 export { useCreatedConsumptionResult } from './hooks/useCreatedConsumptionResult';
 export { useOpenVisitedPlaceOnMap } from './hooks/useOpenVisitedPlaceOnMap';
 export { useHomeBottomSheetStore } from './stores/homeBottomSheetStore';
+export { useLocationSelectionStore } from './stores/locationSelectionStore';
 export { useMapFocusStore } from './stores/mapFocusStore';
 export { parseCreatedConsumptionPlace } from './utils/parseCreatedConsumptionPlace';
 export { toShopSearchResult } from './utils/placeAdapters';
 
 export type { MapSticker } from './types';
 export { useNeighborhoodSearch } from './apis/hooks/useNeighborhoodSearch';
-export { useRecentNeighborhoods } from './hooks/useRecentNeighborhoods';
+export { useRecentNeighborhoods } from './apis/hooks/useRecentNeighborhoods';
 export { useRecommendationLocationActions } from './hooks/useRecommendationLocationActions';
 export { useResolveNeighborhoodPosition } from './apis/hooks/useResolveNeighborhoodPosition';

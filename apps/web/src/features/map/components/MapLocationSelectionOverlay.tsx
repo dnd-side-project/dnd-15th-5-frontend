@@ -17,7 +17,7 @@ export default function MapLocationSelectionOverlay({
 }: MapLocationSelectionOverlayProps) {
   const clearDraftSelection = useLocationSelectionStore((state) => state.clearDraftSelection);
   const draftSelection = useLocationSelectionStore((state) => state.draftSelection);
-  const { confirmLocation } = useRecommendationLocationActions();
+  const { confirmLocation, isSaving, hasSaveError } = useRecommendationLocationActions();
   const [showLocationHint, setShowLocationHint] = useState(true);
 
   useEffect(() => {
@@ -37,8 +37,7 @@ export default function MapLocationSelectionOverlay({
       return;
     }
 
-    confirmLocation(draft.position);
-    onConfirm();
+    confirmLocation(draft, onConfirm);
   };
 
   return (
@@ -80,10 +79,16 @@ export default function MapLocationSelectionOverlay({
         <Button
           type="button"
           disabled={draftSelection?.status !== 'ready'}
+          isLoading={isSaving}
           onClick={handleConfirmLocation}
         >
           이 동네로 가게 추천
         </Button>
+        {hasSaveError && (
+          <p role="alert" className="text-body-02-regular text-neutral-600">
+            동네를 저장하지 못했어요. 다시 시도해주세요.
+          </p>
+        )}
       </BottomSheet>
     </section>
   );

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import {
@@ -19,9 +18,15 @@ export default function RecommendationLocationSearchPage() {
   const { state } = useLocation();
   const fromHome = state === 'home';
 
-  const { confirmLocation, resetSelection } = useRecommendationLocationActions();
-  const { recentNeighborhoods, addRecentNeighborhood, removeRecentNeighborhood } =
-    useRecentNeighborhoods();
+  const { confirmLocation, resetSelection, isSaving, hasSaveError } =
+    useRecommendationLocationActions();
+  const {
+    recentNeighborhoods,
+    isLoading: isLoadingRecent,
+    hasError: hasRecentError,
+    removingId,
+    removeRecentNeighborhood,
+  } = useRecentNeighborhoods();
   const { searchTerm, searchState, searchNeighborhoods } = useNeighborhoodSearch();
   const {
     mutate: resolvePosition,
@@ -29,7 +34,6 @@ export default function RecommendationLocationSearchPage() {
     isPending: isResolvingPosition,
     isError: hasPositionError,
   } = useResolveNeighborhoodPosition();
-  const [appliedKeyword, setAppliedKeyword] = useState<{ keyword: string }>();
 
   const handleReturnHome = () => {
     if (fromHome) {
@@ -56,12 +60,10 @@ export default function RecommendationLocationSearchPage() {
     searchNeighborhoods(keyword);
   };
 
-  const handleSelectNeighborhood = (address: string) => {
+  const handleSelectNeighborhood = (address: string, administrativeDongCode: string) => {
     resolvePosition(address, {
       onSuccess: (position) => {
-        addRecentNeighborhood(address);
-        confirmLocation(position);
-        handleReturnHome();
+        confirmLocation({ address, administrativeDongCode, position }, handleReturnHome);
       },
     });
   };
@@ -72,34 +74,43 @@ export default function RecommendationLocationSearchPage() {
       <PlaceSearchInput
         placeholder="동네를 검색해주세요"
         onSearch={handleSearch}
-        appliedKeyword={appliedKeyword}
         inputClassName="text-body-01-semibold placeholder:font-normal"
         searchIconClassName="size-7.5 text-neutral-500"
       />
 
-      <section className="min-h-0 flex-1 overflow-y-auto" aria-live="polite">
+      <section
+        className="min-h-0 flex-1 overflow-y-auto"
+        aria-live="polite"
+        aria-busy={
+          (searchTerm ? searchState.status === 'loading' : isLoadingRecent) || isResolvingPosition
+        }
+      >
         {!searchTerm ? (
           <RecentNeighborhoodList
             neighborhoods={recentNeighborhoods}
-            onSelect={(address) => setAppliedKeyword({ keyword: address })}
+            isLoading={isLoadingRecent}
+            hasError={hasRecentError}
+            isSelecting={isSaving}
+            removingId={removingId}
+            onSelect={(neighborhood) => confirmLocation(neighborhood, handleReturnHome)}
             onRemove={removeRecentNeighborhood}
           />
         ) : (
           <NeighborhoodSearchResults
             searchTerm={searchTerm}
             searchState={searchState}
-            isSelecting={isResolvingPosition}
+            isSelecting={isResolvingPosition || isSaving}
             onSelect={handleSelectNeighborhood}
           />
-        )}
-        {isResolvingPosition && (
-          <p role="status" className="text-center text-body-02-regular text-neutral-500">
-            동네 위치를 확인하고 있어요.
-          </p>
         )}
         {hasPositionError && (
           <p className="text-center text-body-02-regular text-neutral-500">
             동네 위치를 확인하지 못했어요. 다시 선택하거나 지도로 찾아보세요.
+          </p>
+        )}
+        {hasSaveError && (
+          <p role="alert" className="text-center text-body-02-regular text-neutral-600">
+            동네를 저장하지 못했어요. 다시 선택해주세요.
           </p>
         )}
       </section>

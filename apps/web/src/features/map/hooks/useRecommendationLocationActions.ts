@@ -1,3 +1,7 @@
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useSaveTown } from '@/features/map/apis/mutations';
+import { getGetRecentTownsQueryKey } from '@/features/map/apis/queryKeys';
 import { RECOMMENDATION_MAP_ZOOM } from '@/features/map/constants';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
@@ -15,12 +19,52 @@ export const useRecommendationLocationActions = () => {
     (state) => state.setActiveRecommendation
   );
 
-  const confirmLocation = (position: MapPosition) => {
-    setActiveRecommendation(null);
-    setConfirmedPosition(position);
-    setFocusPosition(position, RECOMMENDATION_MAP_ZOOM);
-    showRecommendation();
+  const queryClient = useQueryClient();
+  const saveTown = useSaveTown({
+    mutation: {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: getGetRecentTownsQueryKey() });
+      },
+    },
+  });
+
+  const confirmLocation = (
+    {
+      position,
+      address,
+      administrativeDongCode,
+    }: {
+      position: MapPosition;
+      address: string;
+      administrativeDongCode?: string;
+    },
+    onConfirm: () => void
+  ) => {
+    saveTown.mutate(
+      {
+        data: {
+          administrativeDongName: address,
+          administrativeDongCode,
+          latitude: position.lat,
+          longitude: position.lng,
+        },
+      },
+      {
+        onSuccess: () => {
+          setActiveRecommendation(null);
+          setConfirmedPosition(position);
+          setFocusPosition(position, RECOMMENDATION_MAP_ZOOM);
+          showRecommendation();
+          onConfirm();
+        },
+      }
+    );
   };
 
-  return { confirmLocation, resetSelection };
+  return {
+    confirmLocation,
+    resetSelection,
+    isSaving: saveTown.isPending,
+    hasSaveError: saveTown.isError,
+  };
 };

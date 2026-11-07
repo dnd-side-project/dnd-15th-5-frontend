@@ -4,7 +4,7 @@ type NeighborhoodSearchResultsProps = {
   searchTerm: string;
   searchState: NeighborhoodSearchState;
   isSelecting: boolean;
-  onSelect: (address: string) => void;
+  onSelect: (address: string, administrativeDongCode: string) => void;
 };
 
 const renderMatchedNeighborhood = (address: string, keyword: string) => {
@@ -29,11 +29,6 @@ export default function NeighborhoodSearchResults({
 }: NeighborhoodSearchResultsProps) {
   return (
     <ul className="flex flex-col gap-4 py-8">
-      {searchState.status === 'loading' && (
-        <li role="status" className="py-3 text-body-02-regular text-neutral-400">
-          동네를 검색하고 있어요
-        </li>
-      )}
       {searchState.status === 'error' && (
         <li className="py-3 text-body-02-regular text-neutral-400">
           동네를 검색하지 못했어요. 다시 시도해주세요.
@@ -52,7 +47,7 @@ export default function NeighborhoodSearchResults({
               type="button"
               disabled={isSelecting}
               className="block w-full text-left text-body-01-medium leading-6 text-neutral-700"
-              onClick={() => onSelect(result.address)}
+              onClick={() => onSelect(result.address, result.id)}
             >
               {renderMatchedNeighborhood(result.address, searchTerm)}
             </button>
