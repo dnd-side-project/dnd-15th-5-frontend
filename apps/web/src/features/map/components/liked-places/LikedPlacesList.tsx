@@ -223,36 +223,47 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
             className="pt-12"
           />
         ) : isFetchNextPageError && likedPlaces.length === 0 ? (
-          <div className="flex flex-col items-center py-5 text-body-02-regular text-neutral-500">
+          <div
+            role="status"
+            className="flex flex-col items-center py-5 text-body-02-regular text-neutral-500"
+          >
             다음 좋아요 장소를 불러오지 못했어요.
             <Button variant="primary" size="small" className="mt-3" onClick={loadNextPage}>
               다시 불러오기
             </Button>
           </div>
         ) : likedPlaces.length > 0 ? (
-          <div className="space-y-6 py-2">
+          <ul role="list" className="m-0 list-none space-y-6 p-0 py-2">
             {likedPlaces.map((likedPlace) => (
-              <LikedPlaceCard key={likedPlace.placeId} likedPlace={likedPlace} />
+              <li key={likedPlace.placeId}>
+                <LikedPlaceCard likedPlace={likedPlace} />
+              </li>
             ))}
             {isFetchingNextPage && (
-              <div role="status" aria-label="다음 좋아요 장소 불러오는 중" className="space-y-6">
-                {[0, 1].map((item) => (
-                  <LikedPlaceCardSkeleton key={item} />
-                ))}
-              </div>
+              <li role="status" aria-label="다음 좋아요 장소 불러오는 중">
+                <div className="space-y-6">
+                  {[0, 1].map((item) => (
+                    <LikedPlaceCardSkeleton key={item} />
+                  ))}
+                </div>
+              </li>
             )}
             {isFetchNextPageError && (
-              <div className="flex flex-col items-center py-5 text-body-02-regular text-neutral-500">
-                다음 좋아요 장소를 불러오지 못했어요.
-                <Button variant="primary" size="small" className="mt-3" onClick={loadNextPage}>
-                  다시 불러오기
-                </Button>
-              </div>
+              <li role="status">
+                <div className="flex flex-col items-center py-5 text-body-02-regular text-neutral-500">
+                  다음 좋아요 장소를 불러오지 못했어요.
+                  <Button variant="primary" size="small" className="mt-3" onClick={loadNextPage}>
+                    다시 불러오기
+                  </Button>
+                </div>
+              </li>
             )}
             {hasNextPage && !isFetchNextPageError && (
-              <div ref={loadMoreRef} aria-hidden="true" className="h-px" />
+              <li aria-hidden="true">
+                <div ref={loadMoreRef} className="h-px" />
+              </li>
             )}
-          </div>
+          </ul>
         ) : (
           <StateView
             variant="empty"
