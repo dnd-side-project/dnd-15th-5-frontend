@@ -260,6 +260,35 @@ describe('auth bridge guards', () => {
       })
     ).toBe(false);
   });
+
+  it('알림 권한 조회 응답은 boolean 권한 상태만 허용한다', () => {
+    const response = {
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: 'notification-permission-01',
+      type: 'getNotificationPermissionStatus',
+      ok: true,
+      result: { granted: true },
+    };
+
+    expect(isBridgeResponse(response)).toBe(true);
+    expect(isBridgeResponse({ ...response, result: { granted: false } })).toBe(true);
+    expect(isBridgeResponse({ ...response, result: { granted: 'true' } })).toBe(false);
+    expect(isBridgeResponse({ ...response, result: {} })).toBe(false);
+  });
+
+  it('알림 설정 화면 열기 응답은 opened가 true일 때만 허용한다', () => {
+    const response = {
+      kind: BRIDGE_MESSAGE_KIND.RESPONSE,
+      id: 'notification-settings-01',
+      type: 'openNotificationSettings',
+      ok: true,
+      result: { opened: true },
+    };
+
+    expect(isBridgeResponse(response)).toBe(true);
+    expect(isBridgeResponse({ ...response, result: { opened: false } })).toBe(false);
+    expect(isBridgeResponse({ ...response, result: {} })).toBe(false);
+  });
 });
 
 describe('스티커 촬영 응답', () => {

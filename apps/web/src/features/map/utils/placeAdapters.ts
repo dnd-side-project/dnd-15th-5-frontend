@@ -139,7 +139,7 @@ const toRecommendation = (
   }
 
   return {
-    googleMapsUri: place.googleMapsUri ?? null,
+    googleMapsUri: null,
     id: String(place.placeId),
     isLiked: Boolean(place.liked),
     place: {
@@ -157,18 +157,15 @@ const toRecommendation = (
   };
 };
 
-/** 추천 사유별 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
+/** 카테고리별 인기 장소 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
 export const toShopRecommendations = ({
-  sameCategoryPlaces,
-  myTownPlaces,
+  allPlaces,
 }: {
-  sameCategoryPlaces?: RecommendedPlaceItem[];
-  myTownPlaces?: RecommendedPlaceItem[];
+  allPlaces?: RecommendedPlaceItem[];
 }): ShopRecommendation[] => {
-  const candidates = [
-    ...(sameCategoryPlaces ?? []).map((place) => toRecommendation(place, '나의 관심 카테고리')),
-    ...(myTownPlaces ?? []).map((place) => toRecommendation(place, '내 동네에서 많이 방문한 곳')),
-  ];
+  const candidates = (allPlaces ?? []).map((place) =>
+    toRecommendation(place, '카테고리별 인기 가게')
+  );
   const seenPlaceIds = new Set<string>();
 
   return candidates.flatMap((recommendation) => {

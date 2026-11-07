@@ -1,5 +1,15 @@
 {
   "specUrl": "https://chapchap.kr/dev/api/v3/api-docs",
+  "expectedOperations": {
+    "getPlaceDetail": {
+      "method": "GET",
+      "path": "/v1/recommendations/places/{placeId}"
+    },
+    "getPlaceDetail_1": {
+      "method": "GET",
+      "path": "/v1/consumptions/places/{placeId}"
+    }
+  },
   "features": {
     "auth": {
       "tags": ["Authentication", "Social OAuth"],
@@ -15,8 +25,18 @@
       ]
     },
     "map": {
-      "tags": ["Consumption", "Recommendation", "Place"],
-      "operationIds": ["getVisitedPlaceMarkers", "getNearbyPlaces", "getLikedPlaces", "toggleLike"]
+      "tags": ["Consumption", "Recommendation", "Place", "Town"],
+      "operationIds": [
+        "getVisitedPlaceMarkers",
+        "getNearbyPlaces",
+        "getLikedPlaces",
+        "getPlaceDetail",
+        "toggleLike",
+        "saveTown",
+        "searchTowns",
+        "getRecentTowns",
+        "deleteRecentTown"
+      ]
     },
     "myPage": {
       "directory": "my-page",
@@ -29,7 +49,9 @@
         "unregisterDeviceToken",
         "registerDeviceToken",
         "getNotifications",
-        "hasUnread"
+        "hasUnread",
+        "getNotificationSettings",
+        "updateNotificationSettings"
       ]
     },
     "record": {
@@ -41,7 +63,8 @@
         "updateConsumption",
         "deleteConsumption",
         "upload",
-        "findStickers"
+        "findStickers",
+        "getReadUrl"
       ]
     },
     "report": {

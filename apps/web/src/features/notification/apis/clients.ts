@@ -10,10 +10,49 @@ import type { BodyType } from '@/shared/apis/orvalMutator';
 import type {
   ApiResponseBoolean,
   ApiResponseListNotificationResponse,
+  ApiResponseNotificationSettingsResponse,
   ApiResponseVoid,
   DeviceTokenRegisterRequest,
+  NotificationSettingsUpdateRequest,
   SecondParameter,
 } from '@/features/notification/apis/dto';
+
+/**
+ * @summary 내 알림 수신 설정 조회
+ */
+export const getNotificationSettings = (
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseNotificationSettingsResponse>(
+    { url: `/v1/accounts/me/notification-settings`, method: 'GET', signal },
+    options
+  );
+};
+
+/**
+ * 소비 기록·월간 리포트 푸시 알림을 각각 설정합니다. OFF여도 앱 내 알림함 기록은 유지합니다.
+ * 하나 이상의 설정을 전달해야 하며, 미전달 또는 null인 항목은 유지합니다.
+ * 값을 반전하지 않고 요청한 상태로 저장하므로 같은 요청을 반복해도 결과가 같습니다.
+ * 변경 후 두 설정을 모두 반환합니다. OS 알림 권한과 기기 토큰은 변경하지 않습니다.
+ * @summary 내 알림 수신 설정 변경
+ */
+export const updateNotificationSettings = (
+  notificationSettingsUpdateRequest: BodyType<NotificationSettingsUpdateRequest>,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseNotificationSettingsResponse>(
+    {
+      url: `/v1/accounts/me/notification-settings`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: notificationSettingsUpdateRequest,
+      signal,
+    },
+    options
+  );
+};
 
 export const unregisterDeviceToken = (
   options?: SecondParameter<typeof apiClient>,

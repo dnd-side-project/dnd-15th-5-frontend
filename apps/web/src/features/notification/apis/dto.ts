@@ -3,6 +3,32 @@
  * Do not edit manually.
  */
 
+/**
+ * 알림 수신 설정. 스마트폰의 OS 알림 권한과는 별개입니다.
+ */
+export type NotificationSettingsResponse = {
+  /** 소비 기록 푸시 알림 수신 여부 */
+  consumptionReminderEnabled?: boolean;
+  /** 월간 리포트 푸시 알림 수신 여부 */
+  monthlyReportEnabled?: boolean;
+};
+
+export type ApiResponseNotificationSettingsResponse = {
+  code?: string;
+  message?: string;
+  data?: NotificationSettingsResponse;
+};
+
+/**
+ * 알림 수신 설정 변경 요청. 미전달 또는 null인 항목은 유지합니다.
+ */
+export type NotificationSettingsUpdateRequest = {
+  /** 소비 기록 푸시 알림 수신 여부 */
+  consumptionReminderEnabled?: boolean;
+  /** 월간 리포트 푸시 알림 수신 여부 */
+  monthlyReportEnabled?: boolean;
+};
+
 export type ApiResponseVoid = {
   code?: string;
   message?: string;

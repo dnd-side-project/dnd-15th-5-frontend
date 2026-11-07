@@ -732,8 +732,7 @@ describe('HomeBottomSheet', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: '가게 추천' })).toBeInTheDocument();
     expect(screen.getByRole('list', { name: '추천 가게 목록' })).toBeInTheDocument();
-    expect(screen.getAllByText('나의 관심 카테고리')).toHaveLength(2);
-    expect(screen.getAllByText('내 동네에서 많이 방문한 곳')).toHaveLength(2);
+    expect(screen.getAllByText('카테고리별 인기 가게')).toHaveLength(4);
     expect(screen.queryByText('기존 홈 시트')).not.toBeInTheDocument();
     const firstRecommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
     const likeButton = screen.getByRole('button', {
