@@ -10,3 +10,7 @@ export const getGetConsumptionQueryKey = (consumptionId: number) => {
 export const getFindStickersQueryKey = () => {
   return [`/v1/consumptions/stickers`] as const;
 };
+
+export const getGetReadUrlQueryKey = (imageId: number) => {
+  return [`/v1/consumptions/images/${imageId}`] as const;
+};

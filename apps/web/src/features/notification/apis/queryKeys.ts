@@ -3,6 +3,10 @@
  * Do not edit manually.
  */
 
+export const getGetNotificationSettingsQueryKey = () => {
+  return [`/v1/accounts/me/notification-settings`] as const;
+};
+
 export const getGetNotificationsQueryKey = () => {
   return [`/v1/notifications`] as const;
 };

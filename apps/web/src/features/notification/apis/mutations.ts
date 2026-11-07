@@ -16,9 +16,84 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type { ErrorType, BodyType } from '@/shared/apis/orvalMutator';
 
-import type { DeviceTokenRegisterRequest, SecondParameter } from '@/features/notification/apis/dto';
+import type {
+  DeviceTokenRegisterRequest,
+  NotificationSettingsUpdateRequest,
+  SecondParameter,
+} from '@/features/notification/apis/dto';
 
-import { registerDeviceToken, unregisterDeviceToken } from '@/features/notification/apis/clients';
+import {
+  registerDeviceToken,
+  unregisterDeviceToken,
+  updateNotificationSettings,
+} from '@/features/notification/apis/clients';
+
+export const getUpdateNotificationSettingsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateNotificationSettings>>,
+    TError,
+    { data: BodyType<NotificationSettingsUpdateRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateNotificationSettings>>,
+  TError,
+  { data: BodyType<NotificationSettingsUpdateRequest> },
+  TContext
+> => {
+  const mutationKey = ['updateNotificationSettings'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateNotificationSettings>>,
+    { data: BodyType<NotificationSettingsUpdateRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateNotificationSettings(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateNotificationSettingsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateNotificationSettings>>
+>;
+
+export type UpdateNotificationSettingsMutationBody = BodyType<NotificationSettingsUpdateRequest>;
+
+export type UpdateNotificationSettingsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 내 알림 수신 설정 변경
+ */
+export const useUpdateNotificationSettings = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateNotificationSettings>>,
+      TError,
+      { data: BodyType<NotificationSettingsUpdateRequest> },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateNotificationSettings>>,
+  TError,
+  { data: BodyType<NotificationSettingsUpdateRequest> },
+  TContext
+> => {
+  return useMutation(getUpdateNotificationSettingsMutationOptions(options), queryClient);
+};
 
 export const getUnregisterDeviceTokenMutationOptions = <
   TError = ErrorType<unknown>,
