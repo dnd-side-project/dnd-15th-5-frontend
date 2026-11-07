@@ -12,6 +12,8 @@ export type LikedPlaceMapNavigation = {
   placeId: string;
   category: HomeCategory;
   position: MapPosition;
+  name: string;
+  address?: string;
 };
 
 export type CurrentPositionError =

@@ -6,6 +6,7 @@ import type {
 import { HOME_CATEGORIES } from '@/features/map/constants';
 import type {
   HomeCategory,
+  LikedPlaceMapNavigation,
   MapSticker,
   ShopRecommendation,
   ShopRecommendationReason,
@@ -135,6 +136,27 @@ export const toLikedPlaceRecommendation = (
     visitCount: fallback?.visitCount ?? 0,
   };
 };
+
+/** 목록에서 지도 이동할 때 전달된 장소 정보로 마커·시트 대체 데이터를 만듭니다. */
+export const toLikedPlaceNavigationRecommendation = (
+  navigation: LikedPlaceMapNavigation
+): ShopRecommendation => ({
+  googleMapsUri: null,
+  id: navigation.placeId,
+  isLiked: true,
+  place: {
+    id: navigation.placeId,
+    name: navigation.name,
+    category: navigation.category,
+    address: navigation.address ?? '',
+    isRegular: false,
+    stickerImages: [],
+  },
+  position: navigation.position,
+  reason: '내 동네에서 많이 방문한 곳',
+  thumbnailSrc: null,
+  visitCount: 0,
+});
 
 /** 지도 스티커를 소비 기록 폼이 사용하는 가게 모델로 변환합니다. */
 export const toShopSearchResult = (sticker?: MapSticker): ShopSearchResult | undefined => {

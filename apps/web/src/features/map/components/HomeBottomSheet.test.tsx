@@ -10,6 +10,7 @@ import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisit
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import { TEST_MAP_STICKERS, TEST_SHOP_RECOMMENDATIONS } from '@/features/map/testFixtures';
+import { useToast } from '@/shared/ui/toast';
 import {
   getRecordCategoryFromLocationState,
   getRecordShopFromLocationState,
@@ -23,6 +24,10 @@ jest.mock('@/features/map/apis/hooks/useLikedPlaceDetailQuery');
 jest.mock('@/features/map/apis/hooks/useRecommendationRecordShopQuery');
 jest.mock('@/features/map/apis/hooks/useTogglePlaceLikeMutation');
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
+jest.mock('@/shared/ui/toast', () => ({
+  ...jest.requireActual('@/shared/ui/toast'),
+  useToast: jest.fn(),
+}));
 
 const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
 const mockedUseLikedPlaceDetailQuery = jest.mocked(useLikedPlaceDetailQuery);
@@ -30,6 +35,8 @@ const mockedUseRecommendationRecordShopQuery = jest.mocked(useRecommendationReco
 const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation);
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 const mutateLike = jest.fn();
+const showToast = jest.fn();
+const mockedUseToast = jest.mocked(useToast);
 const recommendationRecordShop = {
   id: TEST_MAP_STICKERS[0]!.googlePlaceId!,
   name: TEST_MAP_STICKERS[0]!.place.name,
@@ -86,6 +93,8 @@ describe('HomeBottomSheet', () => {
       activeRecommendationId: null,
     });
     mutateLike.mockReset();
+    showToast.mockReset();
+    mockedUseToast.mockReturnValue({ showToast, closeToast: jest.fn() });
     mutateLike.mockImplementation((...args: unknown[]) => {
       const options = args[1] as { onSuccess?: () => void } | undefined;
       options?.onSuccess?.();
@@ -657,6 +666,96 @@ describe('HomeBottomSheet', () => {
         `${recommendationRecordShop.id}|${recommendationRecordShop.name}|${recommendationRecordShop.address}|${recommendation.place.category}`
       )
     ).toBeInTheDocument();
+  });
+
+  it('상세 조회에 실패해도 주변 추천 데이터를 사용해 장소를 표시한다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      likedRecommendations: [],
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+      stickers: [],
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+    mockedUseLikedPlaceDetailQuery.mockReturnValue({
+      detail: undefined,
+      isError: true,
+      isLoading: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: [recommendation],
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    useHomeBottomSheetStore.getState().showLikedRecommendation(recommendation.id);
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: recommendation.place.name })
+    ).toBeInTheDocument();
+    expect(showToast).toHaveBeenCalledWith({
+      type: 'error',
+      message: '가게 상세 정보를 불러오지 못해 일부 정보만 표시돼요.',
+      placement: 'above-bottom-sheet',
+    });
+  });
+
+  it('대체 장소 데이터 없이 상세 조회가 실패하면 다시 조회할 수 있다', async () => {
+    const user = userEvent.setup();
+    const refetchPlaceDetail = jest.fn();
+    const refetchVisitedPlaces = jest.fn();
+    const refetchNearbyPlaces = jest.fn();
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      likedRecommendations: [],
+      isPending: false,
+      isError: false,
+      refetch: refetchVisitedPlaces,
+      stickers: [],
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+    mockedUseLikedPlaceDetailQuery.mockReturnValue({
+      detail: undefined,
+      isError: true,
+      isLoading: false,
+      refetch: refetchPlaceDetail,
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: [],
+      isPending: false,
+      isError: false,
+      refetch: refetchNearbyPlaces,
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    useHomeBottomSheetStore.getState().showLikedRecommendation('missing-recommendation');
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+
+    expect(
+      screen.getByRole('heading', { name: '가게 정보를 불러오지 못했어요' })
+    ).toBeInTheDocument();
+    expect(showToast).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: '다시 불러오기' }));
+
+    expect(refetchPlaceDetail).toHaveBeenCalledTimes(1);
+    expect(refetchVisitedPlaces).toHaveBeenCalledTimes(1);
+    expect(refetchNearbyPlaces).toHaveBeenCalledTimes(1);
   });
 
   it('추천 가게를 기록용 장소로 조회하지 못하면 기록 화면 이동을 막는다', () => {

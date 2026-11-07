@@ -1,9 +1,13 @@
+import { useEffect, useRef } from 'react';
+
 import { useLikedPlaceDetailQuery } from '@/features/map/apis/hooks/useLikedPlaceDetailQuery';
+import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import GoogleMapsLinkButton from '@/features/map/components/GoogleMapsLinkButton';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import type { ShopRecommendation } from '@/features/map/types';
 import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
 import { toLikedPlaceRecommendation } from '@/features/map/utils/placeAdapters';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
@@ -11,20 +15,26 @@ import type { RecordLocationState } from '@/shared/types/recordNavigation';
 import { Button, LinkButton } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
+import { useToast } from '@/shared/ui/toast';
 
 import LikedPlaceSummary from './LikedPlaceSummary';
 
 type LikedRecommendationSheetProps = {
   recommendationId: string;
+  fallbackRecommendation?: ShopRecommendation;
 };
 
 /** 좋아요 지도 마커를 선택했을 때 보여주는 가게 요약과 기록 바로가기입니다. */
 export default function LikedRecommendationSheet({
   recommendationId,
+  fallbackRecommendation,
 }: LikedRecommendationSheetProps) {
   const visitedPlacesQuery = useVisitedPlaceStickersQuery();
+  const nearbyPlacesQuery = useNearbyPlaceRecommendationsQuery();
   const placeDetailQuery = useLikedPlaceDetailQuery(recommendationId);
   const likeMutation = useTogglePlaceLikeMutation();
+  const { showToast } = useToast();
+  const notifiedDetailErrorPlaceIdRef = useRef<string | null>(null);
   const closeLikedRecommendationIfMatches = useHomeBottomSheetStore(
     (state) => state.closeLikedRecommendationIfMatches
   );
@@ -32,11 +42,15 @@ export default function LikedRecommendationSheet({
   const visitedRecommendation = visitedPlacesQuery.likedRecommendations.find(
     ({ id }) => id === recommendationId
   );
+  const nearbyRecommendation = nearbyPlacesQuery.recommendations.find(
+    ({ id }) => id === recommendationId
+  );
   const recommendation = toLikedPlaceRecommendation(
     recommendationId,
     placeDetail,
-    visitedRecommendation
+    visitedRecommendation ?? nearbyRecommendation ?? fallbackRecommendation
   );
+  const hasRecommendation = Boolean(recommendation);
   const {
     query: recordShopQuery,
     isLibraryLoading,
@@ -45,7 +59,28 @@ export default function LikedRecommendationSheet({
     recommendation && !placeDetailQuery.isLoading ? recommendation : undefined
   );
 
-  if (!recommendation && (visitedPlacesQuery.isPending || placeDetailQuery.isLoading)) {
+  useEffect(() => {
+    if (!placeDetailQuery.isError) {
+      notifiedDetailErrorPlaceIdRef.current = null;
+      return;
+    }
+
+    if (!hasRecommendation || notifiedDetailErrorPlaceIdRef.current === recommendationId) {
+      return;
+    }
+
+    notifiedDetailErrorPlaceIdRef.current = recommendationId;
+    showToast({
+      type: 'error',
+      message: '가게 상세 정보를 불러오지 못해 일부 정보만 표시돼요.',
+      placement: 'above-bottom-sheet',
+    });
+  }, [hasRecommendation, placeDetailQuery.isError, recommendationId, showToast]);
+
+  if (
+    !recommendation &&
+    (visitedPlacesQuery.isPending || nearbyPlacesQuery.isPending || placeDetailQuery.isLoading)
+  ) {
     return (
       <div
         role="status"
@@ -57,7 +92,10 @@ export default function LikedRecommendationSheet({
     );
   }
 
-  if (visitedPlacesQuery.isError && placeDetailQuery.isError) {
+  if (
+    !recommendation &&
+    (visitedPlacesQuery.isError || nearbyPlacesQuery.isError || placeDetailQuery.isError)
+  ) {
     return (
       <StateView
         variant="error"
@@ -67,6 +105,7 @@ export default function LikedRecommendationSheet({
         actionLabel="다시 불러오기"
         onAction={() => {
           void visitedPlacesQuery.refetch();
+          void nearbyPlacesQuery.refetch();
           void placeDetailQuery.refetch();
         }}
         className="py-6"

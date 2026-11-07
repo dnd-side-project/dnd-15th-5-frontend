@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '../stores/mapCategoryFilterStore';
 import { useMapFocusStore } from '../stores/mapFocusStore';
+import { toLikedPlaceNavigationRecommendation } from '../utils/placeAdapters';
 
 import type { LikedPlaceMapNavigation } from '../types';
 
@@ -29,7 +30,10 @@ export function useOpenLikedPlaceFromLocation() {
 
     setSelectedCategory(likedPlaceNavigation.category);
     setSelectedPlaceFocus(likedPlaceNavigation.position);
-    showLikedRecommendation(likedPlaceNavigation.placeId);
+    showLikedRecommendation(
+      likedPlaceNavigation.placeId,
+      toLikedPlaceNavigationRecommendation(likedPlaceNavigation)
+    );
 
     const { openLikedPlace: _openLikedPlace, ...remainingState } = homeLocationState;
     navigate(`${location.pathname}${location.search}${location.hash}`, {

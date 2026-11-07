@@ -40,6 +40,8 @@ function LikedPlaceCard({ likedPlace }: { likedPlace: LikedPlaceResponse }) {
           placeId: String(placeId),
           category: normalizeHomeCategory(likedPlace.category),
           position: { lat: latitude, lng: longitude },
+          name: likedPlace.name ?? '이름 정보가 없어요',
+          address: likedPlace.address,
         }
       : undefined;
 

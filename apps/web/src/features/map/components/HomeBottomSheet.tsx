@@ -256,7 +256,12 @@ export default function HomeBottomSheet({
   if (activeSheet.type === 'likedRecommendation') {
     sheetPresentation = {
       ariaLabel: '좋아요 가게 정보',
-      content: <LikedRecommendationSheet recommendationId={activeSheet.recommendationId} />,
+      content: (
+        <LikedRecommendationSheet
+          recommendationId={activeSheet.recommendationId}
+          fallbackRecommendation={activeSheet.fallbackRecommendation}
+        />
+      ),
       contentClassName: 'pb-6',
       isModal: true,
       key: getSheetTransitionKey(activeSheet),
