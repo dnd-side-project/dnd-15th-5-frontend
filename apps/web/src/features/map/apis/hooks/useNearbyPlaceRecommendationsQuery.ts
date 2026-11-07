@@ -18,12 +18,8 @@ export const useNearbyPlaceRecommendationsQuery = () => {
   });
   const response = query.data?.data;
   const recommendations = useMemo(
-    () =>
-      toShopRecommendations({
-        sameCategoryPlaces: response?.sameCategoryPlaces,
-        myTownPlaces: response?.myTownPlaces,
-      }),
-    [response?.myTownPlaces, response?.sameCategoryPlaces]
+    () => toShopRecommendations({ allPlaces: response?.allPlaces }),
+    [response?.allPlaces]
   );
 
   return { ...query, recommendations };

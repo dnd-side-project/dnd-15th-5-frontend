@@ -98,7 +98,7 @@ export default function LikedRecommendationSheet({
 
   const handleUnlike = () => {
     likeMutation.mutate(
-      { placeId: Number(id) },
+      { placeId: Number(id), currentLiked: true },
       { onSuccess: () => closeLikedRecommendationIfMatches(id) }
     );
   };

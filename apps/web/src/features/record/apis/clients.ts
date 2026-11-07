@@ -11,6 +11,7 @@ import type {
   ApiResponseConsumptionCreateResponse,
   ApiResponseConsumptionDetailResponse,
   ApiResponseConsumptionImageUploadResponse,
+  ApiResponseConsumptionImageUrlResponse,
   ApiResponseListStickerItemResponse,
   ApiResponseReceiptOcrResponse,
   ApiResponseVoid,
@@ -167,6 +168,27 @@ export const upload = (
 export const findStickers = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
   return apiClient<ApiResponseListStickerItemResponse>(
     { url: `/v1/consumptions/stickers`, method: 'GET', signal },
+    options
+  );
+};
+
+/**
+ * 소비기록 상세·장소 상세·방문 이력 등 다른 API가 내려주는 imageUrl은 S3 Presigned URL이라
+ * 발급 시점부터 10분간만 유효합니다. 화면에 오래 띄워두거나 캐시해둔 응답을 나중에 다시 쓰다가
+ * 만료되면(이미지 로드가 403으로 실패함), 그 응답에 같이 내려온 imageId를 그대로 이 API에 넣어
+ * 호출하면 같은 사진에 대한 새 10분짜리 URL을 다시 받을 수 있습니다.
+ *
+ * - 업로드 직후 아직 소비기록에 연결하지 않은 임시 이미지(status=TEMPORARY)에도 쓸 수 있습니다.
+ * - 다른 사용자의 imageId나 이미 정리(cleanup)되어 삭제된 imageId를 넣으면 404를 반환합니다.
+ * @summary 소비기록 이미지 조회 URL 재발급
+ */
+export const getReadUrl = (
+  imageId: number,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseConsumptionImageUrlResponse>(
+    { url: `/v1/consumptions/images/${imageId}`, method: 'GET', signal },
     options
   );
 };

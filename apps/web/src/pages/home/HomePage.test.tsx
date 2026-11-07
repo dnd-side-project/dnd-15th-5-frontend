@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import {
   useHomeBottomSheetStore,
@@ -15,21 +15,45 @@ import {
   trackUtTaskCompleted,
 } from '@/shared/lib/analytics/mixpanel';
 import { UT_MISSION_IDS, UT_SCREEN_NAMES } from '@/shared/lib/analytics/screens';
+import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { useToast } from '@/shared/ui/toast';
 
 import HomePage from './HomePage';
 
 import type { ReactNode } from 'react';
 
+const mockEditRecord = jest.fn();
+const mockDeleteRecord = jest.fn();
+jest.mock('@/features/record/components/ConsumptionRecordActions', () => ({
+  __esModule: true,
+  default: ({ children }: { children: (actions: ConsumptionActions) => ReactNode }) =>
+    children({ onEditRecord: mockEditRecord, onDeleteRecord: mockDeleteRecord }),
+}));
+jest.mock('@/features/record/components/ConsumptionSticker', () => ({
+  __esModule: true,
+  default: ({ consumptionId }: { consumptionId: number }) => (
+    <span>기록 스티커 {consumptionId}</span>
+  ),
+}));
 jest.mock('@/features/map', () => ({
   ...jest.requireActual('@/features/map'),
   GoogleMapView: () => null,
   HomeMapOverlay: () => null,
   HomeBottomSheet: ({
+    onSelectedPlaceExpand,
     renderFrequentShops,
+    renderSpendingHistory,
   }: {
+    onSelectedPlaceExpand?: (placeId: string) => void;
     renderFrequentShops: (headerContent: null) => ReactNode;
-  }) => renderFrequentShops(null),
+    renderSpendingHistory: (headerContent: null) => ReactNode;
+  }) => (
+    <>
+      <button onClick={() => onSelectedPlaceExpand?.('101')}>선택 가게 상세 펼치기</button>
+      {renderFrequentShops(null)}
+      {renderSpendingHistory(null)}
+    </>
+  ),
 }));
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 jest.mock('@/shared/lib/analytics/mixpanel', () => ({
@@ -46,7 +70,26 @@ jest.mock('@/features/report', () => ({
       자주 소비한 가게 선택
     </button>
   ),
-  SpendingHistory: () => null,
+  SpendingHistory: ({
+    onEditRecord,
+    onDeleteRecord,
+    renderRecordSticker,
+    scrollToDate,
+    autoScrollToDate,
+  }: ConsumptionActions & {
+    renderRecordSticker: (id: number) => ReactNode;
+    scrollToDate?: string;
+    autoScrollToDate?: boolean;
+  }) => (
+    <>
+      {renderRecordSticker(196)}
+      <p>
+        {scrollToDate}:{String(autoScrollToDate)}
+      </p>
+      <button onClick={() => onEditRecord?.(196, '2026-11-01')}>홈 기록 수정</button>
+      <button onClick={() => onDeleteRecord?.(196)}>홈 기록 삭제</button>
+    </>
+  ),
 }));
 jest.mock('@/features/shop', () => ({
   SelectedPlaceSheet: () => null,
@@ -59,6 +102,11 @@ const mockedTrackAnalyticsEvent = jest.mocked(trackAnalyticsEvent);
 const mockedTrackUtTaskCompleted = jest.mocked(trackUtTaskCompleted);
 const mockedUseToast = jest.mocked(useToast);
 const mockShowToast = jest.fn().mockReturnValue('toast-1');
+
+function ShopDetailLocationProbe() {
+  const location = useLocation();
+  return <p>{`${location.pathname}|${location.state?.fromMapSheet}`}</p>;
+}
 
 const renderHomePage = (createdPlace?: {
   placeName: string;
@@ -74,6 +122,36 @@ const renderHomePage = (createdPlace?: {
   );
 
 describe('<HomePage />', () => {
+  it('편집 복귀 날짜를 전달하고 스크롤은 홈 바텀시트가 복원하도록 한다', () => {
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/home', state: { scrollToDate: '2026-10-31' } }]}>
+        <HomePage />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('2026-10-31:false')).toBeInTheDocument();
+  });
+  it('지도 시트를 펼치면 상세 진입 애니메이션 상태를 전달하며 가게 상세로 이동한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={['/home']}>
+        <Routes>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/home/shop/:shopId" element={<ShopDetailLocationProbe />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    await user.click(screen.getByRole('button', { name: '선택 가게 상세 펼치기' }));
+    expect(screen.getByText('/home/shop/101|true')).toBeInTheDocument();
+  });
+  it('소비내역에 수정·삭제 액션을 전달한다', async () => {
+    const user = userEvent.setup();
+    renderHomePage();
+    expect(screen.getByText('기록 스티커 196')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '홈 기록 수정' }));
+    await user.click(screen.getByRole('button', { name: '홈 기록 삭제' }));
+    expect(mockEditRecord).toHaveBeenCalledWith(196, '2026-11-01');
+    expect(mockDeleteRecord).toHaveBeenCalledWith(196);
+  });
   beforeEach(() => {
     jest.clearAllMocks();
     mockShowToast.mockReturnValue('toast-1');

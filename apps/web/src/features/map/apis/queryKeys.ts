@@ -7,7 +7,20 @@ import type {
   GetLikedPlacesParams,
   GetNearbyPlacesParams,
   GetVisitedPlaceMarkersParams,
+  SearchTownsParams,
 } from '@/features/map/apis/dto';
+
+export const getSearchTownsQueryKey = (params?: SearchTownsParams) => {
+  return [`/v1/towns/search`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetRecentTownsQueryKey = () => {
+  return [`/v1/towns/recent`] as const;
+};
+
+export const getGetPlaceDetailQueryKey = (placeId: number) => {
+  return [`/v1/recommendations/places/${placeId}`] as const;
+};
 
 export const getGetNearbyPlacesQueryKey = (params?: GetNearbyPlacesParams) => {
   return [`/v1/recommendations/nearby-places`, ...(params ? [params] : [])] as const;

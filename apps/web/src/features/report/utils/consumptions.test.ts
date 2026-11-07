@@ -1,10 +1,18 @@
 import {
   createRecentSpendingMonths,
+  formatPurchaseDateTimeLabel,
   formatSpendingYearMonth,
   groupConsumptionsByDate,
 } from './consumptions';
 
 describe('consumptions', () => {
+  it.each([undefined, '', 'invalid', '24:00:00', '09:60:00'])(
+    '유효한 시각이 없으면 오전·오후를 임의로 표시하지 않는다: %s',
+    (time) => {
+      expect(formatPurchaseDateTimeLabel('2026-11-03', time)).toBe('2026.11.03');
+    }
+  );
+
   it('API 소비내역을 날짜별로 묶고 화면 표시값을 채운다', () => {
     const groups = groupConsumptionsByDate([
       {

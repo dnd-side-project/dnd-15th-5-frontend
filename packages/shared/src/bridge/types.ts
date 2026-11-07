@@ -158,6 +158,14 @@ export type BridgeMessageMap = {
           message: string;
         };
   };
+  getNotificationPermissionStatus: {
+    payload: Record<string, never>;
+    result: { granted: boolean };
+  };
+  openNotificationSettings: {
+    payload: Record<string, never>;
+    result: { opened: true };
+  };
 };
 
 export type BridgeMessageType = keyof BridgeMessageMap;

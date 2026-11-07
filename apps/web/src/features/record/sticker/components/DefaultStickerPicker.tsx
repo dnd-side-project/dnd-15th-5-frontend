@@ -14,7 +14,7 @@ import { Button } from '@/shared/ui/button';
 import { CategoryChip } from '@/shared/ui/category-chip';
 
 type DefaultStickerPickerProps = {
-  initialSticker?: DefaultSticker;
+  initialSticker?: DefaultSticker | null;
   onClose: () => void;
   onConfirm: (sticker: DefaultSticker) => void;
   isProcessing: boolean;
@@ -31,7 +31,9 @@ export default function DefaultStickerPicker({
   const [category, setCategory] = useState<DefaultStickerCategory>(
     initialSticker?.category ?? '카페'
   );
-  const [selectedId, setSelectedId] = useState<string | null>(initialSticker?.id ?? 'coffee');
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialSticker === null ? null : (initialSticker?.id ?? 'coffee')
+  );
   const stickers = DEFAULT_STICKERS.filter((sticker) => sticker.category === category);
   const selectedSticker = stickers.find((sticker) => sticker.id === selectedId);
 
@@ -59,7 +61,7 @@ export default function DefaultStickerPicker({
         role="group"
         aria-label="스티커 카테고리"
         inert={isProcessing}
-        className="scrollbar-hidden mt-9 flex gap-2 overflow-x-auto px-4 py-0.5"
+        className="mt-9 flex gap-2 overflow-x-auto px-4 py-0.5"
       >
         {DEFAULT_STICKER_CATEGORIES.map((item) => (
           <CategoryChip
@@ -111,7 +113,7 @@ export default function DefaultStickerPicker({
 
       <footer className="mt-auto px-5 pt-8 pb-[max(32px,env(safe-area-inset-bottom))]">
         {error && (
-          <p role="alert" className="mb-4 text-body-02-regular text-notification">
+          <p role="alert" className="mb-4 text-body-02-regular text-red">
             {error}
           </p>
         )}

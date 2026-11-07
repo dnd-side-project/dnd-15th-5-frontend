@@ -1,5 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 
+import { TEST_CONSUMPTION_DETAIL } from '@/features/record/testFixtures';
+import { createEditConsumptionInitialValue } from '@/features/record/utils/createEditConsumptionInitialValue';
 import { isNativeApp } from '@/shared/lib/bridge';
 
 import StickerRecordPreview from './StickerRecordPreview';
@@ -34,6 +36,45 @@ const callbacks = {
 };
 const renderPreview = () =>
   render(<StickerRecordPreview sticker="sticker.png" isDefaultSticker {...callbacks} />);
+
+it.each([{ name: '새 이름' }, { address: '새 주소' }, { latitude: 38 }, { longitude: 128 }])(
+  '같은 장소 ID여도 제출할 가게 정보가 바뀌면 저장할 수 있다: %p',
+  (changes) => {
+    const initial = createEditConsumptionInitialValue(TEST_CONSUMPTION_DETAIL)!;
+    const onSubmit = jest.fn();
+    render(
+      <StickerRecordPreview
+        sticker={initial.sticker}
+        isDefaultSticker={false}
+        {...callbacks}
+        isEditing
+        initialDraft={initial.draft}
+        selectedShop={{ ...initial.draft.shop, ...changes }}
+        onSubmit={onSubmit}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: '수정완료' }));
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ shop: expect.objectContaining(changes) })
+    );
+  }
+);
+
+it('제출하지 않는 매장 썸네일만 바뀐 경우 저장을 활성화하지 않는다', () => {
+  const initial = createEditConsumptionInitialValue(TEST_CONSUMPTION_DETAIL)!;
+  render(
+    <StickerRecordPreview
+      sticker={initial.sticker}
+      isDefaultSticker={false}
+      {...callbacks}
+      isEditing
+      initialDraft={initial.draft}
+      selectedShop={{ ...initial.draft.shop, photoUrl: 'other.png' }}
+      onSubmit={jest.fn()}
+    />
+  );
+  expect(screen.getByRole('button', { name: '수정완료' })).toBeDisabled();
+});
 
 it('카테고리 8개를 정해진 순서로 표시한다', () => {
   renderPreview();

@@ -5,6 +5,7 @@ import AnalyticsIdentity from '@/app/providers/AnalyticsIdentity';
 import AnalyticsTracker from '@/app/providers/AnalyticsTracker';
 import ScrollToTop from '@/app/routes/ScrollToTop';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
+import RouteHistoryProvider from '@/shared/layout/RouteHistoryProvider';
 import { notifyNative } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 
@@ -21,11 +22,13 @@ type MobileLayoutProps = PropsWithChildren;
  */
 export default function MobileLayout({ children }: MobileLayoutProps) {
   const { pathname } = useLocation();
+  const isEditRecord = Boolean(matchPath(ROUTE_PATTERNS.editRecord, pathname));
   const isShopDetail = Boolean(matchPath(ROUTE_PATTERNS.shopDetail, pathname));
   const isSharedReport = Boolean(matchPath(ROUTE_PATTERNS.sharedReport, pathname));
   const usesOwnBottomSafeArea =
     pathname === ROUTE_PATHS.home ||
     pathname === ROUTE_PATHS.record ||
+    isEditRecord ||
     isShopDetail ||
     isSharedReport;
 
@@ -36,7 +39,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   }, [pathname]);
 
   return (
-    <>
+    <RouteHistoryProvider>
       <AnalyticsIdentity />
       <AnalyticsTracker />
       <ScrollToTop />
@@ -51,6 +54,6 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
           {children ?? <Outlet />}
         </div>
       </div>
-    </>
+    </RouteHistoryProvider>
   );
 }
