@@ -20,14 +20,12 @@ export const useNearbyPlaceRecommendationsQuery = () => {
     radiusMeters: RECOMMENDATION_RADIUS_METERS,
   });
   const response = query.data?.data;
-  const recommendations = useMemo(
-    () =>
-      toShopRecommendations({
-        sameCategoryPlaces: response?.sameCategoryPlaces,
-        myTownPlaces: response?.myTownPlaces,
-      }),
-    [response?.myTownPlaces, response?.sameCategoryPlaces]
-  );
+  const recommendations = useMemo(() => {
+    const allPlaces = response?.allPlaces ?? [];
+    const categoryPlaces = response?.categoryPlaces?.flatMap(({ places }) => places ?? []) ?? [];
+
+    return toShopRecommendations(allPlaces.length > 0 ? allPlaces : categoryPlaces);
+  }, [response?.allPlaces, response?.categoryPlaces]);
 
   return { ...query, recommendations };
 };

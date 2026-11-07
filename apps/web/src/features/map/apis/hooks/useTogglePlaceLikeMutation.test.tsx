@@ -48,8 +48,8 @@ describe('useTogglePlaceLikeMutation', () => {
     const visitedPlacesKey = getGetVisitedPlaceMarkersQueryKey();
     queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
       data: {
-        sameCategoryPlaces: [{ placeId: 101, name: '투썸플레이스', liked: false }],
-        myTownPlaces: [],
+        allPlaces: [{ placeId: 101, name: '투썸플레이스', liked: false }],
+        categoryPlaces: [{ category: '카페', places: [{ placeId: 101, liked: false }] }],
       },
     });
     queryClient.setQueryData(visitedPlacesKey, {
@@ -65,7 +65,11 @@ describe('useTogglePlaceLikeMutation', () => {
 
     expect(
       queryClient.getQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey)?.data
-        ?.sameCategoryPlaces?.[0]?.liked
+        ?.allPlaces?.[0]?.liked
+    ).toBe(true);
+    expect(
+      queryClient.getQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey)?.data
+        ?.categoryPlaces?.[0]?.places?.[0]?.liked
     ).toBe(true);
     expect(
       queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)
@@ -106,7 +110,7 @@ describe('useTogglePlaceLikeMutation', () => {
     const recommendationKey = getGetNearbyPlacesQueryKey({ lat: 37.5, lng: 127 });
     let serverLiked = true;
     queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
-      data: { sameCategoryPlaces: [{ placeId: 101, name: '투썸플레이스', liked: true }] },
+      data: { allPlaces: [{ placeId: 101, name: '투썸플레이스', liked: true }] },
     });
     queryClient.setQueryData(LIKED_PLACES_INFINITE_QUERY_KEY, {
       pages: [{ data: { places: [{ placeId: 101 }] } }],
@@ -118,7 +122,7 @@ describe('useTogglePlaceLikeMutation', () => {
           queryKey: recommendationKey,
           queryFn: async () => ({
             data: {
-              sameCategoryPlaces: [{ placeId: 101, name: '투썸플레이스', liked: serverLiked }],
+              allPlaces: [{ placeId: 101, name: '투썸플레이스', liked: serverLiked }],
             },
           }),
         });
@@ -357,7 +361,7 @@ describe('useTogglePlaceLikeMutation', () => {
     const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
     const recommendationKey = getGetNearbyPlacesQueryKey({ lat: 37.5, lng: 127 });
     queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
-      data: { sameCategoryPlaces: [{ placeId: 101, liked: false }] },
+      data: { allPlaces: [{ placeId: 101, liked: false }] },
     });
     const { result } = renderHook(() => useTogglePlaceLikeMutation(), {
       wrapper: createWrapper(queryClient),
@@ -370,7 +374,7 @@ describe('useTogglePlaceLikeMutation', () => {
     await waitFor(() =>
       expect(
         queryClient.getQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey)?.data
-          ?.sameCategoryPlaces?.[0]?.liked
+          ?.allPlaces?.[0]?.liked
       ).toBe(false)
     );
     expect(showToast).toHaveBeenCalledWith({
@@ -398,7 +402,7 @@ describe('useTogglePlaceLikeMutation', () => {
     const recommendationKey = getGetNearbyPlacesQueryKey({ lat: 37.5, lng: 127 });
     queryClient.setQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey, {
       data: {
-        sameCategoryPlaces: [
+        allPlaces: [
           { placeId: 101, liked: false },
           { placeId: 202, liked: false },
         ],
@@ -426,8 +430,7 @@ describe('useTogglePlaceLikeMutation', () => {
     });
 
     const places =
-      queryClient.getQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey)?.data
-        ?.sameCategoryPlaces;
+      queryClient.getQueryData<ApiResponseNearbyPlacesResponse>(recommendationKey)?.data?.allPlaces;
     expect(places?.find(({ placeId }) => placeId === 101)?.liked).toBe(false);
     expect(places?.find(({ placeId }) => placeId === 202)?.liked).toBe(true);
   });

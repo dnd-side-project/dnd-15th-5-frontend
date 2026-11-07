@@ -33,7 +33,7 @@ export type MapPlaceDetail = {
   stickerImages: readonly string[];
 };
 
-export type ShopRecommendationReason = '나의 관심 카테고리' | '내 동네에서 많이 방문한 곳';
+export type ShopRecommendationReason = '인기 가게 추천' | '내 동네에서 많이 방문한 곳';
 
 export type ShopRecommendation = {
   googleMapsUri?: string | null;

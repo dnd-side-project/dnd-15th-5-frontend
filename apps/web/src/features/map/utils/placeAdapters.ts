@@ -1,11 +1,6 @@
 import type { RecommendedPlaceItem, VisitedPlaceMarkerItem } from '@/features/map/apis/dto';
 import { HOME_CATEGORIES } from '@/features/map/constants';
-import type {
-  HomeCategory,
-  MapSticker,
-  ShopRecommendation,
-  ShopRecommendationReason,
-} from '@/features/map/types';
+import type { HomeCategory, MapSticker, ShopRecommendation } from '@/features/map/types';
 import { StickerEyesImage, getStickerImageByName } from '@/shared/assets/images/stickers';
 
 import type { ShopSearchResult } from '@chapchap/shared/shop';
@@ -125,10 +120,7 @@ export const toShopSearchResult = (sticker?: MapSticker): ShopSearchResult | und
   };
 };
 
-const toRecommendation = (
-  place: RecommendedPlaceItem,
-  reason: ShopRecommendationReason
-): ShopRecommendation | null => {
+const toRecommendation = (place: RecommendedPlaceItem): ShopRecommendation | null => {
   if (
     place.placeId === undefined ||
     !place.name ||
@@ -139,7 +131,7 @@ const toRecommendation = (
   }
 
   return {
-    googleMapsUri: place.googleMapsUri ?? null,
+    googleMapsUri: null,
     id: String(place.placeId),
     isLiked: Boolean(place.liked),
     place: {
@@ -151,24 +143,15 @@ const toRecommendation = (
       stickerImages: [],
     },
     position: { lat: place.latitude, lng: place.longitude },
-    reason,
+    reason: '인기 가게 추천',
     thumbnailSrc: place.thumbnailUrl ?? null,
     visitCount: place.visitCount ?? 0,
   };
 };
 
-/** 추천 사유별 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
-export const toShopRecommendations = ({
-  sameCategoryPlaces,
-  myTownPlaces,
-}: {
-  sameCategoryPlaces?: RecommendedPlaceItem[];
-  myTownPlaces?: RecommendedPlaceItem[];
-}): ShopRecommendation[] => {
-  const candidates = [
-    ...(sameCategoryPlaces ?? []).map((place) => toRecommendation(place, '나의 관심 카테고리')),
-    ...(myTownPlaces ?? []).map((place) => toRecommendation(place, '내 동네에서 많이 방문한 곳')),
-  ];
+/** 추천 API의 가게 목록을 캐러셀 모델로 변환합니다. */
+export const toShopRecommendations = (places?: RecommendedPlaceItem[]): ShopRecommendation[] => {
+  const candidates = (places ?? []).map(toRecommendation);
   const seenPlaceIds = new Set<string>();
 
   return candidates.flatMap((recommendation) => {
