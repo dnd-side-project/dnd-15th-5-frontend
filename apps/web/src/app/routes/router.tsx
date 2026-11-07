@@ -21,6 +21,7 @@ import NotFoundPage from '@/pages/not-found/NotFoundPage';
 import NotificationPage from '@/pages/notifications/NotificationPage';
 import NotificationSettingsPage from '@/pages/notifications/NotificationSettingsPage';
 import OnboardingPage from '@/pages/onboarding/OnboardingPage';
+import EditRecordPage from '@/pages/record/edit/EditRecordPage';
 import ManualRecordPage from '@/pages/record/manual/ManualRecordPage';
 import ReceiptCameraPage from '@/pages/record/receipt/ReceiptCameraPage';
 import RecordPage from '@/pages/record/RecordPage';
@@ -99,6 +100,10 @@ export const router = createSentryBrowserRouter([
             ],
           },
           // 사진 선택과 기록 입력은 화면 전체 너비와 자체 Safe Area를 사용한다.
+          {
+            path: ROUTE_PATTERNS.editRecord,
+            element: <EditRecordPage />,
+          },
           {
             path: ROUTE_PATHS.record,
             element: <RecordPage />,

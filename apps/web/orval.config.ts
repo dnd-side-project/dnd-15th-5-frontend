@@ -47,7 +47,7 @@ const createFeatureApiConfig = (feature: string, options: FeatureApiOptions): Op
             return 'completeSocialOAuth';
           }
 
-          if (operation.operationId === 'getPlaceDetail_1') {
+          if (feature === 'shop' && operation.operationId === 'getPlaceDetail_1') {
             return 'getPlaceDetail';
           }
 

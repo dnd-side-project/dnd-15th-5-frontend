@@ -8,8 +8,9 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "dev:mobile": "turbo run dev --filter=@chapchap/mobile",
-    "dev:web": "turbo run dev --filter=@chapchap/web",
+    "dev:mobile": "pnpm --filter @chapchap/mobile dev",
+    "dev:web": "pnpm --filter @chapchap/web dev",
+    "dev:stop": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/stop-dev-windows.ps1",
     "api:generate": "pnpm --filter @chapchap/web api:generate",
     "api:validate": "pnpm --filter @chapchap/web api:validate",
     "api:check": "pnpm api:generate && git diff --exit-code -- ':(glob)apps/web/src/features/*/apis/clients.ts' ':(glob)apps/web/src/features/*/apis/queryKeys.ts' ':(glob)apps/web/src/features/*/apis/queries.ts' ':(glob)apps/web/src/features/*/apis/mutations.ts' ':(glob)apps/web/src/features/*/apis/dto.ts'",

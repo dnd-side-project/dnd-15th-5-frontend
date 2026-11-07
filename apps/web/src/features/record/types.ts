@@ -1,3 +1,5 @@
+import type { DefaultSticker } from '@/shared/assets/images/ios-stickers/catalog';
+
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 
@@ -6,7 +8,18 @@ export type StickerPhotoSource = 'gallery' | 'camera';
 
 /** 사진은 업로드하고 기본 이모지는 서버 목록의 카테고리·이름으로 식별합니다. */
 export type StickerRecordMedia =
-  { source: 'photo'; image: Blob } | { source: 'default'; category: RecordCategory; name: string };
+  | { source: 'photo'; image: Blob }
+  | { source: 'default'; category: RecordCategory; name: string }
+  | { source: 'saved'; imageId: number; stickerItemId?: never; category: RecordCategory }
+  | { source: 'saved'; stickerItemId: number; imageId?: never; category: RecordCategory };
+
+/** 수정 화면에서 기존 서버 이미지와 입력값을 복원하는 초기값입니다. */
+export type StickerRecordInitialValue = {
+  sticker: string;
+  defaultSticker?: DefaultSticker;
+  media: StickerRecordMedia;
+  draft: StickerRecordDraft;
+};
 
 /** 사진·기본 스티커에 공통으로 사용하는 최종 기록 입력값입니다. */
 export type StickerRecordDraft = {

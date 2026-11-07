@@ -14,6 +14,8 @@ const consumption = {
   purchaseTime: '14:30:00',
 };
 
+const renderRecordSticker = (consumptionId: number) => <span>기록 스티커 {consumptionId}</span>;
+
 describe('SpendingRecordItem', () => {
   it('항목을 누르면 해당 가게 상세 경로로 이동한다', async () => {
     const user = userEvent.setup();
@@ -25,7 +27,10 @@ describe('SpendingRecordItem', () => {
             path="/report/history"
             element={
               <ul>
-                <SpendingRecordItem consumption={consumption} />
+                <SpendingRecordItem
+                  consumption={consumption}
+                  renderRecordSticker={renderRecordSticker}
+                />
               </ul>
             }
           />
@@ -43,7 +48,10 @@ describe('SpendingRecordItem', () => {
     render(
       <MemoryRouter>
         <ul>
-          <SpendingRecordItem consumption={{ ...consumption, placeId: undefined }} />
+          <SpendingRecordItem
+            consumption={{ ...consumption, placeId: undefined }}
+            renderRecordSticker={renderRecordSticker}
+          />
         </ul>
       </MemoryRouter>
     );
@@ -58,6 +66,7 @@ describe('SpendingRecordItem', () => {
         <ul>
           <SpendingRecordItem
             consumption={{ ...consumption, placeId: null as unknown as number }}
+            renderRecordSticker={renderRecordSticker}
           />
         </ul>
       </MemoryRouter>

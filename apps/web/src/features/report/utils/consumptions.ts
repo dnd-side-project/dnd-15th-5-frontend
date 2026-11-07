@@ -1,6 +1,7 @@
 import type { ConsumptionResponse } from '@/features/report/apis/dto';
 import type { SpendingRecordGroup } from '@/features/report/types';
 import type { YearMonth } from '@/shared/types/yearMonth';
+import { formatTimePeriod } from '@/shared/utils/formatTimePeriod';
 
 const KOREAN_WEEKDAYS = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 
@@ -26,8 +27,7 @@ export const formatPurchaseDateTimeLabel = (purchaseDate?: string, purchaseTime?
   const parsedDate = parsePurchaseDate(purchaseDate);
   if (!parsedDate) return '';
 
-  const hour = Number(purchaseTime?.slice(0, 2));
-  const period = Number.isInteger(hour) ? (hour < 12 ? '오전' : '오후') : null;
+  const period = formatTimePeriod(purchaseTime);
   const dateLabel = `${parsedDate.year}.${String(parsedDate.month).padStart(2, '0')}.${String(parsedDate.day).padStart(2, '0')}`;
 
   return period ? `${dateLabel} · ${period}` : dateLabel;
