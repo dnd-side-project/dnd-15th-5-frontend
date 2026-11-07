@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
-import { CategoryChip } from '@/shared/ui/category-chip';
+import { ShopRecommendIcon } from '@/shared/assets/icons';
+import { CategoryChip, categoryChipVariants } from '@/shared/ui/category-chip';
 
 import { useVisitedPlaceStickersQuery } from '../../apis/hooks/useVisitedPlaceStickersQuery';
 import { HOME_CATEGORIES } from '../../constants';
@@ -33,16 +34,11 @@ export default function HomeCategoryFilter({
     }
   }, [isSuccess, selectedCategory, setSelectedCategory, visibleCategories]);
 
-  const handleRecommendationSelection = (isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedCategory(null);
-      resetLocationSelection();
-      showHome();
-      onOpenRecommendationSearch();
-      return;
-    }
-
+  const handleOpenRecommendationSearch = () => {
+    setSelectedCategory(null);
+    resetLocationSelection();
     showHome();
+    onOpenRecommendationSearch();
   };
 
   const handleCategorySelection = (
@@ -60,14 +56,14 @@ export default function HomeCategoryFilter({
       className="overflow-x-auto px-4 py-1.5"
     >
       <div className="flex w-max flex-nowrap gap-2">
-        <CategoryChip
-          variant="compact"
-          hasRecommendationIcon
-          selected={false}
-          onSelectedChange={handleRecommendationSelection}
+        <button
+          type="button"
+          className={categoryChipVariants({ variant: 'compact' })}
+          onClick={handleOpenRecommendationSearch}
         >
+          <ShopRecommendIcon aria-hidden="true" />
           가게 추천
-        </CategoryChip>
+        </button>
 
         {visibleCategories.map((category) => (
           <CategoryChip

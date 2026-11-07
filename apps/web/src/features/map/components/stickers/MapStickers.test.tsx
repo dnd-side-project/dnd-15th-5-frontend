@@ -391,7 +391,7 @@ describe('MapStickers', () => {
 
     await user.click(screen.getByRole('button', { name: `${sticker.label} 스티커` }));
 
-    expect(recommendationChip).toHaveAttribute('aria-pressed', 'false');
+    expect(recommendationChip).not.toHaveAttribute('aria-pressed');
     expect(screen.queryByRole('heading', { level: 1, name: '가게 추천' })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: sticker.place.name })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: '바텀시트 높이 조절' })).toHaveLength(1);
