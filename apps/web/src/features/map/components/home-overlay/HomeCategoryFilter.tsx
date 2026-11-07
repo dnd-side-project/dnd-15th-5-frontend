@@ -10,16 +10,22 @@ import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 /** 지도 홈 상단에 가게 추천과 방문·좋아요 장소의 카테고리 칩을 표시합니다. */
 export default function HomeCategoryFilter() {
   const { isSuccess, stickers, likedRecommendations = [] } = useVisitedPlaceStickersQuery();
+  const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
+  const selectedLikedPlaceCategory =
+    activeSheet.type === 'likedRecommendation'
+      ? activeSheet.fallbackRecommendation?.place.category
+      : undefined;
   const visibleCategories = isSuccess
     ? HOME_CATEGORIES.filter(
         (category) =>
           stickers.some(({ place }) => place.category === category) ||
-          likedRecommendations.some(({ place }) => place.category === category)
+          likedRecommendations.some(({ place }) => place.category === category) ||
+          selectedLikedPlaceCategory === category
       )
     : HOME_CATEGORIES;
   const selectedCategory = useMapCategoryFilterStore((state) => state.selectedCategory);
   const setSelectedCategory = useMapCategoryFilterStore((state) => state.setSelectedCategory);
-  const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
+  const activeSheetType = activeSheet.type;
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
   const showRecommendation = useHomeBottomSheetStore((state) => state.showRecommendation);
 

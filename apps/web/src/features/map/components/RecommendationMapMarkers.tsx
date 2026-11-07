@@ -83,6 +83,13 @@ export default function RecommendationMapMarkers() {
       likedRecommendationById.set(recommendation.id, { ...recommendation, isLiked });
     }
   });
+  if (
+    isLikedRecommendationOpen &&
+    activeSheet.fallbackRecommendation &&
+    !likedRecommendationById.has(activeSheet.recommendationId)
+  ) {
+    likedRecommendationById.set(activeSheet.recommendationId, activeSheet.fallbackRecommendation);
+  }
   const visibleRecommendations = [...likedRecommendationById.values()].filter(
     ({ place }) => !selectedCategory || place.category === selectedCategory
   );

@@ -5,6 +5,7 @@ import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisit
 
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
+import { TEST_SHOP_RECOMMENDATIONS } from '../../testFixtures';
 
 import HomeCategoryFilter from './HomeCategoryFilter';
 
@@ -58,5 +59,27 @@ describe('HomeCategoryFilter', () => {
     render(<HomeCategoryFilter />);
 
     expect(useMapCategoryFilterStore.getState().selectedCategory).toBeNull();
+  });
+
+  it('선택 장소가 마커 응답에 없어도 해당 카테고리 필터를 유지한다', () => {
+    const fallbackRecommendation = { ...TEST_SHOP_RECOMMENDATIONS[0]!, isLiked: true };
+    useMapCategoryFilterStore.setState({ selectedCategory: '카페' });
+    useHomeBottomSheetStore.setState({
+      activeSheet: {
+        type: 'likedRecommendation',
+        recommendationId: fallbackRecommendation.id,
+        fallbackRecommendation,
+      },
+    });
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      isSuccess: true,
+      stickers: [],
+      likedRecommendations: [],
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+
+    render(<HomeCategoryFilter />);
+
+    expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
+    expect(useMapCategoryFilterStore.getState().selectedCategory).toBe('카페');
   });
 });

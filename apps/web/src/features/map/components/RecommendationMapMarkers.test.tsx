@@ -283,4 +283,28 @@ describe('RecommendationMapMarkers', () => {
     expect(marker.firstElementChild).toHaveClass('h-18', 'w-14');
     expect(marker.firstElementChild).not.toHaveClass('opacity-100');
   });
+
+  it('선택한 좋아요 장소가 기존 마커 응답에 없어도 대체 마커를 표시한다', () => {
+    const recommendation = { ...TEST_SHOP_RECOMMENDATIONS[0]!, isLiked: true };
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: [],
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      likedRecommendations: [],
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+    useHomeBottomSheetStore.setState({
+      activeSheet: {
+        type: 'likedRecommendation',
+        recommendationId: recommendation.id,
+        fallbackRecommendation: recommendation,
+      },
+    });
+
+    render(<RecommendationMapMarkers />);
+
+    const marker = screen.getByRole('button', {
+      name: `${recommendation.place.name} 추천 마커, 선택됨`,
+    });
+    expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'like-active');
+  });
 });
