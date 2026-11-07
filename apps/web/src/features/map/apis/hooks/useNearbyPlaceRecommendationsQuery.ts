@@ -2,18 +2,16 @@ import { useMemo } from 'react';
 
 import { useGetNearbyPlaces } from '@/features/map/apis/queries';
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
+import { useMapViewportStore } from '@/features/map/stores/mapViewportStore';
 import { toShopRecommendations } from '@/features/map/utils/placeAdapters';
 
-const RECOMMENDATION_RADIUS_METERS = 1_000;
-const TALK_HERE_RECOMMENDATION_CENTER = {
-  lat: 37.4896386,
-  lng: 126.9759403,
-} as const;
+const RECOMMENDATION_RADIUS_METERS = 1_500;
 
-/** 확정한 위치를 중심으로 추천 가게를 조회하고, 선택 전에는 PoC 기본 좌표를 사용합니다. */
+/** 확정 위치가 있으면 그 좌표를, 없으면 현재 지도 중심을 기준으로 추천 가게를 조회합니다. */
 export const useNearbyPlaceRecommendationsQuery = () => {
   const confirmedPosition = useLocationSelectionStore((state) => state.confirmedPosition);
-  const center = confirmedPosition ?? TALK_HERE_RECOMMENDATION_CENTER;
+  const mapCenter = useMapViewportStore((state) => state.center);
+  const center = confirmedPosition ?? mapCenter;
   const query = useGetNearbyPlaces({
     lat: center.lat,
     lng: center.lng,

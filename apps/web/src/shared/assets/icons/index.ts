@@ -41,6 +41,7 @@ import NotificationUnreadIcon from './ic-notification-unread.svg?react';
 import RankFirstIcon from './ic-rank-first.svg?react';
 import RankSecondIcon from './ic-rank-second.svg?react';
 import RankThirdIcon from './ic-rank-third.svg?react';
+import RecommendationLocationPinIcon from './ic-recommendation-location-pin.svg?react';
 import ReportCardFlipIcon from './ic-report-card-flip.svg?react';
 import RestaurantPinActiveIcon from './ic-restaurant-pin-active.svg?react';
 import RestaurantPinIcon from './ic-restaurant-pin.svg?react';
@@ -92,6 +93,7 @@ export {
   RankSecondIcon,
   RankThirdIcon,
   ReportCardFlipIcon,
+  RecommendationLocationPinIcon,
   RestaurantPinActiveIcon,
   RestaurantPinIcon,
   SearchIcon,

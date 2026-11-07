@@ -710,11 +710,13 @@ describe('HomeBottomSheet', () => {
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
   });
 
-  it('가게 추천 칩을 다시 누르면 추천 시트를 닫고 기존 홈 시트를 복원한다', async () => {
+  it('추천 시트를 닫으면 기존 홈 시트를 복원한다', async () => {
     const user = userEvent.setup();
     render(
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => (
             <div>
@@ -762,12 +764,8 @@ describe('HomeBottomSheet', () => {
       TEST_SHOP_RECOMMENDATIONS[1]!.id
     );
 
-    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    await user.click(screen.getByRole('button', { name: '바텀시트 높이 조절' }));
 
-    expect(screen.getByRole('button', { name: '가게 추천' })).toHaveAttribute(
-      'aria-pressed',
-      'false'
-    );
     expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 1, name: '가게 추천' })).not.toBeInTheDocument();
   });
@@ -776,7 +774,9 @@ describe('HomeBottomSheet', () => {
     const user = userEvent.setup();
     render(
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
           renderSelectedPlace={renderSelectedPlace}
@@ -813,7 +813,9 @@ describe('HomeBottomSheet', () => {
     const user = userEvent.setup();
     const renderBottomSheet = () => (
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
           renderSelectedPlace={renderSelectedPlace}
@@ -863,7 +865,9 @@ describe('HomeBottomSheet', () => {
     const user = userEvent.setup();
     render(
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => (
             <div>
@@ -891,7 +895,9 @@ describe('HomeBottomSheet', () => {
     const user = userEvent.setup();
     render(
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => (
             <div>
@@ -927,7 +933,9 @@ describe('HomeBottomSheet', () => {
     try {
       render(
         <>
-          <HomeCategoryFilter />
+          <HomeCategoryFilter
+            onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+          />
           <HomeBottomSheet
             renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
             renderSelectedPlace={renderSelectedPlace}

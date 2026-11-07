@@ -30,6 +30,8 @@ export const ROUTE_PATHS = {
   onboarding: '/onboarding',
 
   home: '/home',
+  homeRecommendationSearch: '/home/recommendation/search',
+  homeRecommendationMap: '/home/recommendation/map',
   homeSearch: '/home/search',
   shopDetail: (shopId: string) => generatePath(ROUTE_PATTERNS.shopDetail, { shopId }),
 

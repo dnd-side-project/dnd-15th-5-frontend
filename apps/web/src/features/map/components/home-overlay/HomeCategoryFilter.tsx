@@ -8,8 +8,14 @@ import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 import { useLocationSelectionStore } from '../../stores/locationSelectionStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 
+type HomeCategoryFilterProps = {
+  onOpenRecommendationSearch: () => void;
+};
+
 /** 지도 홈 상단에 한 줄로 표시하는 가게 추천·카테고리 칩입니다. */
-export default function HomeCategoryFilter() {
+export default function HomeCategoryFilter({
+  onOpenRecommendationSearch,
+}: HomeCategoryFilterProps) {
   const { isSuccess, stickers } = useVisitedPlaceStickersQuery();
   const visibleCategories = isSuccess
     ? HOME_CATEGORIES.filter((category) =>
@@ -18,9 +24,7 @@ export default function HomeCategoryFilter() {
     : HOME_CATEGORIES;
   const selectedCategory = useMapCategoryFilterStore((state) => state.selectedCategory);
   const setSelectedCategory = useMapCategoryFilterStore((state) => state.setSelectedCategory);
-  const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const showLocationSelection = useHomeBottomSheetStore((state) => state.showLocationSelection);
   const resetLocationSelection = useLocationSelectionStore((state) => state.resetSelection);
 
   useEffect(() => {
@@ -33,7 +37,8 @@ export default function HomeCategoryFilter() {
     if (isSelected) {
       setSelectedCategory(null);
       resetLocationSelection();
-      showLocationSelection();
+      showHome();
+      onOpenRecommendationSearch();
       return;
     }
 
@@ -58,7 +63,7 @@ export default function HomeCategoryFilter() {
         <CategoryChip
           variant="compact"
           hasRecommendationIcon
-          selected={activeSheetType === 'locationSelection'}
+          selected={false}
           onSelectedChange={handleRecommendationSelection}
         >
           가게 추천

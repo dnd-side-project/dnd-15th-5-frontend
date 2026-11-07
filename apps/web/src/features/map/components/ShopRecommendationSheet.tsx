@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import { getDistrict, getGoogleMapsPlaceUrl } from '@/features/map/utils/recommendation';
 import { BlueLocationPinIcon, ChevronRightIcon, LikeIcon } from '@/shared/assets/icons';
@@ -16,9 +18,15 @@ const CARD_GAP_PX = 12;
 const PROGRAMMATIC_SCROLL_FALLBACK_MS = 1_000;
 
 /** 가게 추천 바텀시트 안에 표시하는 추천 캐러셀 콘텐츠입니다. */
-export default function ShopRecommendationSheet() {
+export default function ShopRecommendationSheet({
+  onOpenRecommendationSearch,
+}: {
+  onOpenRecommendationSearch?: () => void;
+}) {
   const { recommendations, isPending, isError, refetch } = useNearbyPlaceRecommendationsQuery();
   const likeMutation = useTogglePlaceLikeMutation();
+  const showHome = useHomeBottomSheetStore((state) => state.showHome);
+  const resetSelection = useLocationSelectionStore((state) => state.resetSelection);
   const activeRecommendationId = useShopRecommendationStore(
     (state) => state.activeRecommendationId
   );
@@ -144,12 +152,24 @@ export default function ShopRecommendationSheet() {
   }
 
   if (recommendations.length === 0) {
+    const changeNeighborhoodAction = onOpenRecommendationSearch
+      ? {
+          actionLabel: '다른 동네 선택',
+          onAction: () => {
+            resetSelection();
+            showHome();
+            onOpenRecommendationSearch();
+          },
+        }
+      : {};
+
     return (
       <StateView
         variant="empty"
         headingAs="h2"
         title="아직 주변에 추천 가게가 없어요"
-        description="지도를 움직여 다른 곳을 살펴보세요."
+        description={onOpenRecommendationSearch ? '다른 동네를 선택해 주변 가게를 찾아보세요.' : ''}
+        {...changeNeighborhoodAction}
         className="py-8"
       />
     );
