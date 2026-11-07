@@ -34,7 +34,6 @@ export default function ShopRecommendationSheet({
     (state) => state.setActiveRecommendation
   );
   const carouselRef = useRef<HTMLUListElement>(null);
-  const hasInitializedRecommendationsRef = useRef(false);
   const programmaticScrollTargetRef = useRef<number | null>(null);
   const programmaticScrollTimeoutRef = useRef<number | null>(null);
   const activeIndex = Math.max(
@@ -43,21 +42,15 @@ export default function ShopRecommendationSheet({
   );
 
   useEffect(() => {
-    const firstRecommendation = recommendations[0];
-    if (!firstRecommendation || hasInitializedRecommendationsRef.current) {
+    if (isPending || isError) {
       return;
     }
 
-    hasInitializedRecommendationsRef.current = true;
-    const currentActiveRecommendationId =
-      useShopRecommendationStore.getState().activeRecommendationId;
-    const hasActiveRecommendation = recommendations.some(
-      ({ id }) => id === currentActiveRecommendationId
-    );
+    const hasActiveRecommendation = recommendations.some(({ id }) => id === activeRecommendationId);
     if (!hasActiveRecommendation) {
-      setActiveRecommendation(firstRecommendation.id);
+      setActiveRecommendation(recommendations[0]?.id ?? null);
     }
-  }, [recommendations, setActiveRecommendation]);
+  }, [activeRecommendationId, isError, isPending, recommendations, setActiveRecommendation]);
 
   useEffect(() => {
     const carousel = carouselRef.current;

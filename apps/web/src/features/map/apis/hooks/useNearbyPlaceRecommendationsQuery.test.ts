@@ -12,6 +12,9 @@ jest.mock('@/features/map/apis/queries', () => ({
 
 const mockedUseGetNearbyPlaces = jest.mocked(useGetNearbyPlaces);
 
+const categoryPlace = { placeId: 2, name: '카테고리 가게', latitude: 37.5, longitude: 127 };
+const popularPlace = { ...categoryPlace, placeId: 1, name: '전체 인기 가게' };
+
 describe('useNearbyPlaceRecommendationsQuery', () => {
   beforeEach(() => {
     useLocationSelectionStore.getState().resetSelection();
@@ -50,5 +53,18 @@ describe('useNearbyPlaceRecommendationsQuery', () => {
       lng: 127.056,
       radiusMeters: 1_500,
     });
+  });
+
+  it.each([
+    { allPlaces: [], expectedId: '2', label: '전체 목록이 비어 있으면 카테고리 목록을 사용한다' },
+    { allPlaces: [popularPlace], expectedId: '1', label: '전체 목록이 있으면 우선 사용한다' },
+  ])('$label', ({ allPlaces, expectedId }) => {
+    mockedUseGetNearbyPlaces.mockReturnValue({
+      data: { data: { allPlaces, categoryPlaces: [{ places: [categoryPlace] }] } },
+    } as ReturnType<typeof useGetNearbyPlaces>);
+
+    const { result } = renderHook(() => useNearbyPlaceRecommendationsQuery());
+
+    expect(result.current.recommendations.map(({ id }) => id)).toEqual([expectedId]);
   });
 });

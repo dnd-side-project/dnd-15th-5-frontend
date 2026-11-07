@@ -809,7 +809,7 @@ describe('HomeBottomSheet', () => {
     );
   });
 
-  it('지도 이동으로 추천 목록이 바뀌어도 활성 카드를 자동 교체하지 않는다', async () => {
+  it('추천 목록에서 활성 가게가 사라지면 새 목록의 첫 가게를 선택한다', async () => {
     const user = userEvent.setup();
     const renderBottomSheet = () => (
       <>
@@ -839,7 +839,7 @@ describe('HomeBottomSheet', () => {
     rerender(renderBottomSheet());
 
     expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(
-      TEST_SHOP_RECOMMENDATIONS[0]!.id
+      TEST_SHOP_RECOMMENDATIONS[1]!.id
     );
   });
 
