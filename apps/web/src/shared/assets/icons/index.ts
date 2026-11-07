@@ -31,6 +31,7 @@ import ImageDownloadIcon from './ic-image-download.svg?react';
 import KakaoIcon from './ic-kakao.svg?react';
 import LikedPlacePinActiveIcon from './ic-liked-place-pin-active.svg?react';
 import LikedPlacePinIcon from './ic-liked-place-pin.svg?react';
+import LocationPinOutlineIcon from './ic-location-pin-outline.svg?react';
 import LogoutIcon from './ic-logout.svg?react';
 import MapIcon from './ic-map.svg?react';
 import NavigationHomeIcon from './ic-navigation-home.svg?react';
@@ -82,6 +83,7 @@ export {
   LikedPlacePinActiveIcon,
   LikedPlacePinIcon,
   LocationPinIcon,
+  LocationPinOutlineIcon,
   LogoutIcon,
   MapIcon,
   NavigationHomeIcon,

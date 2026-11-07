@@ -1,4 +1,4 @@
-import { CloseIcon, LocationPinIcon } from '@/shared/assets/icons';
+import { CloseIcon, LocationPinOutlineIcon } from '@/shared/assets/icons';
 
 type RecentNeighborhoodListProps = {
   neighborhoods: string[];
@@ -21,7 +21,9 @@ export default function RecentNeighborhoodList({
               key={address}
               className="flex min-h-16.5 items-center gap-2.5 border-b border-neutral-100 last:border-0"
             >
-              <LocationPinIcon aria-hidden="true" className="size-5 shrink-0 text-neutral-500" />
+              <span aria-hidden="true" className="flex size-5 shrink-0 items-center justify-center">
+                <LocationPinOutlineIcon />
+              </span>
               <button
                 type="button"
                 className="min-w-0 flex-1 truncate py-4 text-left text-body-01-semibold text-neutral-700"
