@@ -13,9 +13,10 @@ export const useMapSelectionAddress = () => {
 
     startDraftSelection(center);
     void geocodeMapLocation({ location: center })
-      .then(({ results }) =>
-        resolveDraftAddress(center, results[0]?.formatted_address ?? '선택한 위치')
-      )
+      .then(({ results }) => {
+        const address = results[0]?.formatted_address.replace(/^대한민국(?:\s+|$)/, '').trim();
+        resolveDraftAddress(center, address || '선택한 위치');
+      })
       .catch(() => resolveDraftAddress(center, '선택한 위치'));
   };
 };
