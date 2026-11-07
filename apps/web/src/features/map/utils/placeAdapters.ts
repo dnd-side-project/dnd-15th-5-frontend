@@ -143,7 +143,7 @@ const toRecommendation = (place: RecommendedPlaceItem): ShopRecommendation | nul
       stickerImages: [],
     },
     position: { lat: place.latitude, lng: place.longitude },
-    reason: '인기 가게 추천',
+    reason: '카테고리별 인기 가게',
     thumbnailSrc: place.thumbnailUrl ?? null,
     visitCount: place.visitCount ?? 0,
   };

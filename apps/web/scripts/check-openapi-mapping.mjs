@@ -93,6 +93,24 @@ const unmappedOperationIds = [...operationLocations.keys()].filter(
 const staleMappings = [...mappedFeatures.keys()].filter(
   (operationId) => !operationLocations.has(operationId)
 );
+const staleExpectedOperations = Object.keys(config.expectedOperations ?? {}).filter(
+  (operationId) => !mappedFeatures.has(operationId)
+);
+const operationPathMismatches = Object.entries(config.expectedOperations ?? {}).flatMap(
+  ([operationId, expected]) => {
+    const locations = operationLocations.get(operationId) ?? [];
+
+    if (locations.length !== 1) {
+      return [];
+    }
+
+    const expectedLocation = `${expected.method} ${expected.path}`;
+
+    return locations[0] === expectedLocation
+      ? []
+      : [`${operationId}: 예상 ${expectedLocation}, 실제 ${locations[0]}`];
+  }
+);
 
 const failures = [
   ['지원하지 않는 $ref Path Item', unsupportedRefPathItems],
@@ -101,6 +119,8 @@ const failures = [
   ['여러 feature에 중복 매핑된 operationId', duplicateMappings],
   ['feature에 매핑되지 않은 operationId', unmappedOperationIds],
   ['Swagger에 존재하지 않는 operationId 매핑', staleMappings],
+  ['feature에 매핑되지 않은 기대 경로 설정', staleExpectedOperations],
+  ['기대 경로와 다른 operation', operationPathMismatches],
 ].filter(([, values]) => values.length > 0);
 
 if (failures.length > 0) {

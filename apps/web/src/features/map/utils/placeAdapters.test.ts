@@ -86,8 +86,8 @@ describe('placeAdapters', () => {
 
     expect(recommendations).toHaveLength(2);
     expect(recommendations.map(({ id, reason }) => ({ id, reason }))).toEqual([
-      { id: '101', reason: '인기 가게 추천' },
-      { id: '102', reason: '인기 가게 추천' },
+      { id: '101', reason: '카테고리별 인기 가게' },
+      { id: '102', reason: '카테고리별 인기 가게' },
     ]);
     expect(recommendations[0]?.place.category).toBe('기타');
     expect(recommendations[0]).toMatchObject({
