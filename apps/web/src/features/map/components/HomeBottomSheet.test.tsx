@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
+import { useLikedPlaceDetailQuery } from '@/features/map/apis/hooks/useLikedPlaceDetailQuery';
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
@@ -18,11 +19,13 @@ import HomeCategoryFilter from './home-overlay/HomeCategoryFilter';
 import HomeBottomSheet from './HomeBottomSheet';
 
 jest.mock('@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery');
+jest.mock('@/features/map/apis/hooks/useLikedPlaceDetailQuery');
 jest.mock('@/features/map/apis/hooks/useRecommendationRecordShopQuery');
 jest.mock('@/features/map/apis/hooks/useTogglePlaceLikeMutation');
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 
 const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
+const mockedUseLikedPlaceDetailQuery = jest.mocked(useLikedPlaceDetailQuery);
 const mockedUseRecommendationRecordShopQuery = jest.mocked(useRecommendationRecordShopQuery);
 const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation);
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
@@ -93,6 +96,12 @@ describe('HomeBottomSheet', () => {
       isError: false,
       refetch: jest.fn(),
     } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    mockedUseLikedPlaceDetailQuery.mockReturnValue({
+      detail: undefined,
+      isError: false,
+      isLoading: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
     mockedUseRecommendationRecordShopQuery.mockReturnValue({
       query: {
         data: recommendationRecordShop,

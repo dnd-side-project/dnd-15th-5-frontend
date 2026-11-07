@@ -1,10 +1,11 @@
-import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { useLikedPlaceDetailQuery } from '@/features/map/apis/hooks/useLikedPlaceDetailQuery';
 import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import GoogleMapsLinkButton from '@/features/map/components/GoogleMapsLinkButton';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
+import { toLikedPlaceRecommendation } from '@/features/map/utils/placeAdapters';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import type { RecordLocationState } from '@/shared/types/recordNavigation';
 import { Button, LinkButton } from '@/shared/ui/button';
@@ -21,23 +22,30 @@ type LikedRecommendationSheetProps = {
 export default function LikedRecommendationSheet({
   recommendationId,
 }: LikedRecommendationSheetProps) {
-  const { recommendations, isPending, isError, refetch } = useNearbyPlaceRecommendationsQuery();
   const visitedPlacesQuery = useVisitedPlaceStickersQuery();
+  const placeDetailQuery = useLikedPlaceDetailQuery(recommendationId);
   const likeMutation = useTogglePlaceLikeMutation();
   const closeLikedRecommendationIfMatches = useHomeBottomSheetStore(
     (state) => state.closeLikedRecommendationIfMatches
   );
-  const nearbyRecommendation = recommendations.find(({ id }) => id === recommendationId);
-  const recommendation =
-    nearbyRecommendation ??
-    visitedPlacesQuery.likedRecommendations.find(({ id }) => id === recommendationId);
+  const placeDetail = placeDetailQuery.detail;
+  const visitedRecommendation = visitedPlacesQuery.likedRecommendations.find(
+    ({ id }) => id === recommendationId
+  );
+  const recommendation = toLikedPlaceRecommendation(
+    recommendationId,
+    placeDetail,
+    visitedRecommendation
+  );
   const {
     query: recordShopQuery,
     isLibraryLoading,
     isLibraryError,
-  } = useRecommendationRecordShopQuery(recommendation);
+  } = useRecommendationRecordShopQuery(
+    recommendation && !placeDetailQuery.isLoading ? recommendation : undefined
+  );
 
-  if (!recommendation && (isPending || visitedPlacesQuery.isPending)) {
+  if (!recommendation && (visitedPlacesQuery.isPending || placeDetailQuery.isLoading)) {
     return (
       <div
         role="status"
@@ -49,7 +57,7 @@ export default function LikedRecommendationSheet({
     );
   }
 
-  if (isError && visitedPlacesQuery.isError) {
+  if (visitedPlacesQuery.isError && placeDetailQuery.isError) {
     return (
       <StateView
         variant="error"
@@ -58,8 +66,8 @@ export default function LikedRecommendationSheet({
         description="잠시 후 다시 시도해주세요."
         actionLabel="다시 불러오기"
         onAction={() => {
-          void refetch();
           void visitedPlacesQuery.refetch();
+          void placeDetailQuery.refetch();
         }}
         className="py-6"
       />
@@ -80,10 +88,9 @@ export default function LikedRecommendationSheet({
     );
   }
 
-  const { googleMapsUri, id, place, thumbnailSrc } = recommendation;
-  // TODO: placeId 기반 백엔드 상세 API가 googlePlaceId, 가게명, 도로명 주소, 좌표, 사진 URL(최대 3장)을 제공하면 Google Places 조회를 제거하고 기록 작성과 바텀시트에 사용한다.
-  const fallbackPhotoUrl = recordShopQuery.data?.photoUrl ?? thumbnailSrc;
-  const photoUrls = getLikedPlacePhotoUrls(recordShopQuery.data?.photoUrls, fallbackPhotoUrl);
+  const { id, place, thumbnailSrc } = recommendation;
+  // TODO: 소비 등록 API가 내부 placeId를 직접 받으면 기록용 Google Places 조회도 제거한다.
+  const photoUrls = getLikedPlacePhotoUrls(placeDetail?.thumbnailUrls, thumbnailSrc);
   const address = recordShopQuery.data?.address || place.address;
   const recordLocationState = recordShopQuery.data
     ? ({
@@ -94,7 +101,9 @@ export default function LikedRecommendationSheet({
         category: place.category,
       } satisfies RecordLocationState)
     : undefined;
-  const isResolvingRecordShop = !isLibraryError && (isLibraryLoading || recordShopQuery.isPending);
+  const isResolvingRecordShop =
+    placeDetailQuery.isLoading ||
+    (!isLibraryError && (isLibraryLoading || recordShopQuery.isPending));
 
   const handleUnlike = () => {
     likeMutation.mutate(
@@ -111,17 +120,13 @@ export default function LikedRecommendationSheet({
         category={place.category}
         address={address}
         photoUrls={photoUrls}
-        isLoading={isResolvingRecordShop}
+        isLoading={placeDetailQuery.isLoading}
         isUnlikePending={likeMutation.isPending}
         onUnlike={handleUnlike}
         headingAs="h1"
       />
       <div className="mt-4 flex gap-2">
-        <GoogleMapsLinkButton
-          address={address}
-          googleMapsUri={googleMapsUri}
-          placeName={place.name}
-        />
+        <GoogleMapsLinkButton address={address} placeName={place.name} />
         {isResolvingRecordShop ? (
           <Button isLoading size="large" className="w-auto min-w-0 flex-1">
             기록하기

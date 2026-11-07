@@ -1,4 +1,8 @@
-import type { RecommendedPlaceItem, VisitedPlaceMarkerItem } from '@/features/map/apis/dto';
+import type {
+  RecommendedPlaceDetailResponse,
+  RecommendedPlaceItem,
+  VisitedPlaceMarkerItem,
+} from '@/features/map/apis/dto';
 import { HOME_CATEGORIES } from '@/features/map/constants';
 import type {
   HomeCategory,
@@ -95,6 +99,42 @@ export const toLikedPlaceRecommendations = (
       },
     ];
   });
+
+/**
+ * 좋아요 장소 상세 응답과 방문 장소 마커를 바텀시트 모델로 합칩니다.
+ * 백엔드 지도 URI 대신 이름·주소 검색 링크를 사용하도록 URI는 비워 둡니다.
+ */
+export const toLikedPlaceRecommendation = (
+  placeId: string,
+  detail?: RecommendedPlaceDetailResponse,
+  fallback?: ShopRecommendation
+): ShopRecommendation | undefined => {
+  const name = detail?.name ?? fallback?.place.name;
+  const latitude = detail?.latitude ?? fallback?.position.lat;
+  const longitude = detail?.longitude ?? fallback?.position.lng;
+
+  if (!name || latitude === undefined || longitude === undefined) return undefined;
+
+  return {
+    googleMapsUri: null,
+    id: placeId,
+    isLiked: true,
+    place: {
+      id: placeId,
+      name,
+      category: detail?.category
+        ? normalizeHomeCategory(detail.category)
+        : (fallback?.place.category ?? DEFAULT_CATEGORY),
+      address: detail?.dongName ?? fallback?.place.address ?? '',
+      isRegular: fallback?.place.isRegular ?? false,
+      stickerImages: fallback?.place.stickerImages ?? [],
+    },
+    position: { lat: latitude, lng: longitude },
+    reason: fallback?.reason ?? '내 동네에서 많이 방문한 곳',
+    thumbnailSrc: detail?.thumbnailUrls?.[0] ?? fallback?.thumbnailSrc ?? null,
+    visitCount: fallback?.visitCount ?? 0,
+  };
+};
 
 /** 지도 스티커를 소비 기록 폼이 사용하는 가게 모델로 변환합니다. */
 export const toShopSearchResult = (sticker?: MapSticker): ShopSearchResult | undefined => {
