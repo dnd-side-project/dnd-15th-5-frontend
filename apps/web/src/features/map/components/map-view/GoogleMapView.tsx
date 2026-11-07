@@ -80,13 +80,13 @@ export default function GoogleMapView({
       onIdle={(event) => handleMapIdle(event.map)}
     >
       <CurrentLocationCameraController
-        isAutomaticPanEnabled={activeSheetType === 'home'}
+        isAutomaticPanEnabled={!isSelectingLocation && activeSheetType === 'home'}
         position={position}
       />
       <CurrentLocationMarker position={position} />
-      <MapFocusController />
       {!isSelectingLocation && (
         <>
+          <MapFocusController />
           <MapStickers />
           <RecommendationMapMarkers />
         </>
