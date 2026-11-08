@@ -54,7 +54,7 @@ describe('mapMonthlyReportResponse', () => {
               placeName: '아오이 카페',
               visitCount: 5,
               firstVisitedDate: '2026-04-02',
-              stickerNames: ['커피', '지원하지 않는 스티커'],
+              visuals: [{ stickerName: '커피' }, { stickerName: '지원하지 않는 스티커' }],
             },
           ],
           townRanks: [{ rank: 1, townName: '연남동', visitCount: 5 }],
