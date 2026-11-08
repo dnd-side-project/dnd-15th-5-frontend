@@ -82,7 +82,6 @@ export const toLikedPlaceRecommendations = (
 
     return [
       {
-        googleMapsUri: null,
         id,
         isLiked: true,
         place: {
@@ -103,7 +102,6 @@ export const toLikedPlaceRecommendations = (
 
 /**
  * 좋아요 장소 상세 응답과 방문 장소 마커를 바텀시트 모델로 합칩니다.
- * 백엔드 지도 URI 대신 이름·주소 검색 링크를 사용하도록 URI는 비워 둡니다.
  */
 export const toLikedPlaceRecommendation = (
   placeId: string,
@@ -117,7 +115,6 @@ export const toLikedPlaceRecommendation = (
   if (!name || latitude === undefined || longitude === undefined) return undefined;
 
   return {
-    googleMapsUri: null,
     id: placeId,
     isLiked: true,
     place: {
@@ -126,7 +123,7 @@ export const toLikedPlaceRecommendation = (
       category: detail?.category
         ? normalizeHomeCategory(detail.category)
         : (fallback?.place.category ?? DEFAULT_CATEGORY),
-      address: detail?.dongName ?? fallback?.place.address ?? '',
+      address: detail?.roadAddress?.trim() || fallback?.place.address || detail?.dongName || '',
       isRegular: fallback?.place.isRegular ?? false,
       stickerImages: fallback?.place.stickerImages ?? [],
     },
@@ -137,11 +134,35 @@ export const toLikedPlaceRecommendation = (
   };
 };
 
+/** 상세 응답에 기록에 필요한 장소 정보가 모두 있으면 검색 결과 모델로 변환합니다. */
+export const toLikedPlaceRecordShop = (
+  detail?: RecommendedPlaceDetailResponse
+): ShopSearchResult | undefined => {
+  const id = detail?.googlePlaceId?.trim();
+  const name = detail?.name?.trim();
+  const address = detail?.roadAddress?.trim();
+  const latitude = detail?.latitude;
+  const longitude = detail?.longitude;
+
+  if (
+    !id ||
+    !name ||
+    !address ||
+    typeof latitude !== 'number' ||
+    !Number.isFinite(latitude) ||
+    typeof longitude !== 'number' ||
+    !Number.isFinite(longitude)
+  ) {
+    return undefined;
+  }
+
+  return { id, name, address, latitude, longitude, photoUrl: detail?.thumbnailUrls?.[0] ?? null };
+};
+
 /** 목록에서 지도 이동할 때 전달된 장소 정보로 마커·시트 대체 데이터를 만듭니다. */
 export const toLikedPlaceNavigationRecommendation = (
   navigation: LikedPlaceMapNavigation
 ): ShopRecommendation => ({
-  googleMapsUri: null,
   id: navigation.placeId,
   isLiked: true,
   place: {
@@ -201,7 +222,6 @@ const toRecommendation = (
   }
 
   return {
-    googleMapsUri: null,
     id: String(place.placeId),
     isLiked: Boolean(place.liked),
     place: {

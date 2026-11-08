@@ -4,7 +4,6 @@ import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from 'rea
 
 import { useLikedPlaceDetailQuery } from '@/features/map/apis/hooks/useLikedPlaceDetailQuery';
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
-import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
@@ -21,7 +20,6 @@ import HomeBottomSheet from './HomeBottomSheet';
 
 jest.mock('@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery');
 jest.mock('@/features/map/apis/hooks/useLikedPlaceDetailQuery');
-jest.mock('@/features/map/apis/hooks/useRecommendationRecordShopQuery');
 jest.mock('@/features/map/apis/hooks/useTogglePlaceLikeMutation');
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 jest.mock('@/shared/ui/toast', () => ({
@@ -31,7 +29,6 @@ jest.mock('@/shared/ui/toast', () => ({
 
 const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
 const mockedUseLikedPlaceDetailQuery = jest.mocked(useLikedPlaceDetailQuery);
-const mockedUseRecommendationRecordShopQuery = jest.mocked(useRecommendationRecordShopQuery);
 const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation);
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 const mutateLike = jest.fn();
@@ -106,19 +103,18 @@ describe('HomeBottomSheet', () => {
       refetch: jest.fn(),
     } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
     mockedUseLikedPlaceDetailQuery.mockReturnValue({
-      detail: undefined,
+      detail: {
+        googlePlaceId: recommendationRecordShop.id,
+        name: recommendationRecordShop.name,
+        roadAddress: recommendationRecordShop.address,
+        latitude: recommendationRecordShop.latitude,
+        longitude: recommendationRecordShop.longitude,
+        category: TEST_SHOP_RECOMMENDATIONS[0]!.place.category,
+      },
       isError: false,
       isLoading: false,
       refetch: jest.fn(),
     } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
-    mockedUseRecommendationRecordShopQuery.mockReturnValue({
-      query: {
-        data: recommendationRecordShop,
-        isPending: false,
-      },
-      isLibraryLoading: false,
-      isLibraryError: false,
-    } as unknown as ReturnType<typeof useRecommendationRecordShopQuery>);
     mockedUseTogglePlaceLikeMutation.mockReturnValue({
       mutate: mutateLike,
       isPending: false,
@@ -758,16 +754,14 @@ describe('HomeBottomSheet', () => {
     expect(refetchNearbyPlaces).toHaveBeenCalledTimes(1);
   });
 
-  it('추천 가게를 기록용 장소로 조회하지 못하면 기록 화면 이동을 막는다', () => {
+  it('상세 응답에 기록할 장소 정보가 없으면 기록 화면 이동을 막는다', () => {
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
-    mockedUseRecommendationRecordShopQuery.mockReturnValue({
-      query: {
-        data: undefined,
-        isPending: false,
-      },
-      isLibraryLoading: false,
-      isLibraryError: true,
-    } as unknown as ReturnType<typeof useRecommendationRecordShopQuery>);
+    mockedUseLikedPlaceDetailQuery.mockReturnValue({
+      detail: undefined,
+      isError: false,
+      isLoading: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
     useHomeBottomSheetStore.setState({
       activeSheet: { type: 'likedRecommendation', recommendationId: recommendation.id },
     });
@@ -855,7 +849,11 @@ describe('HomeBottomSheet', () => {
     const googleMapsLink = screen.getByRole('link', {
       name: `${firstRecommendation.place.name} 지도앱에서 확인하기`,
     });
-    expect(googleMapsLink).toHaveAttribute('href', firstRecommendation.googleMapsUri);
+    const mapsUrl = new URL(googleMapsLink.getAttribute('href')!);
+    expect(mapsUrl.origin + mapsUrl.pathname).toBe('https://www.google.com/maps/search/');
+    expect(mapsUrl.searchParams.get('query')).toBe(
+      `${firstRecommendation.place.name} ${firstRecommendation.place.address}`
+    );
 
     const carousel = screen.getByRole('list', { name: '추천 가게 목록' });
     Object.defineProperty(carousel.firstElementChild, 'offsetWidth', {

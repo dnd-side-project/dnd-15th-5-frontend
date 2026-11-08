@@ -93,7 +93,6 @@ describe('placeAdapters', () => {
     ]);
     expect(recommendations[0]?.place.category).toBe('기타');
     expect(recommendations[0]).toMatchObject({
-      googleMapsUri: null,
       thumbnailSrc: 'https://example.com/twosome.jpg',
     });
   });
