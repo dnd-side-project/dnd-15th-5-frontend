@@ -782,6 +782,12 @@ describe('HomeBottomSheet', () => {
 
   it('조회에 성공했지만 선택한 추천이 없으면 재요청 대신 지도 홈으로 돌아간다', async () => {
     const user = userEvent.setup();
+    mockedUseLikedPlaceDetailQuery.mockReturnValue({
+      detail: undefined,
+      isError: false,
+      isLoading: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
     useHomeBottomSheetStore.setState({
       activeSheet: { type: 'likedRecommendation', recommendationId: 'missing-recommendation' },
     });
