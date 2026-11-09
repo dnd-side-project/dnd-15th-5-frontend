@@ -11,6 +11,7 @@ import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
  * 화면 이동에는 `ROUTE_PATHS`의 동적 경로 생성 함수를 사용한다.
  */
 export const ROUTE_PATTERNS = {
+  editRecord: '/record/:consumptionId/edit',
   sharedReport: '/share/:shareToken',
   shopDetail: NOTIFICATION_ALLOWED_PATH_PATTERNS.shopDetail,
 } as const;
@@ -33,6 +34,7 @@ export const ROUTE_PATHS = {
   shopDetail: (shopId: string) => generatePath(ROUTE_PATTERNS.shopDetail, { shopId }),
 
   record: '/record',
+  editRecord: (consumptionId: string) => generatePath(ROUTE_PATTERNS.editRecord, { consumptionId }),
   manualRecord: '/record/manual',
   recordShopSearch: '/record/shop/search',
   receiptCamera: '/record/receipt/camera',
@@ -45,6 +47,7 @@ export const ROUTE_PATHS = {
   sharedReport: (shareToken: string) => generatePath(ROUTE_PATTERNS.sharedReport, { shareToken }),
 
   notifications: NOTIFICATION_ALLOWED_PATHS.notifications,
+  notificationSettings: '/my-page/notifications',
   myPage: '/my-page',
   myPageLikes: '/my-page/likes',
   myPageProfile: '/my-page/profile',

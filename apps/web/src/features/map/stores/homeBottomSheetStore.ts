@@ -25,8 +25,12 @@ export type HomeBottomSheetContent =
   | { type: 'selectedPlace'; stickerId: string }
   | { type: 'likedRecommendation'; recommendationId: string };
 
+export type HomeBottomSheetTab = 'frequentShops' | 'history';
+
 type HomeBottomSheetStore = {
   activeSheet: HomeBottomSheetContent;
+  tab: HomeBottomSheetTab;
+  scrollPositions: Record<HomeBottomSheetTab, number>;
   topActionBottomPx: number;
   visibleHeightPx: number;
   stepIndex: number;
@@ -39,10 +43,13 @@ type HomeBottomSheetStore = {
   setTopActionBottom: (bottomPx: number) => void;
   setVisibleHeight: (heightPx: number) => void;
   setSnapPoint: (snapPoint: BottomSheetSnapPoint) => void;
+  setTab: (tab: HomeBottomSheetTab) => void;
+  setScrollPosition: (tab: HomeBottomSheetTab, scrollTop: number) => void;
 };
 
 /**
- * 홈 화면에 표시할 바텀시트 하나와 기본 홈 시트의 높이 단계를 관리합니다.
+ * 홈 화면에 표시할 바텀시트와 높이 단계, 선택 탭·탭별 스크롤 위치를 관리합니다.
+ * 편집 화면 등으로 이동해 홈 시트가 언마운트되어도 목록의 탐색 상태를 유지합니다.
  *
  * `activeSheet`를 판별 가능한 유니온으로 제한해 홈·추천·선택 장소·좋아요 장소 중 두 종류가
  * 동시에 열릴 수 없도록 합니다. `features/map` 안에서만 사용하며, 하단 탭바 표시 여부는
@@ -54,6 +61,8 @@ type HomeBottomSheetStore = {
  */
 export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
   activeSheet: { type: 'home' },
+  tab: 'frequentShops',
+  scrollPositions: { frequentShops: 0, history: 0 },
   topActionBottomPx: 0,
   visibleHeightPx: 0,
   stepIndex: 0,
@@ -82,6 +91,13 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
   // NOTE: 드래그로 직접 높이를 바꿨을 때 호출한다. 그 이후 홈 버튼 클릭이 드래그로 도착한
   // 위치를 기준으로 이어지도록 stepIndex를 맞춰준다.
   setSnapPoint: (snapPoint) => set({ stepIndex: SNAP_POINT_TO_STEP_INDEX[snapPoint] }),
+  setTab: (tab) => set({ tab }),
+  setScrollPosition: (tab, scrollTop) =>
+    set((state) =>
+      state.scrollPositions[tab] === scrollTop
+        ? state
+        : { scrollPositions: { ...state.scrollPositions, [tab]: scrollTop } }
+    ),
 }));
 
 /** `stepIndex`를 `HOME_BOTTOM_SHEET_SNAP_SEQUENCE` 길이로 순환시켜 해당하는 높이 단계를 반환합니다. */

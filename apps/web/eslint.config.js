@@ -8,12 +8,13 @@ import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import storybook from 'eslint-plugin-storybook';
-import { defineConfig } from 'eslint/config';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 
 const tsconfigPath = fileURLToPath(new URL('./tsconfig.app.json', import.meta.url));
 
 export default defineConfig([
+  globalIgnores(['public/isnet-runtime/**']),
   {
     ignores: [
       'src/features/*/apis/clients.ts',

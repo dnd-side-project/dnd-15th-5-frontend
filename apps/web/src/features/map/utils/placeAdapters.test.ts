@@ -76,21 +76,24 @@ describe('placeAdapters', () => {
       longitude: 127.02,
       liked: false,
       thumbnailUrl: 'https://example.com/twosome.jpg',
-      googleMapsUri: 'https://maps.google.com/?cid=101',
     };
     const recommendations = toShopRecommendations({
-      sameCategoryPlaces: [commonPlace, { placeId: 999, name: '좌표 없음' }],
-      myTownPlaces: [commonPlace, { ...commonPlace, placeId: 102, name: '동네 가게' }],
+      allPlaces: [
+        commonPlace,
+        { placeId: 999, name: '좌표 없음' },
+        commonPlace,
+        { ...commonPlace, placeId: 102, name: '다른 가게' },
+      ],
     });
 
     expect(recommendations).toHaveLength(2);
     expect(recommendations.map(({ id, reason }) => ({ id, reason }))).toEqual([
-      { id: '101', reason: '나의 관심 카테고리' },
-      { id: '102', reason: '내 동네에서 많이 방문한 곳' },
+      { id: '101', reason: '카테고리별 인기 가게' },
+      { id: '102', reason: '카테고리별 인기 가게' },
     ]);
     expect(recommendations[0]?.place.category).toBe('기타');
     expect(recommendations[0]).toMatchObject({
-      googleMapsUri: 'https://maps.google.com/?cid=101',
+      googleMapsUri: null,
       thumbnailSrc: 'https://example.com/twosome.jpg',
     });
   });

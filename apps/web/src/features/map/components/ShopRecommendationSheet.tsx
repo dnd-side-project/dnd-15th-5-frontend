@@ -182,7 +182,9 @@ export default function ShopRecommendationSheet() {
                   type="button"
                   aria-label={`${place.name} 관심 가게`}
                   aria-pressed={isLiked}
-                  onClick={() => likeMutation.mutate({ placeId: Number(id) })}
+                  onClick={() =>
+                    likeMutation.mutate({ placeId: Number(id), currentLiked: isLiked })
+                  }
                   disabled={likeMutation.isPending}
                   className={cn(
                     'absolute top-4 right-4 flex size-7 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-300',
