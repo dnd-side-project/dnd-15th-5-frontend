@@ -9,7 +9,7 @@ import type { To } from 'react-router-dom';
 
 type StateViewBaseProps = {
   title: string;
-  description: string;
+  description?: string;
   headingAs: 'h1' | 'h2' | 'h3';
   className?: string;
 };
@@ -94,9 +94,11 @@ export function StateView(props: StateViewProps) {
       >
         {title}
       </Heading>
-      <p className="mt-2 break-keep whitespace-pre-line text-pretty text-body-02-semibold text-neutral-400">
-        {description}
-      </p>
+      {description && (
+        <p className="mt-2 break-keep whitespace-pre-line text-pretty text-body-02-semibold text-neutral-400">
+          {description}
+        </p>
+      )}
 
       {actionLabel && (
         <StateViewAction actionLabel={actionLabel} onAction={props.onAction} to={props.to} />
