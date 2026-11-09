@@ -94,16 +94,6 @@ export type MonthlyReportUnavailable = {
 /** 월간 리포트 API에서 만들 수 있는 생성·미생성 화면 데이터입니다. */
 export type MonthlyReportData = MonthlyReport | MonthlyReportUnavailable;
 
-/** 주간 캘린더의 날짜별 기록 상태입니다. */
-export type WeeklyRecord = {
-  count?: number;
-  date: number;
-  dateValue: string;
-  day: string;
-  isFuture?: boolean;
-  isToday?: boolean;
-};
-
 /** 같은 날짜에 획득한 월간 스티커 묶음입니다. */
 export type MonthlyStickerRecordGroup = {
   acquiredDate: string;

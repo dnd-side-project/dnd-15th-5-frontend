@@ -12,16 +12,11 @@ export { default as ReportShareSheet } from './components/monthly-report/ReportS
 export { default as ReportTopShops } from './components/monthly-report/ReportTopShops';
 export { default as WeekdaySpendingChart } from './components/monthly-report/WeekdaySpendingChart';
 export { useKakaoReportShare } from './hooks/useKakaoReportShare';
-export { default as MonthlyStickerSummary } from './components/report-page/MonthlyStickerSummary';
-export { default as RecentDiscoveryPanel } from './components/report-page/RecentDiscoveryPanel';
 export { default as ReportLoyaltySummary } from './components/report-page/ReportLoyaltySummary';
 export { default as ReportCategoryDistribution } from './components/report-page/ReportCategoryDistribution';
 export { default as ReportStickerCalendar } from './components/report-page/ReportStickerCalendar';
-export { default as ReportContentSkeleton } from './components/report-page/ReportContentSkeleton';
 export { default as ReportHeroSection } from './components/report-page/ReportHeroSection';
 export { default as ReportLinkButton } from './components/report-page/ReportLinkButton';
-export { default as ReportSection } from './components/report-page/ReportSection';
-export { default as WeeklyRecordCalendar } from './components/report-page/WeeklyRecordCalendar';
 export { default as FrequentShopList } from './components/frequent-shop-list/FrequentShopList';
 export { default as FrequentShopSummary } from './components/frequent-shop-list/FrequentShopSummary';
 export { default as SpendingHistory } from './components/spending-history/SpendingHistory';
