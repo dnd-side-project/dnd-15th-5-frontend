@@ -30,6 +30,7 @@ type ShopDetailPageState = {
   fromMapSheet?: boolean;
 };
 
+/** 가게 상세에 기록별 스티커와 수정·삭제 동작을 연결하고 목록 복귀 위치와 지도 포커스를 복원합니다. */
 export default function ShopDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();

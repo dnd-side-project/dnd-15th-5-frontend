@@ -27,6 +27,10 @@ type VisitHistoryListProps = ConsumptionActions & {
   visits: readonly PlaceVisitResponse[];
 };
 
+/**
+ * 방문별 사진·기본 스티커와 소비 정보를 표시하고 무한 스크롤 및 수정·삭제 동작을 연결합니다.
+ * 목록에 이미지 정보가 없으면 전달받은 렌더러로 기록별 스티커를 조회합니다.
+ */
 export default function VisitHistoryList({
   onEditRecord,
   onDeleteRecord,

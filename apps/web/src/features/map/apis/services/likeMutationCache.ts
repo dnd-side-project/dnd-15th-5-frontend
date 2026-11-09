@@ -168,6 +168,7 @@ const updateRecommendedPlaces = (
     return liked === place.liked ? place : { ...place, liked };
   });
 
+/** 카테고리별 목록과 전체 목록에 중복된 장소의 좋아요 상태를 함께 갱신합니다. */
 const updateNearbyPlacesResponse = (
   response: ApiResponseNearbyPlacesResponse | undefined,
   placeId: number,
