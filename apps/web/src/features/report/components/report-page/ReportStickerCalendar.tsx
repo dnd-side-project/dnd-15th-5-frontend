@@ -116,7 +116,7 @@ export default function ReportStickerCalendar() {
             onClick={() => updateCursor(getNavigationDate(-1))}
             className="flex size-8 items-center justify-center rounded-08 text-neutral-600 focus-visible:outline-2 focus-visible:outline-primary-500"
           >
-            <ChevronRightIcon aria-hidden className="size-4 rotate-180" />
+            <ChevronRightIcon aria-hidden className="size-5 rotate-180 [&>path]:stroke-2" />
           </button>
           <h2 aria-live="polite" className="text-body-01-medium text-neutral-700">
             {year}년 {month + 1}월
@@ -128,7 +128,7 @@ export default function ReportStickerCalendar() {
             disabled={getNavigationDate(1) > endMonth}
             className="flex size-8 items-center justify-center text-neutral-600 focus-visible:outline-2 focus-visible:outline-primary-500 disabled:cursor-default disabled:text-neutral-300"
           >
-            <ChevronRightIcon aria-hidden className="size-4" />
+            <ChevronRightIcon aria-hidden className="size-5 [&>path]:stroke-2" />
           </button>
         </div>
         <SegmentedToggle
