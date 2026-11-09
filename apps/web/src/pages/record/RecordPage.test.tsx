@@ -266,10 +266,28 @@ it('가게 검색에서 작성을 종료할 때 확인한 뒤 홈으로 돌아�
   expect(jest.mocked(URL.revokeObjectURL).mock.calls.map(([url]) => url)).toContain('blob:sticker');
 });
 
-it('닫기를 누르면 홈으로 돌아간다', () => {
+it('초안 없이 닫기를 누르면 홈으로 돌아간다', () => {
   renderRecordPage();
   fireEvent.click(screen.getByRole('button', { name: '닫기' }));
   expect(screen.getByText('홈 화면')).toBeInTheDocument();
+});
+
+it('작성 중 X를 누르면 계속 작성하거나 홈으로 나갈 수 있다', async () => {
+  renderRecordPage();
+  await selectDefaultSticker();
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '작성 중인 메모' },
+  });
+
+  const closeButton = screen.getByRole('button', { name: '기록 닫고 홈으로 이동' });
+  fireEvent.click(closeButton);
+  expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '계속 작성하기' }));
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('작성 중인 메모');
+
+  fireEvent.click(closeButton);
+  fireEvent.click(screen.getByRole('button', { name: '나가기' }));
+  expect(await screen.findByText('홈 화면')).toBeInTheDocument();
 });
 
 it('브라우저 뒤로 가기를 취소하면 초안을 유지하고, 확인하면 이전 화면으로 이동한다', async () => {

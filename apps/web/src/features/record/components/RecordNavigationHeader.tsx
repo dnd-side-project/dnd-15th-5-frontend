@@ -1,8 +1,8 @@
-import { RECORD_EXIT_CONFIRM_TEXT } from '@chapchap/shared/record';
 import { useState } from 'react';
 
 import PageHeader from '@/shared/layout/PageHeader';
-import { UnsavedChangesDialog } from '@/shared/ui/dialog';
+
+import RecordExitDialog from './RecordExitDialog';
 
 type PendingExitAction = 'back' | 'close' | null;
 
@@ -67,14 +67,7 @@ export default function RecordNavigationHeader({
       />
 
       {pendingExitAction && (
-        <UnsavedChangesDialog
-          title={RECORD_EXIT_CONFIRM_TEXT.title}
-          description={RECORD_EXIT_CONFIRM_TEXT.description}
-          exitLabel={RECORD_EXIT_CONFIRM_TEXT.exit}
-          continueLabel={RECORD_EXIT_CONFIRM_TEXT.continue}
-          onExit={handleExit}
-          onContinue={() => setPendingExitAction(null)}
-        />
+        <RecordExitDialog onExit={handleExit} onContinue={() => setPendingExitAction(null)} />
       )}
     </>
   );
