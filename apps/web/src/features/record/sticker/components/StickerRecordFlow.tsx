@@ -87,8 +87,9 @@ export default function StickerRecordFlow({
     selectDefaultSticker,
   } = useStickerRecordFlow(initialValue);
   const hasMediaChanges = Boolean(initialValue && recordResult?.source !== 'saved');
-  const hasPendingPhoto = Boolean(initialValue && (stage === 'crop' || stage === 'preview'));
-  const hasChanges = isFormDirty || hasMediaChanges || hasPendingPhoto;
+  const hasPendingPhoto = stage === 'crop' || stage === 'preview';
+  const hasChanges =
+    isFormDirty || hasMediaChanges || hasPendingPhoto || (!initialValue && recordResult !== null);
   const defaultStickerCategory =
     recordResult && isDefaultStickerMedia(recordResult) ? recordResult.category : undefined;
   useEffect(() => {

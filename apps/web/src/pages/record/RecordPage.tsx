@@ -1,3 +1,4 @@
+import { RECORD_EXIT_CONFIRM_TEXT } from '@chapchap/shared/record';
 import { useState } from 'react';
 import { Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -11,6 +12,8 @@ import type {
 import { createInitialVisitDateTimeForMonth } from '@/features/record/utils/createInitialVisitDateTimeForMonth';
 import { createYearMonthPath, ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
+import { useUnsavedChangesBlocker } from '@/shared/hooks/useUnsavedChangesBlocker';
+import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 import {
   getRecordCategoryFromLocationState,
   getRecordShopFromLocationState,
@@ -35,6 +38,17 @@ export default function RecordPage() {
   );
   const { scanReceipt, isOpeningReceipt, receiptError } = useScanReceipt();
   const { submit, isSubmitting, submitError } = useSubmitStickerRecord();
+  const [hasChanges, setHasChanges] = useState(false);
+  const blocker = useUnsavedChangesBlocker(
+    shouldKeepRecordFlow && hasChanges,
+    ({ historyAction, nextLocation }) =>
+      historyAction === 'POP' &&
+      !(isShopSearchOpen && nextLocation.pathname === ROUTE_PATHS.record) &&
+      !(
+        nextLocation.pathname === ROUTE_PATHS.recordShopSearch &&
+        (nextLocation.state as ShopSearchLocationState | null)?.isStickerRecordShopSearch
+      )
+  );
   const handleSearchShop = () => {
     navigate(
       createYearMonthPath(ROUTE_PATHS.recordShopSearch, searchParams.get(YEAR_MONTH_SEARCH_PARAM)),
@@ -47,6 +61,7 @@ export default function RecordPage() {
       {shouldKeepRecordFlow && (
         <div hidden={isShopSearchOpen}>
           <StickerRecordFlow
+            onDirtyChange={setHasChanges}
             onClose={() => navigate(ROUTE_PATHS.home, { replace: true })}
             onSearchShop={handleSearchShop}
             onScanReceipt={scanReceipt}
@@ -65,6 +80,16 @@ export default function RecordPage() {
       <Outlet
         context={{ onSelectStickerShop: setSelectedShop } satisfies StickerRecordShopSearchContext}
       />
+      {blocker.isBlocked && (
+        <UnsavedChangesDialog
+          title={RECORD_EXIT_CONFIRM_TEXT.title}
+          description={RECORD_EXIT_CONFIRM_TEXT.description}
+          exitLabel={RECORD_EXIT_CONFIRM_TEXT.exit}
+          continueLabel={RECORD_EXIT_CONFIRM_TEXT.continue}
+          onExit={blocker.proceed}
+          onContinue={blocker.reset}
+        />
+      )}
     </>
   );
 }
