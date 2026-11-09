@@ -112,7 +112,7 @@ export default function ShopDetailPage() {
             recordShop={recordShop}
             {...returnTarget}
             renderVisitSticker={(consumptionId) => (
-              <ConsumptionSticker consumptionId={consumptionId} />
+              <ConsumptionSticker consumptionId={consumptionId} size="large" />
             )}
             onViewOnMap={() => void handleViewOnMap()}
             headerContent={<BackButton onClick={() => void handleBack()} />}

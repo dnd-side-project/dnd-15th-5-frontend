@@ -1,9 +1,12 @@
 import type { PlaceVisitResponse } from '@/features/shop/apis/dto';
 import { formatVisitAmount, formatVisitDate } from '@/features/shop/utils/formatVisit';
+import { getStickerImage, StickerEyesImage } from '@/shared/assets/images/stickers';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { Button } from '@/shared/ui/button';
+import { CardTitle } from '@/shared/ui/card';
 import { Spinner } from '@/shared/ui/spinner';
+import { StickerImage } from '@/shared/ui/sticker-image/StickerImage';
 import SwipeActions from '@/shared/ui/swipe-actions/SwipeActions';
 import { formatTimePeriod } from '@/shared/utils/formatTimePeriod';
 import { isPositiveSafeInteger } from '@/shared/utils/isPositiveSafeInteger';
@@ -79,27 +82,37 @@ export default function VisitHistoryList({
           {visits.map((visit, index) => {
             const id = visit.consumptionId;
             const period = formatTimePeriod(visit.visitedTime);
+            const stickerImage = getStickerImage({
+              imageId: visit.imageId,
+              imageUrl: visit.imageUrl,
+              itemName: visit.stickerName,
+            });
             const content = (
               <div
                 className="flex items-center gap-3 py-1 text-body-01-medium text-neutral-700"
                 data-mp-mask=""
               >
-                {isPositiveSafeInteger(id) && renderVisitSticker ? (
-                  renderVisitSticker(id)
-                ) : (
-                  <span
-                    aria-hidden="true"
-                    className="size-2 shrink-0 rounded-full bg-neutral-500"
+                {stickerImage || !isPositiveSafeInteger(id) || !renderVisitSticker ? (
+                  <StickerImage
+                    src={stickerImage ?? StickerEyesImage}
+                    alt=""
+                    loading="lazy"
+                    className="size-13 shrink-0 rounded-08 object-contain"
+                    data-mp-block=""
                   />
+                ) : (
+                  renderVisitSticker(id)
                 )}
                 <div className="min-w-0 flex-1">
-                  {placeName && <p className="truncate text-body-01-semibold">{placeName}</p>}
-                  <p className="truncate text-caption-01-regular text-neutral-500">
+                  <CardTitle weight="semibold">{placeName?.trim() || '알 수 없는 장소'}</CardTitle>
+                  <p className="mt-1 truncate text-caption-01-regular text-neutral-500">
                     <time>{formatVisitDate(visit.visitedAt)}</time>
                     {period && ` · ${period}`} · {visit.category?.trim() || '기타'}
                   </p>
                 </div>
-                <span className="shrink-0 tabular-nums">{formatVisitAmount(visit.amount)}</span>
+                <strong className="shrink-0 text-body-01-semibold text-neutral-900 tabular-nums">
+                  {formatVisitAmount(visit.amount)}
+                </strong>
               </div>
             );
             return (
