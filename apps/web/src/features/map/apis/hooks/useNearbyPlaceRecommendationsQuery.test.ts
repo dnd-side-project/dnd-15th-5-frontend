@@ -29,7 +29,7 @@ describe('useNearbyPlaceRecommendationsQuery', () => {
     const { result } = renderHook(() => useNearbyPlaceRecommendationsQuery());
     expect(result.current.recommendations.map(({ id, reason }) => ({ id, reason }))).toEqual([
       { id: '101', reason: '카테고리별 인기 가게' },
-      { id: '102', reason: '내 동네에서 많이 방문한 곳' },
+      { id: '102', reason: '카테고리별 인기 가게' },
     ]);
     expect(result.current.recommendations[0]?.isLiked).toBe(true);
   });
