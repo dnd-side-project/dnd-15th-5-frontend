@@ -13,6 +13,102 @@ export type ApiResponsePlaceLikeResponse = {
   data?: PlaceLikeResponse;
 };
 
+/**
+ * 동네 설정하기 요청. 동네 검색 결과를 선택한 경우 administrativeDongCode를 같이 보내고, 지도에서 핀을 찍어 저장한 정밀 위치(도로명 주소 등)는 우리 쪽 행정동코드를 알 수 없으므로 생략한다.
+ */
+export type UserTownSaveRequest = {
+  /**
+   * 행정동 코드. 동네 검색 결과를 선택한 경우에만 보낸다 - 지도 핀 찍기 저장은 생략 가능
+   * @minLength 0
+   * @maxLength 20
+   * @nullable
+   */
+  administrativeDongCode?: string | null;
+  /**
+   * 최근 설정한 동네 목록에 보여줄 이름. 행정동 이름일 수도, 도로명 주소일 수도 있다
+   * @minLength 0
+   * @maxLength 100
+   */
+  administrativeDongName: string;
+  /**
+   * 프론트에서 변환한 위도
+   * @minimum -90
+   * @maximum 90
+   */
+  latitude: number;
+  /**
+   * 프론트에서 변환한 경도
+   * @minimum -180
+   * @maximum 180
+   */
+  longitude: number;
+};
+
+export type UserTownResponse = {
+  id?: number;
+  administrativeDongCode?: string;
+  administrativeDongName?: string;
+  latitude?: number;
+  longitude?: number;
+  selectedAt?: string;
+};
+
+export type ApiResponseUserTownResponse = {
+  code?: string;
+  message?: string;
+  data?: UserTownResponse;
+};
+
+export type TownSearchItem = {
+  administrativeDongCode?: string;
+  sidoName?: string;
+  sigunguName?: string;
+  dongName?: string;
+  fullName?: string;
+};
+
+export type TownSearchResponse = {
+  towns?: TownSearchItem[];
+};
+
+export type ApiResponseTownSearchResponse = {
+  code?: string;
+  message?: string;
+  data?: TownSearchResponse;
+};
+
+export type RecentTownsResponse = {
+  towns?: UserTownResponse[];
+};
+
+export type ApiResponseRecentTownsResponse = {
+  code?: string;
+  message?: string;
+  data?: RecentTownsResponse;
+};
+
+export type RecommendedPlaceDetailResponse = {
+  placeId?: number;
+  name?: string;
+  category?: string;
+  dongName?: string;
+  latitude?: number;
+  longitude?: number;
+  /** Google Places 사진의 URL(장소당 최대 3장). 사진이 없거나 조회에 실패하면 빈 배열 */
+  thumbnailUrls?: string[];
+  /**
+   * 실제 Google 지도 링크, 사진 조회에 실패하면 null
+   * @nullable
+   */
+  googleMapsUri?: string | null;
+};
+
+export type ApiResponseRecommendedPlaceDetailResponse = {
+  code?: string;
+  message?: string;
+  data?: RecommendedPlaceDetailResponse;
+};
+
 export type RecommendedPlaceItem = {
   placeId?: number;
   name?: string;
@@ -96,6 +192,19 @@ export type ApiResponseVisitedPlaceMarkerResponse = {
   code?: string;
   message?: string;
   data?: VisitedPlaceMarkerResponse;
+};
+
+export type ApiResponseVoid = {
+  code?: string;
+  message?: string;
+  data?: unknown;
+};
+
+export type SearchTownsParams = {
+  /**
+   * 검색 키워드
+   */
+  keyword: string;
 };
 
 export type GetNearbyPlacesParams = {

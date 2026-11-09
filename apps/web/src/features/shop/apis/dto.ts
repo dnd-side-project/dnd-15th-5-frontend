@@ -3,28 +3,6 @@
  * Do not edit manually.
  */
 
-export type RecommendedPlaceDetailResponse = {
-  placeId?: number;
-  name?: string;
-  category?: string;
-  dongName?: string;
-  latitude?: number;
-  longitude?: number;
-  /** Google Places 사진의 URL(장소당 최대 3장). 사진이 없거나 조회에 실패하면 빈 배열 */
-  thumbnailUrls?: string[];
-  /**
-   * 실제 Google 지도 링크, 사진 조회에 실패하면 null
-   * @nullable
-   */
-  googleMapsUri?: string | null;
-};
-
-export type ApiResponseRecommendedPlaceDetailResponse = {
-  code?: string;
-  message?: string;
-  data?: RecommendedPlaceDetailResponse;
-};
-
 /**
  * 방문 장소 검색 항목
  */

@@ -59,7 +59,7 @@ export const TEST_SHOP_RECOMMENDATIONS: readonly ShopRecommendation[] = [
       name: `${sticker.place.name} ${index + 2}`,
     },
     position: { lat: sticker.position.lat + 0.01, lng: sticker.position.lng + 0.01 },
-    reason: '내 동네에서 많이 방문한 곳' as const,
+    reason: '카테고리별 인기 가게' as const,
     thumbnailSrc: null,
     visitCount: sticker.visitCount,
   })),

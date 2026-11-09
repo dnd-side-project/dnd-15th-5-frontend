@@ -1,0 +1,145 @@
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import {
+  NotificationToggle,
+  useNativeNotificationPermission,
+  useNotificationSettings,
+} from '@/features/notification';
+import { ChevronRightThinIcon, CircleWarningIcon } from '@/shared/assets/icons';
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { BackButton } from '@/shared/ui/back-button';
+
+const NOTIFICATION_OPTIONS = [
+  {
+    id: 'consumption-record',
+    title: '소비 기록 알림',
+    description: '잊고 있던 소비 기록을 챙겨드려요.',
+    settingKey: 'consumptionReminderEnabled',
+  },
+  {
+    id: 'monthly-report',
+    title: '월간 리포트 알림',
+    description: '이번 달 소비 취향 리포트가 나오면 알려드려요.',
+    settingKey: 'monthlyReportEnabled',
+  },
+] as const;
+
+export default function NotificationSettingsPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const {
+    isInNativeApp,
+    isNotificationPermissionKnown,
+    hasNotificationPermission,
+    openNotificationSettings,
+  } = useNativeNotificationPermission();
+  const { settingsQuery, isSaving, toggleSetting } = useNotificationSettings();
+  const shouldShowNotificationPermissionNotice =
+    isInNativeApp && isNotificationPermissionKnown && !hasNotificationPermission;
+
+  const handleBack = () => {
+    const locationState = location.state as { fromMyPage?: boolean } | null;
+    const historyIndex = window.history.state?.idx;
+
+    if (locationState?.fromMyPage && typeof historyIndex === 'number' && historyIndex > 0) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(ROUTE_PATHS.myPage, { replace: true });
+  };
+
+  return (
+    <main className="mobile-frame fixed inset-0 flex flex-col overflow-y-auto bg-neutral-00">
+      <header className="relative flex h-24 shrink-0 items-center justify-center px-4 pt-4">
+        <BackButton
+          className="absolute top-7 left-4 mt-0"
+          onClick={handleBack}
+          aria-label="이전 화면으로 돌아가기"
+        />
+        <h1 className="text-title-02-bold tracking-[-0.02em] text-neutral-700">알림 설정</h1>
+      </header>
+
+      {shouldShowNotificationPermissionNotice && (
+        <section
+          aria-label="스마트폰 알림 안내"
+          className="mx-4 mt-3 rounded-16 bg-neutral-50 px-4 py-4"
+        >
+          <div className="flex items-center gap-1.5 text-body-01-semibold text-neutral-700">
+            <CircleWarningIcon aria-hidden="true" className="size-4.5 shrink-0" />
+            <p>스마트폰의 앱 알림이 꺼져있어요.</p>
+          </div>
+          <p className="mt-1.5 pl-6 text-body-02-regular text-neutral-500">
+            알림을 받으시려면 스마트폰 설정에서 알림을 켜주세요.
+          </p>
+          <button
+            type="button"
+            className="mt-1.5 ml-6 inline-flex items-center gap-0.5 text-body-01-regular text-primary-600"
+            onClick={() => void openNotificationSettings()}
+          >
+            알림켜기
+            <ChevronRightThinIcon aria-hidden="true" className="size-5" />
+          </button>
+        </section>
+      )}
+
+      <div className={shouldShowNotificationPermissionNotice ? 'mt-8' : 'mt-3'}>
+        {settingsQuery.isError ? (
+          <div className="px-4 py-6 text-center text-body-02-regular text-neutral-500" role="alert">
+            <p>알림 설정을 불러오지 못했어요.</p>
+            <button
+              type="button"
+              className="mt-2 text-primary-600 underline"
+              onClick={() => void settingsQuery.refetch()}
+            >
+              다시 불러오기
+            </button>
+          </div>
+        ) : (
+          NOTIFICATION_OPTIONS.map((option) => {
+            const settingValue = settingsQuery.data?.data?.[option.settingKey];
+            const checked = settingValue ?? false;
+
+            return (
+              <NotificationSettingRow
+                key={option.id}
+                option={option}
+                checked={checked}
+                disabled={settingsQuery.isPending || typeof settingValue !== 'boolean' || isSaving}
+                onCheckedChange={() => toggleSetting(option.settingKey, checked)}
+              />
+            );
+          })
+        )}
+      </div>
+    </main>
+  );
+}
+
+function NotificationSettingRow({
+  option,
+  checked,
+  disabled,
+  onCheckedChange,
+}: {
+  option: (typeof NOTIFICATION_OPTIONS)[number];
+  checked: boolean;
+  disabled: boolean;
+  onCheckedChange: () => void;
+}) {
+  return (
+    <div className="flex min-h-19 items-center justify-between gap-3 border-b border-neutral-100 px-4 pt-6 pb-4 last:border-b-0">
+      <div className="min-w-0">
+        <h2 className="text-body-01-semibold text-black">{option.title}</h2>
+        <p className="mt-2 text-body-01-regular text-neutral-500">{option.description}</p>
+      </div>
+      <NotificationToggle
+        id={option.id}
+        label={option.title}
+        checked={checked}
+        disabled={disabled}
+        onCheckedChange={onCheckedChange}
+      />
+    </div>
+  );
+}

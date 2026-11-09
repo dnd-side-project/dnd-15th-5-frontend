@@ -14,11 +14,11 @@ import type {
 
 import { apiClient } from '@/shared/apis/orvalMutator';
 
-import type { ErrorType } from '@/shared/apis/orvalMutator';
+import type { ErrorType, BodyType } from '@/shared/apis/orvalMutator';
 
-import type { SecondParameter } from '@/features/map/apis/dto';
+import type { SecondParameter, UserTownSaveRequest } from '@/features/map/apis/dto';
 
-import { toggleLike } from '@/features/map/apis/clients';
+import { deleteRecentTown, saveTown, toggleLike } from '@/features/map/apis/clients';
 
 export const getToggleLikeMutationOptions = <
   TError = ErrorType<unknown>,
@@ -81,4 +81,134 @@ export const useToggleLike = <TError = ErrorType<unknown>, TContext = unknown>(
   TContext
 > => {
   return useMutation(getToggleLikeMutationOptions(options), queryClient);
+};
+
+export const getSaveTownMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveTown>>,
+    TError,
+    { data: BodyType<UserTownSaveRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof saveTown>>,
+  TError,
+  { data: BodyType<UserTownSaveRequest> },
+  TContext
+> => {
+  const mutationKey = ['saveTown'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saveTown>>,
+    { data: BodyType<UserTownSaveRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return saveTown(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SaveTownMutationResult = NonNullable<Awaited<ReturnType<typeof saveTown>>>;
+
+export type SaveTownMutationBody = BodyType<UserTownSaveRequest>;
+
+export type SaveTownMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 동네 설정하기
+ */
+export const useSaveTown = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof saveTown>>,
+      TError,
+      { data: BodyType<UserTownSaveRequest> },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof saveTown>>,
+  TError,
+  { data: BodyType<UserTownSaveRequest> },
+  TContext
+> => {
+  return useMutation(getSaveTownMutationOptions(options), queryClient);
+};
+
+export const getDeleteRecentTownMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteRecentTown>>,
+    TError,
+    { userTownId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteRecentTown>>,
+  TError,
+  { userTownId: number },
+  TContext
+> => {
+  const mutationKey = ['deleteRecentTown'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteRecentTown>>,
+    { userTownId: number }
+  > = (props) => {
+    const { userTownId } = props ?? {};
+
+    return deleteRecentTown(userTownId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteRecentTownMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteRecentTown>>
+>;
+
+export type DeleteRecentTownMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 최근 설정한 동네 삭제
+ */
+export const useDeleteRecentTown = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteRecentTown>>,
+      TError,
+      { userTownId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteRecentTown>>,
+  TError,
+  { userTownId: number },
+  TContext
+> => {
+  return useMutation(getDeleteRecentTownMutationOptions(options), queryClient);
 };

@@ -65,3 +65,27 @@ export const ErrorHome: Story = {
     to: '/home',
   },
 };
+
+/** 추가 행동이 필요 없는 빈 상태입니다. */
+export const EmptyWithoutAction: Story = {
+  args: {
+    variant: 'empty',
+    title: '아직 좋아요한 가게가 없어요',
+    description: '가게에 좋아요를 누르고 나만의 목록을 만들어보세요.',
+    actionLabel: undefined,
+    onAction: undefined,
+    to: undefined,
+  },
+};
+
+/** 목적지 이동이 필요한 빈 상태는 액션 링크를 사용합니다. */
+export const EmptyWithLink: Story = {
+  args: {
+    variant: 'empty',
+    title: '주변에 추천 가게가 없어요',
+    description: '지도를 움직여 다른 곳을 살펴보세요.',
+    actionLabel: '지도 홈으로',
+    onAction: undefined,
+    to: '/home',
+  },
+};

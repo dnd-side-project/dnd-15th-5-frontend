@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useContext, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import {
@@ -6,10 +6,20 @@ import {
   useOpenVisitedPlaceOnMap,
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
+import { useConsumptionReturnTarget } from '@/features/record/apis/hooks/useConsumptionReturnTarget';
+import ConsumptionRecordActions from '@/features/record/components/ConsumptionRecordActions';
+import ConsumptionSticker from '@/features/record/components/ConsumptionSticker';
 import { ShopDetail } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
+import { RouteHistoryContext } from '@/shared/lib/routeHistoryContext';
 import { BackButton } from '@/shared/ui/back-button';
+import {
+  getConsumptionScrollDate,
+  getConsumptionScrollId,
+  getConsumptionListReturn,
+  getConsumptionReturnEntryKey,
+} from '@/shared/utils/consumptionNavigation';
 import { getRecordShopFromLocationState } from '@/shared/utils/recordNavigation';
 
 const DETAIL_ENTER_DURATION_MS = 160;
@@ -23,11 +33,17 @@ type ShopDetailPageState = {
 export default function ShopDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const previousLocation = useContext(RouteHistoryContext);
   const fromMapSheet = (location.state as ShopDetailPageState | null)?.fromMapSheet === true;
   const { shopId } = useParams();
   const pageRef = useRef<HTMLElement | null>(null);
   const prefersReducedMotion = usePrefersReducedMotion();
   const placeId = Number(shopId);
+  const returnTarget = useConsumptionReturnTarget({
+    consumptionId: getConsumptionScrollId(location.state),
+    fallbackDate: getConsumptionScrollDate(location.state),
+    placeId,
+  });
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
   const { stickers } = useVisitedPlaceStickersQuery();
   const recordShop =
@@ -57,6 +73,22 @@ export default function ShopDetailPage() {
   };
 
   const handleBack = async () => {
+    const listReturn = getConsumptionListReturn(location.state);
+    if (listReturn) {
+      const isPreviousEntry =
+        previousLocation &&
+        `${previousLocation.pathname}${previousLocation.search}` === listReturn.returnTo &&
+        listReturn.returnEntryKey &&
+        (previousLocation.key === listReturn.returnEntryKey ||
+          getConsumptionReturnEntryKey(previousLocation.state) === listReturn.returnEntryKey);
+      if (isPreviousEntry) {
+        navigate(-1);
+      } else {
+        navigate(listReturn.returnTo, { replace: true, state: listReturn.returnState });
+      }
+      return;
+    }
+
     // NOTE: 뒤로 가기로 홈에 돌아왔을 때도 이 매장의 바텀시트가 뜨므로, 지도 포커스도 함께 맞춘다.
     // 되돌아갈 히스토리가 없어 홈으로 직접 이동하는 경우도 마찬가지다.
     await focusThisShopOnMap();
@@ -71,13 +103,22 @@ export default function ShopDetailPage() {
   };
 
   return (
-    <main ref={pageRef}>
-      <ShopDetail
-        placeId={placeId}
-        recordShop={recordShop}
-        onViewOnMap={() => void handleViewOnMap()}
-        headerContent={<BackButton onClick={() => void handleBack()} />}
-      />
-    </main>
+    <ConsumptionRecordActions>
+      {(actions) => (
+        <main ref={pageRef}>
+          <ShopDetail
+            {...actions}
+            placeId={placeId}
+            recordShop={recordShop}
+            {...returnTarget}
+            renderVisitSticker={(consumptionId) => (
+              <ConsumptionSticker consumptionId={consumptionId} />
+            )}
+            onViewOnMap={() => void handleViewOnMap()}
+            headerContent={<BackButton onClick={() => void handleBack()} />}
+          />
+        </main>
+      )}
+    </ConsumptionRecordActions>
   );
 }

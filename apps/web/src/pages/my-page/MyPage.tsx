@@ -10,7 +10,7 @@ import {
   WithdrawAccountButton,
   useGetMyAccount,
 } from '@/features/my-page';
-import { TermsIcon } from '@/shared/assets/icons';
+import { NotificationDefaultIcon, TermsIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { StateView } from '@/shared/ui/state-view';
 
@@ -52,7 +52,6 @@ export default function MyPage() {
         <MyPageShortcutMenu
           onLikeClick={() => navigate(ROUTE_PATHS.myPageLikes)}
           onRecordClick={() => navigate(ROUTE_PATHS.spendingHistory)}
-          onNotificationClick={() => navigate(ROUTE_PATHS.notifications)}
         />
 
         <MyPageMenuSection>
@@ -62,6 +61,16 @@ export default function MyPage() {
             onClick={() => navigate(ROUTE_PATHS.myPagePolicies)}
           />
           <ContactButton />
+        </MyPageMenuSection>
+
+        <MyPageMenuSection className="mt-4">
+          <MyPageMenuItem
+            icon={NotificationDefaultIcon}
+            label="알림 설정"
+            onClick={() =>
+              navigate(ROUTE_PATHS.notificationSettings, { state: { fromMyPage: true } })
+            }
+          />
         </MyPageMenuSection>
 
         <MyPageMenuSection className="mt-4">

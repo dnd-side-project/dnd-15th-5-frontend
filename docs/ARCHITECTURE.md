@@ -151,6 +151,8 @@ pages/
 │       └── ShopDetailPage.tsx
 ├── record/
 │   ├── RecordPage.tsx
+│   ├── edit/
+│   │   └── EditRecordPage.tsx
 │   ├── manual/
 │   │   └── ManualRecordPage.tsx
 │   ├── shop/
@@ -178,6 +180,19 @@ pages/
 페이지를 추가하거나 이동할 때는 이 구조와 `apps/web/src/app/routes`의 라우트 설정을 함께 수정한다.
 
 사진 기록의 진입 경로는 `/record`다.
+
+소비 기록 수정은 `/record/:consumptionId/edit`에서 처리한다. 기존 사진·스티커 ID와 정확한 방문
+시각을 복원하고 이미지 교체 시에만 업로드한다. 지도 소비 기록·가게 상세·월별 소비내역의
+수정·삭제 동작은 페이지에서 `features/record`와 각 목록을 조합해 연결한다.
+공통 스와이프 UI는 `shared/ui/swipe-actions`, API 호출과 확인 모달은 `features/record`에서 관리한다.
+수정·삭제 후 소비 기록·방문 장소·현재 리포트 캐시를 갱신하며, 서버에서 이미 생성한 월간
+리포트 스냅샷은 수정 API의 정책에 따라 유지한다.
+
+생성·수정 폼의 입력 검증·미디어 준비·중복 제출 방지는
+`features/record/apis/hooks/useStickerRecordSubmission`에서 공통으로 처리한다.
+업로드·스티커 ID 조회는 같은 feature의 `apis/services`에 두고, 생성·수정·삭제 훅은
+각 API 호출 뒤의 캐시 갱신과 완료 동작을 담당한다. 스와이프 UI의 제스처 처리는
+`shared/ui/swipe-actions/useSwipeActions`에서 관리하며 기록 API를 참조하지 않는다.
 
 - 일반 브라우저는 기존 ISNet WebGPU·WASM을, iOS 앱 WebView는 `removeStickerBackground` 브릿지와
   `apps/mobile/modules/chapchap-isnet` 로컬 네이티브 모듈을 사용한다. 앱은 모델을 미리 준비해 재사용하고

@@ -163,7 +163,7 @@ const toRecommendation = (
   };
 };
 
-/** 추천 사유별 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
+/** 카테고리별 인기 장소 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
 export const toShopRecommendations = (response?: NearbyPlacesResponse): ShopRecommendation[] => {
   const categoryPlaces = (response?.categoryPlaces ?? []).flatMap((group) => group.places ?? []);
   const allPlaces = response?.allPlaces ?? [];
@@ -175,10 +175,9 @@ export const toShopRecommendations = (response?: NearbyPlacesResponse): ShopReco
     if (!likedByPlaceId.has(id)) likedByPlaceId.set(id, place.liked);
   }
 
-  const candidates = [
-    ...categoryPlaces.map((place) => toRecommendation(place, '카테고리별 인기 가게')),
-    ...allPlaces.map((place) => toRecommendation(place, '내 동네에서 많이 방문한 곳')),
-  ];
+  const candidates = (response?.allPlaces ?? categoryPlaces).map((place) =>
+    toRecommendation(place, '카테고리별 인기 가게')
+  );
   const seenPlaceIds = new Set<string>();
 
   return candidates.flatMap((recommendation) => {

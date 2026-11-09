@@ -8,27 +8,11 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 import type {
   ApiResponsePlaceDetailResponse,
   ApiResponsePlaceVisitScrollResponse,
-  ApiResponseRecommendedPlaceDetailResponse,
   ApiResponseVisitedPlaceSearchResponse,
   GetPlaceVisitsParams,
   SearchVisitedPlacesParams,
   SecondParameter,
 } from '@/features/shop/apis/dto';
-
-/**
- * 추천 목록에서 선택한 가게의 이름, 카테고리, 위치와 Google 사진 최대 3장, 실제 Google 지도 링크를 조회
- * @summary 가게 추천 상세보기
- */
-export const getRecommendedPlaceDetail = (
-  placeId: number,
-  options?: SecondParameter<typeof apiClient>,
-  signal?: AbortSignal
-) => {
-  return apiClient<ApiResponseRecommendedPlaceDetailResponse>(
-    { url: `/v1/recommendations/places/${placeId}`, method: 'GET', signal },
-    options
-  );
-};
 
 /**
  * 인증된 사용자의 소비 기록에 존재하는 장소를 이름 또는 도로명주소로 검색합니다.

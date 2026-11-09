@@ -5,10 +5,6 @@
 
 import type { GetPlaceVisitsParams, SearchVisitedPlacesParams } from '@/features/shop/apis/dto';
 
-export const getGetRecommendedPlaceDetailQueryKey = (placeId: number) => {
-  return [`/v1/recommendations/places/${placeId}`] as const;
-};
-
 export const getSearchVisitedPlacesQueryKey = (params?: SearchVisitedPlacesParams) => {
   return [`/v1/places/visited/search`, ...(params ? [params] : [])] as const;
 };

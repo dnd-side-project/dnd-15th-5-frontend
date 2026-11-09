@@ -50,12 +50,6 @@ const createFeatureApiConfig = (feature: string, options: FeatureApiOptions): Op
           ) {
             return 'getPlaceDetail';
           }
-          if (
-            route.startsWith('/v1/recommendations/places/') &&
-            operation.operationId?.startsWith('getPlaceDetail')
-          ) {
-            return 'getRecommendedPlaceDetail';
-          }
           if (operation.operationId === 'callback') {
             return 'completeSocialOAuth';
           }
