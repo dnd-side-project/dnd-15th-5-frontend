@@ -16,6 +16,7 @@ export { default as MonthlyStickerSummary } from './components/report-page/Month
 export { default as RecentDiscoveryPanel } from './components/report-page/RecentDiscoveryPanel';
 export { default as ReportLoyaltySummary } from './components/report-page/ReportLoyaltySummary';
 export { default as ReportCategoryDistribution } from './components/report-page/ReportCategoryDistribution';
+export { default as ReportStickerCalendar } from './components/report-page/ReportStickerCalendar';
 export { default as ReportContentSkeleton } from './components/report-page/ReportContentSkeleton';
 export { default as ReportHeroSection } from './components/report-page/ReportHeroSection';
 export { default as ReportLinkButton } from './components/report-page/ReportLinkButton';

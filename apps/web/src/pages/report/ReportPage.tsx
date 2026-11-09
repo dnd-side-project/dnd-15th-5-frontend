@@ -1,12 +1,10 @@
 import {
   ReportCategoryDistribution,
   createFrequentShopListPath,
-  ReportContentSkeleton,
   ReportHeroSection,
   ReportLoyaltySummary,
   ReportLinkButton,
-  ReportSection,
-  WeeklyRecordCalendar,
+  ReportStickerCalendar,
   useCurrentReportQuery,
 } from '@/features/report';
 import {
@@ -38,7 +36,7 @@ export default function ReportPage() {
     );
   }
 
-  const { monthLabel, weeklyPeriodLabel, weeklyRecords } = report;
+  const { monthLabel } = report;
 
   return (
     <main aria-busy={isPending} className="overflow-hidden bg-primary-50 px-4">
@@ -53,19 +51,7 @@ export default function ReportPage() {
         <ReportHeroSection to={ROUTE_PATHS.monthlyReport} monthLabel={monthLabel} />
         <ReportLoyaltySummary />
 
-        <div className="rounded-16 bg-neutral-00 p-3.5">
-          <ReportSection title="이 주의 소비 기록">
-            {isPending ? (
-              <ReportContentSkeleton variant="weekly" />
-            ) : (
-              <WeeklyRecordCalendar
-                historyPath={ROUTE_PATHS.spendingHistory}
-                periodLabel={weeklyPeriodLabel}
-                records={weeklyRecords}
-              />
-            )}
-          </ReportSection>
-        </div>
+        <ReportStickerCalendar />
 
         <ReportCategoryDistribution />
 
