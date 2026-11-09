@@ -1,7 +1,23 @@
 import { Toggle } from '@base-ui/react/toggle';
 import { ToggleGroup } from '@base-ui/react/toggle-group';
+import { cva } from 'class-variance-authority';
 
 import { cn } from '@/shared/lib/cn';
+
+const segmentedToggleLabelVariants = cva(
+  'relative z-segmented-toggle-label flex-1 rounded-full text-center transition-colors duration-200',
+  {
+    variants: {
+      variant: {
+        default: 'py-2.5 text-body-02-semibold text-neutral-400 data-pressed:text-neutral-900',
+        compact: 'py-1 px-2.5 text-label-01-semibold text-neutral-500',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
 
 type SegmentedToggleOption<TValue extends string> = {
   label: string;
@@ -14,6 +30,7 @@ type SegmentedToggleProps<TValue extends string> = {
   onValueChange: (value: TValue) => void;
   className?: string;
   ariaLabel?: string;
+  variant?: 'default' | 'compact';
 };
 
 /**
@@ -40,6 +57,7 @@ type SegmentedToggleProps<TValue extends string> = {
  * 호출되지 않습니다.
  * @param props.className - 바깥 컨테이너를 확장하거나 재정의할 Tailwind CSS 클래스입니다.
  * @param props.ariaLabel - 토글 그룹의 접근 가능한 이름입니다.
+ * @param props.variant - 라벨 크기와 여백을 지정합니다.
  */
 export function SegmentedToggle<TValue extends string>({
   options,
@@ -47,6 +65,7 @@ export function SegmentedToggle<TValue extends string>({
   onValueChange,
   className,
   ariaLabel,
+  variant,
 }: SegmentedToggleProps<TValue>) {
   const isSecondActive = value === options[1].value;
 
@@ -74,7 +93,7 @@ export function SegmentedToggle<TValue extends string>({
         <Toggle
           key={option.value}
           value={option.value}
-          className="relative z-segmented-toggle-label flex-1 rounded-30 py-2.5 text-center text-body-02-semibold text-neutral-400 transition-colors duration-200 data-pressed:text-neutral-900"
+          className={segmentedToggleLabelVariants({ variant })}
         >
           {option.label}
         </Toggle>
