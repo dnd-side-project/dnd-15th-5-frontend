@@ -1,27 +1,19 @@
-import { Children, createContext, isValidElement, useContext, useState } from 'react';
+import { Children, createContext, isValidElement, useContext, useRef, useState } from 'react';
 import { DayButton, DayPicker, Week } from 'react-day-picker';
 import { ko } from 'react-day-picker/locale';
 
+import { useReportCalendarNavigation } from '@/features/report/hooks/useReportCalendarNavigation';
+import {
+  getSampleDailyRecords,
+  getSampleRecord,
+} from '@/features/report/utils/reportCalendarSampleRecords';
 import { ChevronRightIcon } from '@/shared/assets/icons';
-import { croissant, gift, meditation, rice } from '@/shared/assets/images/ios-stickers';
 import { cn } from '@/shared/lib/cn';
 import { SegmentedToggle } from '@/shared/ui/segmented-toggle';
 
-import type { DayButtonProps, DayProps, WeekProps } from 'react-day-picker';
+import ReportDailyRecordsSheet from './ReportDailyRecordsSheet';
 
-const SAMPLE_RECORDS: Record<number, { image: string; count: number }> = {
-  1: { image: croissant, count: 1 },
-  4: { image: rice, count: 1 },
-  5: { image: gift, count: 2 },
-  7: { image: meditation, count: 1 },
-  8: { image: croissant, count: 1 },
-  11: { image: rice, count: 1 },
-  12: { image: gift, count: 2 },
-  14: { image: meditation, count: 1 },
-  15: { image: croissant, count: 1 },
-  18: { image: rice, count: 1 },
-  19: { image: gift, count: 1 },
-};
+import type { DayButtonProps, DayProps, WeekProps } from 'react-day-picker';
 
 const CalendarContext = createContext<{
   cursor: Date;
@@ -31,11 +23,7 @@ const CalendarContext = createContext<{
 
 function StickerDayButton({ day, modifiers, children, className, ...props }: DayButtonProps) {
   const context = useContext(CalendarContext)!;
-  const record =
-    day.date.getFullYear() === context.sampleMonth.getFullYear() &&
-    day.date.getMonth() === context.sampleMonth.getMonth()
-      ? SAMPLE_RECORDS[day.date.getDate()]
-      : undefined;
+  const record = getSampleRecord(day.date, context.sampleMonth);
   return (
     <DayButton
       {...props}
@@ -59,7 +47,7 @@ function StickerDayButton({ day, modifiers, children, className, ...props }: Day
       <span
         className={cn(
           'flex items-center justify-center rounded-full',
-          modifiers.today ? 'size-[18px] bg-primary-500 text-neutral-00' : 'size-5'
+          modifiers.today ? 'size-4.5 bg-primary-500 text-neutral-00' : 'size-5'
         )}
       >
         {children}
@@ -91,19 +79,14 @@ function CalendarWeekRow(props: WeekProps) {
 
 /** 월·주 단위로 스티커 기록을 확인하는 달력입니다. 현재 월에 시안 예시 기록을 표시합니다. */
 export default function ReportStickerCalendar() {
-  const [today] = useState(() => new Date());
-  const [cursor, setCursor] = useState(() => new Date());
+  const { today, cursor, view, setView, year, month, endMonth, getNavigationDate, updateCursor } =
+    useReportCalendarNavigation();
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const [view, setView] = useState<'week' | 'month'>('month');
-  const year = cursor.getFullYear();
-  const month = cursor.getMonth();
-  const endMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  const getNavigationDate = (direction: number) =>
-    view === 'month'
-      ? new Date(year, month + direction, 1)
-      : new Date(year, month, cursor.getDate() + direction * 7);
-  const updateCursor = (date: Date) => {
-    if (date <= endMonth) setCursor(date);
+  const [sheetDate, setSheetDate] = useState<Date>();
+  const sheetTrigger = useRef<HTMLButtonElement>(null);
+  const closeSheet = () => {
+    setSheetDate(undefined);
+    sheetTrigger.current?.focus();
   };
 
   return (
@@ -154,6 +137,12 @@ export default function ReportStickerCalendar() {
           onMonthChange={updateCursor}
           selected={selectedDate}
           onSelect={setSelectedDate}
+          onDayClick={(date, _modifiers, event) => {
+            if (event.currentTarget instanceof HTMLButtonElement) {
+              sheetTrigger.current = event.currentTarget;
+            }
+            setSheetDate(date);
+          }}
           onDayFocus={updateCursor}
           showOutsideDays={view === 'week'}
           hideNavigation
@@ -177,6 +166,13 @@ export default function ReportStickerCalendar() {
           }
         />
       </CalendarContext.Provider>
+      {sheetDate && (
+        <ReportDailyRecordsSheet
+          date={sheetDate}
+          records={getSampleDailyRecords(sheetDate, today)}
+          onClose={closeSheet}
+        />
+      )}
     </section>
   );
 }
