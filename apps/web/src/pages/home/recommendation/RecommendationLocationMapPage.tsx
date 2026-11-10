@@ -10,11 +10,11 @@ import PageHeader from '@/shared/layout/PageHeader';
 
 export default function RecommendationLocationMapPage() {
   const navigate = useNavigate();
-  const resetSelection = useLocationSelectionStore((state) => state.resetSelection);
+  const clearDraftSelection = useLocationSelectionStore((state) => state.clearDraftSelection);
   const { state: entry } = useLocation();
 
   const handleBackToSearch = () => {
-    resetSelection();
+    clearDraftSelection();
     if (entry === 'search' || entry === 'homeThroughSearch') {
       navigate(-1);
     } else {

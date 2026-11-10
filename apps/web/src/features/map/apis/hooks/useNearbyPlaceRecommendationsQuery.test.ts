@@ -17,7 +17,7 @@ const popularPlace = { ...categoryPlace, placeId: 1, name: '전체 인기 가게
 
 describe('useNearbyPlaceRecommendationsQuery', () => {
   beforeEach(() => {
-    useLocationSelectionStore.getState().resetSelection();
+    useLocationSelectionStore.setState({ confirmedPosition: null, draftSelection: null });
     useMapViewportStore.setState({ center: { lat: 37.559334, lng: 126.990298 } });
     mockedUseGetNearbyPlaces.mockReset();
   });

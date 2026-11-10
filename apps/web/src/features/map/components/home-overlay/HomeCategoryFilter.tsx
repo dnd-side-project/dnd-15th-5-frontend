@@ -6,7 +6,6 @@ import { CategoryChip, categoryChipVariants } from '@/shared/ui/category-chip';
 import { useVisitedPlaceStickersQuery } from '../../apis/hooks/useVisitedPlaceStickersQuery';
 import { HOME_CATEGORIES } from '../../constants';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
-import { useLocationSelectionStore } from '../../stores/locationSelectionStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 
 type HomeCategoryFilterProps = {
@@ -26,7 +25,6 @@ export default function HomeCategoryFilter({
   const selectedCategory = useMapCategoryFilterStore((state) => state.selectedCategory);
   const setSelectedCategory = useMapCategoryFilterStore((state) => state.setSelectedCategory);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const resetLocationSelection = useLocationSelectionStore((state) => state.resetSelection);
 
   useEffect(() => {
     if (isSuccess && selectedCategory && !visibleCategories.includes(selectedCategory)) {
@@ -36,7 +34,6 @@ export default function HomeCategoryFilter({
 
   const handleOpenRecommendationSearch = () => {
     setSelectedCategory(null);
-    resetLocationSelection();
     showHome();
     onOpenRecommendationSearch();
   };

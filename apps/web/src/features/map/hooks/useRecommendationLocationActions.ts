@@ -12,7 +12,6 @@ import type { MapPosition } from '@/features/map/types';
 /** 두 위치 선택 방식에서 같은 좌표로 추천을 열고 지도를 이동합니다. */
 export const useRecommendationLocationActions = () => {
   const setConfirmedPosition = useLocationSelectionStore((state) => state.setConfirmedPosition);
-  const resetSelection = useLocationSelectionStore((state) => state.resetSelection);
   const setFocusPosition = useMapFocusStore((state) => state.setFocusPosition);
   const showRecommendation = useHomeBottomSheetStore((state) => state.showRecommendation);
   const setActiveRecommendation = useShopRecommendationStore(
@@ -63,7 +62,6 @@ export const useRecommendationLocationActions = () => {
 
   return {
     confirmLocation,
-    resetSelection,
     isSaving: saveTown.isPending,
     hasSaveError: saveTown.isError,
   };

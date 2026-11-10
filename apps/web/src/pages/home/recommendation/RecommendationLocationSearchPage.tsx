@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   NeighborhoodSearchResults,
   RecentNeighborhoodList,
+  useLocationSelectionStore,
   useNeighborhoodSearch,
   useRecentNeighborhoods,
   useRecommendationLocationActions,
@@ -18,8 +19,7 @@ export default function RecommendationLocationSearchPage() {
   const { state } = useLocation();
   const fromHome = state === 'home';
 
-  const { confirmLocation, resetSelection, isSaving, hasSaveError } =
-    useRecommendationLocationActions();
+  const { confirmLocation, isSaving, hasSaveError } = useRecommendationLocationActions();
   const {
     recentNeighborhoods,
     isLoading: isLoadingRecent,
@@ -27,6 +27,7 @@ export default function RecommendationLocationSearchPage() {
     removingId,
     removeRecentNeighborhood,
   } = useRecentNeighborhoods();
+  const clearDraftSelection = useLocationSelectionStore((state) => state.clearDraftSelection);
   const { searchTerm, searchState, searchNeighborhoods } = useNeighborhoodSearch();
   const {
     mutate: resolvePosition,
@@ -44,14 +45,14 @@ export default function RecommendationLocationSearchPage() {
   };
 
   const handleOpenMap = () => {
-    resetSelection();
+    clearDraftSelection();
     navigate(ROUTE_PATHS.homeRecommendationMap, {
       state: fromHome ? 'homeThroughSearch' : 'search',
     });
   };
 
   const handleClose = () => {
-    resetSelection();
+    clearDraftSelection();
     handleReturnHome();
   };
 

@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react';
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
-import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import { getDistrict, getGoogleMapsPlaceUrl } from '@/features/map/utils/recommendation';
 import { BlueLocationPinIcon, ChevronRightIcon, LikeIcon } from '@/shared/assets/icons';
@@ -26,7 +25,6 @@ export default function ShopRecommendationSheet({
   const { recommendations, isPending, isError, refetch } = useNearbyPlaceRecommendationsQuery();
   const likeMutation = useTogglePlaceLikeMutation();
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const resetSelection = useLocationSelectionStore((state) => state.resetSelection);
   const activeRecommendationId = useShopRecommendationStore(
     (state) => state.activeRecommendationId
   );
@@ -149,7 +147,6 @@ export default function ShopRecommendationSheet({
       ? {
           actionLabel: '다른 동네 선택',
           onAction: () => {
-            resetSelection();
             showHome();
             onOpenRecommendationSearch();
           },

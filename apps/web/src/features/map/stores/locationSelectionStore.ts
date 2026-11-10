@@ -16,7 +16,6 @@ type LocationSelectionStore = {
   startDraftSelection: (position: MapPosition) => void;
   resolveDraftAddress: (position: MapPosition, address: string) => void;
   clearDraftSelection: () => void;
-  resetSelection: () => void;
 };
 
 /** 지도에서 선택 중인 위치와 추천 조회에 확정한 위치를 관리합니다. */
@@ -34,5 +33,4 @@ export const useLocationSelectionStore = create<LocationSelectionStore>((set) =>
     }),
   clearDraftSelection: () =>
     set((state) => (state.draftSelection ? { draftSelection: null } : state)),
-  resetSelection: () => set({ confirmedPosition: null, draftSelection: null }),
 }));
