@@ -2,7 +2,10 @@ import { useLayoutEffect, useState } from 'react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
-import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import {
+  selectIsHomeSheetFullyExpanded,
+  useHomeBottomSheetStore,
+} from '@/features/map/stores/homeBottomSheetStore';
 import { CurrentLocationIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import BottomTabBar, { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/BottomTabBar';
@@ -45,6 +48,7 @@ function HomeBottomSheetCanvas({ initialSnapPoint, ...props }: HomeBottomSheetPr
   const isRecord = pathname.startsWith(ROUTE_PATHS.record);
   const visibleHeightPx = useHomeBottomSheetStore((state) => state.visibleHeightPx);
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
+  const isHomeSheetFullyExpanded = useHomeBottomSheetStore(selectIsHomeSheetFullyExpanded);
   const [category, setCategory] = useState<string | null>(null);
 
   useLayoutEffect(() => {
@@ -77,20 +81,23 @@ function HomeBottomSheetCanvas({ initialSnapPoint, ...props }: HomeBottomSheetPr
             category={category}
             onCategoryChange={setCategory}
             headerContent={<HomeTopBar hasUnreadNotification />}
+            isCategoryFilterVisible={!isHomeSheetFullyExpanded}
           />
-          <div
-            className="mobile-frame pointer-events-none fixed right-0 left-0 z-map-control flex justify-end pr-4"
-            style={{
-              bottom: `max(calc(${visibleHeightPx}px + 0.75rem), ${BOTTOM_TAB_BAR_HEIGHT_CSS})`,
-            }}
-          >
-            <span
-              className="flex size-8 items-center justify-center rounded-full bg-neutral-00 text-primary-500 shadow-current-location-button"
-              aria-hidden="true"
+          {!isHomeSheetFullyExpanded && (
+            <div
+              className="mobile-frame pointer-events-none fixed right-0 left-0 z-map-control flex justify-end pr-4"
+              style={{
+                bottom: `max(calc(${visibleHeightPx}px + 0.75rem), ${BOTTOM_TAB_BAR_HEIGHT_CSS})`,
+              }}
             >
-              <CurrentLocationIcon className="size-4" />
-            </span>
-          </div>
+              <span
+                className="flex size-8 items-center justify-center rounded-full bg-neutral-00 text-primary-500 shadow-current-location-button"
+                aria-hidden="true"
+              >
+                <CurrentLocationIcon className="size-4" />
+              </span>
+            </div>
+          )}
           <HomeBottomSheet {...props} />
         </>
       )}

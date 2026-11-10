@@ -104,3 +104,7 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
 /** `stepIndex`를 `HOME_BOTTOM_SHEET_SNAP_SEQUENCE` 길이로 순환시켜 해당하는 높이 단계를 반환합니다. */
 export const getHomeBottomSheetSnapPoint = (stepIndex: number): BottomSheetSnapPoint =>
   HOME_BOTTOM_SHEET_SNAP_SEQUENCE[stepIndex % HOME_BOTTOM_SHEET_SNAP_SEQUENCE.length]!;
+
+/** 홈 목록이 최대 확장된 경우에만 지도 컨트롤을 숨기며, 모달형 시트는 이전 홈 높이와 구분합니다. */
+export const selectIsHomeSheetFullyExpanded = (state: HomeBottomSheetStore): boolean =>
+  state.activeSheet.type === 'home' && getHomeBottomSheetSnapPoint(state.stepIndex) === 'full';

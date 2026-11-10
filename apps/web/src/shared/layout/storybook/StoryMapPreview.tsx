@@ -139,6 +139,7 @@ type StoryMapToolbarProps = {
   category: string | null;
   onCategoryChange: (category: string | null) => void;
   headerContent?: ReactNode;
+  isCategoryFilterVisible?: boolean;
 };
 
 /** 실제 앱 헤더를 주입할 수 있고 카테고리로 예시 핀을 걸러보는 지도 오버레이입니다. */
@@ -146,6 +147,7 @@ export function StoryMapToolbar({
   category,
   onCategoryChange,
   headerContent,
+  isCategoryFilterVisible = true,
 }: StoryMapToolbarProps) {
   return (
     <div className="mobile-frame pointer-events-none absolute top-0 right-0 left-0 z-map-control pt-[env(safe-area-inset-top)]">
@@ -163,22 +165,24 @@ export function StoryMapToolbar({
           </div>
         )}
       </div>
-      <div
-        className="pointer-events-auto flex gap-2 overflow-x-auto px-4 pt-1 pb-3"
-        aria-label="지도 카테고리"
-        role="group"
-      >
-        {STORY_CATEGORIES.map((item) => (
-          <CategoryChip
-            key={item}
-            variant="compact"
-            selected={category === item}
-            onSelectedChange={(selected) => onCategoryChange(selected ? item : null)}
-          >
-            {item}
-          </CategoryChip>
-        ))}
-      </div>
+      {isCategoryFilterVisible && (
+        <div
+          className="pointer-events-auto flex gap-2 overflow-x-auto px-4 pt-1 pb-3"
+          aria-label="지도 카테고리"
+          role="group"
+        >
+          {STORY_CATEGORIES.map((item) => (
+            <CategoryChip
+              key={item}
+              variant="compact"
+              selected={category === item}
+              onSelectedChange={(selected) => onCategoryChange(selected ? item : null)}
+            >
+              {item}
+            </CategoryChip>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
@@ -22,7 +22,11 @@ describe('<CurrentLocationButton />', () => {
     panTo.mockReset();
     requestPosition.mockReset();
     map = { panTo };
-    useHomeBottomSheetStore.setState({ visibleHeightPx: 0 });
+    useHomeBottomSheetStore.setState({
+      activeSheet: { type: 'home' },
+      stepIndex: 0,
+      visibleHeightPx: 0,
+    });
   });
 
   it('현재 바텀시트의 실제 높이만큼 위에 같은 간격으로 배치한다', () => {
@@ -76,6 +80,47 @@ describe('<CurrentLocationButton />', () => {
     await user.click(screen.getByRole('button', { name: '현재 위치로 이동' }));
 
     expect(requestPosition).toHaveBeenCalledTimes(1);
+  });
+
+  it('최대 확장에서는 위치 버튼과 안내를 숨기고 시트를 내리면 다시 표시한다', () => {
+    render(
+      <CurrentLocationButton
+        position={null}
+        isLoading={false}
+        errorMessage="위치 권한을 허용해주세요."
+        onRequestPosition={requestPosition}
+      />
+    );
+
+    act(() => useHomeBottomSheetStore.getState().setSnapPoint('full'));
+
+    expect(screen.queryByRole('button', { name: '현재 위치로 이동' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+    act(() => useHomeBottomSheetStore.getState().setSnapPoint('medium'));
+
+    expect(screen.getByRole('button', { name: '현재 위치로 이동' })).toBeVisible();
+    expect(screen.getByRole('status')).toHaveTextContent('위치 권한을 허용해주세요.');
+
+    act(() => useHomeBottomSheetStore.getState().setSnapPoint('collapsed'));
+
+    expect(screen.getByRole('button', { name: '현재 위치로 이동' })).toBeVisible();
+  });
+
+  it('최대 확장 이력이 있어도 장소 요약 시트에서는 위치 버튼을 표시한다', () => {
+    useHomeBottomSheetStore.getState().setSnapPoint('full');
+    render(
+      <CurrentLocationButton
+        position={null}
+        isLoading={false}
+        errorMessage={null}
+        onRequestPosition={requestPosition}
+      />
+    );
+
+    act(() => useHomeBottomSheetStore.getState().showSelectedPlace('place-1'));
+
+    expect(screen.getByRole('button', { name: '현재 위치로 이동' })).toBeVisible();
   });
 
   it('버튼을 누르면 줌 변경 없이 현재 위치로 지도 중심을 이동한다', async () => {
