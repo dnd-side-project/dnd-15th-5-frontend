@@ -310,7 +310,8 @@ export default function HomeBottomSheet({
 
   return (
     <>
-      {isHomeSheet && snapPoint === 'full' && <Overlay />}
+      {/* NOTE: 홈 딤은 지도만 덮고, 상단 검색·알림·마이페이지와 현재 위치 버튼 아래에 둔다. */}
+      {isHomeSheet && snapPoint === 'full' && <Overlay className="z-0!" />}
       <BottomSheet
         rootRef={sheetRef}
         snapPoint={isHomeSheet ? snapPoint : 'medium'}

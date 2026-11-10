@@ -954,7 +954,10 @@ describe('HomeBottomSheet', () => {
     fireEvent.click(handle);
 
     expect(sheet).toHaveStyle({ height: '92dvh' });
-    expect(container.querySelector('[data-slot="overlay"]')).toHaveClass('bg-neutral-900/20');
+    expect(container.querySelector('[data-slot="overlay"]')).toHaveClass(
+      'bg-neutral-900/20',
+      'z-0!'
+    );
 
     fireEvent.click(handle);
 
