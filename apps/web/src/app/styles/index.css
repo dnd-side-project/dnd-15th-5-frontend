@@ -9,6 +9,15 @@
 @import '@chapchap/shared/design/z-index.css';
 @import '@chapchap/shared/design/toast.css';
 
+@theme {
+  /* Figma Fill 80%와 마지막 stop의 40%를 합성해 80% → 32% 알파로 적용한다. */
+  --background-image-record-glass: radial-gradient(
+    136% 136% at 29% 16%,
+    color-mix(in srgb, var(--color-primary-600) 80%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary-400) 32%, transparent) 100%
+  );
+}
+
 @layer base {
   * {
     scrollbar-width: none;

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import BottomTabBar from './BottomTabBar';
 
@@ -36,14 +36,63 @@ describe('BottomTabBar', () => {
     expect(screen.getByRole('link', { name: '리포트' })).toHaveAttribute('href', '/report');
   });
 
-  it('현재 경로에 해당하는 탭을 활성 상태로 표시한다', () => {
+  it.each([
+    ['/home', '홈'],
+    ['/report', '리포트'],
+    ['/report/monthly', '리포트'],
+    ['/record', null],
+    ['/home/shop/123', null],
+  ])('%s에서 해당 탭만 활성 상태로 표시한다', (path, activeLabel) => {
     render(
-      <MemoryRouter initialEntries={['/report']}>
+      <MemoryRouter initialEntries={[path]}>
         <BottomTabBar />
       </MemoryRouter>
     );
 
+    for (const label of ['홈', '리포트']) {
+      const link = screen.getByRole('link', { name: label });
+      if (label === activeLabel) {
+        expect(link).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByText(label)).toHaveClass('font-bold');
+      } else {
+        expect(link).not.toHaveAttribute('aria-current');
+        expect(screen.getByText(label)).not.toHaveClass('font-bold');
+      }
+    }
+  });
+
+  it('탭과 기록하기 링크로 이동하고 기존 분석 식별자를 유지한다', () => {
+    const onHomeClick = jest.fn();
+    render(
+      <MemoryRouter initialEntries={['/home']}>
+        <BottomTabBar onHomeClick={onHomeClick} />
+        <Routes>
+          <Route path="/home" element={<main>홈 화면</main>} />
+          <Route path="/report" element={<main>리포트 화면</main>} />
+          <Route path="/record" element={<main>기록 화면</main>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    for (const [label, id] of [
+      ['홈', 'home'],
+      ['리포트', 'report'],
+      ['기록하기', 'record'],
+    ]) {
+      expect(screen.getByRole('link', { name: label })).toHaveAttribute(
+        'data-analytics-id',
+        `bottom-navigation-${id}`
+      );
+    }
+
+    fireEvent.click(screen.getByRole('link', { name: '리포트' }));
+    expect(screen.getByRole('main')).toHaveTextContent('리포트 화면');
     expect(screen.getByRole('link', { name: '리포트' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: '홈' })).not.toHaveAttribute('aria-current');
+    fireEvent.click(screen.getByRole('link', { name: '홈' }));
+    expect(screen.getByRole('main')).toHaveTextContent('홈 화면');
+    expect(onHomeClick).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('link', { name: '기록하기' }));
+    expect(screen.getByRole('main')).toHaveTextContent('기록 화면');
+    expect(onHomeClick).toHaveBeenCalledTimes(1);
   });
 });

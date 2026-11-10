@@ -1,4 +1,5 @@
 import { MemoryRouter } from 'react-router-dom';
+import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
 import BottomTabBar from './BottomTabBar';
 
@@ -7,14 +8,32 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 const meta = {
   title: 'Shared/BottomTabBar',
   component: BottomTabBar,
-  // INFO: NavLink가 현재 경로를 읽을 수 있도록 라우터 컨텍스트로 감싼다.
-  // 실제 사용 화면과 같은 모바일 프레임 폭(393px)에서 확인할 수 있게 감싼다.
+  parameters: { layout: 'fullscreen' },
+  // INFO: 스크롤에 따라 캡슐 아래의 배경과 굴절이 바뀌는지 확인한다.
   decorators: [
     (Story, { parameters }) => (
       <MemoryRouter initialEntries={[parameters.initialPath as string]}>
-        <div style={{ width: 393 }}>
+        <LiquidGlassScene className="mobile-frame min-h-screen bg-neutral-50">
+          <section className="space-y-4 px-5 pt-10 pb-32">
+            <h1 className="text-heading-01-bold text-neutral-700">우리 동네 소비 기록</h1>
+            <p className="text-body-02-regular text-neutral-500">
+              아래로 스크롤해 유리 캡슐을 통과하는 배경을 확인해 보세요.
+            </p>
+            {Array.from({ length: 12 }, (_, index) => (
+              <article
+                key={index}
+                className="flex h-36 items-center gap-5 rounded-30 bg-neutral-00 p-5"
+              >
+                <div className="size-20 shrink-0 rounded-full bg-linear-to-br from-primary-500 to-primary-300" />
+                <div className="space-y-2 text-neutral-700">
+                  <h2 className="text-label-01-medium font-bold">동네 가게 {index + 1}</h2>
+                  <p className="text-label-01-medium text-neutral-500">오늘의 소중한 기록</p>
+                </div>
+              </article>
+            ))}
+          </section>
           <Story />
-        </div>
+        </LiquidGlassScene>
       </MemoryRouter>
     ),
   ],

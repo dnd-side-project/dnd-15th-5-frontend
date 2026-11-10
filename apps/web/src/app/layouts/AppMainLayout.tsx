@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom';
+import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
 import { useHomeBottomSheetStore } from '@/features/map';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
@@ -27,11 +28,11 @@ export default function AppMainLayout() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <LiquidGlassScene className="flex min-h-screen flex-col">
       <div className="flex-1">
         <Outlet />
       </div>
       {!isHomeModalSheetVisible && <BottomTabBar onHomeClick={handleHomeClick} />}
-    </div>
+    </LiquidGlassScene>
   );
 }

@@ -37,6 +37,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.18.2",
     "remark-gfm": "^4.0.1",
+    "simple-liquid-glass": "5.4.0",
     "swiper": "^14.2.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",

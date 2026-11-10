@@ -6,6 +6,8 @@ module.exports = {
     url: 'http://localhost/',
   },
   moduleNameMapper: {
+    '^simple-liquid-glass$': '<rootDir>/test/liquidGlassMock.tsx',
+    '^simple-liquid-glass/backdrop$': '<rootDir>/test/liquidGlassMock.tsx',
     '\\.css$': '<rootDir>/test/fileMock.ts',
     '\\.(gif|jpe?g|png|webp)$': '<rootDir>/test/fileMock.ts',
     '\\.svg\\?react$': '<rootDir>/test/svgMock.tsx',
