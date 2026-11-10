@@ -9,9 +9,9 @@ import { useBottomSheetDrag } from './useBottomSheetDrag';
 import { useBottomSheetVisibleHeight } from './useBottomSheetVisibleHeight';
 
 import type { BottomSheetSnapPoint, BottomSheetSnapPoints } from './types';
-import type { ReactNode, Ref, UIEventHandler } from 'react';
+import type { CSSProperties, ReactNode, Ref, UIEventHandler } from 'react';
 
-const SNAP_POINT_HEIGHT: Record<BottomSheetSnapPoint, string> = {
+const SNAP_POINT_HEIGHT: Record<Exclude<BottomSheetSnapPoint, 'collapsed'>, string> = {
   full: `${BOTTOM_SHEET_HEIGHT_RATIO.full * 100}dvh`,
   large: `${BOTTOM_SHEET_HEIGHT_RATIO.large * 100}dvh`,
   medium: `${BOTTOM_SHEET_HEIGHT_RATIO.medium * 100}dvh`,
@@ -23,7 +23,7 @@ type BottomSheetProps = {
   snapPoints?: BottomSheetSnapPoints;
   onSnapPointChange?: (snapPoint: BottomSheetSnapPoint) => void;
   onHandleClick?: () => void;
-  /** 콘텐츠 맞춤 시트를 위로 64px 넘게 당기거나 핸들에서 ArrowUp을 누르면 호출합니다. */
+  /** 콘텐츠 맞춤·접힘 시트를 위로 64px 넘게 당기면 호출하며, 콘텐츠 맞춤 핸들의 ArrowUp도 지원합니다. */
   onExpand?: () => void;
   /** 콘텐츠 높이에 맞추고 내부 스크롤을 사용하지 않습니다. `hidden` 지정 시 아래로 드래그해 닫을 수 있습니다. */
   fitContent?: boolean;
@@ -32,6 +32,8 @@ type BottomSheetProps = {
   contentClassName?: string;
   rootRef?: Ref<HTMLDivElement>;
   fullTopBoundaryPx?: number;
+  /** 접힘 단계의 높이입니다. CSS Safe Area를 포함할 수 있으며 드래그의 최소 높이로도 사용합니다. */
+  collapsedHeight?: CSSProperties['height'];
   onContentPullDown?: () => void;
   onContentScroll?: UIEventHandler<HTMLDivElement>;
   onVisibleHeightChange?: (heightPx: number) => void;
@@ -71,12 +73,12 @@ const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
  * ```
  *
  * @param props - 바텀시트 속성입니다.
- * @param props.snapPoint - 현재 높이 단계입니다(`full` | `large` | `medium` | `hidden`).
+ * @param props.snapPoint - 현재 높이 단계입니다(`full` | `large` | `medium` | `collapsed` | `hidden`).
  * @param props.snapPoints - 드래그를 놓았을 때 이동할 수 있는 단계입니다.
  * @param props.onSnapPointChange - 드래그를 놓아 스냅될 때 호출됩니다. 드래그가 끝난 위치와
  * 가장 가까운 단계로 알려줍니다.
  * @param props.onHandleClick - 핸들을 클릭했을 때 호출됩니다. 클릭으로 단계를 순환시키는 등에 사용합니다.
- * @param props.onExpand - 콘텐츠 맞춤 시트를 위로 당겼을 때 실행할 동작입니다.
+ * @param props.onExpand - 콘텐츠 맞춤·접힘 시트의 콘텐츠를 위로 당겼을 때 실행할 동작입니다.
  * @param props.fitContent - `true`이면 콘텐츠 높이에 맞추고 내부 스크롤을 사용하지 않습니다.
  * `snapPoints`에 `hidden`을 명시하면 현재 콘텐츠 높이와 숨김 단계 사이를 드래그할 수 있습니다.
  * 드래그하지 않을 때의 열린 높이는 콘텐츠 크기로 고정되므로 `snapPoint`는 `medium`, `large`,
@@ -86,6 +88,7 @@ const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
  * @param props.contentClassName - 콘텐츠 영역에 추가할 스타일입니다.
  * @param props.rootRef - 바텀시트 루트 요소를 참조합니다.
  * @param props.fullTopBoundaryPx - `full` 단계에서 시트 상단이 넘어가지 않을 화면 기준 Y 좌표입니다.
+ * @param props.collapsedHeight - `collapsed` 단계의 높이이며 기본값은 `10rem`입니다.
  * @param props.onContentPullDown - 콘텐츠 최상단에서 아래로 64px 넘게 당겼을 때 호출됩니다.
  * @param props.onContentScroll - 내부 콘텐츠 영역이 세로로 스크롤될 때 호출됩니다.
  * @param props.onVisibleHeightChange - 드래그·스냅·콘텐츠 변경을 반영한 실제 노출 높이를 알립니다.
@@ -102,23 +105,35 @@ export function BottomSheet({
   contentClassName,
   rootRef,
   fullTopBoundaryPx,
+  collapsedHeight = '10rem',
   onContentPullDown,
   onContentScroll,
   onVisibleHeightChange,
 }: BottomSheetProps) {
   const sheetElementRef = useRef<HTMLDivElement>(null);
   const hasFullTopBoundary = fullTopBoundaryPx !== undefined && fullTopBoundaryPx > 0;
+  const hasCollapsedSnapPoint =
+    !fitContent && (snapPoint === 'collapsed' || snapPoints?.includes('collapsed'));
 
   const getSnapPointHeightPx = (point: BottomSheetSnapPoint) => {
     if (point === 'hidden') {
       return 0;
     }
 
+    const element = sheetElementRef.current;
+    // NOTE: CSS가 보장하는 최소 높이를 모든 스냅 계산에 반영해 낮은 뷰포트에서도 드래그가 튀지 않게 한다.
+    const minimumHeightPx =
+      hasCollapsedSnapPoint && element
+        ? Number.parseFloat(window.getComputedStyle(element).minHeight) || 0
+        : 0;
+
+    if (point === 'collapsed') return minimumHeightPx;
+
     if (point === 'full' && hasFullTopBoundary) {
-      return Math.max(0, window.innerHeight - fullTopBoundaryPx);
+      return Math.max(minimumHeightPx, window.innerHeight - fullTopBoundaryPx);
     }
 
-    return window.innerHeight * BOTTOM_SHEET_HEIGHT_RATIO[point];
+    return Math.max(minimumHeightPx, window.innerHeight * BOTTOM_SHEET_HEIGHT_RATIO[point]);
   };
 
   const {
@@ -146,9 +161,11 @@ export function BottomSheet({
     'flex w-full shrink-0 touch-none select-none items-center justify-center py-3';
   const handleBar = <span className="h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true" />;
   const heightAtSnapPoint =
-    snapPoint === 'full' && hasFullTopBoundary
-      ? `calc(100dvh - ${fullTopBoundaryPx}px)`
-      : SNAP_POINT_HEIGHT[snapPoint];
+    snapPoint === 'collapsed'
+      ? collapsedHeight
+      : snapPoint === 'full' && hasFullTopBoundary
+        ? `calc(100dvh - ${fullTopBoundaryPx}px)`
+        : SNAP_POINT_HEIGHT[snapPoint];
   const handleRootRef = useCallback(
     (element: HTMLDivElement | null) => {
       sheetElementRef.current = element;
@@ -159,7 +176,7 @@ export function BottomSheet({
   const { handleTouchCancel, handleTouchEnd, handleTouchMove, handleTouchStart, handleWheel } =
     useBottomSheetContentPull({
       onContentPullDown,
-      onContentPullUp: fitContent ? onExpand : undefined,
+      onContentPullUp: fitContent || snapPoint === 'collapsed' ? onExpand : undefined,
     });
 
   useBottomSheetVisibleHeight({
@@ -172,6 +189,7 @@ export function BottomSheet({
     <div
       ref={handleRootRef}
       style={{
+        minHeight: hasCollapsedSnapPoint ? collapsedHeight : undefined,
         height: isDragging
           ? `${dragStartHeightPx ?? 0}px`
           : fitContent

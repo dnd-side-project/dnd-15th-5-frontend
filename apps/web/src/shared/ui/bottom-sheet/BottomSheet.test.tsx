@@ -92,6 +92,82 @@ describe('BottomSheet', () => {
     expect(container.firstChild).toHaveStyle({ height: 'calc(100dvh - 96px)' });
   });
 
+  it('접힘 단계가 있으면 아래로 드래그해도 최소 높이를 유지한다', () => {
+    const { flushAnimationFrames, restoreAnimationFrame } = mockAnimationFrameQueue();
+    const onSnapPointChange = jest.fn();
+    try {
+      const { container } = render(
+        <BottomSheet
+          snapPoint="medium"
+          snapPoints={['collapsed', 'medium', 'full']}
+          collapsedHeight="200px"
+          onSnapPointChange={onSnapPointChange}
+        >
+          내용
+        </BottomSheet>
+      );
+      const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+      firePointerEvent(handle, 'pointerdown', 400);
+      firePointerEvent(document.body, 'pointermove', 1000);
+      act(flushAnimationFrames);
+
+      expect(container.firstChild).toHaveStyle({ height: '200px', minHeight: '200px' });
+
+      firePointerEvent(document.body, 'pointerup', 1000);
+
+      expect(onSnapPointChange).toHaveBeenCalledWith('collapsed');
+    } finally {
+      restoreAnimationFrame();
+    }
+  });
+
+  it('접힌 핸들에서 아래 키는 최소 높이를 유지하고 위 키는 중간 높이로 이동한다', () => {
+    const onSnapPointChange = jest.fn();
+    render(
+      <BottomSheet
+        snapPoint="collapsed"
+        snapPoints={['collapsed', 'medium', 'full']}
+        onSnapPointChange={onSnapPointChange}
+      >
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    fireEvent.keyDown(handle, { key: 'ArrowDown' });
+    expect(onSnapPointChange).not.toHaveBeenCalled();
+    fireEvent.keyDown(handle, { key: 'ArrowUp' });
+    expect(onSnapPointChange).toHaveBeenCalledWith('medium');
+  });
+
+  it('중간 높이보다 최소 높이가 크면 최소 높이를 기준으로 드래그한다', () => {
+    setInnerHeight(300);
+    const { flushAnimationFrames, restoreAnimationFrame } = mockAnimationFrameQueue();
+    try {
+      const { container } = render(
+        <BottomSheet
+          snapPoint="medium"
+          snapPoints={['collapsed', 'medium', 'full']}
+          collapsedHeight="200px"
+        >
+          내용
+        </BottomSheet>
+      );
+      const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+      firePointerEvent(handle, 'pointerdown', 250);
+      firePointerEvent(document.body, 'pointermove', 210);
+      act(flushAnimationFrames);
+
+      expect(container.firstChild).toHaveStyle({ height: '240px' });
+
+      firePointerEvent(document.body, 'pointerup', 210);
+    } finally {
+      restoreAnimationFrame();
+    }
+  });
+
   it('열림·닫힘 전환 중 화면에 실제로 노출된 높이를 알린다', () => {
     const onVisibleHeightChange = jest.fn();
     let sheetTop = 440;

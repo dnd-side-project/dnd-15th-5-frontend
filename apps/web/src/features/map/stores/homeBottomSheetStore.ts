@@ -2,12 +2,12 @@ import { create } from 'zustand';
 
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 
-// NOTE: 클릭할 때마다 이 순서대로 순환한다. 마지막(hidden) 다음 클릭은 다시 처음(medium)으로 돌아간다.
+// NOTE: 클릭할 때마다 순환하며, 접힌 상태에서도 핸들과 탭은 남겨둔다.
 const HOME_BOTTOM_SHEET_SNAP_SEQUENCE: readonly BottomSheetSnapPoint[] = [
   'medium',
   'full',
   'medium',
-  'hidden',
+  'collapsed',
 ];
 
 // NOTE: 드래그로 직접 한 단계에 도착했을 때, 다음 클릭이 이어질 위치를 정하기 위한 매핑이다.
@@ -16,6 +16,7 @@ const SNAP_POINT_TO_STEP_INDEX: Record<BottomSheetSnapPoint, number> = {
   medium: 0,
   large: 0,
   full: 1,
+  collapsed: 3,
   hidden: 3,
 };
 

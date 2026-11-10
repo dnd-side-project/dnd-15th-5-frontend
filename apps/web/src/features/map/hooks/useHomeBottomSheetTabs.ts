@@ -145,7 +145,7 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
 
   const handleTabChange = (nextTab: HomeBottomSheetTab) => {
     const scrollContainer = contentRootRef.current?.parentElement;
-    if (scrollContainer && pendingScrollTopRef.current === null) {
+    if (isHomeSheet && scrollContainer && pendingScrollTopRef.current === null) {
       setScrollPosition(tab, scrollContainer.scrollTop);
     }
     shouldRestoreFocusRef.current = true;
@@ -191,5 +191,8 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
     handleContentTouchMove,
     handleContentWheel,
     handleContentKeyDown,
+    requestTabFocusRestoration: () => {
+      shouldRestoreFocusRef.current = true;
+    },
   };
 };

@@ -193,7 +193,11 @@ export const useBottomSheetDrag = ({
       const fullHeightPx = fitContent
         ? Math.max(dragStart.heightPx, onExpand ? getSnapPointHeightPx('full') : dragStart.heightPx)
         : getSnapPointHeightPx('full');
-      const minimumHeightPx = fitContent && !canDismissFitContent ? dragStart.heightPx : 0;
+      const minimumHeightPx = fitContent
+        ? canDismissFitContent
+          ? 0
+          : dragStart.heightPx
+        : Math.min(...resolvedSnapPoints.map(getSnapPointHeightPx));
       const nextHeightPx = Math.min(
         fullHeightPx,
         Math.max(minimumHeightPx, dragStart.heightPx + draggedUpBy)

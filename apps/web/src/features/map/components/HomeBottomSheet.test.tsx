@@ -131,6 +131,32 @@ describe('HomeBottomSheet', () => {
     expect(sheet).toHaveStyle({ height: 'calc(100dvh - 108px)' });
   });
 
+  it('최대 높이였더라도 장소 요약 시트로 전환하면 딤을 해제한다', () => {
+    useHomeBottomSheetStore.setState({ stepIndex: 1 });
+    const { container } = render(
+      <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSelectedPlace={renderSelectedPlace}
+        renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+      />
+    );
+
+    expect(container.querySelector('[data-slot="overlay"]')).toBeInTheDocument();
+
+    act(() => {
+      useHomeBottomSheetStore.getState().showSelectedPlace(TEST_MAP_STICKERS[0]!.id);
+    });
+
+    expect(screen.getByRole('dialog', { name: '선택한 가게 정보' })).toBeInTheDocument();
+    expect(container.querySelector('[data-slot="overlay"]')).not.toBeInTheDocument();
+
+    act(() => {
+      useHomeBottomSheetStore.getState().showHome();
+    });
+
+    expect(container.querySelector('[data-slot="overlay"]')).toBeInTheDocument();
+  });
+
   it('자주 소비한 곳 탭에 페이지에서 전달한 요약을 표시한다', () => {
     render(
       <HomeBottomSheet
@@ -152,6 +178,78 @@ describe('HomeBottomSheet', () => {
     expect(
       screen.getByRole('button', { name: '자주 소비한 곳' }).parentElement?.parentElement
     ).toHaveClass('pb-2');
+  });
+
+  it.each(['자주 소비한 곳', '소비 기록'])(
+    '접힌 상태에서 %s 탭을 누르면 목록을 펼친다',
+    async (label) => {
+      useHomeBottomSheetStore.setState({ stepIndex: 3 });
+      const user = userEvent.setup();
+      render(
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => (
+            <div>
+              {headerContent}
+              <p>가게 목록</p>
+            </div>
+          )}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => (
+            <div>
+              {headerContent}
+              <p>기록 목록</p>
+            </div>
+          )}
+        />
+      );
+      const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement!;
+
+      expect(sheet).not.toHaveClass('translate-y-full');
+      expect(screen.getByText('가게 목록')).not.toBeVisible();
+      expect(screen.getByText('기록 목록')).not.toBeVisible();
+      expect(screen.getAllByRole('button', { name: /자주 소비한 곳|소비 기록/ })).toHaveLength(2);
+
+      await user.click(screen.getByRole('button', { name: label }));
+
+      expect(sheet).toHaveStyle({ height: '45dvh' });
+      expect(screen.getByRole('button', { name: label })).toHaveFocus();
+      expect(screen.getByText(label === '소비 기록' ? '기록 목록' : '가게 목록')).toBeVisible();
+    }
+  );
+
+  it('목록을 접었다 펼쳐도 입력 상태와 스크롤 위치를 유지한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <HomeBottomSheet
+        renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+        renderSelectedPlace={renderSelectedPlace}
+        renderSpendingHistory={(headerContent) => (
+          <div>
+            {headerContent}
+            <input aria-label="선택한 월" defaultValue="7월" />
+          </div>
+        )}
+      />
+    );
+    await user.click(screen.getByRole('button', { name: '소비 기록' }));
+    const input = screen.getByRole('textbox', { name: '선택한 월' });
+    await user.clear(input);
+    await user.type(input, '6월');
+    const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement!;
+    const scrollContainer = sheet.lastElementChild as HTMLElement;
+    scrollContainer.scrollTop = 240;
+    fireEvent.scroll(scrollContainer);
+
+    act(() => useHomeBottomSheetStore.getState().setSnapPoint('collapsed'));
+    scrollContainer.scrollTop = 0;
+    fireEvent.scroll(scrollContainer);
+    expect(useHomeBottomSheetStore.getState().scrollPositions.history).toBe(240);
+
+    await user.click(screen.getByRole('button', { name: '소비 기록' }));
+
+    expect(screen.getByRole('textbox', { name: '선택한 월' })).toBe(input);
+    expect(input).toHaveValue('6월');
+    expect(scrollContainer.scrollTop).toBe(240);
   });
 
   it('소비 기록 탭을 선택하면 페이지에서 전달한 소비내역을 표시한다', async () => {
@@ -840,7 +938,7 @@ describe('HomeBottomSheet', () => {
   });
 
   it('홈 시트에서 핸들을 클릭하면 단계가 순환한다', () => {
-    render(
+    const { container } = render(
       <HomeBottomSheet
         renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
         renderSelectedPlace={renderSelectedPlace}
@@ -851,10 +949,23 @@ describe('HomeBottomSheet', () => {
     const sheet = handle.parentElement as HTMLElement;
 
     expect(sheet).toHaveStyle({ height: '45dvh' });
+    expect(container.querySelector('[data-slot="overlay"]')).not.toBeInTheDocument();
 
     fireEvent.click(handle);
 
     expect(sheet).toHaveStyle({ height: '92dvh' });
+    expect(container.querySelector('[data-slot="overlay"]')).toHaveClass('bg-neutral-900/20');
+
+    fireEvent.click(handle);
+
+    expect(sheet).toHaveStyle({ height: '45dvh' });
+    expect(container.querySelector('[data-slot="overlay"]')).not.toBeInTheDocument();
+
+    fireEvent.click(handle);
+
+    expect(sheet).not.toHaveClass('translate-y-full');
+    expect(sheet.style.height).toBe('calc(4.5rem + calc(6.5rem + env(safe-area-inset-bottom)))');
+    expect(container.querySelector('[data-slot="overlay"]')).not.toBeInTheDocument();
   });
 
   it('모달형 시트에서 핸들을 클릭하면 홈 시트로 돌아간다', async () => {
