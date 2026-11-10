@@ -24,8 +24,10 @@ import MapFocusController from './MapFocusController';
  */
 export default function GoogleMapView({
   isSelectingLocation = false,
+  isInteractionLocked = false,
 }: {
   isSelectingLocation?: boolean;
+  isInteractionLocked?: boolean;
 }) {
   const { position, isLoading, error, requestPosition } = useCurrentPosition();
   const [showLocationError, setShowLocationError] = useState(false);
@@ -37,12 +39,13 @@ export default function GoogleMapView({
   const clearDraftSelection = useLocationSelectionStore((state) => state.clearDraftSelection);
 
   const handleMapCenterChanged = () => {
-    if (isSelectingLocation) {
+    if (isSelectingLocation && !isInteractionLocked) {
       clearDraftSelection();
     }
   };
 
   const handleMapIdle = (map: google.maps.Map) => {
+    if (isInteractionLocked) return;
     const center = map.getCenter()?.toJSON();
     if (!center) return;
     setMapCenter(center);
@@ -72,7 +75,8 @@ export default function GoogleMapView({
       mapId={GOOGLE_MAPS_MAP_ID}
       defaultCenter={mapCenter}
       defaultZoom={isSelectingLocation ? LOCATION_SELECTION_MAP_ZOOM : MAP_DEFAULT_ZOOM}
-      gestureHandling="greedy"
+      gestureHandling={isInteractionLocked ? 'none' : 'greedy'}
+      keyboardShortcuts={!isInteractionLocked}
       disableDefaultUI
       clickableIcons={false}
       onClick={handleMapClick}

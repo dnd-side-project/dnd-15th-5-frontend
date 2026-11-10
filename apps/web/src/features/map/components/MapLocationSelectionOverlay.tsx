@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { useRecommendationLocationActions } from '@/features/map/hooks/useRecommendationLocationActions';
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
+import type { MapPosition } from '@/features/map/types';
 import { RecommendationLocationPinIcon } from '@/shared/assets/icons';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { Button } from '@/shared/ui/button';
@@ -9,15 +9,18 @@ import { Button } from '@/shared/ui/button';
 const LOCATION_HINT_DURATION_MS = 4_000;
 
 type MapLocationSelectionOverlayProps = {
-  onConfirm: () => void;
+  isSaving: boolean;
+  hasSaveError: boolean;
+  onConfirm: (selection: { position: MapPosition; address: string }) => void;
 };
 
 export default function MapLocationSelectionOverlay({
   onConfirm,
+  isSaving,
+  hasSaveError,
 }: MapLocationSelectionOverlayProps) {
   const clearDraftSelection = useLocationSelectionStore((state) => state.clearDraftSelection);
   const draftSelection = useLocationSelectionStore((state) => state.draftSelection);
-  const { confirmLocation, isSaving, hasSaveError } = useRecommendationLocationActions();
   const [showLocationHint, setShowLocationHint] = useState(true);
 
   useEffect(() => {
@@ -33,11 +36,11 @@ export default function MapLocationSelectionOverlay({
 
   const handleConfirmLocation = () => {
     const draft = useLocationSelectionStore.getState().draftSelection;
-    if (draft?.status !== 'ready') {
+    if (isSaving || draft?.status !== 'ready') {
       return;
     }
 
-    confirmLocation(draft, onConfirm);
+    onConfirm(draft);
   };
 
   return (
