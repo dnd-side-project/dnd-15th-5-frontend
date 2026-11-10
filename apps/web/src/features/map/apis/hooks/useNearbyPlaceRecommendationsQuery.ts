@@ -18,12 +18,7 @@ export const useNearbyPlaceRecommendationsQuery = () => {
     radiusMeters: RECOMMENDATION_RADIUS_METERS,
   });
   const response = query.data?.data;
-  const recommendations = useMemo(() => {
-    const allPlaces = response?.allPlaces ?? [];
-    const categoryPlaces = response?.categoryPlaces?.flatMap(({ places }) => places ?? []) ?? [];
-
-    return toShopRecommendations(allPlaces.length > 0 ? allPlaces : categoryPlaces);
-  }, [response?.allPlaces, response?.categoryPlaces]);
+  const recommendations = useMemo(() => toShopRecommendations(response), [response]);
 
   return { ...query, recommendations };
 };
