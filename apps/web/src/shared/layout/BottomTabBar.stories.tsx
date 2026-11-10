@@ -1,39 +1,77 @@
-import { MemoryRouter } from 'react-router-dom';
+import { useState } from 'react';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
+import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+
 import BottomTabBar from './BottomTabBar';
+import {
+  StoryPlaceList,
+  StoryRecordBackground,
+  StoryReportBackground,
+} from './storybook/StoryContentPreview';
+import { StoryMapBackdrop, StoryMapToolbar } from './storybook/StoryMapPreview';
+import { STORY_PLACES } from './storybook/storyPreviewData';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { ReactNode } from 'react';
+
+type BottomTabBarPreviewProps = { children: ReactNode };
+
+/** 탭을 눌러 지도·리포트·기록 배경 사이를 이동하고 실제 배경 위의 Glass를 확인합니다. */
+function BottomTabBarPreview({ children }: BottomTabBarPreviewProps) {
+  const { pathname } = useLocation();
+  const [category, setCategory] = useState<string | null>(null);
+
+  return (
+    <LiquidGlassScene className="mobile-frame min-h-screen bg-neutral-50">
+      {pathname.startsWith(ROUTE_PATHS.report) ? (
+        <StoryReportBackground />
+      ) : pathname.startsWith(ROUTE_PATHS.record) ? (
+        <StoryRecordBackground />
+      ) : (
+        <>
+          <section className="relative h-dvh">
+            <StoryMapBackdrop category={category} />
+            <StoryMapToolbar category={category} onCategoryChange={setCategory} />
+            <div className="absolute right-5 bottom-32 left-5 rounded-30 bg-neutral-00/90 p-5 shadow-home-overlay">
+              <p className="text-caption-01-medium text-primary-500">11월의 동네 기록</p>
+              <h1 className="mt-1 text-title-01-bold text-neutral-700">발걸음이 모인 곳</h1>
+              <p className="mt-1 text-body-02-medium text-neutral-500">
+                {STORY_PLACES.length}곳에 쌓인 나의 취향을 만나보세요
+              </p>
+            </div>
+          </section>
+          <section className="bg-neutral-00 px-5 pt-8">
+            <h2 className="mb-2 text-title-01-bold text-neutral-700">자주 소비한 곳</h2>
+            <StoryPlaceList />
+          </section>
+        </>
+      )}
+      {children}
+    </LiquidGlassScene>
+  );
+}
 
 const meta = {
   title: 'Shared/BottomTabBar',
   component: BottomTabBar,
-  parameters: { layout: 'fullscreen' },
-  // INFO: 스크롤에 따라 캡슐 아래의 배경과 굴절이 바뀌는지 확인한다.
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      story: { inline: false, iframeHeight: 800 },
+      description: {
+        component:
+          '지도·리포트·기록 배경에서 하단 네비게이션을 확인합니다. 탭 이동과 스크롤에 따라 유리 뒤의 콘텐츠가 바뀝니다.',
+      },
+    },
+  },
   decorators: [
     (Story, { parameters }) => (
       <MemoryRouter initialEntries={[parameters.initialPath as string]}>
-        <LiquidGlassScene className="mobile-frame min-h-screen bg-neutral-50">
-          <section className="space-y-4 px-5 pt-10 pb-32">
-            <h1 className="text-heading-01-bold text-neutral-700">우리 동네 소비 기록</h1>
-            <p className="text-body-02-regular text-neutral-500">
-              아래로 스크롤해 유리 캡슐을 통과하는 배경을 확인해 보세요.
-            </p>
-            {Array.from({ length: 12 }, (_, index) => (
-              <article
-                key={index}
-                className="flex h-36 items-center gap-5 rounded-30 bg-neutral-00 p-5"
-              >
-                <div className="size-20 shrink-0 rounded-full bg-linear-to-br from-primary-500 to-primary-300" />
-                <div className="space-y-2 text-neutral-700">
-                  <h2 className="text-label-01-medium font-bold">동네 가게 {index + 1}</h2>
-                  <p className="text-label-01-medium text-neutral-500">오늘의 소중한 기록</p>
-                </div>
-              </article>
-            ))}
-          </section>
+        <BottomTabBarPreview>
           <Story />
-        </LiquidGlassScene>
+        </BottomTabBarPreview>
       </MemoryRouter>
     ),
   ],
@@ -44,12 +82,12 @@ type Story = StoryObj<typeof meta>;
 
 /** "홈" 탭이 활성 상태입니다. */
 export const HomeActive: Story = {
-  parameters: { initialPath: '/home' },
+  parameters: { initialPath: ROUTE_PATHS.home },
 };
 
 /** "리포트" 탭이 활성 상태입니다. */
 export const ReportActive: Story = {
-  parameters: { initialPath: '/report' },
+  parameters: { initialPath: ROUTE_PATHS.report },
 };
 
 /**
@@ -57,5 +95,5 @@ export const ReportActive: Story = {
  * "기록하기"는 탭이 아니라 항상 같은 모양인 액션 버튼이라 활성 표시가 없습니다.
  */
 export const NoTabActive: Story = {
-  parameters: { initialPath: '/record' },
+  parameters: { initialPath: ROUTE_PATHS.record },
 };
