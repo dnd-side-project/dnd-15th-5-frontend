@@ -56,11 +56,11 @@ export const getCachedLikedState = (
     .flatMap(([queryKey, response]) => {
       const freshResponse = getFreshData(queryKey, response);
       return [
+        ...(freshResponse?.data?.categoryPlaces?.flatMap((group) => group.places ?? []) ?? []),
         ...(freshResponse?.data?.allPlaces ?? []),
-        ...(freshResponse?.data?.categoryPlaces ?? []).flatMap(({ places }) => places ?? []),
       ];
     })
-    .find((place) => place.placeId === placeId);
+    .find((place) => place.placeId === placeId && typeof place.liked === 'boolean');
   const visitedPlace = queryClient
     .getQueriesData<ApiResponseVisitedPlaceMarkerResponse>({ queryKey: VISITED_PLACES_QUERY_KEY })
     .flatMap(([queryKey, response]) => getFreshData(queryKey, response)?.data?.places ?? [])
@@ -168,6 +168,7 @@ const updateRecommendedPlaces = (
     return liked === place.liked ? place : { ...place, liked };
   });
 
+/** 카테고리별 목록과 전체 목록에 중복된 장소의 좋아요 상태를 함께 갱신합니다. */
 const updateNearbyPlacesResponse = (
   response: ApiResponseNearbyPlacesResponse | undefined,
   placeId: number,
@@ -179,11 +180,11 @@ const updateNearbyPlacesResponse = (
         data: response.data
           ? {
               ...response.data,
-              allPlaces: updateRecommendedPlaces(response.data.allPlaces, placeId, updateLiked),
-              categoryPlaces: response.data.categoryPlaces?.map((category) => ({
-                ...category,
-                places: updateRecommendedPlaces(category.places, placeId, updateLiked),
+              categoryPlaces: response.data.categoryPlaces?.map((group) => ({
+                ...group,
+                places: updateRecommendedPlaces(group.places, placeId, updateLiked),
               })),
+              allPlaces: updateRecommendedPlaces(response.data.allPlaces, placeId, updateLiked),
             }
           : response.data,
       }

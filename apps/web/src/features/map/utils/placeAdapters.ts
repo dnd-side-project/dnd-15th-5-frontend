@@ -1,4 +1,8 @@
-import type { RecommendedPlaceItem, VisitedPlaceMarkerItem } from '@/features/map/apis/dto';
+import type {
+  NearbyPlacesResponse,
+  RecommendedPlaceItem,
+  VisitedPlaceMarkerItem,
+} from '@/features/map/apis/dto';
 import { HOME_CATEGORIES } from '@/features/map/constants';
 import type {
   HomeCategory,
@@ -6,7 +10,7 @@ import type {
   ShopRecommendation,
   ShopRecommendationReason,
 } from '@/features/map/types';
-import { StickerEyesImage, getStickerImageByName } from '@/shared/assets/images/stickers';
+import { StickerEyesImage, getStickerImage } from '@/shared/assets/images/stickers';
 
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 
@@ -33,7 +37,9 @@ export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =
       return [];
     }
 
-    const image = getStickerImageByName(place.stickerName) ?? StickerEyesImage;
+    const image =
+      getStickerImage({ imageUrl: place.imageUrl, itemName: place.stickerName }) ??
+      StickerEyesImage;
     const category = normalizeHomeCategory(place.category);
 
     return [
@@ -158,12 +164,18 @@ const toRecommendation = (
 };
 
 /** 카테고리별 인기 장소 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
-export const toShopRecommendations = ({
-  allPlaces,
-}: {
-  allPlaces?: RecommendedPlaceItem[];
-}): ShopRecommendation[] => {
-  const candidates = (allPlaces ?? []).map((place) =>
+export const toShopRecommendations = (response?: NearbyPlacesResponse): ShopRecommendation[] => {
+  const categoryPlaces = (response?.categoryPlaces ?? []).flatMap((group) => group.places ?? []);
+  const allPlaces = response?.allPlaces ?? [];
+  const likedByPlaceId = new Map<string, boolean>();
+
+  for (const place of [...categoryPlaces, ...allPlaces]) {
+    if (place.placeId === undefined || typeof place.liked !== 'boolean') continue;
+    const id = String(place.placeId);
+    if (!likedByPlaceId.has(id)) likedByPlaceId.set(id, place.liked);
+  }
+
+  const candidates = (response?.allPlaces ?? categoryPlaces).map((place) =>
     toRecommendation(place, '카테고리별 인기 가게')
   );
   const seenPlaceIds = new Set<string>();
@@ -174,6 +186,11 @@ export const toShopRecommendations = ({
     }
 
     seenPlaceIds.add(recommendation.id);
-    return [recommendation];
+    return [
+      {
+        ...recommendation,
+        isLiked: likedByPlaceId.get(recommendation.id) ?? recommendation.isLiked,
+      },
+    ];
   });
 };

@@ -17,10 +17,7 @@ export const useNearbyPlaceRecommendationsQuery = () => {
     radiusMeters: RECOMMENDATION_RADIUS_METERS,
   });
   const response = query.data?.data;
-  const recommendations = useMemo(
-    () => toShopRecommendations({ allPlaces: response?.allPlaces }),
-    [response?.allPlaces]
-  );
+  const recommendations = useMemo(() => toShopRecommendations(response), [response]);
 
   return { ...query, recommendations };
 };
