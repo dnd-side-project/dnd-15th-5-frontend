@@ -9,6 +9,7 @@ type StickerSourcePickerProps = {
   onCapture?: () => void;
   onImportImage: () => void;
   onSelectDefaultSticker: () => void;
+  onResumeRecord?: () => void;
 };
 
 /** 촬영 가능 여부에 맞춰 사진·갤러리·기본 스티커 진입 메뉴를 표시합니다. */
@@ -17,6 +18,7 @@ export default function StickerSourcePicker({
   onCapture,
   onImportImage,
   onSelectDefaultSticker,
+  onResumeRecord,
 }: StickerSourcePickerProps) {
   return (
     <section className="px-4 pt-2 pb-8">
@@ -59,6 +61,16 @@ export default function StickerSourcePicker({
         <p role="status" className="mt-4 text-center text-body-02-regular text-neutral-500">
           카메라를 열고 있어요
         </p>
+      )}
+      {onResumeRecord && (
+        <button
+          type="button"
+          onClick={onResumeRecord}
+          disabled={isCapturing}
+          className="mt-6 w-full rounded-full py-3 text-body-02-medium text-primary-500"
+        >
+          작성 중인 기록으로 돌아가기
+        </button>
       )}
     </section>
   );

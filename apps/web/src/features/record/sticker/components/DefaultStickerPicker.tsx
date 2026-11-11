@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { CheckIcon, CloseIcon } from '@/shared/assets/icons';
+import { CheckIcon } from '@/shared/assets/icons';
 import {
   DEFAULT_STICKER_CATEGORIES,
   DEFAULT_STICKERS,
@@ -13,12 +13,16 @@ import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 import { CategoryChip } from '@/shared/ui/category-chip';
 
+import StickerFlowHeader from './StickerFlowHeader';
+
 type DefaultStickerPickerProps = {
   initialSticker?: DefaultSticker | null;
   onClose: () => void;
   onConfirm: (sticker: DefaultSticker) => void;
   isProcessing: boolean;
   error: string;
+  onBack?: () => void;
+  isChangingImage?: boolean;
 };
 
 export default function DefaultStickerPicker({
@@ -27,6 +31,8 @@ export default function DefaultStickerPicker({
   onConfirm,
   isProcessing,
   error,
+  onBack,
+  isChangingImage,
 }: DefaultStickerPickerProps) {
   const [category, setCategory] = useState<DefaultStickerCategory>(
     initialSticker?.category ?? '카페'
@@ -45,14 +51,7 @@ export default function DefaultStickerPicker({
   return (
     <section className="flex min-h-dvh flex-col bg-neutral-00 text-neutral-700">
       <header className="relative h-32 shrink-0">
-        <button
-          type="button"
-          aria-label="닫기"
-          onClick={onClose}
-          className="absolute top-19.5 left-4 grid size-6 place-items-center"
-        >
-          <CloseIcon aria-hidden="true" className="size-4" />
-        </button>
+        <StickerFlowHeader onBack={onBack} onClose={onClose} isChangingImage={isChangingImage} />
       </header>
 
       <h1 className="mx-4 mt-2.5 text-heading-01-bold">스티커를 골라주세요</h1>

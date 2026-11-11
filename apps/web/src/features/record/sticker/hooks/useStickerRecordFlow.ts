@@ -242,18 +242,16 @@ export const useStickerRecordFlow = (initialValue?: StickerRecordInitialValue) =
     setStage('record');
   };
 
-  const backToImageSelection = () => {
-    if (!recordResult) return;
+  const backToSourceSelection = () => {
     startRequest();
+    if (isProcessing) disposeStickerBackground();
     keepRecordUrls();
-    if (recordResult.source === 'default') {
-      setStage('default');
-      return;
-    }
-    setCropSource(recordResult.cropSource ?? null);
-    setPhotoSource(recordResult.photoSource ?? 'gallery');
-    setResult(null);
-    setStage('crop');
+    lastFile.current = null;
+    lastCropSource.current = null;
+    setCropSource(null);
+    setOriginal('');
+    setResult(recordResult);
+    setStage('select');
   };
 
   const selectDefaultSticker = async (sticker: DefaultSticker) => {
@@ -315,7 +313,7 @@ export const useStickerRecordFlow = (initialValue?: StickerRecordInitialValue) =
     error,
     reset,
     cancelImageSelection,
-    backToImageSelection,
+    backToSourceSelection,
     retry,
     openDefaultStickers: () => {
       startRequest();

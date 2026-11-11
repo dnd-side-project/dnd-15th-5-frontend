@@ -72,7 +72,7 @@ export default function ImageChangeSheet({
             onClick={() => close()}
             className="mt-8 bg-neutral-400 text-neutral-00 hover:bg-neutral-500"
           >
-            취소하기
+            변경 취소
           </Button>
         </>
       )}

@@ -51,7 +51,11 @@ const loadCropImage = () => {
 const upload = () => {
   selectPhoto();
   loadCropImage();
-  fireEvent.click(screen.getByRole('button', { name: '자르기 완료' }));
+  fireEvent.click(screen.getByRole('button', { name: '스티커로 만들기' }));
+};
+const finishGalleryGeneration = async () => {
+  fireEvent.load(await screen.findByAltText('흰색 테두리가 적용된 스티커'));
+  await screen.findByAltText('기록에 적용한 스티커');
 };
 const expectAllUrlsReleased = () => {
   const createdUrls = jest.mocked(URL.createObjectURL).mock.results.map(({ value }) => value);
@@ -142,14 +146,15 @@ it('수정 중 사진 자르기와 미확정 미리보기도 변경으로 알리
   expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   selectPhoto();
   expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-  fireEvent.click(screen.getByRole('button', { name: '사진 다시 선택' }));
+  expect(screen.queryByRole('button', { name: '뒤로 가기' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '사진 변경 취소' }));
   expect(onDirtyChange).toHaveBeenLastCalledWith(false);
   upload();
   await screen.findByAltText('흰색 테두리가 적용된 스티커');
   expect(onDirtyChange).toHaveBeenLastCalledWith(true);
-  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
-  expect(mockClose).toHaveBeenCalled();
-  expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+  fireEvent.click(screen.getByRole('button', { name: '변경 취소' }));
+  expect(mockClose).not.toHaveBeenCalled();
+  expect(onDirtyChange).toHaveBeenLastCalledWith(false);
 });
 
 it.each(['케이크', '도넛'])(
@@ -190,8 +195,7 @@ it.each(['케이크', '도넛'])(
 it('사진 선택부터 기록 미리보기와 PNG 다운로드까지 이어진다', async () => {
   const { unmount } = render(<StickerRecordFlow onClose={mockClose} />);
   upload();
-  await screen.findByAltText('흰색 테두리가 적용된 스티커');
-  fireEvent.click(screen.getByRole('button', { name: '이 스티커 사용' }));
+  await finishGalleryGeneration();
   expect(screen.getByAltText('기록에 적용한 스티커')).toBeInTheDocument();
   fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
     target: { value: '다시 잘라도 유지할 메모' },
@@ -200,19 +204,14 @@ it('사진 선택부터 기록 미리보기와 PNG 다운로드까지 이어진�
     'download',
     'chapchap-sticker.png'
   );
-  fireEvent.click(screen.getByRole('button', { name: '이미지 변경' }));
+  fireEvent.click(screen.getByRole('button', { name: '사진 변경' }));
   expect(screen.getByRole('dialog', { name: '이미지 변경' })).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: '취소하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '변경 취소' }));
   expect(screen.getByAltText('기록에 적용한 스티커')).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
-  expect(screen.getByRole('heading', { name: '사진 자르기' })).toBeInTheDocument();
-  expect(screen.getByAltText('자를 사진')).toHaveAttribute('src', 'blob:photo-0');
+  expect(screen.getByText('오늘의 방문을 사진으로 남겨요')).toBeVisible();
   expect(URL.revokeObjectURL).not.toHaveBeenCalledWith('blob:photo-0');
-  loadCropImage();
-  fireEvent.click(screen.getByRole('button', { name: '자르기 완료' }));
-  await screen.findByAltText('흰색 테두리가 적용된 스티커');
-  expect(cropStickerImage).toHaveBeenLastCalledWith(photo, FULL_STICKER_CROP);
-  fireEvent.click(screen.getByRole('button', { name: '이 스티커 사용' }));
+  fireEvent.click(screen.getByRole('button', { name: '작성 중인 기록으로 돌아가기' }));
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('다시 잘라도 유지할 메모');
   unmount();
   expectAllUrlsReleased();
@@ -222,21 +221,28 @@ it('가져온 사진은 자르기를 완료한 뒤 자른 사진으로 스티커
   render(<StickerRecordFlow onClose={mockClose} />);
   selectPhoto();
   expect(screen.getByRole('heading', { name: '사진 자르기' })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: '자르기 완료' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '스티커로 만들기' })).toBeDisabled();
   loadCropImage();
   expect(mockRemove).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button', { name: '자르기 완료' }));
+  fireEvent.click(screen.getByRole('button', { name: '스티커로 만들기' }));
   await screen.findByAltText('흰색 테두리가 적용된 스티커');
   expect(cropStickerImage).toHaveBeenCalledWith(photo, FULL_STICKER_CROP);
   expect(prepareStickerImage).toHaveBeenCalledWith(croppedPhoto);
 });
 
-it('자르기 화면에서 뒤로 가면 사진 선택 화면으로 돌아간다', () => {
-  render(<StickerRecordFlow onClose={mockClose} />);
+it('자르기에는 뒤로가기 없이 X만 표시하고 종료 확인 후 나간다', () => {
+  const { unmount } = render(<StickerRecordFlow onClose={mockClose} />);
   selectPhoto();
-  fireEvent.click(screen.getByRole('button', { name: '사진 다시 선택' }));
-  expect(screen.getByText('오늘의 방문을 사진으로 남겨요')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: '뒤로 가기' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+  fireEvent.click(screen.getByRole('button', { name: '나가기' }));
+  expect(mockClose).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeVisible();
+  expect(screen.getByAltText('자를 사진')).toBeInTheDocument();
+  expect(screen.queryByText('오늘의 방문을 사진으로 남겨요')).not.toBeInTheDocument();
   expect(cropStickerImage).not.toHaveBeenCalled();
+  expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+  unmount();
   expectAllUrlsReleased();
 });
 
@@ -245,7 +251,7 @@ it('실패 후 같은 사진으로 다시 시도한다', async () => {
   render(<StickerRecordFlow onClose={mockClose} />);
   upload();
   expect(await screen.findByRole('alert')).toHaveTextContent('처리 실패');
-  expect(screen.getByRole('button', { name: '이 스티커 사용' })).toBeDisabled();
+  expect(screen.queryByRole('button', { name: '이 스티커 사용' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: '다시 시도' }));
   await screen.findByAltText('흰색 테두리가 적용된 스티커');
   expect(mockRemove).toHaveBeenCalledTimes(2);
@@ -263,7 +269,7 @@ it('취소한 작업의 늦은 결과를 무시하고 추론 중단 신호를 �
   upload();
   await waitFor(() => expect(mockRemove).toHaveBeenCalledTimes(1));
   const signal = mockRemove.mock.calls[0][1];
-  fireEvent.click(screen.getByRole('button', { name: '취소' }));
+  fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
   expect(signal.aborted).toBe(true);
   await act(async () => finish(new Blob()));
   expect(screen.getByText('오늘의 방문을 사진으로 남겨요')).toBeInTheDocument();
@@ -291,9 +297,9 @@ it.each([false, true])(
     render(<StickerRecordFlow onClose={mockClose} />);
     const input = screen.getByLabelText('사진 가져오기');
     const click = jest.spyOn(input, 'click');
-    upload();
-    await screen.findByAltText('흰색 테두리가 적용된 스티커');
-    expect(screen.getByRole('button', { name: '이 스티커 사용' })).toBeEnabled();
+    selectPhoto();
+    loadCropImage();
+    expect(screen.getByRole('button', { name: '스티커로 만들기' })).toBeEnabled();
     expect(screen.queryByRole('button', { name: '다시 찍기' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '사진 다시 고르기' }));
     expect(click).toHaveBeenCalledTimes(1);
@@ -311,6 +317,8 @@ it('촬영한 사진은 자르기 없이 스티커 생성으로 넘어가고 다
   fireEvent.click(screen.getByRole('button', { name: '촬영하기' }));
   await screen.findByAltText('흰색 테두리가 적용된 스티커');
   expect(cropStickerImage).not.toHaveBeenCalled();
+  expect(screen.queryByRole('button', { name: '뒤로 가기' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '이 스티커 사용' })).toBeEnabled();
   expect(screen.queryByRole('button', { name: '사진 다시 고르기' })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: '다시 찍기' }));
@@ -370,10 +378,72 @@ it('카메라 권한 거부 시 설정 안내를 표시한다', async () => {
   expect(mockRemove).not.toHaveBeenCalled();
 });
 
-it('닫기를 누르면 화면을 닫는다', () => {
+it('빈 방식 선택 화면의 닫기는 바로 기록을 종료한다', () => {
   render(<StickerRecordFlow onClose={mockClose} />);
-  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
   expect(mockClose).toHaveBeenCalled();
+});
+
+it.each(['crop', 'gallery', 'camera', 'default', 'form', 'resumed-source'])(
+  '%s 단계의 X는 종료 확인을 거치고 계속 작성 시 화면을 유지한다',
+  async (stage) => {
+    if (stage === 'camera') {
+      jest.mocked(isNativeApp).mockReturnValue(true);
+      jest
+        .mocked(requestToNative)
+        .mockResolvedValue({ status: 'success', base64: btoa('photo'), mimeType: 'image/jpeg' });
+    }
+    const { unmount } = render(<StickerRecordFlow onClose={mockClose} />);
+    if (stage === 'crop') selectPhoto();
+    else if (stage === 'gallery') {
+      upload();
+      await screen.findByAltText('흰색 테두리가 적용된 스티커');
+    } else if (stage === 'camera') {
+      fireEvent.click(screen.getByRole('button', { name: '촬영하기' }));
+      await screen.findByAltText('흰색 테두리가 적용된 스티커');
+    } else if (stage === 'default')
+      fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
+    else {
+      await openRecordedDefault();
+      if (stage === 'resumed-source')
+        fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
+    }
+
+    const exitButton = screen.getByRole('button', { name: '기록 닫고 홈으로 이동' });
+    fireEvent.click(exitButton);
+    expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeVisible();
+    expect(mockClose).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '계속 작성하기' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(exitButton).toBeVisible();
+    fireEvent.click(exitButton);
+    fireEvent.click(screen.getByRole('button', { name: '나가기' }));
+    expect(mockClose).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeVisible();
+    unmount();
+    expectAllUrlsReleased();
+  }
+);
+
+it('촬영한 사진 폼도 뒤로 가면 방식 선택으로 돌아가고 이어 작성할 수 있다', async () => {
+  jest.mocked(isNativeApp).mockReturnValue(true);
+  jest
+    .mocked(requestToNative)
+    .mockResolvedValue({ status: 'success', base64: btoa('photo'), mimeType: 'image/jpeg' });
+  render(<StickerRecordFlow onClose={mockClose} />);
+  fireEvent.click(screen.getByRole('button', { name: '촬영하기' }));
+  await screen.findByAltText('흰색 테두리가 적용된 스티커');
+  fireEvent.click(screen.getByRole('button', { name: '이 스티커 사용' }));
+  const sticker = screen.getByAltText('기록에 적용한 스티커');
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '촬영 기록 초안' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
+  expect(screen.getByText('오늘의 방문을 사진으로 남겨요')).toBeVisible();
+  expect(screen.queryByRole('heading', { name: '사진 자르기' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '작성 중인 기록으로 돌아가기' }));
+  expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('촬영 기록 초안');
 });
 
 it('카메라 대기 중 화면을 나가면 늦게 도착한 사진을 처리하지 않는다', async () => {
@@ -433,8 +503,10 @@ it('테두리가 포함된 기본 스티커 PNG 원본을 기록과 다운로드
   expect(mockRemove).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: '이미지 변경' }));
   expect(URL.revokeObjectURL).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button', { name: '취소하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '변경 취소' }));
   fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
+  expect(screen.getByText('오늘의 방문을 사진으로 남겨요')).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
   expect(screen.getByRole('heading', { name: '스티커를 골라주세요' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '케이크 스티커' })).toHaveAttribute(
     'aria-pressed',
@@ -462,6 +534,8 @@ it('기본 스티커에서 뒤로 가면 선택했던 카테고리를 복원하�
     target: { value: '방문 메모' },
   });
   fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
+  expect(screen.getByText('오늘의 방문을 사진으로 남겨요')).toBeVisible();
+  fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
   expect(screen.getByRole('button', { name: '쇼핑' })).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByRole('button', { name: '선물 스티커' })).toHaveAttribute(
     'aria-pressed',
@@ -488,7 +562,7 @@ it.each([false, true])(
     else expect(within(sheet).queryByRole('button', { name: '사진찍기' })).not.toBeInTheDocument();
     expect(within(sheet).getByRole('button', { name: '이미지 가져오기' })).toBeEnabled();
     expect(within(sheet).getByRole('button', { name: '기본 스티커로 기록하기' })).toBeEnabled();
-    fireEvent.click(within(sheet).getByRole('button', { name: '취소하기' }));
+    fireEvent.click(within(sheet).getByRole('button', { name: '변경 취소' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
     expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('유지할 메모');
@@ -522,7 +596,9 @@ it('시트에서 가져오기를 선택하면 파일 선택을 열고 자르기�
   expect(screen.getByAltText('기록에 적용한 스티커')).toBeVisible();
   selectPhoto();
   expect(screen.getByRole('heading', { name: '사진 자르기' })).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: '사진 다시 선택' }));
+  expect(screen.queryByRole('button', { name: '변경 취소' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: '뒤로 가기' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '사진 변경 취소' }));
   expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
   expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('5,500');
   expect(URL.revokeObjectURL).not.toHaveBeenCalledWith(sticker.getAttribute('src'));
@@ -549,7 +625,7 @@ it('기본 스티커 변경을 취소하면 기존 스티커로 돌아온다', a
   const sticker = await openRecordedDefault();
   fireEvent.click(screen.getByRole('button', { name: '이미지 변경' }));
   fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
-  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+  fireEvent.click(screen.getByRole('button', { name: '변경 취소' }));
   expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
   expect(URL.revokeObjectURL).not.toHaveBeenCalled();
 });
@@ -583,7 +659,7 @@ it('새 사진 처리를 취소하면 늦은 결과를 무시하고 이전 스�
   fireEvent.click(screen.getByRole('button', { name: '이미지 가져오기' }));
   upload();
   await waitFor(() => expect(mockRemove).toHaveBeenCalledTimes(1));
-  fireEvent.click(screen.getByRole('button', { name: '취소' }));
+  fireEvent.click(screen.getByRole('button', { name: '변경 취소' }));
   await act(async () => finish(new Blob()));
   expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('이전 메모');
@@ -613,7 +689,7 @@ it('기본 스티커를 불러오다 닫으면 늦게 완료되어도 기록 화
   fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
   fireEvent.click(screen.getByRole('button', { name: '이 스티커로 기록하기' }));
   await waitFor(() => expect(fetch).toHaveBeenCalled());
-  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+  fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
   await act(async () => finish({ ok: true, blob: async () => defaultStickerImage } as Response));
   expect(screen.getByText('오늘의 방문을 사진으로 남겨요')).toBeInTheDocument();
   expect(screen.queryByAltText('기록에 적용한 스티커')).not.toBeInTheDocument();
@@ -648,10 +724,10 @@ it.each([
   expect(screen.getByRole('button', { name: '이 스티커로 기록하기' })).toBeEnabled();
 });
 
-it('기본 스티커 선택 화면을 닫으면 기록 방법 선택으로 돌아간다', () => {
+it('기본 스티커 선택 화면에서 뒤로 가면 기록 방법 선택으로 돌아간다', () => {
   render(<StickerRecordFlow onClose={mockClose} />);
   fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
-  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+  fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
   expect(screen.getByText('오늘의 방문을 사진으로 남겨요')).toBeInTheDocument();
   expect(mockClose).not.toHaveBeenCalled();
 });
