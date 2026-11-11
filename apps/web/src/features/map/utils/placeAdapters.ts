@@ -52,7 +52,6 @@ export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =
           id: String(place.placeId),
           name: place.placeName,
           category,
-          address: '',
           isRegular: false,
           stickerImages: [image],
         },
@@ -88,7 +87,6 @@ export const toLikedPlaceRecommendations = (
           id,
           name: place.placeName,
           category,
-          address: '',
           isRegular: false,
           stickerImages: [],
         },
@@ -99,40 +97,6 @@ export const toLikedPlaceRecommendations = (
       },
     ];
   });
-
-/**
- * 좋아요 장소 상세 응답과 방문 장소 마커를 바텀시트 모델로 합칩니다.
- */
-export const toLikedPlaceRecommendation = (
-  placeId: string,
-  detail?: RecommendedPlaceDetailResponse,
-  fallback?: ShopRecommendation
-): ShopRecommendation | undefined => {
-  const name = detail?.name ?? fallback?.place.name;
-  const latitude = detail?.latitude ?? fallback?.position.lat;
-  const longitude = detail?.longitude ?? fallback?.position.lng;
-
-  if (!name || latitude === undefined || longitude === undefined) return undefined;
-
-  return {
-    id: placeId,
-    isLiked: true,
-    place: {
-      id: placeId,
-      name,
-      category: detail?.category
-        ? normalizeHomeCategory(detail.category)
-        : (fallback?.place.category ?? DEFAULT_CATEGORY),
-      address: detail?.roadAddress?.trim() || fallback?.place.address || detail?.dongName || '',
-      isRegular: fallback?.place.isRegular ?? false,
-      stickerImages: fallback?.place.stickerImages ?? [],
-    },
-    position: { lat: latitude, lng: longitude },
-    reason: fallback?.reason ?? '내 동네에서 많이 방문한 곳',
-    thumbnailSrc: detail?.thumbnailUrls?.[0] ?? fallback?.thumbnailSrc ?? null,
-    visitCount: fallback?.visitCount ?? 0,
-  };
-};
 
 /** 상세 응답에 기록에 필요한 장소 정보가 모두 있으면 검색 결과 모델로 변환합니다. */
 export const toLikedPlaceRecordShop = (
@@ -159,7 +123,7 @@ export const toLikedPlaceRecordShop = (
   return { id, name, address, latitude, longitude, photoUrl: detail?.thumbnailUrls?.[0] ?? null };
 };
 
-/** 목록에서 지도 이동할 때 전달된 장소 정보로 마커·시트 대체 데이터를 만듭니다. */
+/** 목록에서 지도 이동할 때 전달된 장소 정보로 지도 마커 데이터를 만듭니다. */
 export const toLikedPlaceNavigationRecommendation = (
   navigation: LikedPlaceMapNavigation
 ): ShopRecommendation => ({
@@ -169,7 +133,7 @@ export const toLikedPlaceNavigationRecommendation = (
     id: navigation.placeId,
     name: navigation.name,
     category: navigation.category,
-    address: navigation.address ?? '',
+    address: navigation.address?.trim() || undefined,
     isRegular: false,
     stickerImages: [],
   },
@@ -201,7 +165,7 @@ export const toShopSearchResult = (sticker?: MapSticker): ShopSearchResult | und
   return {
     id: googlePlaceId,
     name,
-    address: sticker.place.address.trim(),
+    address: sticker.place.address?.trim() ?? '',
     photoUrl: null,
     latitude,
     longitude,
@@ -228,7 +192,7 @@ const toRecommendation = (
       id: String(place.placeId),
       name: place.name,
       category: normalizeHomeCategory(place.category),
-      address: place.dongName ?? '',
+      address: place.dongName?.trim() || undefined,
       isRegular: false,
       stickerImages: [],
     },

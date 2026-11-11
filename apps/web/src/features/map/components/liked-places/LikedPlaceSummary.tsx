@@ -8,8 +8,6 @@ import { cn } from '@/shared/lib/cn';
 import { StoreImageFallback } from '@/shared/ui/card';
 import { Chip } from '@/shared/ui/chip';
 
-import LikedPlacePhotoSkeleton from './LikedPlacePhotoSkeleton';
-
 import type { ReactNode } from 'react';
 
 type LikedPlaceGalleryImageProps = {
@@ -49,7 +47,6 @@ type LikedPlaceSummaryProps = {
   category: string;
   address?: string;
   photoUrls: string[];
-  isLoading: boolean;
   isUnlikePending: boolean;
   onUnlike: () => void;
   headingAs: 'h1' | 'h2';
@@ -58,7 +55,7 @@ type LikedPlaceSummaryProps = {
 
 type LikedPlaceSummaryContentProps = Pick<
   LikedPlaceSummaryProps,
-  'placeId' | 'name' | 'category' | 'address' | 'photoUrls' | 'isLoading' | 'headingAs'
+  'placeId' | 'name' | 'category' | 'address' | 'photoUrls' | 'headingAs'
 > & {
   headerAction?: ReactNode;
   headerClassName?: string;
@@ -94,7 +91,6 @@ function LikedPlaceSummaryContent({
   category,
   address,
   photoUrls,
-  isLoading,
   headingAs: Heading,
   headerAction,
   headerClassName,
@@ -122,16 +118,13 @@ function LikedPlaceSummaryContent({
       </p>
 
       <div
-        role={isLoading ? 'status' : undefined}
-        aria-label={isLoading ? '가게 사진 불러오는 중' : `${name} 사진`}
+        aria-label={`${name} 사진`}
         className="mt-3 grid gap-1 overflow-hidden rounded-16 bg-neutral-100"
         style={{
-          gridTemplateColumns: `repeat(${isLoading ? 3 : Math.max(photoUrls.length, 1)}, minmax(0, 1fr))`,
+          gridTemplateColumns: `repeat(${Math.max(photoUrls.length, 1)}, minmax(0, 1fr))`,
         }}
       >
-        {isLoading ? (
-          <LikedPlacePhotoSkeleton />
-        ) : photoUrls.length > 0 ? (
+        {photoUrls.length > 0 ? (
           photoUrls.map((photoUrl, index) => (
             <LikedPlaceGalleryImage key={photoUrl} name={name} photoUrl={photoUrl} index={index} />
           ))
@@ -150,7 +143,6 @@ export default function LikedPlaceSummary({
   category,
   address,
   photoUrls,
-  isLoading,
   isUnlikePending,
   onUnlike,
   headingAs: Heading,
@@ -172,7 +164,6 @@ export default function LikedPlaceSummary({
               category={category}
               address={address}
               photoUrls={photoUrls}
-              isLoading={isLoading}
               headingAs={Heading}
               headerClassName="pr-12"
             />
@@ -191,7 +182,6 @@ export default function LikedPlaceSummary({
           category={category}
           address={address}
           photoUrls={photoUrls}
-          isLoading={isLoading}
           headingAs={Heading}
           headerClassName="pr-4"
           headerAction={

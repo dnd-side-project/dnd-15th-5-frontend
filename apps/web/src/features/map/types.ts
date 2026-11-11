@@ -34,7 +34,7 @@ export type MapSticker = {
 };
 
 export type MapPlaceDetail = {
-  address: string;
+  address?: string;
   category: HomeCategory;
   id: string;
   isRegular: boolean;

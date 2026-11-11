@@ -3,7 +3,7 @@ import { ExternalLinkIcon } from '@/shared/assets/icons';
 import { LinkButton } from '@/shared/ui/button';
 
 type GoogleMapsLinkButtonProps = {
-  address: string;
+  address?: string;
   googlePlaceId?: string;
   placeName: string;
 };

@@ -196,7 +196,9 @@ export default function ShopRecommendationSheet() {
                   thumbnailSrc={thumbnailSrc}
                   title={place.name}
                   tags={[
-                    { label: getDistrict(place.address), icon: BlueLocationPinIcon },
+                    ...(place.address
+                      ? [{ label: getDistrict(place.address), icon: BlueLocationPinIcon }]
+                      : []),
                     { label: place.category },
                   ]}
                 />

@@ -2,10 +2,10 @@
 export const getDistrict = (address: string) => address.split(' ')[1] ?? address;
 
 /** 해당 가게의 장소 상세 화면을 여는 Google Maps 검색 URL을 만듭니다. */
-export const getGoogleMapsPlaceUrl = (name: string, address: string, googlePlaceId?: string) => {
+export const getGoogleMapsPlaceUrl = (name: string, address?: string, googlePlaceId?: string) => {
   const searchParams = new URLSearchParams({
     api: '1',
-    query: `${name} ${address}`,
+    query: [name, address].filter(Boolean).join(' '),
   });
   if (googlePlaceId) searchParams.set('query_place_id', googlePlaceId);
 

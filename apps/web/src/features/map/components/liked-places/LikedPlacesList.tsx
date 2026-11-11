@@ -52,7 +52,6 @@ function LikedPlaceCard({ likedPlace }: { likedPlace: LikedPlaceResponse }) {
       category={likedPlace.category ?? '기타'}
       address={likedPlace.address}
       photoUrls={photoUrls}
-      isLoading={false}
       isUnlikePending={likeMutation.isPending}
       onUnlike={() => likeMutation.mutate({ placeId, currentLiked: true })}
       headingAs="h2"

@@ -18,6 +18,7 @@ describe('placeAdapters', () => {
     ]);
 
     expect(stickers).toHaveLength(1);
+    expect(stickers[0]?.place.address).toBeUndefined();
     expect(stickers[0]).toMatchObject({
       id: '101',
       googlePlaceId: 'ChIJ-twosome-101',

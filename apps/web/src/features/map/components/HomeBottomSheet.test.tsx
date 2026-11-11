@@ -404,7 +404,7 @@ describe('HomeBottomSheet', () => {
     );
 
     expect(screen.getByRole('heading', { name: selectedSticker.place.name })).toBeInTheDocument();
-    expect(screen.getByText(selectedSticker.place.address)).toBeInTheDocument();
+    expect(screen.getByText(selectedSticker.place.address!)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '상세보기' })).toHaveAttribute(
       'href',
       `/home/shop/${selectedSticker.place.id}`
@@ -664,18 +664,28 @@ describe('HomeBottomSheet', () => {
     ).toBeInTheDocument();
   });
 
-  it('상세 조회에 실패해도 주변 추천 데이터를 사용해 장소를 표시한다', () => {
+  it('상세 주소가 없으면 주변 추천으로 대체하지 않고 안내 문구를 표시한다', () => {
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
     mockedUseVisitedPlaceStickersQuery.mockReturnValue({
-      likedRecommendations: [],
+      likedRecommendations: [
+        {
+          ...recommendation,
+          place: { ...recommendation.place, address: '   ' },
+        },
+      ],
       isPending: false,
       isError: false,
       refetch: jest.fn(),
       stickers: [],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
     mockedUseLikedPlaceDetailQuery.mockReturnValue({
-      detail: undefined,
-      isError: true,
+      detail: {
+        name: recommendation.place.name,
+        roadAddress: '   ',
+        latitude: recommendation.position.lat,
+        longitude: recommendation.position.lng,
+      },
+      isError: false,
       isLoading: false,
       refetch: jest.fn(),
     } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
@@ -700,38 +710,20 @@ describe('HomeBottomSheet', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: recommendation.place.name })
     ).toBeInTheDocument();
-    expect(showToast).toHaveBeenCalledWith({
-      type: 'error',
-      message: '가게 상세 정보를 불러오지 못해 일부 정보만 표시돼요.',
-      placement: 'above-bottom-sheet',
-    });
+    expect(showToast).not.toHaveBeenCalled();
+    expect(screen.getByText('주소 정보가 없어요')).toBeInTheDocument();
+    expect(screen.queryByText(recommendation.place.address!)).not.toBeInTheDocument();
   });
 
-  it('대체 장소 데이터 없이 상세 조회가 실패하면 다시 조회할 수 있다', async () => {
-    const user = userEvent.setup();
-    const refetchPlaceDetail = jest.fn();
-    const refetchVisitedPlaces = jest.fn();
-    const refetchNearbyPlaces = jest.fn();
-    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
-      likedRecommendations: [],
-      isPending: false,
-      isError: false,
-      refetch: refetchVisitedPlaces,
-      stickers: [],
-    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+  it('목록 정보가 있어도 상세 조회 중에는 스켈레톤을 표시한다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
     mockedUseLikedPlaceDetailQuery.mockReturnValue({
       detail: undefined,
-      isError: true,
-      isLoading: false,
-      refetch: refetchPlaceDetail,
-    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
-    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
-      recommendations: [],
-      isPending: false,
       isError: false,
-      refetch: refetchNearbyPlaces,
-    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
-    useHomeBottomSheetStore.getState().showLikedRecommendation('missing-recommendation');
+      isLoading: true,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
+    useHomeBottomSheetStore.getState().showLikedRecommendation(recommendation.id, recommendation);
 
     render(
       <MemoryRouter>
@@ -743,21 +735,80 @@ describe('HomeBottomSheet', () => {
       </MemoryRouter>
     );
 
+    expect(screen.getByRole('status', { name: '좋아요한 가게 불러오는 중' })).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { name: '가게 정보를 불러오지 못했어요' })
-    ).toBeInTheDocument();
-    expect(showToast).not.toHaveBeenCalled();
-    await user.click(screen.getByRole('button', { name: '다시 불러오기' }));
-
-    expect(refetchPlaceDetail).toHaveBeenCalledTimes(1);
-    expect(refetchVisitedPlaces).toHaveBeenCalledTimes(1);
-    expect(refetchNearbyPlaces).toHaveBeenCalledTimes(1);
+      screen.queryByRole('heading', { name: recommendation.place.name })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '기록하기' })).not.toBeInTheDocument();
   });
+
+  it.each([true, false])(
+    '대체 정보 유무(%s)와 무관하게 상세 조회 실패를 표시하고 재시도한다',
+    async (hasFallback) => {
+      const user = userEvent.setup();
+      const refetchPlaceDetail = jest.fn();
+      const refetchVisitedPlaces = jest.fn();
+      const refetchNearbyPlaces = jest.fn();
+      mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+        likedRecommendations: [],
+        isPending: false,
+        isError: false,
+        refetch: refetchVisitedPlaces,
+        stickers: [],
+      } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+      mockedUseLikedPlaceDetailQuery.mockReturnValue({
+        detail: undefined,
+        isError: true,
+        isLoading: false,
+        refetch: refetchPlaceDetail,
+      } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
+      mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+        recommendations: [],
+        isPending: false,
+        isError: false,
+        refetch: refetchNearbyPlaces,
+      } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+      const fallback = hasFallback ? TEST_SHOP_RECOMMENDATIONS[0]! : undefined;
+      const recommendationId = fallback?.id ?? 'missing-recommendation';
+      useHomeBottomSheetStore.getState().showLikedRecommendation(recommendationId, fallback);
+
+      render(
+        <MemoryRouter>
+          <HomeBottomSheet
+            renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+            renderSelectedPlace={renderSelectedPlace}
+            renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+          />
+        </MemoryRouter>
+      );
+
+      expect(
+        screen.getByRole('heading', { name: '가게 정보를 불러오지 못했어요' })
+      ).toBeInTheDocument();
+      expect(showToast).not.toHaveBeenCalled();
+      expect(screen.queryByRole('link', { name: '기록하기' })).not.toBeInTheDocument();
+      if (fallback) {
+        expect(
+          screen.queryByRole('heading', { name: fallback.place.name })
+        ).not.toBeInTheDocument();
+      }
+      await user.click(screen.getByRole('button', { name: '다시 불러오기' }));
+
+      expect(refetchPlaceDetail).toHaveBeenCalledTimes(1);
+      expect(refetchVisitedPlaces).not.toHaveBeenCalled();
+      expect(refetchNearbyPlaces).not.toHaveBeenCalled();
+      expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+        type: 'likedRecommendation',
+        recommendationId,
+        fallbackRecommendation: fallback,
+      });
+    }
+  );
 
   it('상세 응답에 기록할 장소 정보가 없으면 기록 화면 이동을 막는다', () => {
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
     mockedUseLikedPlaceDetailQuery.mockReturnValue({
-      detail: undefined,
+      detail: { name: recommendation.place.name },
       isError: false,
       isLoading: false,
       refetch: jest.fn(),
