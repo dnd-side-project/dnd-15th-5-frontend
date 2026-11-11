@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { ConsumptionResponse } from '@/features/report/apis/dto';
 import { formatPurchaseDateTimeLabel } from '@/features/report/utils/consumptions';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { cn } from '@/shared/lib/cn';
 import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 import { CardTitle } from '@/shared/ui/card';
 import SwipeActions from '@/shared/ui/swipe-actions/SwipeActions';
@@ -15,8 +16,6 @@ type SpendingRecordItemProps = ConsumptionActions & {
   renderRecordSticker: (consumptionId: number) => ReactNode;
 };
 
-const formatAmount = (amount?: number) => `${(amount ?? 0).toLocaleString('ko-KR')} 원`;
-
 /** 가게명, 결제 정보와 금액을 표시하는 소비내역 목록 항목입니다. */
 export default function SpendingRecordItem({
   consumption,
@@ -26,6 +25,7 @@ export default function SpendingRecordItem({
 }: SpendingRecordItemProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const formattedAmount = consumption.amount?.toLocaleString('ko-KR');
   const handleShopClick = async (event: MouseEvent<HTMLAnchorElement>) => {
     if (
       event.defaultPrevented ||
@@ -66,8 +66,14 @@ export default function SpendingRecordItem({
           {consumption.category?.trim() || '기타'}
         </p>
       </div>
-      <strong className="shrink-0 text-body-01-semibold text-neutral-900" data-mp-mask="">
-        {formatAmount(consumption.amount)}
+      <strong
+        className={cn(
+          'shrink-0 text-body-01-semibold',
+          formattedAmount === undefined ? 'text-neutral-500' : 'text-neutral-900'
+        )}
+        data-mp-mask=""
+      >
+        {formattedAmount ?? '-'} 원
       </strong>
     </>
   );
