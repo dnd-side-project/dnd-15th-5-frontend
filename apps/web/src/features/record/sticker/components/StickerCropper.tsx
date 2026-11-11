@@ -84,8 +84,8 @@ export default function StickerCropper({
           className={cn('absolute inset-x-4 h-6 py-0', STICKER_FLOW_HEADER_TOP_CLASS)}
         />
       </div>
-      {/* NOTE: 모서리 터치 영역의 가로 넘침을 막고, 절대 위치 영역으로 컨테이너 높이를 확정한다. */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pt-16">
+      {/* NOTE: 낮은 화면에서도 모서리를 조절할 공간을 확보하고, 부족한 높이는 상위 화면에서 스크롤한다. */}
+      <div className="flex min-h-80 flex-1 flex-col overflow-hidden px-4 pt-16">
         <div className="flex min-h-0 flex-1 items-center justify-center @container-size">
           <div
             ref={imageBox}

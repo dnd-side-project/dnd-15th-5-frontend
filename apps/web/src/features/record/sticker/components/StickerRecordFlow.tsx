@@ -124,7 +124,9 @@ export default function StickerRecordFlow({
         inert={isExitConfirmOpen}
         className={cn(
           'relative flex min-h-dvh flex-col [--sticker-primary:var(--color-primary-500)] [&_button:disabled:not([data-disabled])]:cursor-default [&_button:disabled:not([data-disabled])]:opacity-45 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-4 [&_button:focus-visible]:outline-primary-500',
-          isDark && 'h-dvh overflow-hidden',
+          isDark && 'h-dvh',
+          isPreview && 'overflow-hidden',
+          stage === 'crop' && 'overflow-x-hidden overflow-y-auto',
           isDark ? 'bg-neutral-700 text-neutral-00' : 'bg-neutral-00 text-neutral-700'
         )}
       >
