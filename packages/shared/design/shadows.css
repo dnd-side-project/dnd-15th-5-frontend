@@ -6,6 +6,7 @@
   /* 배경이 투명한 스티커 PNG는 box-shadow가 이미지 사각형 테두리를 따라가 버리므로, 대신 이 filter 버전을 쓴다. */
   --drop-shadow-sticker: 0 8px 10px rgba(0, 0, 0, 0.2);
   --drop-shadow-rank: 0 2px 4px rgba(99, 99, 99, 0.2);
+  --drop-shadow-map-selection-pin: 0 3px 1.5px rgb(0 0 0 / 19%);
   --shadow-record: 0 0 10px 0 rgba(42, 75, 239, 0.4);
   --shadow-sheet: 0 -4px 4px 0 rgba(0, 0, 0, 0.05);
   --shadow-my-page-sheet: 0 0 5px 0 rgba(0, 0, 0, 0.05);

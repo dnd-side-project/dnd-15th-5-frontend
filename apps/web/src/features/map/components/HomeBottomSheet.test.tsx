@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
@@ -710,11 +710,13 @@ describe('HomeBottomSheet', () => {
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
   });
 
-  it('가게 추천 칩을 다시 누르면 추천 시트를 닫고 기존 홈 시트를 복원한다', async () => {
+  it('추천 시트를 닫으면 기존 홈 시트를 복원한다', async () => {
     const user = userEvent.setup();
     render(
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => (
             <div>
@@ -731,8 +733,10 @@ describe('HomeBottomSheet', () => {
     await user.click(screen.getByRole('button', { name: '가게 추천' }));
 
     expect(screen.getByRole('heading', { level: 1, name: '가게 추천' })).toBeInTheDocument();
-    expect(screen.getByRole('list', { name: '추천 가게 목록' })).toBeInTheDocument();
-    expect(screen.getAllByText('카테고리별 인기 가게')).toHaveLength(4);
+    const recommendationList = screen.getByRole('list', { name: '추천 가게 목록' });
+    expect(within(recommendationList).getAllByRole('listitem')).toHaveLength(
+      TEST_SHOP_RECOMMENDATIONS.length
+    );
     expect(screen.queryByText('기존 홈 시트')).not.toBeInTheDocument();
     const firstRecommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
     const likeButton = screen.getByRole('button', {
@@ -760,12 +764,8 @@ describe('HomeBottomSheet', () => {
       TEST_SHOP_RECOMMENDATIONS[1]!.id
     );
 
-    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+    await user.click(screen.getByRole('button', { name: '바텀시트 높이 조절' }));
 
-    expect(screen.getByRole('button', { name: '가게 추천' })).toHaveAttribute(
-      'aria-pressed',
-      'false'
-    );
     expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 1, name: '가게 추천' })).not.toBeInTheDocument();
   });
@@ -774,7 +774,9 @@ describe('HomeBottomSheet', () => {
     const user = userEvent.setup();
     render(
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
           renderSelectedPlace={renderSelectedPlace}
@@ -807,11 +809,13 @@ describe('HomeBottomSheet', () => {
     );
   });
 
-  it('지도 이동으로 추천 목록이 바뀌어도 활성 카드를 자동 교체하지 않는다', async () => {
+  it('추천 목록에서 활성 가게가 사라지면 새 목록의 첫 가게를 선택한다', async () => {
     const user = userEvent.setup();
     const renderBottomSheet = () => (
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
           renderSelectedPlace={renderSelectedPlace}
@@ -835,7 +839,7 @@ describe('HomeBottomSheet', () => {
     rerender(renderBottomSheet());
 
     expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(
-      TEST_SHOP_RECOMMENDATIONS[0]!.id
+      TEST_SHOP_RECOMMENDATIONS[1]!.id
     );
   });
 
@@ -861,7 +865,9 @@ describe('HomeBottomSheet', () => {
     const user = userEvent.setup();
     render(
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => (
             <div>
@@ -889,7 +895,9 @@ describe('HomeBottomSheet', () => {
     const user = userEvent.setup();
     render(
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => (
             <div>
@@ -925,7 +933,9 @@ describe('HomeBottomSheet', () => {
     try {
       render(
         <>
-          <HomeCategoryFilter />
+          <HomeCategoryFilter
+            onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+          />
           <HomeBottomSheet
             renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
             renderSelectedPlace={renderSelectedPlace}

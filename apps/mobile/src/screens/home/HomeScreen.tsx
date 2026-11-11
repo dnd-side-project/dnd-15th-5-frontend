@@ -41,8 +41,14 @@ export default function HomeScreen() {
   const trustedWebOrigin = webUrl ? getUrlOrigin(webUrl) : null;
   const initialWebUrl = trustedWebOrigin ? `${trustedWebOrigin}/` : null;
   const webViewRef = useRef<WebView>(null);
-  const { canGoBack, handleNavigationStateChange, handleRouteChange, isMapHome, isMonthlyReport } =
-    useWebViewNavigationState(initialWebUrl ?? undefined);
+  const {
+    canGoBack,
+    handleNavigationStateChange,
+    handleRouteChange,
+    isMapEdgeToEdge,
+    isMapHome,
+    isMonthlyReport,
+  } = useWebViewNavigationState(initialWebUrl ?? undefined);
 
   useEffect(() => {
     // 첫 사진 선택 전에 준비를 시작하며 실패는 실제 기록 요청에서 사용자에게 전달합니다.
@@ -176,7 +182,7 @@ export default function HomeScreen() {
       }}
       loadErrorTitle="웹 화면을 불러오지 못했습니다"
       loadErrorDescriptions={webUrl ? [webUrl] : []}
-      safeAreaMode={isMapHome ? 'none' : 'except-bottom'}
+      safeAreaMode={isMapEdgeToEdge ? 'none' : 'except-bottom'}
       allowsBackForwardNavigationGestures={!isMapHome && !isMonthlyReport}
       onNavigationStateChange={({ canGoBack: nextCanGoBack, url }) =>
         handleNavigationStateChange(url, nextCanGoBack)

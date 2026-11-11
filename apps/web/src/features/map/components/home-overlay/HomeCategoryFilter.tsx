@@ -1,14 +1,21 @@
 import { useEffect } from 'react';
 
-import { CategoryChip } from '@/shared/ui/category-chip';
+import { ShopRecommendIcon } from '@/shared/assets/icons';
+import { CategoryChip, categoryChipVariants } from '@/shared/ui/category-chip';
 
 import { useVisitedPlaceStickersQuery } from '../../apis/hooks/useVisitedPlaceStickersQuery';
 import { HOME_CATEGORIES } from '../../constants';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 
+type HomeCategoryFilterProps = {
+  onOpenRecommendationSearch: () => void;
+};
+
 /** 지도 홈 상단에 한 줄로 표시하는 가게 추천·카테고리 칩입니다. */
-export default function HomeCategoryFilter() {
+export default function HomeCategoryFilter({
+  onOpenRecommendationSearch,
+}: HomeCategoryFilterProps) {
   const { isSuccess, stickers } = useVisitedPlaceStickersQuery();
   const visibleCategories = isSuccess
     ? HOME_CATEGORIES.filter((category) =>
@@ -17,9 +24,7 @@ export default function HomeCategoryFilter() {
     : HOME_CATEGORIES;
   const selectedCategory = useMapCategoryFilterStore((state) => state.selectedCategory);
   const setSelectedCategory = useMapCategoryFilterStore((state) => state.setSelectedCategory);
-  const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const showRecommendation = useHomeBottomSheetStore((state) => state.showRecommendation);
 
   useEffect(() => {
     if (isSuccess && selectedCategory && !visibleCategories.includes(selectedCategory)) {
@@ -27,14 +32,10 @@ export default function HomeCategoryFilter() {
     }
   }, [isSuccess, selectedCategory, setSelectedCategory, visibleCategories]);
 
-  const handleRecommendationSelection = (isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedCategory(null);
-      showRecommendation();
-      return;
-    }
-
+  const handleOpenRecommendationSearch = () => {
+    setSelectedCategory(null);
     showHome();
+    onOpenRecommendationSearch();
   };
 
   const handleCategorySelection = (
@@ -52,14 +53,14 @@ export default function HomeCategoryFilter() {
       className="overflow-x-auto px-4 py-1.5"
     >
       <div className="flex w-max flex-nowrap gap-2">
-        <CategoryChip
-          variant="compact"
-          hasRecommendationIcon
-          selected={activeSheetType === 'recommendation'}
-          onSelectedChange={handleRecommendationSelection}
+        <button
+          type="button"
+          className={categoryChipVariants({ variant: 'compact' })}
+          onClick={handleOpenRecommendationSearch}
         >
+          <ShopRecommendIcon aria-hidden="true" />
           가게 추천
-        </CategoryChip>
+        </button>
 
         {visibleCategories.map((category) => (
           <CategoryChip

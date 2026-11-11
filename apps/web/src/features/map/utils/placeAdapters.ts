@@ -4,12 +4,7 @@ import type {
   VisitedPlaceMarkerItem,
 } from '@/features/map/apis/dto';
 import { HOME_CATEGORIES } from '@/features/map/constants';
-import type {
-  HomeCategory,
-  MapSticker,
-  ShopRecommendation,
-  ShopRecommendationReason,
-} from '@/features/map/types';
+import type { HomeCategory, MapSticker, ShopRecommendation } from '@/features/map/types';
 import { StickerEyesImage, getStickerImage } from '@/shared/assets/images/stickers';
 
 import type { ShopSearchResult } from '@chapchap/shared/shop';
@@ -131,10 +126,7 @@ export const toShopSearchResult = (sticker?: MapSticker): ShopSearchResult | und
   };
 };
 
-const toRecommendation = (
-  place: RecommendedPlaceItem,
-  reason: ShopRecommendationReason
-): ShopRecommendation | null => {
+const toRecommendation = (place: RecommendedPlaceItem): ShopRecommendation | null => {
   if (
     place.placeId === undefined ||
     !place.name ||
@@ -157,7 +149,7 @@ const toRecommendation = (
       stickerImages: [],
     },
     position: { lat: place.latitude, lng: place.longitude },
-    reason,
+    reason: '카테고리별 인기 가게',
     thumbnailSrc: place.thumbnailUrl ?? null,
     visitCount: place.visitCount ?? 0,
   };
@@ -175,9 +167,7 @@ export const toShopRecommendations = (response?: NearbyPlacesResponse): ShopReco
     if (!likedByPlaceId.has(id)) likedByPlaceId.set(id, place.liked);
   }
 
-  const candidates = (response?.allPlaces ?? categoryPlaces).map((place) =>
-    toRecommendation(place, '카테고리별 인기 가게')
-  );
+  const candidates = (allPlaces.length > 0 ? allPlaces : categoryPlaces).map(toRecommendation);
   const seenPlaceIds = new Set<string>();
 
   return candidates.flatMap((recommendation) => {

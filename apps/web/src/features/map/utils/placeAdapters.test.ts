@@ -109,7 +109,7 @@ describe('placeAdapters', () => {
     expect(toShopSearchResult({ ...sticker!, googlePlaceId: undefined })).toBeUndefined();
   });
 
-  it('추천 사유 순서를 유지하면서 중복 장소와 유효하지 않은 장소를 제거한다', () => {
+  it('최신 인기 가게 목록을 변환하면서 중복 장소와 유효하지 않은 장소를 제거한다', () => {
     const commonPlace = {
       placeId: 101,
       name: '투썸플레이스',
@@ -125,7 +125,7 @@ describe('placeAdapters', () => {
         commonPlace,
         { placeId: 999, name: '좌표 없음' },
         commonPlace,
-        { ...commonPlace, placeId: 102, name: '다른 가게' },
+        { ...commonPlace, placeId: 102, name: '동네 가게' },
       ],
     });
 
