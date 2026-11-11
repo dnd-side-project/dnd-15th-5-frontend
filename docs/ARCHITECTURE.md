@@ -181,6 +181,17 @@ pages/
 
 사진 기록의 진입 경로는 `/record`다.
 
+기록 방법 선택·사진 자르기·스티커 생성·정보 입력은 `features/record/sticker`의 로컬 단계로
+전환한다. 가져온 사진은 자르기 후 스티커를 약 1초간 한 번 튀어 오르게 표시하고 정보 입력으로
+자동 이동한다. 앱 촬영 결과는 같은 모션을 표시한 뒤 사용자가 `이 스티커 사용`으로 확정한다.
+모션은 `StickerReveal`에서 관리하며, 종료 확인 중에는 일시 정지하고 계속 작성 시 이어서 재생한다.
+시스템의 동작 줄이기 설정에서는 모션을 생략한다.
+
+새 기록의 입력 화면에서 뒤로 가면 작성 내용을 보존한 채 기록 방법 선택으로 돌아간다.
+이미지 변경 중 사진 자르기의 X는 변경을 취소하고 기존 입력 화면으로 돌아간다.
+기록 종료를 확인하면 홈으로 이동하며, 이동 완료 전까지 현재 화면과 확인창을 유지한다.
+비동기 요청 취소와 임시 이미지 URL 해제는 흐름 훅의 언마운트 정리에서 처리한다.
+
 소비 기록 수정은 `/record/:consumptionId/edit`에서 처리한다. 기존 사진·스티커 ID와 정확한 방문
 시각을 복원하고 이미지 교체 시에만 업로드한다. 지도 소비 기록·가게 상세·월별 소비내역의
 수정·삭제 동작은 페이지에서 `features/record`와 각 목록을 조합해 연결한다.
@@ -208,7 +219,8 @@ pages/
   찾은 `stickerItemId`를 등록한다. 이모지 이미지는 업로드하지 않으며 카테고리는 선택한 이모지와 일치한다.
   이미지·카테고리·이름의 기준은 `shared/assets/images/ios-stickers/catalog.ts`이며, 서버 목록도
   이 64종과 일치해야 한다. 목록에 없는 항목이나 유효하지 않은 ID는 등록하지 않고 오류를 안내한다.
-  카테고리와 표시 순서의 기준은 `packages/shared/common/constants`의 `SPENDING_CATEGORIES`다.
+  카테고리의 표시 순서는 `packages/shared/common/constants`의 `SPENDING_CATEGORIES`를 따르며,
+  카테고리 안의 스티커는 `catalog.ts`의 배열 순서대로 4열로 표시한다.
   기록 폼·이모지 선택·라우트 상태 복원도 같은 목록을 재사용하는 `RECORD_CATEGORIES`를 사용한다.
   기본 스티커는 투명 PNG 64종(카페 8종)을 긴 변 최대 512px로 배포하며 외곽선·그림자는 파일에 포함한다.
 - 기록 폼의 영수증 인식은 `scanReceipt` 브릿지로 네이티브 카메라를 열고 OCR 결과를
@@ -342,6 +354,8 @@ apps/mobile/src/
 ```
 
 - `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 관리한다. 웹의 `app/routes`와 `pages` 관계와 같다.
+- 모바일 번들의 진입점은 `apps/mobile/index.js`이며 `expo-router/entry`를 불러온다.
+  개발 서버는 pnpm의 `node_modules` 링크 대신 이 앱 내부 파일을 시작 URL로 사용한다.
 - 화면 컴포넌트는 `화면명 + Screen`으로 작성한다 (`HomeScreen`).
 - 웹과 모바일이 함께 쓰는 코드는 `apps/mobile/src/shared`가 아니라 `packages/shared`에 둔다.
 - WebView 화면은 `shared/layout/WebViewScreen`을 사용해 Safe Area·로딩·오류 복구 동작을 통일한다. 지도 홈(`/home`)은 전체 화면을 시스템 영역까지 표시하고, 나머지 웹 화면은 하단 배경만 확장한 뒤 웹의 `MobileLayout` 또는 자체 스크롤 영역에서 하단 Safe Area를 확보한다.
