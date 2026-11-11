@@ -11,6 +11,8 @@ import PrivacyPolicyPage from '@/pages/agreement/PrivacyPolicyPage';
 import TermsOfServicePage from '@/pages/agreement/TermsOfServicePage';
 import AuthCallbackPage from '@/pages/auth-callback/AuthCallbackPage';
 import HomePage from '@/pages/home/HomePage';
+import RecommendationLocationMapPage from '@/pages/home/recommendation/RecommendationLocationMapPage';
+import RecommendationLocationSearchPage from '@/pages/home/recommendation/RecommendationLocationSearchPage';
 import MapSearchPage from '@/pages/home/search/MapSearchPage';
 import ShopDetailPage from '@/pages/home/shop/ShopDetailPage';
 import LoginPage from '@/pages/login/LoginPage';
@@ -98,6 +100,14 @@ export const router = createSentryBrowserRouter([
                 element: <ReportPage />,
               },
             ],
+          },
+          {
+            path: ROUTE_PATHS.homeRecommendationSearch,
+            element: <RecommendationLocationSearchPage />,
+          },
+          {
+            path: ROUTE_PATHS.homeRecommendationMap,
+            element: <RecommendationLocationMapPage />,
           },
           // 사진 선택과 기록 입력은 화면 전체 너비와 자체 Safe Area를 사용한다.
           {

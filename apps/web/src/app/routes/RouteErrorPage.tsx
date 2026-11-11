@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/react';
 import { useEffect } from 'react';
 import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
 
-import AppErrorFallback from '@/app/AppErrorFallback';
+import ErrorPage from '@/app/ErrorPage';
 
 /** React Router가 처리한 예상하지 못한 오류를 Sentry에 기록하고 복구 화면을 표시합니다. */
 export default function RouteErrorPage() {
@@ -19,5 +19,5 @@ export default function RouteErrorPage() {
     });
   }, [error]);
 
-  return <AppErrorFallback />;
+  return <ErrorPage />;
 }

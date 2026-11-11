@@ -55,6 +55,10 @@ export default function HomePage() {
 
   useOpenLikedPlaceFromLocation();
 
+  const handleOpenRecommendationSearch = () => {
+    navigate(ROUTE_PATHS.homeRecommendationSearch, { state: 'home' });
+  };
+
   useCreatedConsumptionResult({
     createdPlace,
     recordMethod,
@@ -66,8 +70,12 @@ export default function HomePage() {
       {(actions) => (
         <div className="mobile-frame fixed inset-0 z-0 flex flex-col">
           <GoogleMapView />
-          <HomeMapOverlay hasUnreadNotification={hasUnreadNotification} />
+          <HomeMapOverlay
+            hasUnreadNotification={hasUnreadNotification}
+            onOpenRecommendationSearch={handleOpenRecommendationSearch}
+          />
           <HomeBottomSheet
+            onOpenRecommendationSearch={handleOpenRecommendationSearch}
             onSelectedPlaceExpand={handleSelectedPlaceExpand}
             renderFrequentShops={(headerContent) => (
               <FrequentShopSummary

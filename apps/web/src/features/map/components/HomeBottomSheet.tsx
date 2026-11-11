@@ -21,6 +21,7 @@ import ShopRecommendationSheet from './ShopRecommendationSheet';
 import type { ReactNode, UIEvent } from 'react';
 
 type HomeBottomSheetProps = {
+  onOpenRecommendationSearch?: () => void;
   onSelectedPlaceExpand?: (placeId: string) => void;
   renderFrequentShops: (headerContent: ReactNode) => ReactNode;
   renderSelectedPlace: (placeId: string) => ReactNode;
@@ -129,9 +130,11 @@ function useSheetContentTransitionClassName(transitionKey: string) {
  * @param props.renderFrequentShops - 세그먼트 토글과 자주 소비한 곳을 하나의 sticky 헤더로 조립합니다.
  * @param props.renderSelectedPlace - 선택한 장소 ID로 상세 요약을 조립합니다.
  * @param props.onSelectedPlaceExpand - 선택한 가게 시트를 위로 올렸을 때 상세 화면 이동을 요청합니다.
+ * @param props.onOpenRecommendationSearch - 추천 결과가 없을 때 동네 검색을 다시 엽니다.
  * @param props.renderSpendingHistory - 세그먼트 토글과 소비내역을 하나의 sticky 헤더로 조립합니다.
  */
 export default function HomeBottomSheet({
+  onOpenRecommendationSearch,
   onSelectedPlaceExpand,
   renderFrequentShops,
   renderSelectedPlace,
@@ -264,7 +267,7 @@ export default function HomeBottomSheet({
   } else if (activeSheet.type === 'recommendation') {
     sheetPresentation = {
       ariaLabel: '가게 추천',
-      content: <ShopRecommendationSheet />,
+      content: <ShopRecommendationSheet onOpenRecommendationSearch={onOpenRecommendationSearch} />,
       contentClassName: 'pt-2 pb-10',
       isModal: true,
       key: getSheetTransitionKey(activeSheet),

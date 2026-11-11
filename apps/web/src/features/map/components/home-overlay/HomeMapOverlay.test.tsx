@@ -21,7 +21,7 @@ describe('HomeMapOverlay', () => {
   it('지도는 가리지 않으면서 상단 UI를 Safe Area 아래에 배치한다', () => {
     const { container } = render(
       <MemoryRouter>
-        <HomeMapOverlay hasUnreadNotification={false} />
+        <HomeMapOverlay hasUnreadNotification={false} onOpenRecommendationSearch={jest.fn()} />
       </MemoryRouter>
     );
     const overlay = container.firstChild as HTMLElement;
@@ -46,7 +46,7 @@ describe('HomeMapOverlay', () => {
 
     render(
       <MemoryRouter>
-        <HomeMapOverlay hasUnreadNotification={false} />
+        <HomeMapOverlay hasUnreadNotification={false} onOpenRecommendationSearch={jest.fn()} />
       </MemoryRouter>
     );
 

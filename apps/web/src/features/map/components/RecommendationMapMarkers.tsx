@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
+import { RECOMMENDATION_MAP_ZOOM } from '@/features/map/constants';
 import { useFocusMapOnPosition } from '@/features/map/hooks/useFocusMapOnPosition';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '@/features/map/stores/mapCategoryFilterStore';
@@ -23,8 +24,6 @@ import { cn } from '@/shared/lib/cn';
 import type { ComponentType, SVGProps } from 'react';
 
 import './recommendationMapMarkers.css';
-
-const ACTIVE_RECOMMENDATION_ZOOM = 15;
 
 type RecommendationMarkerIcons = {
   active: ComponentType<SVGProps<SVGSVGElement>>;
@@ -126,13 +125,13 @@ export default function RecommendationMapMarkers() {
 
     lastFocusedRecommendationIdRef.current = activeRecommendationId;
     lastFocusedVisibleHeightPxRef.current = visibleHeightPx;
-    focusMap(activeRecommendation.position, ACTIVE_RECOMMENDATION_ZOOM, visibleHeightPx);
+    focusMap(activeRecommendation.position, RECOMMENDATION_MAP_ZOOM, visibleHeightPx);
   }, [activeRecommendationId, focusMap, isRecommendationOpen, visibleHeightPx]);
 
   const handleMarkerSelect = (recommendation: ShopRecommendation) => {
     lastFocusedRecommendationIdRef.current = recommendation.id;
     lastFocusedVisibleHeightPxRef.current = visibleHeightPx;
-    focusMap(recommendation.position, ACTIVE_RECOMMENDATION_ZOOM, visibleHeightPx);
+    focusMap(recommendation.position, RECOMMENDATION_MAP_ZOOM, visibleHeightPx);
     setActiveRecommendation(recommendation.id);
     if (recommendation.isLiked) {
       showLikedRecommendation(recommendation.id, recommendation);

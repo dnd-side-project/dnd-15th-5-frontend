@@ -25,7 +25,7 @@ describe('HomeCategoryFilter', () => {
 
   it('선택한 카테고리 칩을 다시 누르면 비활성화한다', async () => {
     const user = userEvent.setup();
-    render(<HomeCategoryFilter />);
+    render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
     const cafeChip = screen.getByRole('button', { name: '카페' });
 
     await user.click(cafeChip);
@@ -43,7 +43,7 @@ describe('HomeCategoryFilter', () => {
       stickers: [{ place: { category: '카페' } }],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
 
-    render(<HomeCategoryFilter />);
+    render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
 
     expect(screen.getByRole('button', { name: '카페' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '운동' })).not.toBeInTheDocument();
@@ -56,7 +56,7 @@ describe('HomeCategoryFilter', () => {
       stickers: [{ place: { category: '카페' } }],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
 
-    render(<HomeCategoryFilter />);
+    render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
 
     expect(useMapCategoryFilterStore.getState().selectedCategory).toBeNull();
   });
@@ -77,7 +77,7 @@ describe('HomeCategoryFilter', () => {
       likedRecommendations: [],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
 
-    render(<HomeCategoryFilter />);
+    render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
 
     expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
     expect(useMapCategoryFilterStore.getState().selectedCategory).toBe('카페');

@@ -99,6 +99,38 @@ describe('ShopDetail', () => {
     jest.useRealTimers();
   });
 
+  it('요약의 사진과 기본 스티커를 개수대로 표시하고 실패한 사진만 대체한다', () => {
+    mockedUseGetPlaceDetail.mockReturnValue({
+      data: {
+        data: {
+          placeId: 101,
+          placeName: '사진 기록 가게',
+          stickerSummary: [
+            { itemName: '커피', count: 1 },
+            { imageId: 12, imageUrl: 'https://example.com/photo.png', count: 2 },
+          ],
+        },
+      },
+      isPending: false,
+      isError: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useGetPlaceDetail>);
+    render(
+      <MemoryRouter>
+        <ShopDetail placeId={101} headerContent={null} onViewOnMap={jest.fn()} />
+      </MemoryRouter>
+    );
+    const images = Array.from(screen.getByLabelText('획득한 스티커').querySelectorAll('img'));
+    expect(images).toHaveLength(3);
+    const photos = images.filter(
+      (image) => image.getAttribute('src') === 'https://example.com/photo.png'
+    );
+    expect(photos).toHaveLength(2);
+    fireEvent.error(photos[0]!);
+    expect(photos[0]).not.toHaveAttribute('src', 'https://example.com/photo.png');
+    expect(photos[1]).toHaveAttribute('src', 'https://example.com/photo.png');
+  });
+
   it('스티커·가게 정보·방문 기록을 함께 스크롤하고 뒤로 가기는 스크롤 밖에 둔다', () => {
     jest.useFakeTimers().setSystemTime(new Date(2026, 7, 27));
 

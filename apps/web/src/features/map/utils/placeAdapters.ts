@@ -1,4 +1,5 @@
 import type {
+  NearbyPlacesResponse,
   RecommendedPlaceDetailResponse,
   RecommendedPlaceItem,
   VisitedPlaceMarkerItem,
@@ -9,9 +10,8 @@ import type {
   LikedPlaceMapNavigation,
   MapSticker,
   ShopRecommendation,
-  ShopRecommendationReason,
 } from '@/features/map/types';
-import { StickerEyesImage, getStickerImageByName } from '@/shared/assets/images/stickers';
+import { StickerEyesImage, getStickerImage } from '@/shared/assets/images/stickers';
 
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 
@@ -38,7 +38,9 @@ export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =
       return [];
     }
 
-    const image = getStickerImageByName(place.stickerName) ?? StickerEyesImage;
+    const image =
+      getStickerImage({ imageUrl: place.imageUrl, itemName: place.stickerName }) ??
+      StickerEyesImage;
     const category = normalizeHomeCategory(place.category);
 
     return [
@@ -172,10 +174,7 @@ export const toShopSearchResult = (sticker?: MapSticker): ShopSearchResult | und
   };
 };
 
-const toRecommendation = (
-  place: RecommendedPlaceItem,
-  reason: ShopRecommendationReason
-): ShopRecommendation | null => {
+const toRecommendation = (place: RecommendedPlaceItem): ShopRecommendation | null => {
   if (
     place.placeId === undefined ||
     !place.name ||
@@ -197,21 +196,25 @@ const toRecommendation = (
       stickerImages: [],
     },
     position: { lat: place.latitude, lng: place.longitude },
-    reason,
+    reason: '카테고리별 인기 가게',
     thumbnailSrc: place.thumbnailUrl ?? null,
     visitCount: place.visitCount ?? 0,
   };
 };
 
 /** 카테고리별 인기 장소 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
-export const toShopRecommendations = ({
-  allPlaces,
-}: {
-  allPlaces?: RecommendedPlaceItem[];
-}): ShopRecommendation[] => {
-  const candidates = (allPlaces ?? []).map((place) =>
-    toRecommendation(place, '카테고리별 인기 가게')
-  );
+export const toShopRecommendations = (response?: NearbyPlacesResponse): ShopRecommendation[] => {
+  const categoryPlaces = (response?.categoryPlaces ?? []).flatMap((group) => group.places ?? []);
+  const allPlaces = response?.allPlaces ?? [];
+  const likedByPlaceId = new Map<string, boolean>();
+
+  for (const place of [...categoryPlaces, ...allPlaces]) {
+    if (place.placeId === undefined || typeof place.liked !== 'boolean') continue;
+    const id = String(place.placeId);
+    if (!likedByPlaceId.has(id)) likedByPlaceId.set(id, place.liked);
+  }
+
+  const candidates = (allPlaces.length > 0 ? allPlaces : categoryPlaces).map(toRecommendation);
   const seenPlaceIds = new Set<string>();
 
   return candidates.flatMap((recommendation) => {
@@ -220,6 +223,11 @@ export const toShopRecommendations = ({
     }
 
     seenPlaceIds.add(recommendation.id);
-    return [recommendation];
+    return [
+      {
+        ...recommendation,
+        isLiked: likedByPlaceId.get(recommendation.id) ?? recommendation.isLiked,
+      },
+    ];
   });
 };
