@@ -88,9 +88,18 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
         : state
     ),
   showLikedRecommendation: (recommendationId, fallbackRecommendation) =>
-    set({
-      activeSheet: { type: 'likedRecommendation', recommendationId, fallbackRecommendation },
-    }),
+    set((state) => ({
+      activeSheet: {
+        type: 'likedRecommendation',
+        recommendationId,
+        fallbackRecommendation:
+          fallbackRecommendation ??
+          (state.activeSheet.type === 'likedRecommendation' &&
+          state.activeSheet.recommendationId === recommendationId
+            ? state.activeSheet.fallbackRecommendation
+            : undefined),
+      },
+    })),
   showRecommendation: () => set({ activeSheet: { type: 'recommendation' } }),
   showSelectedPlace: (stickerId) => set({ activeSheet: { type: 'selectedPlace', stickerId } }),
   setTopActionBottom: (bottomPx) =>

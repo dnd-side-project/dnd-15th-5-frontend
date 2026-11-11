@@ -276,6 +276,7 @@ describe('RecommendationMapMarkers', () => {
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
       type: 'likedRecommendation',
       recommendationId: recommendation.id,
+      fallbackRecommendation: recommendation,
     });
     expect(marker).toHaveAccessibleName(`${recommendation.place.name} 추천 마커, 선택됨`);
     expect(marker.firstElementChild).toHaveAttribute('data-state', 'active');
@@ -284,7 +285,8 @@ describe('RecommendationMapMarkers', () => {
     expect(marker.firstElementChild).not.toHaveClass('opacity-100');
   });
 
-  it('선택한 좋아요 장소가 기존 마커 응답에 없어도 대체 마커를 표시한다', () => {
+  it('목록 정보로 표시한 좋아요 마커를 다시 선택해도 대체 정보를 유지한다', async () => {
+    const user = userEvent.setup();
     const recommendation = { ...TEST_SHOP_RECOMMENDATIONS[0]!, isLiked: true };
     mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
       recommendations: [],
@@ -306,5 +308,20 @@ describe('RecommendationMapMarkers', () => {
       name: `${recommendation.place.name} 추천 마커, 선택됨`,
     });
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'like-active');
+
+    await user.click(marker);
+
+    expect(
+      screen.getByRole('button', { name: marker.getAttribute('aria-label')! })
+    ).toBeInTheDocument();
+    expect(useHomeBottomSheetStore.getState().activeSheet).toMatchObject({
+      recommendationId: recommendation.id,
+      fallbackRecommendation: recommendation,
+    });
+
+    act(() => useHomeBottomSheetStore.getState().showLikedRecommendation(recommendation.id));
+    expect(useHomeBottomSheetStore.getState().activeSheet).toMatchObject({
+      fallbackRecommendation: recommendation,
+    });
   });
 });

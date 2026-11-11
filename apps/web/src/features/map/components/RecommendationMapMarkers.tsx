@@ -135,7 +135,7 @@ export default function RecommendationMapMarkers() {
     focusMap(recommendation.position, ACTIVE_RECOMMENDATION_ZOOM, visibleHeightPx);
     setActiveRecommendation(recommendation.id);
     if (recommendation.isLiked) {
-      showLikedRecommendation(recommendation.id);
+      showLikedRecommendation(recommendation.id, recommendation);
       return;
     }
 
