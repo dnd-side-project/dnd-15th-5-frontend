@@ -8,7 +8,7 @@ export default function OnboardingPage() {
   const handleExit = () => navigate(ROUTE_PATHS.home, { replace: true });
 
   return (
-    <main className="min-h-screen-safe-bottom flex flex-col overflow-hidden pb-6">
+    <main className="flex h-[calc(100dvh-env(safe-area-inset-bottom))] min-h-[480px] flex-col overflow-hidden bg-neutral-00">
       <OnboardingCarousel onBack={handleExit} onComplete={handleExit} />
     </main>
   );

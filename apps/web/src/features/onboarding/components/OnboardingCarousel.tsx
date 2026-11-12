@@ -1,11 +1,10 @@
 import { useState } from 'react';
 
-import OnboardingMapImage from '@/shared/assets/images/onboarding/img-onboarding-map.png';
-import OnboardingReceiptImage from '@/shared/assets/images/onboarding/img-onboarding-receipt.png';
-import OnboardingReportImage from '@/shared/assets/images/onboarding/img-onboarding-report.png';
 import PageHeader from '@/shared/layout/page-header';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
+
+import { OnboardingIllustration } from './OnboardingIllustration';
 
 type OnboardingCarouselProps = {
   onBack: () => void;
@@ -14,18 +13,15 @@ type OnboardingCarouselProps = {
 
 const ONBOARDING_STEPS = [
   {
-    id: 'receipt',
-    image: OnboardingReceiptImage,
-    title: '영수증으로\n간편하게 기록해요',
+    id: 'photo',
+    title: '내가 찍은 사진으로\n기록해보세요',
   },
   {
     id: 'map',
-    image: OnboardingMapImage,
     title: '기록이 쌓이며\n나만의 소비 지도를 만들어요',
   },
   {
     id: 'report',
-    image: OnboardingReportImage,
     title: '매달 새로운 소비 취향\n리포트를 받아보세요',
   },
 ] as const;
@@ -57,12 +53,12 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
 
   return (
     <>
-      <PageHeader onBack={handleBack} />
+      <PageHeader onBack={handleBack} className="mx-5" backButtonClassName="-left-0.5" />
 
-      <section className="flex min-h-0 flex-1 flex-col items-center pt-2.5">
+      <section className="flex min-h-0 flex-1 flex-col items-center pt-5.75">
         <ol
           aria-label={`온보딩 진행 상태: ${ONBOARDING_STEPS.length}단계 중 ${currentStepIndex + 1}단계`}
-          className="flex gap-1"
+          className="flex shrink-0 gap-2 px-2"
         >
           {ONBOARDING_STEPS.map((step, stepIndex) => {
             const isCurrentStep = stepIndex === currentStepIndex;
@@ -72,8 +68,10 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
                 key={step.id}
                 aria-current={isCurrentStep ? 'step' : undefined}
                 className={cn(
-                  'flex size-5 items-center justify-center rounded-full text-body-02-medium text-neutral-00',
-                  isCurrentStep ? 'bg-primary-500' : 'bg-primary-200'
+                  'flex size-5.5 items-center justify-center rounded-full text-body-02-medium',
+                  isCurrentStep
+                    ? 'bg-primary-500 text-neutral-00'
+                    : 'bg-primary-200 text-primary-50'
                 )}
               >
                 {stepIndex + 1}
@@ -82,7 +80,7 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
           })}
         </ol>
 
-        <div aria-live="polite" className="mt-5 min-h-0 w-full flex-1 overflow-hidden">
+        <div aria-live="polite" className="mt-6.75 min-h-0 w-full flex-1">
           <div
             className="flex h-full transform-gpu transition-transform duration-300 ease-out will-change-transform motion-reduce:transition-none"
             style={{
@@ -95,12 +93,12 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
                 aria-hidden={stepIndex !== currentStepIndex}
                 className="flex h-full min-w-full flex-col items-center"
               >
-                <h1 className="whitespace-pre-line text-center text-heading-02-semibold text-neutral-700">
+                <h1 className="relative z-10 min-h-17 shrink-0 whitespace-pre-line text-center text-heading-02-semibold text-neutral-700">
                   {step.title}
                 </h1>
 
-                <div className="mt-8 flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
-                  <img src={step.image} alt="" className="w-full object-contain" />
+                <div className="relative flex min-h-0 w-full flex-1 justify-center">
+                  <OnboardingIllustration step={step.id} />
                 </div>
               </article>
             ))}
@@ -108,7 +106,7 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
         </div>
       </section>
 
-      <div className="shrink-0 px-4">
+      <div className="relative z-10 h-32.75 shrink-0 bg-neutral-00 px-5 pb-8">
         <Button onClick={handlePrimaryAction}>{isLastStep ? '시작하기' : '다음으로'}</Button>
 
         <div className="mt-5 flex h-5 items-center justify-center">
