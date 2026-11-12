@@ -1,4 +1,5 @@
 import type { MonthlyReport, MonthlyReportData } from '@/features/report/types';
+import { StickerCoffeeImage } from '@/shared/assets/images/stickers';
 
 import { mapMonthlyReportResponse } from './monthlyReport';
 
@@ -54,7 +55,11 @@ describe('mapMonthlyReportResponse', () => {
               placeName: '아오이 카페',
               visitCount: 5,
               firstVisitedDate: '2026-04-02',
-              stickerNames: ['커피', '지원하지 않는 스티커'],
+              visuals: [
+                { stickerName: '커피', imageUrl: ' https://example.com/custom-sticker.png ' },
+                { stickerName: '커피', imageUrl: '   ' },
+                { stickerName: '지원하지 않는 스티커' },
+              ],
             },
           ],
           townRanks: [{ rank: 1, townName: '연남동', visitCount: 5 }],
@@ -109,7 +114,10 @@ describe('mapMonthlyReportResponse', () => {
         { month: { month: 8, year: 2026 }, title: '미식 유목민', variant: 'food-nomad' },
       ],
     });
-    expect(report?.shops[0]?.stickerImages).toHaveLength(1);
+    expect(report.shops[0]?.stickerImages).toEqual([
+      'https://example.com/custom-sticker.png',
+      StickerCoffeeImage,
+    ]);
     expect(report?.weekdaySpending).toEqual([
       { day: '월', count: 2 },
       { day: '화', count: 0 },

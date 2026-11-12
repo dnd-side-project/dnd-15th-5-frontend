@@ -12,7 +12,7 @@
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "jest",
+    "test": "node --test scripts/*.node-test.mjs && jest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "sticker:download-model": "node ./scripts/download-isnet-model.mjs",

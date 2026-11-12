@@ -25,6 +25,7 @@ import CrownIcon from './ic-crown.svg?react';
 import CurrentLocationIcon from './ic-current-location.svg?react';
 import DeleteIcon from './ic-delete.svg?react';
 import EditIcon from './ic-edit.svg?react';
+import ExternalLinkIcon from './ic-external-link.svg?react';
 import FilterIcon from './ic-filter.svg?react';
 import GoogleIcon from './ic-google.svg?react';
 import HobbyPinActiveIcon from './ic-hobby-pin-active.svg?react';
@@ -77,6 +78,7 @@ export {
   CurrentLocationIcon,
   DeleteIcon,
   EditIcon,
+  ExternalLinkIcon,
   FilterIcon,
   GoogleIcon,
   HobbyPinActiveIcon,

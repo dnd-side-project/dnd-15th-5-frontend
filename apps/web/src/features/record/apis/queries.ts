@@ -174,7 +174,7 @@ export const getGetConsumptionSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getConsumption>>> = ({ signal }) =>
     getConsumption(consumptionId, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getConsumption>>,
     TError,
     TData
@@ -270,7 +270,7 @@ export const getFindStickersQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof findStickers>>> = ({ signal }) =>
     findStickers(requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof findStickers>>,
     TError,
     TData
@@ -367,7 +367,7 @@ export const getFindStickersSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof findStickers>>> = ({ signal }) =>
     findStickers(requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof findStickers>>,
     TError,
     TData
@@ -567,7 +567,7 @@ export const getGetReadUrlSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getReadUrl>>> = ({ signal }) =>
     getReadUrl(imageId, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getReadUrl>>,
     TError,
     TData

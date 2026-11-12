@@ -6,8 +6,10 @@ export { default as RecentNeighborhoodList } from './components/RecentNeighborho
 export { default as MapLocationSelectionOverlay } from './components/MapLocationSelectionOverlay';
 export { useVisitedPlaceStickersQuery } from './apis/hooks/useVisitedPlaceStickersQuery';
 export { useCreatedConsumptionResult } from './hooks/useCreatedConsumptionResult';
+export { useOpenLikedPlaceFromLocation } from './hooks/useOpenLikedPlaceFromLocation';
 export { useOpenVisitedPlaceOnMap } from './hooks/useOpenVisitedPlaceOnMap';
 export { useHomeBottomSheetStore } from './stores/homeBottomSheetStore';
+export { useMapCategoryFilterStore } from './stores/mapCategoryFilterStore';
 export { useLocationSelectionStore } from './stores/locationSelectionStore';
 export { useMapFocusStore } from './stores/mapFocusStore';
 export { parseCreatedConsumptionPlace } from './utils/parseCreatedConsumptionPlace';

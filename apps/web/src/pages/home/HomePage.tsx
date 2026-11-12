@@ -8,6 +8,7 @@ import {
   parseCreatedConsumptionPlace,
   toShopSearchResult,
   useCreatedConsumptionResult,
+  useOpenLikedPlaceFromLocation,
   useOpenVisitedPlaceOnMap,
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
@@ -31,8 +32,8 @@ export default function HomePage() {
   const { hasUnreadNotification } = useHasUnreadNotificationQuery();
   const { stickers } = useVisitedPlaceStickersQuery();
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
-  const stateCreatedPlace = (location.state as { createdPlace?: CreatedConsumptionPlace } | null)
-    ?.createdPlace;
+  const homePageState = location.state as { createdPlace?: CreatedConsumptionPlace } | null;
+  const stateCreatedPlace = homePageState?.createdPlace;
   const receiptCreatedPlace = parseCreatedConsumptionPlace(searchParams);
   const createdPlace = stateCreatedPlace ?? receiptCreatedPlace;
   const recordMethod = stateCreatedPlace ? 'manual' : receiptCreatedPlace ? 'receipt' : undefined;
@@ -51,6 +52,8 @@ export default function HomePage() {
     },
     [navigate]
   );
+
+  useOpenLikedPlaceFromLocation();
 
   const handleOpenRecommendationSearch = () => {
     navigate(ROUTE_PATHS.homeRecommendationSearch, { state: 'home' });

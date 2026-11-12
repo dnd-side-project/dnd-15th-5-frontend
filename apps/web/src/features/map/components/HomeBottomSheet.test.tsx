@@ -2,8 +2,8 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import userEvent from '@testing-library/user-event';
 import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
+import { useLikedPlaceDetailQuery } from '@/features/map/apis/hooks/useLikedPlaceDetailQuery';
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
-import { useRecommendationRecordShopQuery } from '@/features/map/apis/hooks/useRecommendationRecordShopQuery';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
@@ -18,12 +18,12 @@ import HomeCategoryFilter from './home-overlay/HomeCategoryFilter';
 import HomeBottomSheet from './HomeBottomSheet';
 
 jest.mock('@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery');
-jest.mock('@/features/map/apis/hooks/useRecommendationRecordShopQuery');
+jest.mock('@/features/map/apis/hooks/useLikedPlaceDetailQuery');
 jest.mock('@/features/map/apis/hooks/useTogglePlaceLikeMutation');
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 
 const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
-const mockedUseRecommendationRecordShopQuery = jest.mocked(useRecommendationRecordShopQuery);
+const mockedUseLikedPlaceDetailQuery = jest.mocked(useLikedPlaceDetailQuery);
 const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation);
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 const mutateLike = jest.fn();
@@ -93,20 +93,25 @@ describe('HomeBottomSheet', () => {
       isError: false,
       refetch: jest.fn(),
     } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
-    mockedUseRecommendationRecordShopQuery.mockReturnValue({
-      query: {
-        data: recommendationRecordShop,
-        isPending: false,
+    mockedUseLikedPlaceDetailQuery.mockReturnValue({
+      detail: {
+        googlePlaceId: recommendationRecordShop.id,
+        name: recommendationRecordShop.name,
+        roadAddress: recommendationRecordShop.address,
+        latitude: recommendationRecordShop.latitude,
+        longitude: recommendationRecordShop.longitude,
+        category: TEST_SHOP_RECOMMENDATIONS[0]!.place.category,
       },
-      isLibraryLoading: false,
-      isLibraryError: false,
-    } as unknown as ReturnType<typeof useRecommendationRecordShopQuery>);
+      isError: false,
+      isLoading: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
     mockedUseTogglePlaceLikeMutation.mockReturnValue({
       mutate: mutateLike,
       isPending: false,
     } as unknown as ReturnType<typeof useTogglePlaceLikeMutation>);
     mockedUseVisitedPlaceStickersQuery.mockReturnValue({
-      likedRecommendations: [],
+      likedRecommendations: [{ ...TEST_SHOP_RECOMMENDATIONS[0]!, isLiked: true }],
       isPending: false,
       isError: false,
       refetch: jest.fn(),
@@ -390,7 +395,7 @@ describe('HomeBottomSheet', () => {
     );
 
     expect(screen.getByRole('heading', { name: selectedSticker.place.name })).toBeInTheDocument();
-    expect(screen.getByText(selectedSticker.place.address)).toBeInTheDocument();
+    expect(screen.getByText(selectedSticker.place.address!)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '상세보기' })).toHaveAttribute(
       'href',
       `/home/shop/${selectedSticker.place.id}`
@@ -650,16 +655,73 @@ describe('HomeBottomSheet', () => {
     ).toBeInTheDocument();
   });
 
-  it('추천 가게를 기록용 장소로 조회하지 못하면 기록 화면 이동을 막는다', () => {
+  it('상세 조회 중에는 스켈레톤을 표시한다', () => {
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
-    mockedUseRecommendationRecordShopQuery.mockReturnValue({
-      query: {
-        data: undefined,
-        isPending: false,
-      },
-      isLibraryLoading: false,
-      isLibraryError: true,
-    } as unknown as ReturnType<typeof useRecommendationRecordShopQuery>);
+    mockedUseLikedPlaceDetailQuery.mockReturnValue({
+      detail: undefined,
+      isError: false,
+      isLoading: true,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
+    useHomeBottomSheetStore.getState().showLikedRecommendation(recommendation.id);
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('status', { name: '좋아요한 가게 불러오는 중' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: recommendation.place.name })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '기록하기' })).not.toBeInTheDocument();
+  });
+
+  it('상세 조회 실패를 표시하고 다시 조회한다', async () => {
+    const user = userEvent.setup();
+    const refetchPlaceDetail = jest.fn();
+    mockedUseLikedPlaceDetailQuery.mockReturnValue({
+      detail: undefined,
+      isError: true,
+      isLoading: false,
+      refetch: refetchPlaceDetail,
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
+    useHomeBottomSheetStore.getState().showLikedRecommendation('101');
+
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      </MemoryRouter>
+    );
+    expect(
+      screen.getByRole('heading', { name: '가게 정보를 불러오지 못했어요' })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '기록하기' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '다시 불러오기' }));
+    expect(refetchPlaceDetail).toHaveBeenCalledTimes(1);
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+      type: 'likedRecommendation',
+      recommendationId: '101',
+    });
+  });
+
+  it('상세 응답에 기록할 장소 정보가 없으면 기록 화면 이동을 막는다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    mockedUseLikedPlaceDetailQuery.mockReturnValue({
+      detail: { name: recommendation.place.name },
+      isError: false,
+      isLoading: false,
+      refetch: jest.fn(),
+    } as unknown as ReturnType<typeof useLikedPlaceDetailQuery>);
     useHomeBottomSheetStore.setState({
       activeSheet: { type: 'likedRecommendation', recommendationId: recommendation.id },
     });
@@ -676,38 +738,6 @@ describe('HomeBottomSheet', () => {
 
     expect(screen.getByRole('button', { name: '기록하기' })).toBeDisabled();
     expect(screen.queryByRole('link', { name: '기록하기' })).not.toBeInTheDocument();
-  });
-
-  it('조회에 성공했지만 선택한 추천이 없으면 재요청 대신 지도 홈으로 돌아간다', async () => {
-    const user = userEvent.setup();
-    useHomeBottomSheetStore.setState({
-      activeSheet: { type: 'likedRecommendation', recommendationId: 'missing-recommendation' },
-    });
-
-    render(
-      <MemoryRouter>
-        <HomeBottomSheet
-          renderFrequentShops={(headerContent) => (
-            <div>
-              {headerContent}
-              기존 홈 시트
-            </div>
-          )}
-          renderSelectedPlace={renderSelectedPlace}
-          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
-        />
-      </MemoryRouter>
-    );
-
-    expect(
-      screen.getByRole('heading', { level: 1, name: '선택한 가게를 찾을 수 없어요' })
-    ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '다시 불러오기' })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: '지도 홈으로' }));
-
-    expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
-    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
   });
 
   it('추천 시트를 닫으면 기존 홈 시트를 복원한다', async () => {
@@ -751,7 +781,11 @@ describe('HomeBottomSheet', () => {
     const googleMapsLink = screen.getByRole('link', {
       name: `${firstRecommendation.place.name} 지도앱에서 확인하기`,
     });
-    expect(googleMapsLink).toHaveAttribute('href', firstRecommendation.googleMapsUri);
+    const mapsUrl = new URL(googleMapsLink.getAttribute('href')!);
+    expect(mapsUrl.origin + mapsUrl.pathname).toBe('https://www.google.com/maps/search/');
+    expect(mapsUrl.searchParams.get('query')).toBe(
+      `${firstRecommendation.place.name} ${firstRecommendation.place.address}`
+    );
 
     const carousel = screen.getByRole('list', { name: '추천 가게 목록' });
     Object.defineProperty(carousel.firstElementChild, 'offsetWidth', {

@@ -6,6 +6,7 @@ import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisit
 import { RECOMMENDATION_MAP_ZOOM } from '@/features/map/constants';
 import { useFocusMapOnPosition } from '@/features/map/hooks/useFocusMapOnPosition';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useMapCategoryFilterStore } from '@/features/map/stores/mapCategoryFilterStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import type { HomeCategory, ShopRecommendation } from '@/features/map/types';
 import {
@@ -48,7 +49,7 @@ const getRecommendationMarkerIcons = ({ isLiked, place }: ShopRecommendation) =>
   return CATEGORY_MARKER_ICONS[place.category];
 };
 
-/** 추천 가게를 좋아요·카테고리 핀으로 표시하고 선택 시 해당 위치와 시트를 동기화합니다. */
+/** 추천 가게와 좋아요 장소를 카테고리 필터에 맞춰 표시하고, 선택 시 지도와 시트를 동기화합니다. */
 export default function RecommendationMapMarkers() {
   const map = useMap();
   const focusMap = useFocusMapOnPosition(map);
@@ -69,6 +70,7 @@ export default function RecommendationMapMarkers() {
       ? activeRecommendationId
       : null;
   const visibleHeightPx = useHomeBottomSheetStore((state) => state.visibleHeightPx) || undefined;
+  const selectedCategory = useMapCategoryFilterStore((state) => state.selectedCategory);
   const { recommendations } = useNearbyPlaceRecommendationsQuery();
   const { likedRecommendations } = useVisitedPlaceStickersQuery();
   const likedRecommendationById = new Map(
@@ -77,10 +79,16 @@ export default function RecommendationMapMarkers() {
   recommendations.forEach((recommendation) => {
     const isLiked = recommendation.isLiked || likedRecommendationById.has(recommendation.id);
     if (isRecommendationOpen || isLiked) {
-      likedRecommendationById.set(recommendation.id, { ...recommendation, isLiked });
+      likedRecommendationById.set(recommendation.id, {
+        ...recommendation,
+        ...likedRecommendationById.get(recommendation.id),
+        isLiked,
+      });
     }
   });
-  const visibleRecommendations = [...likedRecommendationById.values()];
+  const visibleRecommendations = [...likedRecommendationById.values()].filter(
+    ({ place }) => !selectedCategory || place.category === selectedCategory
+  );
   const recommendationsRef = useRef(recommendations);
   const lastFocusedRecommendationIdRef = useRef<string | null>(null);
   const lastFocusedVisibleHeightPxRef = useRef<number | undefined>(undefined);

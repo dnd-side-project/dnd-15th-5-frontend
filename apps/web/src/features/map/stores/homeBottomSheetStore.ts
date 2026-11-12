@@ -23,7 +23,10 @@ export type HomeBottomSheetContent =
   | { type: 'home' }
   | { type: 'recommendation' }
   | { type: 'selectedPlace'; stickerId: string }
-  | { type: 'likedRecommendation'; recommendationId: string };
+  | {
+      type: 'likedRecommendation';
+      recommendationId: string;
+    };
 
 export type HomeBottomSheetTab = 'frequentShops' | 'history';
 
@@ -79,7 +82,12 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
         : state
     ),
   showLikedRecommendation: (recommendationId) =>
-    set({ activeSheet: { type: 'likedRecommendation', recommendationId } }),
+    set({
+      activeSheet: {
+        type: 'likedRecommendation',
+        recommendationId,
+      },
+    }),
   showRecommendation: () => set({ activeSheet: { type: 'recommendation' } }),
   showSelectedPlace: (stickerId) => set({ activeSheet: { type: 'selectedPlace', stickerId } }),
   setTopActionBottom: (bottomPx) =>

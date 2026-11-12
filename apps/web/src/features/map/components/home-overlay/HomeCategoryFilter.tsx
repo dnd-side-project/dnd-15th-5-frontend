@@ -12,14 +12,21 @@ type HomeCategoryFilterProps = {
   onOpenRecommendationSearch: () => void;
 };
 
-/** 지도 홈 상단에 한 줄로 표시하는 가게 추천·카테고리 칩입니다. */
+/** 지도 홈 상단에 가게 추천과 방문·좋아요 장소의 카테고리 칩을 표시합니다. */
 export default function HomeCategoryFilter({
   onOpenRecommendationSearch,
 }: HomeCategoryFilterProps) {
-  const { isSuccess, stickers } = useVisitedPlaceStickersQuery();
+  const { isSuccess, stickers, likedRecommendations = [] } = useVisitedPlaceStickersQuery();
+  const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
+  const selectedLikedPlaceCategory =
+    activeSheet.type === 'likedRecommendation'
+      ? likedRecommendations.find(({ id }) => id === activeSheet.recommendationId)?.place.category
+      : undefined;
   const visibleCategories = isSuccess
-    ? HOME_CATEGORIES.filter((category) =>
-        stickers.some(({ place }) => place.category === category)
+    ? HOME_CATEGORIES.filter(
+        (category) =>
+          stickers.some(({ place }) => place.category === category) ||
+          likedRecommendations.some(({ place }) => place.category === category)
       )
     : HOME_CATEGORIES;
   const selectedCategory = useMapCategoryFilterStore((state) => state.selectedCategory);
@@ -27,10 +34,22 @@ export default function HomeCategoryFilter({
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
 
   useEffect(() => {
+    if (isSuccess && selectedLikedPlaceCategory) {
+      if (selectedCategory !== selectedLikedPlaceCategory) {
+        setSelectedCategory(selectedLikedPlaceCategory);
+      }
+      return;
+    }
     if (isSuccess && selectedCategory && !visibleCategories.includes(selectedCategory)) {
       setSelectedCategory(null);
     }
-  }, [isSuccess, selectedCategory, setSelectedCategory, visibleCategories]);
+  }, [
+    isSuccess,
+    selectedCategory,
+    selectedLikedPlaceCategory,
+    setSelectedCategory,
+    visibleCategories,
+  ]);
 
   const handleOpenRecommendationSearch = () => {
     setSelectedCategory(null);

@@ -61,6 +61,7 @@ describe('placeAdapters', () => {
     ]);
 
     expect(stickers).toHaveLength(1);
+    expect(stickers[0]?.place.address).toBeUndefined();
     expect(stickers[0]).toMatchObject({
       id: '101',
       googlePlaceId: 'ChIJ-twosome-101',
@@ -136,7 +137,6 @@ describe('placeAdapters', () => {
     ]);
     expect(recommendations[0]?.place.category).toBe('기타');
     expect(recommendations[0]).toMatchObject({
-      googleMapsUri: null,
       thumbnailSrc: 'https://example.com/twosome.jpg',
     });
   });

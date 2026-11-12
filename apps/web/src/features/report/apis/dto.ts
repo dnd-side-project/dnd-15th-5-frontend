@@ -56,6 +56,88 @@ export type ApiResponseConsumptionScrollResponse = {
   data?: ConsumptionScrollResponse;
 };
 
+export type SummaryHighlightResponse = {
+  type?: string;
+  mainCopy?: string;
+  subCopy?: string;
+};
+
+export type ApiResponseSummaryHighlightResponse = {
+  code?: string;
+  message?: string;
+  data?: SummaryHighlightResponse;
+};
+
+export type VisualItemResponse = {
+  consumptionId?: number;
+  category?: string;
+  stickerItemId?: number;
+  stickerName?: string;
+  imageId?: number;
+  imageUrl?: string;
+};
+
+export type DayVisualsResponse = {
+  date?: string;
+  visuals?: VisualItemResponse[];
+};
+
+export type StickerBoardResponse = {
+  yearMonth?: string;
+  days?: DayVisualsResponse[];
+};
+
+export type ApiResponseStickerBoardResponse = {
+  code?: string;
+  message?: string;
+  data?: StickerBoardResponse;
+};
+
+export type CategoryItemResponse = {
+  category?: string;
+  count?: number;
+  percentage?: number;
+};
+
+export type CategoryDistributionResponse = {
+  categories?: CategoryItemResponse[];
+};
+
+export type ApiResponseCategoryDistributionResponse = {
+  code?: string;
+  message?: string;
+  data?: CategoryDistributionResponse;
+};
+
+export type RecordDetailResponse = {
+  consumptionId?: number;
+  placeId?: number;
+  placeName?: string;
+  time?: string;
+  category?: string;
+  amount?: number;
+  visitOrdinal?: number;
+  stickerItemId?: number;
+  stickerName?: string;
+  imageId?: number;
+  imageUrl?: string;
+};
+
+export type DayEntryResponse = {
+  date?: string;
+  records?: RecordDetailResponse[];
+};
+
+export type ReportCalendarResponse = {
+  days?: DayEntryResponse[];
+};
+
+export type ApiResponseReportCalendarResponse = {
+  code?: string;
+  message?: string;
+  data?: ReportCalendarResponse;
+};
+
 export type ScoresResponse = {
   scoreExploration?: number;
   scoreTownExpansion?: number;
@@ -86,6 +168,13 @@ export type PersonaResponse = {
   scores?: ScoresResponse;
 };
 
+export type VisualResponse = {
+  stickerItemId?: number;
+  stickerName?: string;
+  imageId?: number;
+  imageUrl?: string;
+};
+
 export type PlaceRankResponse = {
   rank?: number;
   placeId?: number;
@@ -93,7 +182,7 @@ export type PlaceRankResponse = {
   visitCount?: number;
   firstVisitedDate?: string;
   category?: string;
-  stickerNames?: string[];
+  visuals?: VisualResponse[];
 };
 
 export type TownRankResponse = {
@@ -232,6 +321,24 @@ export type GetConsumptionsParams = {
    */
   cursorId?: number;
   size?: number;
+};
+
+export type GetStickerBoardParams = {
+  /**
+   * 조회할 연월, 예: 2026-08
+   */
+  yearMonth: string;
+};
+
+export type GetCalendarParams = {
+  /**
+   * 조회할 연월, 예: 2026-07
+   */
+  yearMonth: string;
+  /**
+   * 주간 캘린더 조회 시 기준 날짜(해당 날짜가 속한 일~토 7일 반환), 예: 2026-07-13
+   */
+  weekAnchor?: string;
 };
 
 export type GetMonthlyReportParams = {

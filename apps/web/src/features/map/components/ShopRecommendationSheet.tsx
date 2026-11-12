@@ -177,58 +177,56 @@ export default function ShopRecommendationSheet({
         onScroll={handleCarouselScroll}
         className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto"
       >
-        {recommendations.map(
-          ({ googleMapsUri, id, isLiked, reason, place, thumbnailSrc }, index) => {
-            return (
-              <li
-                key={id}
-                aria-label={`${index + 1}/${recommendations.length} ${place.name}`}
-                className="relative flex w-80 max-w-[calc(100vw-4.5rem)] shrink-0 snap-start flex-col overflow-hidden rounded-15 border border-neutral-200 bg-neutral-00"
+        {recommendations.map(({ id, isLiked, reason, place, thumbnailSrc }, index) => {
+          return (
+            <li
+              key={id}
+              aria-label={`${index + 1}/${recommendations.length} ${place.name}`}
+              className="relative flex w-80 max-w-[calc(100vw-4.5rem)] shrink-0 snap-start flex-col overflow-hidden rounded-15 border border-neutral-200 bg-neutral-00"
+            >
+              <span className="absolute top-0 left-0 rounded-br-16 bg-primary-500 px-3 py-2 text-caption-01-medium text-neutral-00">
+                {reason}
+              </span>
+              <button
+                type="button"
+                aria-label={`${place.name} 관심 가게`}
+                aria-pressed={isLiked}
+                onClick={() => likeMutation.mutate({ placeId: Number(id), currentLiked: isLiked })}
+                disabled={likeMutation.isPending}
+                className={cn(
+                  'absolute top-4 right-4 flex size-7 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-300',
+                  isLiked ? 'text-red' : 'text-neutral-200'
+                )}
               >
-                <span className="absolute top-0 left-0 rounded-br-16 bg-primary-500 px-3 py-2 text-caption-01-medium text-neutral-00">
-                  {reason}
-                </span>
-                <button
-                  type="button"
-                  aria-label={`${place.name} 관심 가게`}
-                  aria-pressed={isLiked}
-                  onClick={() =>
-                    likeMutation.mutate({ placeId: Number(id), currentLiked: isLiked })
-                  }
-                  disabled={likeMutation.isPending}
-                  className={cn(
-                    'absolute top-4 right-4 flex size-7 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-300',
-                    isLiked ? 'text-red' : 'text-neutral-200'
-                  )}
-                >
-                  <LikeIcon aria-hidden="true" className="size-5" />
-                </button>
+                <LikeIcon aria-hidden="true" className="size-5" />
+              </button>
 
-                <div className="flex min-h-32 items-end px-4 pt-12 pb-4">
-                  <PlaceTagCard
-                    thumbnailSrc={thumbnailSrc}
-                    title={place.name}
-                    tags={[
-                      { label: getDistrict(place.address), icon: BlueLocationPinIcon },
-                      { label: place.category },
-                    ]}
-                  />
-                </div>
+              <div className="flex min-h-32 items-end px-4 pt-12 pb-4">
+                <PlaceTagCard
+                  thumbnailSrc={thumbnailSrc}
+                  title={place.name}
+                  tags={[
+                    ...(place.address
+                      ? [{ label: getDistrict(place.address), icon: BlueLocationPinIcon }]
+                      : []),
+                    { label: place.category },
+                  ]}
+                />
+              </div>
 
-                <a
-                  href={getGoogleMapsPlaceUrl(place.name, place.address, googleMapsUri)}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`${place.name} 지도앱에서 확인하기`}
-                  className="flex h-11 items-center gap-1 justify-center border-t border-neutral-200 text-body-02-regular text-neutral-500 outline-none hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset"
-                >
-                  지도앱에서 확인하기
-                  <ChevronRightIcon aria-hidden="true" className="size-3" />
-                </a>
-              </li>
-            );
-          }
-        )}
+              <a
+                href={getGoogleMapsPlaceUrl(place.name, place.address)}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${place.name} 지도앱에서 확인하기`}
+                className="flex h-11 items-center gap-1 justify-center border-t border-neutral-200 text-body-02-regular text-neutral-500 outline-none hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset"
+              >
+                지도앱에서 확인하기
+                <ChevronRightIcon aria-hidden="true" className="size-3" />
+              </a>
+            </li>
+          );
+        })}
       </ul>
 
       <div className="mt-4 flex items-center justify-center gap-1" aria-hidden="true">
