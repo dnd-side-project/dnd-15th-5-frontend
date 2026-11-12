@@ -3,7 +3,7 @@ import { useState } from 'react';
 import OnboardingMapImage from '@/shared/assets/images/onboarding/img-onboarding-map.png';
 import OnboardingReceiptImage from '@/shared/assets/images/onboarding/img-onboarding-receipt.png';
 import OnboardingReportImage from '@/shared/assets/images/onboarding/img-onboarding-report.png';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 

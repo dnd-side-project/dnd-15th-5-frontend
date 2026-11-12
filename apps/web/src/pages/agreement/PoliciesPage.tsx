@@ -7,7 +7,7 @@ import {
   TERMS_OF_SERVICE_CONTENT,
 } from '@/features/auth';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 import { SegmentedToggle } from '@/shared/ui/segmented-toggle';
 
 type PolicyType = 'terms' | 'privacy';

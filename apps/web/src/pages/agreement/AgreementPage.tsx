@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { TermsAgreementForm, useTermsAgreement } from '@/features/auth';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 
 export default function AgreementPage() {
   const navigate = useNavigate();

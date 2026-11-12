@@ -35,7 +35,7 @@ import MonthlyReportPage from '@/pages/report/MonthlyReportPage';
 import ReportPage from '@/pages/report/ReportPage';
 import SharedReportPage from '@/pages/report/shared/SharedReportPage';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
-import PaddedLayout from '@/shared/layout/PaddedLayout';
+import PaddedLayout from '@/shared/layout/padded-layout';
 
 const createSentryBrowserRouter = Sentry.wrapCreateBrowserRouter(createBrowserRouter);
 

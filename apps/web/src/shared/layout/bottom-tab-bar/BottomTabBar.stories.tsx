@@ -5,7 +5,7 @@ import BottomTabBar from './BottomTabBar';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
-  title: 'Shared/BottomTabBar',
+  title: 'Shared/Layout/BottomTabBar',
   component: BottomTabBar,
   // INFO: NavLink가 현재 경로를 읽을 수 있도록 라우터 컨텍스트로 감싼다.
   // 실제 사용 화면과 같은 모바일 프레임 폭(393px)에서 확인할 수 있게 감싼다.

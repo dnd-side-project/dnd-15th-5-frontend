@@ -3,7 +3,7 @@ import { useMap } from '@vis.gl/react-google-maps';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import type { MapPosition } from '@/features/map/types';
 import { CurrentLocationIcon } from '@/shared/assets/icons';
-import { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/BottomTabBar';
+import { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/bottom-tab-bar';
 
 // 핸들과 버튼 사이 여백.
 const HANDLE_GAP = '0.75rem';

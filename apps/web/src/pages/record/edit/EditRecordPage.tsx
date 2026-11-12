@@ -4,7 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import EditConsumption from '@/features/record/components/EditConsumption';
 import { ShopSearch } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import { RouteHistoryContext } from '@/shared/lib/routeHistoryContext';
+import { RouteHistoryContext } from '@/shared/lib/route-history';
 import {
   getConsumptionReturnPath,
   getConsumptionReturnEntryKey,

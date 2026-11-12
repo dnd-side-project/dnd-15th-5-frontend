@@ -1,6 +1,6 @@
 import { getProfileImageOption } from '@/features/my-page/constants/profileImageOptions';
 import { EditIcon } from '@/shared/assets/icons';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 
 type MyPageProfileSectionProps = {
