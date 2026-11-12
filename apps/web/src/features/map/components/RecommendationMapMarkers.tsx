@@ -79,16 +79,13 @@ export default function RecommendationMapMarkers() {
   recommendations.forEach((recommendation) => {
     const isLiked = recommendation.isLiked || likedRecommendationById.has(recommendation.id);
     if (isRecommendationOpen || isLiked) {
-      likedRecommendationById.set(recommendation.id, { ...recommendation, isLiked });
+      likedRecommendationById.set(recommendation.id, {
+        ...recommendation,
+        ...likedRecommendationById.get(recommendation.id),
+        isLiked,
+      });
     }
   });
-  if (
-    isLikedRecommendationOpen &&
-    activeSheet.fallbackRecommendation &&
-    !likedRecommendationById.has(activeSheet.recommendationId)
-  ) {
-    likedRecommendationById.set(activeSheet.recommendationId, activeSheet.fallbackRecommendation);
-  }
   const visibleRecommendations = [...likedRecommendationById.values()].filter(
     ({ place }) => !selectedCategory || place.category === selectedCategory
   );
@@ -134,7 +131,7 @@ export default function RecommendationMapMarkers() {
     focusMap(recommendation.position, RECOMMENDATION_MAP_ZOOM, visibleHeightPx);
     setActiveRecommendation(recommendation.id);
     if (recommendation.isLiked) {
-      showLikedRecommendation(recommendation.id, recommendation);
+      showLikedRecommendation(recommendation.id);
       return;
     }
 

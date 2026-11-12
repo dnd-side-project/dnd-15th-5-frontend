@@ -2,8 +2,6 @@ import { create } from 'zustand';
 
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 
-import type { ShopRecommendation } from '../types';
-
 // NOTE: 클릭할 때마다 이 순서대로 순환한다. 마지막(hidden) 다음 클릭은 다시 처음(medium)으로 돌아간다.
 const HOME_BOTTOM_SHEET_SNAP_SEQUENCE: readonly BottomSheetSnapPoint[] = [
   'medium',
@@ -28,7 +26,6 @@ export type HomeBottomSheetContent =
   | {
       type: 'likedRecommendation';
       recommendationId: string;
-      fallbackRecommendation?: ShopRecommendation;
     };
 
 export type HomeBottomSheetTab = 'frequentShops' | 'history';
@@ -43,10 +40,7 @@ type HomeBottomSheetStore = {
   advance: () => void;
   showHome: () => void;
   closeLikedRecommendationIfMatches: (recommendationId: string) => void;
-  showLikedRecommendation: (
-    recommendationId: string,
-    fallbackRecommendation?: ShopRecommendation
-  ) => void;
+  showLikedRecommendation: (recommendationId: string) => void;
   showRecommendation: () => void;
   showSelectedPlace: (stickerId: string) => void;
   setTopActionBottom: (bottomPx: number) => void;
@@ -87,19 +81,13 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
         ? { activeSheet: { type: 'home' } }
         : state
     ),
-  showLikedRecommendation: (recommendationId, fallbackRecommendation) =>
-    set((state) => ({
+  showLikedRecommendation: (recommendationId) =>
+    set({
       activeSheet: {
         type: 'likedRecommendation',
         recommendationId,
-        fallbackRecommendation:
-          fallbackRecommendation ??
-          (state.activeSheet.type === 'likedRecommendation' &&
-          state.activeSheet.recommendationId === recommendationId
-            ? state.activeSheet.fallbackRecommendation
-            : undefined),
       },
-    })),
+    }),
   showRecommendation: () => set({ activeSheet: { type: 'recommendation' } }),
   showSelectedPlace: (stickerId) => set({ activeSheet: { type: 'selectedPlace', stickerId } }),
   setTopActionBottom: (bottomPx) =>

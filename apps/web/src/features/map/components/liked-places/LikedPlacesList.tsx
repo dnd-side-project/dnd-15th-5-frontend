@@ -8,7 +8,6 @@ import {
   useTogglePlaceLikeMutation,
 } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
-import { normalizeHomeCategory } from '@/features/map/utils/placeAdapters';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import PageHeader from '@/shared/layout/PageHeader';
 import { Button } from '@/shared/ui/button';
@@ -38,10 +37,7 @@ function LikedPlaceCard({ likedPlace }: { likedPlace: LikedPlaceResponse }) {
     Number.isFinite(longitude)
       ? {
           placeId: String(placeId),
-          category: normalizeHomeCategory(likedPlace.category),
           position: { lat: latitude, lng: longitude },
-          name: likedPlace.name ?? '이름 정보가 없어요',
-          address: likedPlace.address,
         }
       : undefined;
 

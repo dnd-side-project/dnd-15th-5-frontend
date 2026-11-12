@@ -20,14 +20,13 @@ export default function HomeCategoryFilter({
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const selectedLikedPlaceCategory =
     activeSheet.type === 'likedRecommendation'
-      ? activeSheet.fallbackRecommendation?.place.category
+      ? likedRecommendations.find(({ id }) => id === activeSheet.recommendationId)?.place.category
       : undefined;
   const visibleCategories = isSuccess
     ? HOME_CATEGORIES.filter(
         (category) =>
           stickers.some(({ place }) => place.category === category) ||
-          likedRecommendations.some(({ place }) => place.category === category) ||
-          selectedLikedPlaceCategory === category
+          likedRecommendations.some(({ place }) => place.category === category)
       )
     : HOME_CATEGORIES;
   const selectedCategory = useMapCategoryFilterStore((state) => state.selectedCategory);
@@ -35,10 +34,22 @@ export default function HomeCategoryFilter({
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
 
   useEffect(() => {
+    if (isSuccess && selectedLikedPlaceCategory) {
+      if (selectedCategory !== selectedLikedPlaceCategory) {
+        setSelectedCategory(selectedLikedPlaceCategory);
+      }
+      return;
+    }
     if (isSuccess && selectedCategory && !visibleCategories.includes(selectedCategory)) {
       setSelectedCategory(null);
     }
-  }, [isSuccess, selectedCategory, setSelectedCategory, visibleCategories]);
+  }, [
+    isSuccess,
+    selectedCategory,
+    selectedLikedPlaceCategory,
+    setSelectedCategory,
+    visibleCategories,
+  ]);
 
   const handleOpenRecommendationSearch = () => {
     setSelectedCategory(null);

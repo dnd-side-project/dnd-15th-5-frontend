@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
@@ -61,25 +61,31 @@ describe('HomeCategoryFilter', () => {
     expect(useMapCategoryFilterStore.getState().selectedCategory).toBeNull();
   });
 
-  it('선택 장소가 마커 응답에 없어도 해당 카테고리 필터를 유지한다', () => {
-    const fallbackRecommendation = { ...TEST_SHOP_RECOMMENDATIONS[0]!, isLiked: true };
-    useMapCategoryFilterStore.setState({ selectedCategory: '카페' });
-    useHomeBottomSheetStore.setState({
-      activeSheet: {
-        type: 'likedRecommendation',
-        recommendationId: fallbackRecommendation.id,
-        fallbackRecommendation,
-      },
-    });
+  it('응답을 받은 뒤 선택 장소의 지도 카테고리에 맞춰 필터를 바꾼다', async () => {
+    const user = userEvent.setup();
+    const recommendation = {
+      ...TEST_SHOP_RECOMMENDATIONS[0]!,
+      isLiked: true,
+      place: { ...TEST_SHOP_RECOMMENDATIONS[0]!.place, category: '기타' as const },
+    };
+    useHomeBottomSheetStore.getState().showLikedRecommendation(recommendation.id);
+    const { rerender } = render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
+    expect(useMapCategoryFilterStore.getState().selectedCategory).toBeNull();
+
+    // 다른 카페가 응답에 있어도 선택 장소의 '기타' 카테고리를 따라야 한다.
     mockedUseVisitedPlaceStickersQuery.mockReturnValue({
       isSuccess: true,
-      stickers: [],
-      likedRecommendations: [],
+      stickers: [{ place: { category: '카페' } }],
+      likedRecommendations: [recommendation],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+    act(() => useMapCategoryFilterStore.setState({ selectedCategory: '카페' }));
+    rerender(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
 
-    render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
+    expect(screen.getByRole('button', { name: '기타' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'false');
 
-    expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
+    await user.click(screen.getByRole('button', { name: '카페' }));
+    expect(useHomeBottomSheetStore.getState().activeSheet.type).toBe('home');
     expect(useMapCategoryFilterStore.getState().selectedCategory).toBe('카페');
   });
 });

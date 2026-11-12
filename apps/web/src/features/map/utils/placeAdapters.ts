@@ -5,12 +5,7 @@ import type {
   VisitedPlaceMarkerItem,
 } from '@/features/map/apis/dto';
 import { HOME_CATEGORIES } from '@/features/map/constants';
-import type {
-  HomeCategory,
-  LikedPlaceMapNavigation,
-  MapSticker,
-  ShopRecommendation,
-} from '@/features/map/types';
+import type { HomeCategory, MapSticker, ShopRecommendation } from '@/features/map/types';
 import { StickerEyesImage, getStickerImage } from '@/shared/assets/images/stickers';
 
 import type { ShopSearchResult } from '@chapchap/shared/shop';
@@ -23,8 +18,7 @@ export const normalizeHomeCategory = (category?: string): HomeCategory =>
 /** 방문 장소 API 응답 중 지도에 표시할 수 있는 항목만 스티커 모델로 변환합니다. */
 export const toMapStickers = (places?: VisitedPlaceMarkerItem[]): MapSticker[] =>
   (places ?? []).flatMap((place) => {
-    // NOTE: 백엔드가 방문하지 않고 좋아요만 한 장소를 visitCount 0으로 함께 반환하고 있다.
-    // 지도 스티커는 소비 기록으로 획득한 장소만 표시해야 하므로 백엔드 수정 전까지 제외한다.
+    // NOTE: 방문 장소 응답에는 좋아요만 한 장소도 포함되지만, 스티커는 소비 기록이 있는 장소만 표시한다.
     if (place.visitCount === 0) {
       return [];
     }
@@ -124,26 +118,6 @@ export const toLikedPlaceRecordShop = (
 
   return { id, name, address, latitude, longitude, photoUrl: detail?.thumbnailUrls?.[0] ?? null };
 };
-
-/** 목록에서 지도 이동할 때 전달된 장소 정보로 지도 마커 데이터를 만듭니다. */
-export const toLikedPlaceNavigationRecommendation = (
-  navigation: LikedPlaceMapNavigation
-): ShopRecommendation => ({
-  id: navigation.placeId,
-  isLiked: true,
-  place: {
-    id: navigation.placeId,
-    name: navigation.name,
-    category: navigation.category,
-    address: navigation.address?.trim() || undefined,
-    isRegular: false,
-    stickerImages: [],
-  },
-  position: navigation.position,
-  reason: '내 동네에서 많이 방문한 곳',
-  thumbnailSrc: null,
-  visitCount: 0,
-});
 
 /** 지도 스티커를 소비 기록 폼이 사용하는 가게 모델로 변환합니다. */
 export const toShopSearchResult = (sticker?: MapSticker): ShopSearchResult | undefined => {

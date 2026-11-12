@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '../stores/mapCategoryFilterStore';
 import { useMapFocusStore } from '../stores/mapFocusStore';
-import { toLikedPlaceNavigationRecommendation } from '../utils/placeAdapters';
 
 import type { LikedPlaceMapNavigation } from '../types';
 
@@ -13,8 +12,8 @@ type HomeLocationState = Record<string, unknown> & {
 };
 
 /**
- * 홈 경로 state로 전달된 좋아요 장소에 맞춰 카테고리 필터와 지도 중심을 설정하고,
- * 좋아요 바텀시트를 연 뒤 일회성 이동 정보만 경로 state에서 제거합니다.
+ * 좋아요 장소로 지도와 시트를 열고, 카테고리는 지도 API 응답으로 설정하도록 필터를 초기화합니다.
+ * 처리한 일회성 이동 정보만 경로 state에서 제거합니다.
  */
 export function useOpenLikedPlaceFromLocation() {
   const location = useLocation();
@@ -28,12 +27,9 @@ export function useOpenLikedPlaceFromLocation() {
   useEffect(() => {
     if (!likedPlaceNavigation) return;
 
-    setSelectedCategory(likedPlaceNavigation.category);
+    setSelectedCategory(null);
     setSelectedPlaceFocus(likedPlaceNavigation.position);
-    showLikedRecommendation(
-      likedPlaceNavigation.placeId,
-      toLikedPlaceNavigationRecommendation(likedPlaceNavigation)
-    );
+    showLikedRecommendation(likedPlaceNavigation.placeId);
 
     const { openLikedPlace: _openLikedPlace, ...remainingState } = homeLocationState;
     navigate(`${location.pathname}${location.search}${location.hash}`, {
