@@ -1,0 +1,23 @@
+.record-glass-fill {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.record-glass-fill::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  /* NOTE: Figma 레디얼의 중심 (18, 10), 반경 (83.196, 70.036), 회전을 61px 버튼에 맞춘다. */
+  left: 29.5082%;
+  top: 16.3934%;
+  width: 272.7738%;
+  height: 229.6266%;
+  transform: translate(-50%, -50%) rotate(50.2785deg);
+  background-image: var(--background-image-record-glass);
+}
+
+/* NOTE: 유리 라이브러리의 기본 그림자는 제거하고 Figma의 표면 그림자만 적용한다. */
+.bottom-tab-glass > div {
+  box-shadow: none !important;
+}

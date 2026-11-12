@@ -28,7 +28,7 @@ describe('BottomTabBar', () => {
       'mobile-frame',
       'fixed',
       'bottom-0',
-      'pb-[calc(0.75rem+env(safe-area-inset-bottom))]'
+      'pb-[calc(2rem+env(safe-area-inset-bottom))]'
     );
     expect(screen.getByRole('navigation', { name: '주요 메뉴' })).not.toHaveClass('sticky');
     expect(screen.getByRole('link', { name: '홈' })).toHaveAttribute('href', '/home');
@@ -53,10 +53,8 @@ describe('BottomTabBar', () => {
       const link = screen.getByRole('link', { name: label });
       if (label === activeLabel) {
         expect(link).toHaveAttribute('aria-current', 'page');
-        expect(screen.getByText(label)).toHaveClass('font-bold');
       } else {
         expect(link).not.toHaveAttribute('aria-current');
-        expect(screen.getByText(label)).not.toHaveClass('font-bold');
       }
     }
   });

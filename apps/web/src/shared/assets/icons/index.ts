@@ -36,6 +36,7 @@ import LikedPlacePinIcon from './ic-liked-place-pin.svg?react';
 import LocationPinOutlineIcon from './ic-location-pin-outline.svg?react';
 import LogoutIcon from './ic-logout.svg?react';
 import MapIcon from './ic-map.svg?react';
+import NavigationAddIcon from './ic-navigation-add.svg?react';
 import NavigationHomeIcon from './ic-navigation-home.svg?react';
 import NavigationRecordIcon from './ic-navigation-record.svg?react';
 import NavigationReportIcon from './ic-navigation-report.svg?react';
@@ -90,6 +91,7 @@ export {
   LocationPinOutlineIcon,
   LogoutIcon,
   MapIcon,
+  NavigationAddIcon,
   NavigationHomeIcon,
   NavigationRecordIcon,
   NavigationReportIcon,
