@@ -3,7 +3,7 @@ import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
 import { useHomeBottomSheetStore } from '@/features/map';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import BottomTabBar from '@/shared/layout/BottomTabBar';
+import { BottomTabBar } from '@/shared/layout/bottom-tab-bar';
 
 /**
  * 홈·기록하기·리포트 탭 이동이 필요한 화면에 하단 탭바를 함께 렌더링합니다.

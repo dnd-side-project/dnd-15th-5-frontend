@@ -61,7 +61,7 @@ type BottomTabBarProps = {
  *
  * @example
  * ```tsx
- * import BottomTabBar from '@/shared/layout/BottomTabBar';
+ * import { BottomTabBar } from '@/shared/layout/bottom-tab-bar';
  *
  * <BottomTabBar onHomeClick={() => advanceHomeBottomSheet()} />
  * ```

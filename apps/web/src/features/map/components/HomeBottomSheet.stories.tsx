@@ -8,7 +8,7 @@ import {
 } from '@/features/map/stores/homeBottomSheetStore';
 import { CurrentLocationIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import BottomTabBar, { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/BottomTabBar';
+import { BottomTabBar, BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/bottom-tab-bar';
 import {
   StoryPlaceList,
   StoryRecordBackground,

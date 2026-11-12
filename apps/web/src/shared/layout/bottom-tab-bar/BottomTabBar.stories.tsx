@@ -3,15 +3,15 @@ import { MemoryRouter, useLocation } from 'react-router-dom';
 import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-
-import BottomTabBar from './BottomTabBar';
 import {
   StoryPlaceList,
   StoryRecordBackground,
   StoryReportBackground,
-} from './storybook/StoryContentPreview';
-import { StoryMapBackdrop, StoryMapToolbar } from './storybook/StoryMapPreview';
-import { STORY_PLACES } from './storybook/storyPreviewData';
+} from '@/shared/layout/storybook/StoryContentPreview';
+import { StoryMapBackdrop, StoryMapToolbar } from '@/shared/layout/storybook/StoryMapPreview';
+import { STORY_PLACES } from '@/shared/layout/storybook/storyPreviewData';
+
+import BottomTabBar from './BottomTabBar';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ReactNode } from 'react';

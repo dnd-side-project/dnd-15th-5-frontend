@@ -9,7 +9,7 @@ import {
 import type { HomeBottomSheetContent } from '@/features/map/stores/homeBottomSheetStore';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
-import { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/BottomTabBar';
+import { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/bottom-tab-bar';
 import { cn } from '@/shared/lib/cn';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
