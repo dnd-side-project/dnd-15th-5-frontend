@@ -91,7 +91,7 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
               <article
                 key={step.id}
                 aria-hidden={stepIndex !== currentStepIndex}
-                className="flex h-full min-w-full flex-col items-center"
+                className="flex h-full min-w-full flex-col items-center overflow-hidden"
               >
                 <h1 className="relative z-10 min-h-17 shrink-0 whitespace-pre-line text-center text-heading-02-semibold text-neutral-700">
                   {step.title}

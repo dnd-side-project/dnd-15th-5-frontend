@@ -17,7 +17,7 @@ export function OnboardingIllustration({ step }: OnboardingIllustrationProps) {
       aria-hidden="true"
       viewBox="0 0 393 464"
       preserveAspectRatio="xMidYMid meet"
-      className="h-full max-h-116 w-full max-w-98.25 overflow-visible"
+      className="h-full max-h-116 w-full overflow-visible"
     >
       {step === 'photo' && (
         <>
@@ -64,7 +64,9 @@ export function OnboardingIllustration({ step }: OnboardingIllustrationProps) {
         </>
       )}
       {step === 'report' && (
-        <image href={OnboardingReportImage} x="0" y="-28" width="393" height="407" />
+        <svg x="-140" y="-28" width="673" height="407" className="overflow-hidden">
+          <image href={OnboardingReportImage} width="673" height="504.5" />
+        </svg>
       )}
     </svg>
   );
