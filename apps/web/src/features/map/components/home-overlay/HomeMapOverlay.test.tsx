@@ -28,7 +28,7 @@ describe('HomeMapOverlay', () => {
   it('지도는 가리지 않으면서 상단 UI를 Safe Area 아래에 배치한다', () => {
     const { container } = render(
       <MemoryRouter>
-        <HomeMapOverlay hasUnreadNotification={false} />
+        <HomeMapOverlay hasUnreadNotification={false} onOpenRecommendationSearch={jest.fn()} />
       </MemoryRouter>
     );
     const overlay = container.firstChild as HTMLElement;
@@ -53,7 +53,7 @@ describe('HomeMapOverlay', () => {
 
     render(
       <MemoryRouter>
-        <HomeMapOverlay hasUnreadNotification={false} />
+        <HomeMapOverlay hasUnreadNotification={false} onOpenRecommendationSearch={jest.fn()} />
       </MemoryRouter>
     );
 
@@ -65,7 +65,7 @@ describe('HomeMapOverlay', () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
-        <HomeMapOverlay hasUnreadNotification={false} />
+        <HomeMapOverlay hasUnreadNotification={false} onOpenRecommendationSearch={jest.fn()} />
       </MemoryRouter>
     );
     const filter = screen.getByRole('group', { name: '가게 추천 및 카테고리 필터' });
@@ -88,20 +88,25 @@ describe('HomeMapOverlay', () => {
     expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('최대 확장 이력이 있어도 추천 시트에서는 칩을 표시한다', () => {
+  it('최대 확장 이력이 있어도 추천 시트에서는 칩을 표시하고 동네 검색을 연다', async () => {
+    const user = userEvent.setup();
+    const onOpenRecommendationSearch = jest.fn();
     useHomeBottomSheetStore.getState().setSnapPoint('full');
     render(
       <MemoryRouter>
-        <HomeMapOverlay hasUnreadNotification={false} />
+        <HomeMapOverlay
+          hasUnreadNotification={false}
+          onOpenRecommendationSearch={onOpenRecommendationSearch}
+        />
       </MemoryRouter>
     );
 
     act(() => useHomeBottomSheetStore.getState().showRecommendation());
 
-    expect(screen.getByRole('button', { name: '가게 추천' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
     expect(screen.getByRole('group', { name: '가게 추천 및 카테고리 필터' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: '가게 추천' }));
+
+    expect(onOpenRecommendationSearch).toHaveBeenCalledTimes(1);
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
   });
 });

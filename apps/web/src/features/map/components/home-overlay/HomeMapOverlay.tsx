@@ -8,6 +8,7 @@ import HomeTopBar from './HomeTopBar';
 
 type HomeMapOverlayProps = {
   hasUnreadNotification: boolean;
+  onOpenRecommendationSearch: () => void;
 };
 
 /**
@@ -17,7 +18,10 @@ type HomeMapOverlayProps = {
  * `pointer-events-none`을 두고, 실제 UI가 있는 영역에만 `pointer-events-auto`로 되돌립니다.
  * 홈 시트가 최대 확장되면 카테고리 필터를 숨기고 선택 상태와 가로 스크롤 위치는 유지합니다.
  */
-export default function HomeMapOverlay({ hasUnreadNotification }: HomeMapOverlayProps) {
+export default function HomeMapOverlay({
+  hasUnreadNotification,
+  onOpenRecommendationSearch,
+}: HomeMapOverlayProps) {
   const isHomeSheetFullyExpanded = useHomeBottomSheetStore(selectIsHomeSheetFullyExpanded);
 
   return (
@@ -26,7 +30,7 @@ export default function HomeMapOverlay({ hasUnreadNotification }: HomeMapOverlay
         <HomeTopBar hasUnreadNotification={hasUnreadNotification} />
       </div>
       <div className="pointer-events-auto" hidden={isHomeSheetFullyExpanded}>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter onOpenRecommendationSearch={onOpenRecommendationSearch} />
       </div>
     </div>
   );

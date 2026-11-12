@@ -2,6 +2,7 @@ import { AdvancedMarker } from '@vis.gl/react-google-maps';
 import { useId, useState } from 'react';
 
 import type { MapSticker as MapStickerData } from '@/features/map/types';
+import { useStickerImage } from '@/shared/hooks/useStickerImage';
 import { cn } from '@/shared/lib/cn';
 
 const VISIT_BADGE_THRESHOLD = 2;
@@ -23,7 +24,8 @@ type MapStickerProps = {
 
 /** 기록 이미지를 원형 핀에 표시하며 선택한 핀의 화살표 끝을 장소 좌표에 맞춥니다. */
 export default function MapSticker({ isSelected, onSelect, sticker }: MapStickerProps) {
-  const { image, label, position, visitCount } = sticker;
+  const { label, position, visitCount } = sticker;
+  const { src: image, onError } = useStickerImage(sticker.image);
   const clipId = useId();
   const [loadedImage, setLoadedImage] = useState<{
     source: string;
@@ -118,6 +120,7 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
           />
           <image
             href={image}
+            onError={onError}
             x={imageX}
             y={imageY}
             width={imageWidth}
@@ -140,6 +143,7 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
           src={image}
           alt=""
           hidden
+          onError={onError}
           onLoad={(event) => {
             const { naturalWidth, naturalHeight } = event.currentTarget;
             const shortSide = Math.min(naturalWidth, naturalHeight);

@@ -109,6 +109,12 @@ describe('GoogleMapView', () => {
     expect(mockIsAutomaticPanEnabled).toBe(false);
   });
 
+  it('홈 시트 상태여도 추천 위치를 고르는 동안 현재 위치로 자동 이동하지 않는다', () => {
+    render(<GoogleMapView isSelectingLocation />);
+
+    expect(mockIsAutomaticPanEnabled).toBe(false);
+  });
+
   it('다시 마운트할 때 저장된 추천 조회 중심을 지도의 초기 중심으로 복원한다', () => {
     const savedCenter = { lat: 37.501, lng: 127.039 };
     useMapViewportStore.setState({ center: savedCenter });

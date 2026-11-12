@@ -6,9 +6,11 @@ import CurrentLocationCameraController from '@/features/map/components/current-l
 import CurrentLocationMarker from '@/features/map/components/current-location/CurrentLocationMarker';
 import RecommendationMapMarkers from '@/features/map/components/RecommendationMapMarkers';
 import MapStickers from '@/features/map/components/stickers/MapStickers';
-import { MAP_DEFAULT_ZOOM } from '@/features/map/constants';
+import { LOCATION_SELECTION_MAP_ZOOM, MAP_DEFAULT_ZOOM } from '@/features/map/constants';
 import { useCurrentPosition } from '@/features/map/hooks/useCurrentPosition';
+import { useMapSelectionAddress } from '@/features/map/hooks/useMapSelectionAddress';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { useMapViewportStore } from '@/features/map/stores/mapViewportStore';
 import { GOOGLE_MAPS_MAP_ID } from '@/shared/lib/env';
 
@@ -20,13 +22,38 @@ import MapFocusController from './MapFocusController';
  * 지도 스크립트는 `GoogleMapsProvider`가 로드하므로, 이 컴포넌트는 해당 Provider 하위에서만 동작한다.
  * 높이가 정해진 부모가 필요하다(`h-full`을 사용하므로 부모에 명시적 높이가 없으면 지도가 보이지 않는다).
  */
-export default function GoogleMapView() {
+export default function GoogleMapView({
+  isSelectingLocation = false,
+  isInteractionLocked = false,
+}: {
+  isSelectingLocation?: boolean;
+  isInteractionLocked?: boolean;
+}) {
   const { position, isLoading, error, requestPosition } = useCurrentPosition();
   const [showLocationError, setShowLocationError] = useState(false);
   const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
   const mapCenter = useMapViewportStore((state) => state.center);
   const setMapCenter = useMapViewportStore((state) => state.setCenter);
+  const updateSelectionAddress = useMapSelectionAddress();
+  const clearDraftSelection = useLocationSelectionStore((state) => state.clearDraftSelection);
+
+  const handleMapCenterChanged = () => {
+    if (isSelectingLocation && !isInteractionLocked) {
+      clearDraftSelection();
+    }
+  };
+
+  const handleMapIdle = (map: google.maps.Map) => {
+    if (isInteractionLocked) return;
+    const center = map.getCenter()?.toJSON();
+    if (!center) return;
+    setMapCenter(center);
+
+    if (isSelectingLocation) {
+      updateSelectionAddress(center);
+    }
+  };
 
   const handleMapClick = () => {
     setShowLocationError(false);
@@ -47,30 +74,35 @@ export default function GoogleMapView() {
       className="h-full w-full"
       mapId={GOOGLE_MAPS_MAP_ID}
       defaultCenter={mapCenter}
-      defaultZoom={MAP_DEFAULT_ZOOM}
-      gestureHandling="greedy"
+      defaultZoom={isSelectingLocation ? LOCATION_SELECTION_MAP_ZOOM : MAP_DEFAULT_ZOOM}
+      gestureHandling={isInteractionLocked ? 'none' : 'greedy'}
+      keyboardShortcuts={!isInteractionLocked}
       disableDefaultUI
       clickableIcons={false}
       onClick={handleMapClick}
-      onIdle={(event) => {
-        const center = event.map.getCenter();
-        if (center) setMapCenter({ lat: center.lat(), lng: center.lng() });
-      }}
+      onCenterChanged={handleMapCenterChanged}
+      onIdle={(event) => handleMapIdle(event.map)}
     >
       <CurrentLocationCameraController
-        isAutomaticPanEnabled={activeSheetType === 'home'}
+        isAutomaticPanEnabled={!isSelectingLocation && activeSheetType === 'home'}
         position={position}
       />
       <CurrentLocationMarker position={position} />
-      <MapFocusController />
-      <MapStickers />
-      <RecommendationMapMarkers />
-      <CurrentLocationButton
-        position={position}
-        isLoading={isLoading}
-        errorMessage={showLocationError ? locationErrorMessage : null}
-        onRequestPosition={handleCurrentPositionRequest}
-      />
+      {!isSelectingLocation && (
+        <>
+          <MapFocusController />
+          <MapStickers />
+          <RecommendationMapMarkers />
+        </>
+      )}
+      {!isSelectingLocation && (
+        <CurrentLocationButton
+          position={position}
+          isLoading={isLoading}
+          errorMessage={showLocationError ? locationErrorMessage : null}
+          onRequestPosition={handleCurrentPositionRequest}
+        />
+      )}
     </Map>
   );
 }

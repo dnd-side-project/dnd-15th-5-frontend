@@ -1,5 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 
+import { getStickerImageByName, StickerEyesImage } from '@/shared/assets/images/stickers';
+
 import VisitHistoryList from './VisitHistoryList';
 
 import type { RefObject } from 'react';
@@ -21,6 +23,54 @@ describe('VisitHistoryList', () => {
         return { observe, disconnect, unobserve: jest.fn(), takeRecords: jest.fn() };
       }),
     });
+  });
+
+  it('기록별 사진과 기본 스티커를 표시하고 로드에 실패한 사진만 대체한다', () => {
+    render(
+      <VisitHistoryList
+        placeName="투썸플레이스"
+        visits={[
+          {
+            consumptionId: 1,
+            visitedAt: '2026-08-23',
+            amount: 5_500,
+            imageUrl: 'https://example.com/coffee.png',
+            stickerName: '커피',
+          },
+          { consumptionId: 2, visitedAt: '2026-08-23', amount: 6_000, stickerName: '커피' },
+          {
+            consumptionId: 3,
+            visitedAt: '2026-08-21',
+            amount: 7_000,
+            imageUrl: 'https://example.com/cake.png',
+          },
+          { consumptionId: 4, visitedAt: '2026-08-20', amount: 8_000 },
+        ]}
+        isLoading={false}
+        isError={false}
+        isFetchNextPageError={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onLoadMore={jest.fn()}
+        onRetry={jest.fn()}
+        scrollRootRef={{ current: document.createElement('div') }}
+      />
+    );
+
+    const records = screen.getAllByRole('listitem');
+    const images = records.map((record) => record.querySelector('img')!);
+    expect(images[0]).toHaveAttribute('src', 'https://example.com/coffee.png');
+    expect(images[1]).toHaveAttribute('src', getStickerImageByName('커피'));
+    expect(images[2]).toHaveAttribute('src', 'https://example.com/cake.png');
+    expect(images[3]).toHaveAttribute('src', StickerEyesImage);
+    expect(within(records[0]).getByText('투썸플레이스')).toBeInTheDocument();
+    expect(within(records[0]).getByText('5,500원')).toBeInTheDocument();
+
+    fireEvent.error(images[0]!);
+
+    expect(images[0]).toHaveAttribute('src', StickerEyesImage);
+    expect(images[1]).toHaveAttribute('src', getStickerImageByName('커피'));
+    expect(images[2]).toHaveAttribute('src', 'https://example.com/cake.png');
   });
 
   it('같은 날짜·시각의 방문도 ID로 액션 이름을 구분하고 수정·삭제에 해당 행의 ID를 전달한다', () => {
