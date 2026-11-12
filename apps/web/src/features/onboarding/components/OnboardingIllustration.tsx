@@ -23,11 +23,11 @@ export function OnboardingIllustration({ step }: OnboardingIllustrationProps) {
         <>
           <image
             href={OnboardingPhotoIcon}
-            x="28.25"
-            y="243.48"
-            width="60.9835"
-            height="60.9835"
-            transform="rotate(-45.89 58.74 273.97)"
+            x="28"
+            y="243"
+            width="61"
+            height="61"
+            transform="rotate(-46 59 274)"
           />
           <image href={OnboardingPhotoImage} x="51" y="51" width="342" height="328" />
         </>
@@ -39,27 +39,27 @@ export function OnboardingIllustration({ step }: OnboardingIllustrationProps) {
           </svg>
           <image
             href={OnboardingSaladImage}
-            x="42.25"
-            y="285.25"
+            x="42"
+            y="285"
             width="74"
             height="74"
-            transform="rotate(22.23 79.25 322.25)"
+            transform="rotate(22 79 322)"
           />
           <image
             href={OnboardingCoffeeImage}
-            x="45.49"
-            y="151.49"
+            x="45"
+            y="151"
             width="74"
             height="74"
-            transform="rotate(-29.78 82.49 188.49)"
+            transform="rotate(-30 82 188)"
           />
           <image
             href={OnboardingDonutImage}
-            x="245.16"
-            y="179.89"
-            width="144.706"
-            height="144.706"
-            transform="rotate(-20.7 317.51 252.24)"
+            x="245"
+            y="180"
+            width="145"
+            height="145"
+            transform="rotate(-21 318 252)"
           />
         </>
       )}
