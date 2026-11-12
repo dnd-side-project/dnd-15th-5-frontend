@@ -21,17 +21,15 @@ export function OnboardingIllustration({ step }: OnboardingIllustrationProps) {
     >
       {step === 'photo' && (
         <>
+          <image
+            href={OnboardingPhotoIcon}
+            x="28.25"
+            y="243.48"
+            width="60.9835"
+            height="60.9835"
+            transform="rotate(-45.89 58.74 273.97)"
+          />
           <image href={OnboardingPhotoImage} x="51" y="51" width="342" height="328" />
-          <svg width="85" height="464" className="overflow-hidden">
-            <image
-              href={OnboardingPhotoIcon}
-              x="28.25"
-              y="243.48"
-              width="60.9835"
-              height="60.9835"
-              transform="rotate(-45.89 58.74 273.97)"
-            />
-          </svg>
         </>
       )}
       {step === 'map' && (
