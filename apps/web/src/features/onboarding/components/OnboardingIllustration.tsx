@@ -16,7 +16,7 @@ export function OnboardingIllustration({ step }: OnboardingIllustrationProps) {
     <svg
       aria-hidden="true"
       viewBox="0 0 393 464"
-      preserveAspectRatio="xMidYMin meet"
+      preserveAspectRatio="xMidYMid meet"
       className="h-full max-h-116 w-full max-w-98.25 overflow-visible"
     >
       {step === 'photo' && (

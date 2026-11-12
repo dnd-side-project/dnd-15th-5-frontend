@@ -97,7 +97,7 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
                   {step.title}
                 </h1>
 
-                <div className="relative flex min-h-0 w-full flex-1 justify-center">
+                <div className="relative flex min-h-0 w-full flex-1 items-center justify-center">
                   <OnboardingIllustration step={step.id} />
                 </div>
               </article>
