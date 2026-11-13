@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
 import { createPhotoSticker } from '@/features/record/sticker/utils/createPhotoSticker';
 import { loadDefaultSticker } from '@/features/record/sticker/utils/loadDefaultSticker';
-import BottomTabBar from '@/shared/layout/bottom-tab-bar';
+import { BottomTabBar } from '@/shared/layout/bottom-tab-bar';
 import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 import type { RecordLocationState } from '@/shared/types/recordNavigation';
 

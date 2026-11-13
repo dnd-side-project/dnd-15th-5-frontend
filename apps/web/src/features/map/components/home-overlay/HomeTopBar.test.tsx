@@ -1,15 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
-
 import HomeTopBar from './HomeTopBar';
 
 describe('HomeTopBar', () => {
-  beforeEach(() => {
-    useHomeBottomSheetStore.setState({ topActionBottomPx: 0 });
-  });
-
   it.each([
     { hasUnreadNotification: true, label: '읽지 않은 알림 있음' },
     { hasUnreadNotification: false, label: '알림' },
