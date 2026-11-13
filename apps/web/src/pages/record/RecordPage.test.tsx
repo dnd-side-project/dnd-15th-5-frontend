@@ -134,7 +134,7 @@ it('앱 촬영 결과를 스티커로 만들어 기록 입력 화면에 적용�
   });
   renderRecordPage();
   fireEvent.click(screen.getByRole('button', { name: '촬영하기' }));
-  await screen.findByAltText('흰색 테두리가 적용된 스티커');
+  fireEvent.load(await screen.findByAltText('흰색 테두리가 적용된 스티커'));
   fireEvent.click(screen.getByRole('button', { name: '이 스티커 사용' }));
   expect(screen.getByAltText('기록에 적용한 스티커')).toBeInTheDocument();
   expect(screen.getByText('소비정보를 입력해주세요')).toBeInTheDocument();
