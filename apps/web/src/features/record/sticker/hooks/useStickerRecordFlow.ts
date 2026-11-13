@@ -208,7 +208,9 @@ export const useStickerRecordFlow = ({
     const request = task.start('capture');
     task.prepareBackground();
     await task.run(request, '카메라를 열지 못했어요.', async () => {
-      const photo = await captureStickerPhoto({ hasActiveRecord: Boolean(recordResult) });
+      const photo = await captureStickerPhoto({
+        hasActiveRecord: Boolean(recordResult) || screen.stage === 'preview',
+      });
       if (request.signal.aborted) return;
       switch (photo.status) {
         case 'closed':

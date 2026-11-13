@@ -352,7 +352,7 @@ it.each([false, true])(
   }
 );
 
-it('촬영한 사진은 자르기 없이 스티커 생성으로 넘어가고 다시 찍기로 카메라를 연다', async () => {
+it('촬영한 사진은 자르기 없이 스티커 생성으로 넘어가고 다시 찍기는 작성 중 기록으로 카메라를 연다', async () => {
   jest.mocked(isNativeApp).mockReturnValue(true);
   jest
     .mocked(requestToNative)
@@ -370,7 +370,7 @@ it('촬영한 사진은 자르기 없이 스티커 생성으로 넘어가고 다
   await waitFor(() => expect(screen.getByRole('button', { name: '다시 찍기' })).toBeEnabled());
   expect(requestToNative).toHaveBeenCalledTimes(2);
   expect(requestToNative).toHaveBeenLastCalledWith('captureStickerPhoto', {
-    hasActiveRecord: false,
+    hasActiveRecord: true,
   });
 });
 
