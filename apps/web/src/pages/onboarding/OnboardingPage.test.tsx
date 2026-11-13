@@ -15,6 +15,27 @@ const renderOnboardingPage = () =>
   );
 
 describe('<OnboardingPage />', () => {
+  it('다음과 이전 단계로 이동하면 페이지 내부 스크롤을 맨 위로 초기화한다', async () => {
+    const user = userEvent.setup();
+    renderOnboardingPage();
+    const scrollContainer = screen.getByRole('main');
+
+    scrollContainer.scrollTop = 320;
+    await user.click(screen.getByRole('button', { name: '다음으로' }));
+    expect(scrollContainer.scrollTop).toBe(0);
+    expect(screen.getAllByRole('listitem')[1]).toHaveAttribute('aria-current', 'step');
+
+    scrollContainer.scrollTop = 320;
+    await user.click(screen.getByRole('button', { name: '다음으로' }));
+    expect(scrollContainer.scrollTop).toBe(0);
+    expect(screen.getAllByRole('listitem')[2]).toHaveAttribute('aria-current', 'step');
+
+    scrollContainer.scrollTop = 320;
+    await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
+    expect(scrollContainer.scrollTop).toBe(0);
+    expect(screen.getAllByRole('listitem')[1]).toHaveAttribute('aria-current', 'step');
+  });
+
   it('다음과 이전 버튼으로 온보딩 단계를 이동한다', async () => {
     const user = userEvent.setup();
     renderOnboardingPage();

@@ -1,14 +1,18 @@
 import { useState } from 'react';
 
+import { useScrollToTop } from '@/shared/hooks/useScrollToTop';
 import PageHeader from '@/shared/layout/page-header';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 
 import { OnboardingIllustration } from './OnboardingIllustration';
 
+import type { RefObject } from 'react';
+
 type OnboardingCarouselProps = {
   onBack: () => void;
   onComplete: () => void;
+  scrollContainerRef: RefObject<HTMLElement | null>;
 };
 
 const ONBOARDING_STEPS = [
@@ -29,9 +33,15 @@ const ONBOARDING_STEPS = [
 const LAST_STEP_INDEX = ONBOARDING_STEPS.length - 1;
 const SLIDE_WIDTH_PERCENTAGE = 100;
 
-export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselProps) {
+export function OnboardingCarousel({
+  onBack,
+  onComplete,
+  scrollContainerRef,
+}: OnboardingCarouselProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const isLastStep = currentStepIndex === LAST_STEP_INDEX;
+
+  useScrollToTop(currentStepIndex, scrollContainerRef);
 
   const handleBack = () => {
     if (currentStepIndex === 0) {
