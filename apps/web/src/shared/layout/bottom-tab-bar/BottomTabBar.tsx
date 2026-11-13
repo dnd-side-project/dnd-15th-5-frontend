@@ -17,7 +17,8 @@ const GLASS_BASE_PROPS = {
   dispersion: 50,
   frost: 0,
   saturation: 100,
-  glassColor: 'transparent',
+  // NOTE: transparent와 알파 0은 검증 경고를 발생시키므로 빈 값으로 frost: 0의 투명 기본색을 사용한다.
+  glassColor: '',
   borderColor: 'transparent',
   background: 'transparent',
   reveal: 'immediate',
