@@ -457,6 +457,41 @@ describe('HomeBottomSheet', () => {
     expect(sheet).toHaveStyle({ height: 'calc(100dvh - 12px)' });
   });
 
+  it('연속 휠 제스처로 최대 높이에서 중간 높이로 한 번만 축소하고 다음 제스처에서 접는다', () => {
+    jest.useFakeTimers();
+    try {
+      useHomeBottomSheetStore.setState({ stepIndex: 1 });
+      render(
+        <HomeBottomSheet
+          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
+        />
+      );
+      const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement!;
+      const scrollContainer = sheet.lastElementChild as HTMLElement;
+
+      fireEvent.wheel(scrollContainer, { deltaY: -32 });
+      expect(sheet).toHaveStyle({ height: 'calc(100dvh - 12px)' });
+      fireEvent.wheel(scrollContainer, { deltaY: -33 });
+      expect(sheet).toHaveStyle({ height: '45dvh' });
+
+      act(() => jest.advanceTimersByTime(149));
+      fireEvent.wheel(scrollContainer, { deltaY: -100 });
+      act(() => jest.advanceTimersByTime(149));
+      fireEvent.wheel(scrollContainer, { deltaY: -100 });
+      expect(sheet).toHaveStyle({ height: '45dvh' });
+
+      act(() => jest.advanceTimersByTime(150));
+      fireEvent.wheel(scrollContainer, { deltaY: -65 });
+      expect(screen.getByRole('button', { name: '자주 소비한 곳' })).toBeInTheDocument();
+      expect(sheet).not.toHaveStyle({ height: '45dvh' });
+      expect(useHomeBottomSheetStore.getState().stepIndex).toBe(3);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('최대 높이의 콘텐츠 최상단에서 아래로 당기면 중간 높이로 축소한다', () => {
     useHomeBottomSheetStore.setState({ stepIndex: 1 });
     render(

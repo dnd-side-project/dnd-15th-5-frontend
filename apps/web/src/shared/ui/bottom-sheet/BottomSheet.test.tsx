@@ -740,6 +740,47 @@ describe('BottomSheet', () => {
     expect(onContentPullDown).toHaveBeenCalledTimes(1);
   });
 
+  it.each(['확장 콜백 해제', '스크롤 경계 이탈', '방향 전환'])(
+    '휠 전환 후 같은 제스처에서 다시 전환하지 않는다: %s',
+    (change) => {
+      jest.useFakeTimers();
+      try {
+        const onContentPullDown = jest.fn();
+        const onExpand = jest.fn();
+        const { container, rerender } = render(
+          <BottomSheet snapPoint="collapsed" onExpand={onExpand}>
+            내용
+          </BottomSheet>
+        );
+        const content = (container.firstChild as HTMLElement).lastChild as HTMLElement;
+
+        fireEvent.wheel(content, { deltaY: 65 });
+        expect(onExpand).toHaveBeenCalledTimes(1);
+
+        rerender(
+          <BottomSheet snapPoint="medium" onContentPullDown={onContentPullDown}>
+            내용
+          </BottomSheet>
+        );
+        if (change === '확장 콜백 해제') {
+          fireEvent.wheel(content, { deltaY: 65 });
+        } else if (change === '스크롤 경계 이탈') {
+          content.scrollTop = 20;
+          fireEvent.wheel(content, { deltaY: -65 });
+          content.scrollTop = 0;
+        }
+        fireEvent.wheel(content, { deltaY: -65 });
+        expect(onContentPullDown).not.toHaveBeenCalled();
+
+        act(() => jest.advanceTimersByTime(150));
+        fireEvent.wheel(content, { deltaY: -65 });
+        expect(onContentPullDown).toHaveBeenCalledTimes(1);
+      } finally {
+        jest.useRealTimers();
+      }
+    }
+  );
+
   it('줄 단위 휠 입력을 픽셀로 환산해 pull-down 임계값을 계산한다', () => {
     const onContentPullDown = jest.fn();
     const { container } = render(
