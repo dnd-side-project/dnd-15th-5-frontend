@@ -13,12 +13,14 @@ import { isDefaultStickerMedia } from '@/features/record/utils/isDefaultStickerM
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 import { UnsavedChangesDialog } from '@/shared/ui/dialog';
+import { useToast } from '@/shared/ui/toast';
 
 import DefaultStickerPicker from './DefaultStickerPicker';
 import ImageChangeSheet from './ImageChangeSheet';
+import StickerCapturePreview from './StickerCapturePreview';
 import StickerCropper from './StickerCropper';
 import StickerFlowHeader from './StickerFlowHeader';
-import StickerGenerationPreview from './StickerGenerationPreview';
+import StickerGenerationStage from './StickerGenerationStage';
 import StickerRecordPreview from './StickerRecordPreview';
 import StickerSourcePicker from './StickerSourcePicker';
 
@@ -64,6 +66,7 @@ export default function StickerRecordFlow({
   const galleryInput = useRef<HTMLInputElement>(null);
   const [isImageChangeOpen, setIsImageChangeOpen] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
+  const { showToast } = useToast();
   const {
     screen,
     recordResult,
@@ -79,9 +82,14 @@ export default function StickerRecordFlow({
     openDefaultStickers,
     backToMediaSelection,
     cancelPreview,
+    failPreview,
     retry,
     confirm,
-  } = useStickerRecordFlow({ initialValue, onCaptureClose: onClose });
+  } = useStickerRecordFlow({
+    initialValue,
+    onCaptureClose: onClose,
+    onGalleryStickerError: (message) => showToast({ type: 'error', message }),
+  });
   const { stage } = screen;
   const preview = stage === 'preview' ? screen : null;
   const isCameraPreview = preview?.input.source === 'camera';
@@ -174,20 +182,29 @@ export default function StickerRecordFlow({
             onSelectDefaultSticker={openDefaultStickers}
           />
         )}
-        {preview && (
-          <StickerGenerationPreview
+        {preview && isCameraPreview && (
+          <StickerCapturePreview
             original={preview.original}
             sticker={preview.result?.sticker}
-            photoSource={preview.input.source}
             isProcessing={isProcessing}
             isCapturing={isCapturing}
             message={message}
             error={error}
-            onCancel={cancelPreview}
             isPaused={isExitConfirmOpen}
+            onCancel={cancelPreview}
             onRetry={retry}
             onReselect={handleCapturePhoto}
             onConfirm={confirm}
+          />
+        )}
+        {preview && !isCameraPreview && (
+          <StickerGenerationStage
+            original={preview.original}
+            sticker={preview.result?.sticker}
+            isProcessing={isProcessing}
+            message={message}
+            onRevealComplete={confirm}
+            onRevealError={failPreview}
           />
         )}
         {recordResult && (

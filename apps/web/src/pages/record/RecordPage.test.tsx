@@ -31,6 +31,7 @@ afterAll(() => {
   globalThis.Request = originalRequest;
 });
 
+jest.mock('@/shared/ui/toast', () => ({ useToast: () => ({ showToast: jest.fn() }) }));
 jest.mock('@/shared/lib/bridge', () => ({
   isNativeApp: jest.fn(),
   requestToNative: jest.fn(),

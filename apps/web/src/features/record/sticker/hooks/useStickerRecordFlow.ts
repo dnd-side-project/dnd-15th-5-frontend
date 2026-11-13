@@ -48,9 +48,12 @@ type StickerRecordFlowOptions = {
   initialValue?: StickerRecordInitialValue;
   /** 앱 카메라에서 기록 종료를 선택했을 때 호출합니다. */
   onCaptureClose?: () => void;
+  /** 가져온 사진의 스티커 생성이 실패해 자르기 화면으로 돌아갈 때 안내할 메시지를 전달합니다. */
+  onGalleryStickerError?: (message: string) => void;
 };
 
 const CAMERA_PERMISSION_ERROR = '앱 설정에서 카메라 권한을 허용한 뒤 다시 촬영해주세요.';
+const PHOTO_STICKER_ERROR = '스티커를 만들지 못했어요. 다시 시도해주세요.';
 
 const getResultUrls = (result: StickerResult | null) =>
   result ? [result.original, result.sticker, result.cropSource?.url ?? ''] : [];
@@ -104,6 +107,7 @@ const getMediaScreen = (result: StickerResult): StickerFlowScreen => {
 export const useStickerRecordFlow = ({
   initialValue,
   onCaptureClose,
+  onGalleryStickerError,
 }: StickerRecordFlowOptions = {}) => {
   const [screen, setScreen] = useState<StickerFlowScreen>({
     stage: initialValue ? 'record' : 'select',
@@ -136,6 +140,12 @@ export const useStickerRecordFlow = ({
     }
   };
 
+  /** 가져온 사진은 생성 화면에 머무르지 않고, 같은 원본과 자르기 영역으로 돌아가 실패를 안내합니다. */
+  const failGallerySticker = ({ cropSource, crop }: PreviewScreen['input']) => {
+    moveTo({ stage: 'crop', cropSource, crop });
+    onGalleryStickerError?.(PHOTO_STICKER_ERROR);
+  };
+
   const processImage = (input: PhotoInput, request: AbortController) => {
     const isOriginalFile = input.cropSource?.file === input.file;
     const original =
@@ -148,10 +158,17 @@ export const useStickerRecordFlow = ({
     };
     task.continueAs(request, 'process');
     showScreen(preview);
-    return task.run(request, '스티커를 만들지 못했어요. 다시 시도해주세요.', async () => {
-      const image = await createPhotoSticker(input.file, request.signal, (message) =>
-        task.reportProgress(request, message)
-      );
+    return task.run(request, PHOTO_STICKER_ERROR, async () => {
+      let image: Blob;
+      try {
+        image = await createPhotoSticker(input.file, request.signal, (message) =>
+          task.reportProgress(request, message)
+        );
+      } catch (cause) {
+        if (input.source !== 'gallery' || request.signal.aborted) throw cause;
+        failGallerySticker(preview.input);
+        return;
+      }
       if (request.signal.aborted) return;
       setScreen({
         ...preview,
@@ -233,15 +250,16 @@ export const useStickerRecordFlow = ({
     if (recordResult) moveTo(getMediaScreen(recordResult));
   };
 
-  /** 갤러리 사진은 자르던 화면으로, 촬영 사진은 기록 방법 선택으로 돌아갑니다. */
+  /** 촬영 결과 화면에서 생성을 취소하면 기록 방법 선택으로 돌아갑니다. */
   const cancelPreview = () => {
-    if (screen.stage !== 'preview') return;
-    const { input } = screen;
-    moveTo(
-      input.source === 'gallery'
-        ? { stage: 'crop', cropSource: input.cropSource, crop: input.crop }
-        : { stage: 'select' }
-    );
+    if (screen.stage === 'preview') moveTo({ stage: 'select' });
+  };
+
+  /** 가져온 사진의 스티커 이미지를 표시하지 못한 경우도 생성 실패와 같게 처리합니다. */
+  const failPreview = () => {
+    if (screen.stage === 'preview' && screen.input.source === 'gallery') {
+      failGallerySticker(screen.input);
+    }
   };
 
   const retry = () => {
@@ -269,6 +287,7 @@ export const useStickerRecordFlow = ({
     openDefaultStickers: () => moveTo({ stage: 'default' }),
     backToMediaSelection,
     cancelPreview,
+    failPreview,
     retry,
     confirm,
   };

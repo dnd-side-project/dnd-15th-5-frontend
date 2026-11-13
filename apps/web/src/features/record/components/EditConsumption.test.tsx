@@ -48,6 +48,7 @@ jest.mock('@/features/record/sticker/image/stickerImage', () => ({
   composeSticker: jest.fn(),
 }));
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: () => false }));
+jest.mock('@/shared/ui/toast', () => ({ useToast: () => ({ showToast: jest.fn() }) }));
 
 function Editor() {
   const navigate = useNavigate();

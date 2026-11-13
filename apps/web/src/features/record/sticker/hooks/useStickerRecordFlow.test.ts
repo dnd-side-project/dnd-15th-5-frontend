@@ -181,18 +181,22 @@ it('촬영에서 누끼 생성으로 넘어가면 촬영 대기 상태를 해제
   expect(result.current.recordResult?.source).toBe('photo');
 });
 
-it('생성을 취소해 배경 제거 Worker가 종료돼도 다음 사진 선택에서 다시 준비한다', async () => {
+it('촬영 사진의 생성을 취소해 배경 제거 Worker가 종료돼도 다음 사진 선택에서 다시 준비한다', async () => {
+  jest.mocked(isNativeApp).mockReturnValue(true);
+  jest
+    .mocked(requestToNative)
+    .mockResolvedValue({ status: 'success', base64: btoa('photo'), mimeType: 'image/jpeg' });
   jest.mocked(createPhotoSticker).mockReturnValueOnce(new Promise(() => {}));
   const { result } = renderHook(useStickerRecordFlow);
-  act(() => result.current.openCrop(photo));
   act(() => {
-    void result.current.confirmCrop(crop);
+    void result.current.capturePhoto();
   });
   await waitFor(() => expect(result.current.isProcessing).toBe(true));
   const [, signal] = jest.mocked(createPhotoSticker).mock.calls[0];
   jest.mocked(prepareStickerBackground).mockClear();
   act(() => result.current.cancelPreview());
   expect(signal.aborted).toBe(true);
+  expect(result.current.screen.stage).toBe('select');
   act(() => result.current.openCrop(photo));
   expect(prepareStickerBackground).toHaveBeenCalledTimes(1);
 });

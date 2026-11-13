@@ -17,7 +17,10 @@ import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
 import StickerRecordFlow from './StickerRecordFlow';
 
+const mockShowToast = jest.fn();
+
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn(), requestToNative: jest.fn() }));
+jest.mock('@/shared/ui/toast', () => ({ useToast: () => ({ showToast: mockShowToast }) }));
 jest.mock('@/shared/assets/images/ios-stickers/img-coffee.png', () => 'coffee.png');
 jest.mock('@/shared/assets/images/ios-stickers/img-cake.png', () => 'cake.png');
 
@@ -57,6 +60,11 @@ const finishGalleryGeneration = async () => {
   fireEvent.load(await screen.findByAltText('흰색 테두리가 적용된 스티커'));
   await screen.findByAltText('기록에 적용한 스티커');
 };
+const expectGalleryFailureToast = () =>
+  expect(mockShowToast).toHaveBeenCalledWith({
+    type: 'error',
+    message: '스티커를 만들지 못했어요. 다시 시도해주세요.',
+  });
 const expectAllUrlsReleased = () => {
   const createdUrls = jest.mocked(URL.createObjectURL).mock.results.map(({ value }) => value);
   const releasedUrls = jest.mocked(URL.revokeObjectURL).mock.calls.map(([url]) => url);
@@ -247,15 +255,28 @@ it('자르기에는 뒤로가기 없이 X만 표시하고 종료 확인 후 나�
   expectAllUrlsReleased();
 });
 
-it('실패 후 같은 사진으로 다시 시도한다', async () => {
+it('가져온 사진의 생성이 실패하면 같은 자르기 영역으로 돌아가 오류 토스트를 띄운다', async () => {
   mockRemove.mockRejectedValueOnce(new Error('처리 실패'));
   render(<StickerRecordFlow onClose={mockClose} />);
   upload();
-  expect(await screen.findByRole('alert')).toHaveTextContent('처리 실패');
-  expect(screen.queryByRole('button', { name: '이 스티커 사용' })).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: '다시 시도' }));
-  await screen.findByAltText('흰색 테두리가 적용된 스티커');
+  expect(await screen.findByRole('heading', { name: '사진 자르기' })).toBeVisible();
+  expect(screen.getByAltText('자를 사진')).toHaveAttribute('src', 'blob:photo-0');
+  expectGalleryFailureToast();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  loadCropImage();
+  fireEvent.click(screen.getByRole('button', { name: '스티커로 만들기' }));
+  await finishGalleryGeneration();
   expect(mockRemove).toHaveBeenCalledTimes(2);
+  expect(cropStickerImage).toHaveBeenLastCalledWith(photo, FULL_STICKER_CROP);
+});
+
+it('생성한 스티커 이미지를 표시하지 못해도 자르기 화면으로 돌아가 오류 토스트를 띄운다', async () => {
+  render(<StickerRecordFlow onClose={mockClose} />);
+  upload();
+  fireEvent.error(await screen.findByAltText('흰색 테두리가 적용된 스티커'));
+  expect(screen.getByRole('heading', { name: '사진 자르기' })).toBeVisible();
+  expectGalleryFailureToast();
+  expect(screen.queryByAltText('기록에 적용한 스티커')).not.toBeInTheDocument();
 });
 
 it('생성 중 화면을 나가면 늦은 결과를 무시하고 추론 중단 신호를 보낸다', async () => {
@@ -691,9 +712,8 @@ it('사진 생성 실패 시 원본 자르기로 돌아가 다시 만들더라�
   });
   mockRemove.mockRejectedValueOnce(new Error('생성 실패'));
   upload();
-  await screen.findByRole('alert');
-  fireEvent.click(screen.getByRole('button', { name: '사진 다시 자르기' }));
-  expect(screen.getByRole('heading', { name: '사진 자르기' })).toBeVisible();
+  expect(await screen.findByRole('heading', { name: '사진 자르기' })).toBeVisible();
+  expectGalleryFailureToast();
   loadCropImage();
   fireEvent.click(screen.getByRole('button', { name: '스티커로 만들기' }));
   await finishGalleryGeneration();
