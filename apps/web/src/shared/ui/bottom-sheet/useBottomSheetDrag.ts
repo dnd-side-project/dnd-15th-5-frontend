@@ -43,11 +43,14 @@ const getDragSnapPoint = ({
   draggedUpBy,
   fitContent,
 }: GetDragSnapPointParams): BottomSheetSnapPoint => {
-  const [nearestSnapPoint] = candidates.reduce((closest, candidate) =>
-    Math.abs(candidate[1] - finalHeightPx) < Math.abs(closest[1] - finalHeightPx)
+  const [nearestSnapPoint] = candidates.reduce((closest, candidate) => {
+    const candidateDistance = Math.abs(candidate[1] - finalHeightPx);
+    const closestDistance = Math.abs(closest[1] - finalHeightPx);
+    return candidateDistance < closestDistance ||
+      (candidateDistance === closestDistance && candidate[0] === snapPoint)
       ? candidate
-      : closest
-  );
+      : closest;
+  });
 
   if (
     fitContent ||

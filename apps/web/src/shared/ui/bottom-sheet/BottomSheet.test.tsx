@@ -193,6 +193,38 @@ describe('BottomSheet', () => {
     }
   });
 
+  it.each([
+    { from: 'medium', distance: 4, to: 'medium' },
+    { from: 'medium', distance: -4, to: 'medium' },
+    { from: 'medium', distance: 64, to: 'medium' },
+    { from: 'medium', distance: 65, to: 'full' },
+    { from: 'collapsed', distance: 4, to: 'collapsed' },
+  ] as const)(
+    '접힘과 중간 높이가 같을 때 $from에서 $distance px 드래그하면 $to 단계를 선택한다',
+    ({ from, distance, to }) => {
+      setInnerHeight(400);
+      const onSnapPointChange = jest.fn();
+      render(
+        <BottomSheet
+          snapPoint={from}
+          snapPoints={['collapsed', 'medium', 'full']}
+          collapsedHeight="200px"
+          onSnapPointChange={onSnapPointChange}
+        >
+          내용
+        </BottomSheet>
+      );
+      const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+      firePointerEvent(handle, 'pointerdown', 300);
+      firePointerEvent(document.body, 'pointermove', 300 - distance);
+      firePointerEvent(document.body, 'pointerup', 300 - distance);
+
+      expect(onSnapPointChange).toHaveBeenCalledTimes(1);
+      expect(onSnapPointChange).toHaveBeenCalledWith(to);
+    }
+  );
+
   it('열림·닫힘 전환 중 화면에 실제로 노출된 높이를 알린다', () => {
     const onVisibleHeightChange = jest.fn();
     let sheetTop = 440;
