@@ -19,7 +19,8 @@ echo "✅ SVG 아이콘 최적화 상태를 확인했습니다."
 
 echo "🔎 staged 파일에 대한 Lint 검사를 시작합니다..."
 
-pnpm exec lint-staged || {
+# NOTE: Windows의 pnpm .cmd 래퍼와 경로 인용으로 늘어나는 길이를 고려해 인자를 분할한다.
+pnpm exec lint-staged --max-arg-length 4000 || {
   echo "⚠️ Lint 검사에서 오류가 발생했습니다. 커밋이 중단됩니다."
   exit 1
 }

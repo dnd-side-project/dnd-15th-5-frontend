@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import { useHomeBottomSheetStore } from '@/features/map';
@@ -22,6 +22,7 @@ const renderReportLayout = () =>
       <Routes>
         <Route element={<AppMainLayout />}>
           <Route path="/report" element={<main>리포트 화면</main>} />
+          <Route path="/home" element={<main>홈 화면</main>} />
         </Route>
       </Routes>
     </MemoryRouter>
@@ -37,6 +38,19 @@ describe('AppMainLayout', () => {
 
     expect(screen.getByRole('navigation', { name: '주요 메뉴' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '리포트' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('다른 탭에서 홈으로 이동할 때는 시트를 유지하고 홈 재클릭은 순환한다', () => {
+    renderReportLayout();
+
+    fireEvent.click(screen.getByRole('link', { name: '홈' }));
+    expect(screen.getByRole('main')).toHaveTextContent('홈 화면');
+    expect(useHomeBottomSheetStore.getState().stepIndex).toBe(0);
+
+    for (const stepIndex of [1, 2, 3, 0]) {
+      fireEvent.click(screen.getByRole('link', { name: '홈' }));
+      expect(useHomeBottomSheetStore.getState().stepIndex).toBe(stepIndex);
+    }
   });
 
   it('홈에서 스티커를 선택하면 하단 탭바를 완전히 제거한다', () => {
