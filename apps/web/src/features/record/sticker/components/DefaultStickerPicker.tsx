@@ -21,8 +21,6 @@ type DefaultStickerPickerProps = {
   onConfirm: (sticker: DefaultSticker) => void;
   isProcessing: boolean;
   error: string;
-  onBack?: () => void;
-  isChangingImage?: boolean;
 };
 
 export default function DefaultStickerPicker({
@@ -31,8 +29,6 @@ export default function DefaultStickerPicker({
   onConfirm,
   isProcessing,
   error,
-  onBack,
-  isChangingImage,
 }: DefaultStickerPickerProps) {
   const [category, setCategory] = useState<DefaultStickerCategory>(
     initialSticker?.category ?? '카페'
@@ -51,7 +47,7 @@ export default function DefaultStickerPicker({
   return (
     <section className="flex min-h-dvh flex-col bg-neutral-00 text-neutral-700">
       <header className="relative h-32 shrink-0">
-        <StickerFlowHeader onBack={onBack} onClose={onClose} isChangingImage={isChangingImage} />
+        <StickerFlowHeader onClose={onClose} />
       </header>
 
       <h1 className="mx-4 mt-2.5 text-heading-01-bold">스티커를 골라주세요</h1>

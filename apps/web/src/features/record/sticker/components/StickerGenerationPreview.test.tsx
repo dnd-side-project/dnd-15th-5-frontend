@@ -82,6 +82,8 @@ const prepareAnimation = () => {
 
 it('생성된 이미지가 로드되고 모션이 끝난 뒤에만 기록 화면으로 이동한다', async () => {
   const { rerender } = render(<StickerGenerationPreview {...galleryProps} />);
+  expect(screen.queryByRole('button', { name: '뒤로 가기' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: '기록 닫고 홈으로 이동' })).not.toBeInTheDocument();
   expect(galleryProps.onConfirm).not.toHaveBeenCalled();
   expect(screen.getByAltText('흰색 테두리가 적용된 스티커')).not.toBeVisible();
   expect(screen.queryByRole('button', { name: '이 스티커 사용' })).not.toBeInTheDocument();
@@ -152,7 +154,7 @@ it('생성 또는 이미지 표시가 실패하면 자동 이동하지 않고 �
   fireEvent.error(screen.getByAltText('흰색 테두리가 적용된 스티커'));
   expect(screen.getByRole('alert')).toHaveTextContent('스티커를 불러오지 못했어요');
   fireEvent.click(screen.getByRole('button', { name: '다시 시도' }));
-  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+  fireEvent.click(screen.getByRole('button', { name: '사진 다시 자르기' }));
   expect(galleryProps.onRetry).toHaveBeenCalledTimes(1);
   expect(galleryProps.onCancel).toHaveBeenCalledTimes(1);
   expect(galleryProps.onConfirm).not.toHaveBeenCalled();

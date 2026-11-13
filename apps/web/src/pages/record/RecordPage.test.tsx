@@ -138,7 +138,7 @@ it('앱 촬영 결과를 스티커로 만들어 기록 입력 화면에 적용�
   expect(screen.getByAltText('기록에 적용한 스티커')).toBeInTheDocument();
   expect(screen.getByText('소비정보를 입력해주세요')).toBeInTheDocument();
   expect(requestToNative).toHaveBeenCalledTimes(1);
-  expect(requestToNative).toHaveBeenCalledWith('captureStickerPhoto', {});
+  expect(requestToNative).toHaveBeenCalledWith('captureStickerPhoto', { hasActiveRecord: false });
 });
 
 it('기록 폼의 영수증 버튼을 누를 때만 카메라를 열고 입력 내용과 스티커를 유지한다', async () => {
@@ -224,8 +224,8 @@ it('기존 가게 검색 화면으로 이동하고 가게 선택 후 스티커�
   expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('점심 방문');
   expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('5,500');
-  expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
-  expect(screen.getByRole('button', { name: '운동' })).toHaveAttribute('aria-disabled', 'true');
+  expect(screen.getByRole('button', { name: '운동' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('button', { name: '카페' })).toBeEnabled();
   expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record?yearMonth=2020-07');
   expect(loadDefaultSticker).toHaveBeenCalledTimes(1);
 });

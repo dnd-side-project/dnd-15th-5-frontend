@@ -14,6 +14,7 @@ import type { CSSProperties, PointerEvent } from 'react';
 
 type StickerCropperProps = {
   src: string;
+  initialCrop?: StickerCrop;
   isCropping: boolean;
   onCancel: () => void;
   onReselect: () => void;
@@ -35,6 +36,7 @@ const toPercent = (value: number) => `${value * 100}%`;
 /** 시안 REC_Crop을 기준으로 가져온 사진의 네 모서리를 드래그해 자를 영역을 정합니다. */
 export default function StickerCropper({
   src,
+  initialCrop = FULL_STICKER_CROP,
   isCropping,
   onCancel,
   onReselect,
@@ -43,7 +45,7 @@ export default function StickerCropper({
 }: StickerCropperProps) {
   const imageBox = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState<number | null>(null);
-  const [crop, setCrop] = useState(FULL_STICKER_CROP);
+  const [crop, setCrop] = useState(initialCrop);
   const [activeCorner, setActiveCorner] = useState<StickerCropCorner | null>(null);
 
   const handlePointerDown = (corner: StickerCropCorner) => (event: PointerEvent) => {

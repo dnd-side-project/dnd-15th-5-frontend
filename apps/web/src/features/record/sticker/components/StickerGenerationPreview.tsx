@@ -4,7 +4,6 @@ import type { StickerPhotoSource } from '@/features/record/types';
 import { Button } from '@/shared/ui/button';
 import { Spinner } from '@/shared/ui/spinner';
 
-import StickerFlowHeader from './StickerFlowHeader';
 import StickerReveal from './StickerReveal';
 
 type StickerGenerationPreviewProps = {
@@ -19,9 +18,6 @@ type StickerGenerationPreviewProps = {
   onRetry: () => void;
   onReselect: () => void;
   onConfirm: () => void;
-  onClose?: () => void;
-  onBack?: () => void;
-  isChangingImage?: boolean;
   isPaused?: boolean;
 };
 
@@ -38,9 +34,6 @@ export default function StickerGenerationPreview({
   onRetry,
   onReselect,
   onConfirm,
-  onClose,
-  onBack,
-  isChangingImage,
   isPaused,
 }: StickerGenerationPreviewProps) {
   const isGallery = photoSource === 'gallery';
@@ -63,16 +56,6 @@ export default function StickerGenerationPreview({
           />
         )}
         <div className="absolute inset-0 bg-neutral-900/60" />
-        {isGallery && (
-          <StickerFlowHeader
-            title="스티커 생성"
-            tone="inverse"
-            onClose={onClose ?? onCancel}
-            onBack={onBack}
-            isChangingImage={isChangingImage}
-            className="z-sticky-header"
-          />
-        )}
         {sticker && !previewError && (
           <StickerReveal
             src={sticker}
@@ -97,6 +80,7 @@ export default function StickerGenerationPreview({
               {previewError}
             </p>
             <Button onClick={onRetry}>다시 시도</Button>
+            <Button onClick={onCancel}>사진 다시 자르기</Button>
           </div>
         )}
       </section>

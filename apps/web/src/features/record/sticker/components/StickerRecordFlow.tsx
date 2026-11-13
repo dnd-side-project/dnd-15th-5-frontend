@@ -2,6 +2,7 @@ import { RECORD_EXIT_CONFIRM_TEXT } from '@chapchap/shared/record';
 import { useEffect, useRef, useState } from 'react';
 
 import { STICKER_FLOW_HEADER_HEIGHT_CLASS } from '@/features/record/sticker/constants';
+import { useStickerRecordExit } from '@/features/record/sticker/hooks/useStickerRecordExit';
 import { useStickerRecordFlow } from '@/features/record/sticker/hooks/useStickerRecordFlow';
 import type {
   StickerRecordDraft,
@@ -63,53 +64,41 @@ export default function StickerRecordFlow({
   const galleryInput = useRef<HTMLInputElement>(null);
   const [isImageChangeOpen, setIsImageChangeOpen] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
-  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   const {
-    stage,
-    isCapturing,
-    capturePhoto,
-    result,
+    screen,
     recordResult,
-    original,
-    photoSource,
+    isCapturing,
+    isCropping,
     isProcessing,
     message,
     error,
-    cropSource,
-    isCropping,
     openCrop,
     confirmCrop,
-    backToSourceSelection,
-    cancelImageSelection,
+    capturePhoto,
+    selectDefaultSticker,
+    openDefaultStickers,
+    backToMediaSelection,
+    cancelPreview,
     retry,
     confirm,
-    openDefaultStickers,
-    selectDefaultSticker,
-  } = useStickerRecordFlow(initialValue);
+  } = useStickerRecordFlow({ initialValue, onCaptureClose: onClose });
+  const { stage } = screen;
+  const preview = stage === 'preview' ? screen : null;
+  const isCameraPreview = preview?.input.source === 'camera';
+  const isDark = stage === 'preview' || stage === 'crop';
+  const { isExitConfirmOpen, requestClose, continueWriting } = useStickerRecordExit({
+    isEditing: Boolean(initialValue),
+    hasStarted: stage !== 'select' || Boolean(recordResult),
+    onExit: onClose,
+  });
   const hasMediaChanges = Boolean(initialValue && recordResult?.source !== 'saved');
-  const hasPendingPhoto = Boolean(initialValue && (stage === 'crop' || stage === 'preview'));
+  const hasPendingPhoto = Boolean(initialValue && isDark);
   const hasChanges = isFormDirty || hasMediaChanges || hasPendingPhoto;
-  const defaultStickerCategory =
-    recordResult && isDefaultStickerMedia(recordResult) ? recordResult.category : undefined;
+  const recordedDefaultSticker =
+    recordResult && isDefaultStickerMedia(recordResult) ? recordResult : null;
   useEffect(() => {
     onDirtyChange?.(hasChanges);
   }, [hasChanges, onDirtyChange]);
-  const isPreview = stage === 'preview';
-  const isDark = isPreview || stage === 'crop';
-  const isChangingImage = Boolean(recordResult) && stage !== 'record' && stage !== 'select';
-  const handleRequestClose = () => {
-    // NOTE: 기존 기록 수정은 상위 라우트의 변경 확인을 사용해 확인창이 중복되지 않도록 한다.
-    if (initialValue || (stage === 'select' && !recordResult)) {
-      onClose();
-      return;
-    }
-    setIsExitConfirmOpen(true);
-  };
-  const handleStepClose = isChangingImage ? cancelImageSelection : handleRequestClose;
-  const handleExit = () => {
-    // NOTE: 홈 전환 전 중간 화면이 보이지 않도록 상태를 유지하고, 정리는 훅의 언마운트에서 처리한다.
-    onClose();
-  };
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = '';
@@ -125,7 +114,7 @@ export default function StickerRecordFlow({
         className={cn(
           'relative flex min-h-dvh flex-col [--sticker-primary:var(--color-primary-500)] [&_button:disabled:not([data-disabled])]:cursor-default [&_button:disabled:not([data-disabled])]:opacity-45 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-4 [&_button:focus-visible]:outline-primary-500',
           isDark && 'h-dvh',
-          isPreview && 'overflow-hidden',
+          stage === 'preview' && 'overflow-hidden',
           stage === 'crop' && 'overflow-x-hidden overflow-y-auto',
           isDark ? 'bg-neutral-700 text-neutral-00' : 'bg-neutral-00 text-neutral-700'
         )}
@@ -141,42 +130,38 @@ export default function StickerRecordFlow({
         {stage === 'default' && (
           <DefaultStickerPicker
             initialSticker={
-              recordResult && isDefaultStickerMedia(recordResult)
-                ? (recordResult.defaultSticker ?? null)
-                : undefined
+              recordedDefaultSticker ? (recordedDefaultSticker.defaultSticker ?? null) : undefined
             }
-            onClose={handleStepClose}
-            onBack={backToSourceSelection}
-            isChangingImage={isChangingImage}
+            onClose={requestClose}
             onConfirm={(sticker) => void selectDefaultSticker(sticker)}
             isProcessing={isProcessing}
             error={error}
           />
         )}
-        {(stage === 'select' || (isPreview && photoSource === 'camera')) && (
+        {(stage === 'select' || isCameraPreview) && (
           <div
             className={cn(
               'relative shrink-0',
-              isPreview
+              isCameraPreview
                 ? STICKER_FLOW_HEADER_HEIGHT_CLASS
                 : 'h-[max(7rem,calc(env(safe-area-inset-top)+4rem))]'
             )}
           >
             <StickerFlowHeader
-              title={isPreview ? '스티커 생성' : undefined}
-              tone={isPreview ? 'inverse' : undefined}
-              onClose={stage === 'select' ? handleRequestClose : handleStepClose}
-              isChangingImage={isChangingImage}
+              title={isCameraPreview ? '스티커 생성' : undefined}
+              tone={isCameraPreview ? 'inverse' : undefined}
+              onClose={requestClose}
             />
           </div>
         )}
-        {stage === 'crop' && cropSource && (
+        {screen.stage === 'crop' && (
           <StickerCropper
-            key={cropSource.url}
-            src={cropSource.url}
+            key={screen.cropSource.url}
+            src={screen.cropSource.url}
+            initialCrop={screen.crop}
             isCropping={isCropping}
-            onCancel={handleStepClose}
-            closeButtonLabel={isChangingImage ? '사진 변경 취소' : '기록 닫고 홈으로 이동'}
+            onCancel={requestClose}
+            closeButtonLabel="기록 닫고 홈으로 이동"
             onReselect={handleImportImage}
             onConfirm={(crop) => void confirmCrop(crop)}
           />
@@ -187,22 +172,18 @@ export default function StickerRecordFlow({
             onCapture={isApp ? handleCapturePhoto : undefined}
             onImportImage={handleImportImage}
             onSelectDefaultSticker={openDefaultStickers}
-            onResumeRecord={recordResult ? cancelImageSelection : undefined}
           />
         )}
-        {isPreview && (
+        {preview && (
           <StickerGenerationPreview
-            original={original}
-            sticker={result?.sticker}
-            photoSource={photoSource}
+            original={preview.original}
+            sticker={preview.result?.sticker}
+            photoSource={preview.input.source}
             isProcessing={isProcessing}
             isCapturing={isCapturing}
             message={message}
             error={error}
-            onCancel={isChangingImage ? cancelImageSelection : backToSourceSelection}
-            onClose={handleStepClose}
-            onBack={backToSourceSelection}
-            isChangingImage={isChangingImage}
+            onCancel={cancelPreview}
             isPaused={isExitConfirmOpen}
             onRetry={retry}
             onReselect={handleCapturePhoto}
@@ -213,11 +194,13 @@ export default function StickerRecordFlow({
           <div hidden={stage !== 'record'} inert={isImageChangeOpen}>
             <StickerRecordPreview
               sticker={recordResult.sticker}
-              isDefaultSticker={defaultStickerCategory !== undefined}
-              defaultStickerCategory={defaultStickerCategory}
+              isDefaultSticker={Boolean(recordedDefaultSticker)}
+              defaultStickerCategory={recordedDefaultSticker?.category}
               onChangeImage={() => setIsImageChangeOpen(true)}
-              onBack={initialValue ? onClose : backToSourceSelection}
-              onClose={handleRequestClose}
+              onBack={
+                initialValue && recordResult.source === 'saved' ? onClose : backToMediaSelection
+              }
+              onClose={requestClose}
               onSearchShop={onSearchShop}
               onScanReceipt={onScanReceipt}
               onReceiptShopSelected={onReceiptShopSelected}
@@ -258,8 +241,8 @@ export default function StickerRecordFlow({
           description={RECORD_EXIT_CONFIRM_TEXT.description}
           exitLabel={RECORD_EXIT_CONFIRM_TEXT.exit}
           continueLabel={RECORD_EXIT_CONFIRM_TEXT.continue}
-          onExit={handleExit}
-          onContinue={() => setIsExitConfirmOpen(false)}
+          onExit={onClose}
+          onContinue={continueWriting}
         />
       )}
     </>
