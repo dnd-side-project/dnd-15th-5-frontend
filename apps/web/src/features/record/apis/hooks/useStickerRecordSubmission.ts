@@ -7,7 +7,6 @@ import {
   createStickerConsumptionRequest,
   validateStickerRecordDraft,
 } from '@/features/record/utils/createStickerConsumptionRequest';
-import { isDefaultStickerMedia } from '@/features/record/utils/isDefaultStickerMedia';
 
 type UseStickerRecordSubmissionParams = {
   save: (request: ConsumptionSaveRequest) => Promise<unknown>;
@@ -45,8 +44,6 @@ export const useStickerRecordSubmission = ({
 
     try {
       validateStickerRecordDraft(draft);
-      if (isDefaultStickerMedia(media) && media.category !== draft.category)
-        throw new Error('이모지와 기록의 카테고리를 맞춰주세요.');
       const mediaId = await resolveStickerRecordMediaId(media, controller.signal);
       controller.signal.throwIfAborted();
       await save(createStickerConsumptionRequest(draft, mediaId));

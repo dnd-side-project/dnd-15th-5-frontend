@@ -87,14 +87,19 @@ it('목록 조회 실패 시 이모지를 이미지 업로드로 대체하지 �
   expect(mockCreate).toHaveBeenCalledTimes(1);
 });
 
-it('기본 이모지와 다른 카테고리는 서버 요청 전에 차단한다', async () => {
+it('기본 이모지는 이모지 카테고리로 ID를 찾고 변경한 소비 카테고리로 저장한다', async () => {
+  jest
+    .mocked(findStickers)
+    .mockResolvedValueOnce({ data: [{ category: '운동', name: '근육', stickerItemId: 51 }] });
   const { result } = renderHook(useSubmitStickerRecord);
   await act(async () =>
     result.current.submit({ source: 'default', category: '운동', name: '근육' }, draft)
   );
-  expect(findStickers).not.toHaveBeenCalled();
+  expect(result.current.submitError).toBe('');
   expect(upload).not.toHaveBeenCalled();
-  expect(mockCreate).not.toHaveBeenCalled();
+  expect(mockCreate).toHaveBeenCalledWith(
+    expect.objectContaining({ stickerItemId: 51, category: '카페' })
+  );
 });
 
 it('가공된 PNG를 먼저 업로드하고 imageId와 OCR ID를 최종 등록에 전달한다', async () => {
