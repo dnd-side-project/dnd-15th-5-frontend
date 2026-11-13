@@ -203,6 +203,7 @@ export default function StickerRecordFlow({
             sticker={preview.result?.sticker}
             isProcessing={isProcessing}
             message={message}
+            isPaused={isExitConfirmOpen}
             onRevealComplete={confirm}
             onRevealError={failPreview}
           />

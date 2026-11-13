@@ -272,6 +272,26 @@ it('가져온 사진의 생성이 실패하면 같은 자르기 영역으로 돌
   expect(cropStickerImage).toHaveBeenLastCalledWith(photo, FULL_STICKER_CROP);
 });
 
+it('자르는 중 종료 확인을 열면 생성이 끝나도 계속 작성하기 전까지 기록 화면을 열지 않는다', async () => {
+  let finishCrop!: (file: File) => void;
+  jest.mocked(cropStickerImage).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finishCrop = resolve;
+      })
+  );
+  render(<StickerRecordFlow onClose={mockClose} />);
+  upload();
+  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+  expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeVisible();
+  await act(async () => finishCrop(croppedPhoto));
+  fireEvent.load(await screen.findByAltText('흰색 테두리가 적용된 스티커'));
+  expect(screen.queryByAltText('기록에 적용한 스티커')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '계속 작성하기' }));
+  expect(await screen.findByAltText('기록에 적용한 스티커')).toBeInTheDocument();
+  expect(mockClose).not.toHaveBeenCalled();
+});
+
 it('생성한 스티커 이미지를 표시하지 못해도 자르기 화면으로 돌아가 오류 토스트를 띄운다', async () => {
   render(<StickerRecordFlow onClose={mockClose} />);
   upload();
