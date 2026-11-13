@@ -56,6 +56,8 @@ const upload = () => {
   loadCropImage();
   fireEvent.click(screen.getByRole('button', { name: '스티커로 만들기' }));
 };
+const loadCameraSticker = async () =>
+  fireEvent.load(await screen.findByAltText('흰색 테두리가 적용된 스티커'));
 const finishGalleryGeneration = async () => {
   fireEvent.load(await screen.findByAltText('흰색 테두리가 적용된 스티커'));
   await screen.findByAltText('기록에 적용한 스티커');
@@ -338,7 +340,7 @@ it('촬영한 사진은 자르기 없이 스티커 생성으로 넘어가고 다
     .mockResolvedValueOnce({ status: 'cancelled' });
   render(<StickerRecordFlow onClose={mockClose} />);
   fireEvent.click(screen.getByRole('button', { name: '촬영하기' }));
-  await screen.findByAltText('흰색 테두리가 적용된 스티커');
+  await loadCameraSticker();
   expect(cropStickerImage).not.toHaveBeenCalled();
   expect(screen.queryByRole('button', { name: '뒤로 가기' })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' })).toBeInTheDocument();
@@ -374,7 +376,7 @@ it('앱 카메라 사진을 브릿지로 받아 배경 제거 후 기록 화면�
     .mockResolvedValue({ status: 'success', base64: btoa('photo'), mimeType: 'image/jpeg' });
   render(<StickerRecordFlow onClose={mockClose} />);
   fireEvent.click(screen.getByRole('button', { name: '촬영하기' }));
-  await screen.findByAltText('흰색 테두리가 적용된 스티커');
+  await loadCameraSticker();
   expect(requestToNative).toHaveBeenCalledWith('captureStickerPhoto', { hasActiveRecord: false });
   expect(prepareStickerImage).toHaveBeenCalledWith(
     expect.objectContaining({ name: 'sticker-photo.jpg', type: 'image/jpeg' })
@@ -480,7 +482,7 @@ it('촬영한 사진 폼에서 뒤로 가면 기존 촬영 결과로 돌아가�
     .mockResolvedValue({ status: 'success', base64: btoa('photo'), mimeType: 'image/jpeg' });
   render(<StickerRecordFlow onClose={mockClose} />);
   fireEvent.click(screen.getByRole('button', { name: '촬영하기' }));
-  await screen.findByAltText('흰색 테두리가 적용된 스티커');
+  await loadCameraSticker();
   fireEvent.click(screen.getByRole('button', { name: '이 스티커 사용' }));
   const sticker = screen.getByAltText('기록에 적용한 스티커');
   fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
@@ -492,6 +494,7 @@ it('촬영한 사진 폼에서 뒤로 가면 기존 촬영 결과로 돌아가�
   expect(
     screen.queryByRole('button', { name: '작성 중인 기록으로 돌아가기' })
   ).not.toBeInTheDocument();
+  await loadCameraSticker();
   fireEvent.click(screen.getByRole('button', { name: '이 스티커 사용' }));
   expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('촬영 기록 초안');

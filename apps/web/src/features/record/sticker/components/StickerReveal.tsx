@@ -6,6 +6,7 @@ type StickerRevealProps = {
   src: string;
   isPaused?: boolean;
   onComplete?: () => void;
+  onLoad?: () => void;
   onError?: () => void;
 };
 
@@ -16,6 +17,7 @@ export default function StickerReveal({
   src,
   isPaused = false,
   onComplete,
+  onLoad,
   onError,
 }: StickerRevealProps) {
   const imageRef = useRef<HTMLImageElement>(null);
@@ -88,7 +90,10 @@ export default function StickerReveal({
       alt="흰색 테두리가 적용된 스티커"
       className="relative size-40 origin-bottom object-contain"
       style={{ opacity: loadedSource === src ? 1 : 0 }}
-      onLoad={() => setLoadedSource(src)}
+      onLoad={() => {
+        setLoadedSource(src);
+        onLoad?.();
+      }}
       onError={onError}
     />
   );

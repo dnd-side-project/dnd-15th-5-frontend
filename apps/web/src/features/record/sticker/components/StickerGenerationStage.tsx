@@ -9,6 +9,7 @@ type StickerGenerationStageProps = {
   message: string;
   isPaused?: boolean;
   onRevealComplete?: () => void;
+  onRevealLoad?: () => void;
   onRevealError: () => void;
 };
 
@@ -24,6 +25,7 @@ export default function StickerGenerationStage({
   message,
   isPaused,
   onRevealComplete,
+  onRevealLoad,
   onRevealError,
 }: StickerGenerationStageProps) {
   return (
@@ -44,6 +46,7 @@ export default function StickerGenerationStage({
           src={sticker}
           isPaused={isPaused || isProcessing}
           onComplete={onRevealComplete}
+          onLoad={onRevealLoad}
           onError={onRevealError}
         />
       )}

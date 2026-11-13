@@ -24,6 +24,14 @@ beforeEach(() => {
   jest.mocked(usePrefersReducedMotion).mockReturnValue(false);
 });
 
+it('스티커 URL을 받아도 이미지를 불러오기 전에는 사용을 막는다', () => {
+  render(<StickerCapturePreview {...props} />);
+  const confirmButton = screen.getByRole('button', { name: '이 스티커 사용' });
+  expect(confirmButton).toBeDisabled();
+  fireEvent.load(screen.getByAltText('흰색 테두리가 적용된 스티커'));
+  expect(confirmButton).toBeEnabled();
+});
+
 it('촬영 결과 이미지가 깨지면 사용을 막고 재생성한 이미지는 다시 사용할 수 있다', () => {
   const { rerender } = render(<StickerCapturePreview {...props} />);
   fireEvent.error(screen.getByAltText('흰색 테두리가 적용된 스티커'));
