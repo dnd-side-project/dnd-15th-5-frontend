@@ -44,6 +44,7 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
   const setScrollPosition = useHomeBottomSheetStore((state) => state.setScrollPosition);
   const contentRootRef = useRef<HTMLDivElement>(null);
   const pendingScrollTopRef = useRef<number | null>(null);
+  const restoredScrollTopRef = useRef<number | null>(null);
   const observerRef = useRef<ResizeObserver | null>(null);
   const shouldRestoreFocusRef = useRef(false);
   const touchStartRef = useRef<{ x: number; y: number; identifier: number } | null>(null);
@@ -114,8 +115,13 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
       const scrollTop = pendingScrollTopRef.current;
       if (scrollTop === null) return;
 
+      const previousScrollTop = scrollContainer.scrollTop;
       scrollContainer.scrollTop = scrollTop;
-      if (Math.abs(scrollContainer.scrollTop - scrollTop) < 1) {
+      const restoredScrollTop = scrollContainer.scrollTop;
+      if (restoredScrollTop !== previousScrollTop) {
+        restoredScrollTopRef.current = restoredScrollTop;
+      }
+      if (Math.abs(restoredScrollTop - scrollTop) < 1) {
         pendingScrollTopRef.current = null;
         observerRef.current?.disconnect();
         observerRef.current = null;
@@ -140,6 +146,7 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
       observerRef.current?.disconnect();
       observerRef.current = null;
       pendingScrollTopRef.current = null;
+      restoredScrollTopRef.current = null;
     };
   }, [isHomeSheet, tab]);
 
@@ -152,10 +159,16 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
     setTab(nextTab);
   };
 
-  const handleContentScroll = (event: UIEvent<HTMLDivElement>) => {
-    if (pendingScrollTopRef.current === null) {
-      setScrollPosition(tab, event.currentTarget.scrollTop);
+  /** 복원으로 발생한 scroll은 제외하고, 실제 위치 변경을 처리한 경우에만 true를 반환합니다. */
+  const handleContentScroll = (event: UIEvent<HTMLDivElement>): boolean => {
+    const scrollTop = event.currentTarget.scrollTop;
+    if (pendingScrollTopRef.current !== null || restoredScrollTopRef.current === scrollTop) {
+      return false;
     }
+
+    restoredScrollTopRef.current = null;
+    setScrollPosition(tab, scrollTop);
+    return true;
   };
 
   const handleContentKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {

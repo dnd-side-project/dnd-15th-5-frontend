@@ -77,12 +77,13 @@ function HomeBottomSheetCanvas({ initialSnapPoint, ...props }: HomeBottomSheetPr
               useHomeBottomSheetStore.getState().showSelectedPlace(placeId)
             }
           />
-          <StoryMapToolbar
-            category={category}
-            onCategoryChange={setCategory}
-            headerContent={<HomeTopBar hasUnreadNotification />}
-            isCategoryFilterVisible={!isHomeSheetFullyExpanded}
-          />
+          <div hidden={isHomeSheetFullyExpanded}>
+            <StoryMapToolbar
+              category={category}
+              onCategoryChange={setCategory}
+              headerContent={<HomeTopBar hasUnreadNotification />}
+            />
+          </div>
           {!isHomeSheetFullyExpanded && (
             <div
               className="mobile-frame pointer-events-none fixed right-0 left-0 z-map-control flex justify-end pr-4"

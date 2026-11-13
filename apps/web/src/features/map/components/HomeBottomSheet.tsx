@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useHomeBottomSheetTabs } from '@/features/map/hooks/useHomeBottomSheetTabs';
+import { useHomeSheetTopBoundary } from '@/features/map/hooks/useHomeSheetTopBoundary';
 import { useSelectedPlaceExpandTransition } from '@/features/map/hooks/useSelectedPlaceExpandTransition';
 import {
   getHomeBottomSheetSnapPoint,
@@ -40,10 +41,9 @@ type BottomSheetPresentation = {
 
 const MODAL_SHEET_SNAP_POINTS = ['hidden', 'medium'] as const;
 const HOME_SHEET_SNAP_POINTS = ['collapsed', 'medium', 'full'] as const;
-// NOTE: 핸들·탭 영역에 72px를 두고, 네비게이션 높이와 Safe Area를 확보한다.
-const COLLAPSED_SHEET_HEIGHT_CSS = `calc(4.5rem + ${BOTTOM_TAB_BAR_HEIGHT_CSS})`;
+// NOTE: 핸들·탭 영역 72px 아래에 떠 있는 네비게이션 캡슐과 12px 간격을 두고, Safe Area를 확보한다.
+const COLLAPSED_SHEET_HEIGHT_CSS = `calc(4.5rem + 0.75rem + ${BOTTOM_TAB_BAR_HEIGHT_CSS})`;
 const AUTO_EXPAND_SCROLL_THRESHOLD_PX = 32;
-const TOP_ACTION_TO_SHEET_GAP_PX = 12;
 
 type ModalSheetContentProps = {
   ariaLabel: string;
@@ -125,12 +125,13 @@ function useSheetContentTransitionClassName(transitionKey: string) {
  *
  * 높이 단계는 `useHomeBottomSheetStore`가 갖고 있습니다. 하단 탭바의 "홈" 버튼을 누르면 정해진
  * 순서(중간 → 최대 → 중간 → 접힘)로 바뀌고, 핸들을 드래그하면 손가락을 따라 자유롭게 움직이다가
- * 가장 가까운 단계로 스냅됩니다. 지도 스티커를 선택하면 탭 대신 해당 장소의 요약을 표시합니다.
- * 최대 단계에서는 지도 배경을 딤 처리하고, 시트 상단은 마이페이지 버튼 아래의 측정된 경계를
- * 넘지 않습니다. 실제 노출 높이를 스토어에 기록해 현재 위치 버튼이 모든 시트에서 핸들과 같은
- * 간격을 유지하도록 합니다. 핸들은 키보드로도
- * 조작할 수 있고(홈 시트는 단계 순환, 모달형 시트는 닫기), 모달형 시트는 포커스를 가두고 Escape로
- * 닫을 수 있는 실제 다이얼로그로 동작합니다.
+ * 가까운 단계로 스냅됩니다. 64px 넘게 당기면 당긴 방향으로 최소 한 단계 이동합니다.
+ * 지도 스티커를 선택하면 탭 대신 해당 장소의 요약을 표시합니다.
+ * 최대 단계에서는 상태바 아래에 12px 여백을 남기고 검색·알림·프로필 영역을 덮습니다.
+ * 위에 남은 지도 배경에는 딤을 적용합니다.
+ * 실제 노출 높이를 스토어에 기록해 현재 위치 버튼이 모든 시트에서 핸들과 같은 간격을 유지하도록
+ * 합니다. 핸들은 키보드로도 조작할 수 있고(홈 시트는 단계 순환, 모달형 시트는 닫기), 모달형
+ * 시트는 포커스를 가두고 Escape로 닫을 수 있는 실제 다이얼로그로 동작합니다.
  *
  * @param props - 홈 바텀시트 속성입니다.
  * @param props.renderFrequentShops - 세그먼트 토글과 자주 소비한 곳을 하나의 sticky 헤더로 조립합니다.
@@ -151,9 +152,9 @@ export default function HomeBottomSheet({
   const advance = useHomeBottomSheetStore((state) => state.advance);
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const topActionBottomPx = useHomeBottomSheetStore((state) => state.topActionBottomPx);
   const setVisibleHeight = useHomeBottomSheetStore((state) => state.setVisibleHeight);
   const snapPoint = getHomeBottomSheetSnapPoint(stepIndex);
+  const { topSafeAreaRef, fullTopBoundaryPx } = useHomeSheetTopBoundary();
   const isCollapsed = activeSheet.type === 'home' && snapPoint === 'collapsed';
   const {
     tab,
@@ -216,8 +217,12 @@ export default function HomeBottomSheet({
   };
 
   const handleHomeSheetContentScroll = (event: UIEvent<HTMLDivElement>) => {
-    handleContentScroll(event);
-    if (snapPoint === 'medium' && event.currentTarget.scrollTop > AUTO_EXPAND_SCROLL_THRESHOLD_PX) {
+    const shouldAutoExpand = handleContentScroll(event);
+    if (
+      shouldAutoExpand &&
+      snapPoint === 'medium' &&
+      event.currentTarget.scrollTop > AUTO_EXPAND_SCROLL_THRESHOLD_PX
+    ) {
       setSnapPoint('full');
     }
   };
@@ -306,15 +311,15 @@ export default function HomeBottomSheet({
   }
 
   const isHomeSheet = !sheetPresentation.isModal;
-  const fullTopBoundaryPx =
-    isHomeSheet && topActionBottomPx > 0
-      ? topActionBottomPx + TOP_ACTION_TO_SHEET_GAP_PX
-      : undefined;
 
   return (
     <>
-      {/* NOTE: 홈 딤은 지도만 덮고, 상단 검색·알림·마이페이지와 현재 위치 버튼 아래에 둔다. */}
-      {isHomeSheet && snapPoint === 'full' && <Overlay className="z-0!" />}
+      <div
+        ref={topSafeAreaRef}
+        aria-hidden="true"
+        className="pointer-events-none invisible fixed top-0 h-[env(safe-area-inset-top)] w-0"
+      />
+      {isHomeSheet && snapPoint === 'full' && <Overlay />}
       <BottomSheet
         rootRef={sheetRef}
         snapPoint={isHomeSheet ? snapPoint : 'medium'}
@@ -324,7 +329,7 @@ export default function HomeBottomSheet({
         fitContent={!isHomeSheet}
         onExpand={isCollapsed ? handleHomeSheetExpand : handleSelectedPlaceExpand}
         contentClassName={sheetPresentation.contentClassName}
-        fullTopBoundaryPx={fullTopBoundaryPx}
+        fullTopBoundaryPx={isHomeSheet ? fullTopBoundaryPx : undefined}
         collapsedHeight={COLLAPSED_SHEET_HEIGHT_CSS}
         onContentPullDown={isHomeSheet && !isCollapsed ? handleHomeSheetContentPullDown : undefined}
         onContentScroll={isHomeSheet && !isCollapsed ? handleHomeSheetContentScroll : undefined}

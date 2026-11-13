@@ -17,7 +17,6 @@ describe('HomeMapOverlay', () => {
     useHomeBottomSheetStore.setState({
       activeSheet: { type: 'home' },
       stepIndex: 0,
-      topActionBottomPx: 0,
     });
     useMapCategoryFilterStore.setState({ selectedCategory: null });
     mockedUseVisitedPlaceStickersQuery.mockReturnValue({
@@ -36,32 +35,7 @@ describe('HomeMapOverlay', () => {
     expect(overlay).toHaveClass('fixed', 'top-0', 'pt-[env(safe-area-inset-top)]');
   });
 
-  it('마이페이지 버튼의 화면상 아래 위치를 바텀시트 경계로 저장한다', () => {
-    const boundingClientRectSpy = jest
-      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
-      .mockReturnValue({
-        bottom: 96,
-        height: 32,
-        left: 432,
-        right: 464,
-        top: 64,
-        width: 32,
-        x: 432,
-        y: 64,
-        toJSON: () => ({}),
-      });
-
-    render(
-      <MemoryRouter>
-        <HomeMapOverlay hasUnreadNotification={false} onOpenRecommendationSearch={jest.fn()} />
-      </MemoryRouter>
-    );
-
-    expect(useHomeBottomSheetStore.getState().topActionBottomPx).toBe(96);
-    boundingClientRectSpy.mockRestore();
-  });
-
-  it('최대 확장에서 칩만 숨기고 내리면 카테고리 선택과 가로 스크롤을 복원한다', async () => {
+  it('최대 확장에서 상단 UI 전체를 숨기고 내리면 카테고리 선택과 가로 스크롤을 복원한다', async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -69,6 +43,9 @@ describe('HomeMapOverlay', () => {
       </MemoryRouter>
     );
     const filter = screen.getByRole('group', { name: '가게 추천 및 카테고리 필터' });
+    const topLinks = ['장소 검색', '알림', '마이페이지'].map((name) =>
+      screen.getByRole('link', { name })
+    );
     filter.scrollLeft = 100;
     await user.click(screen.getByRole('button', { name: '카페' }));
 
@@ -76,14 +53,18 @@ describe('HomeMapOverlay', () => {
 
     expect(filter).not.toBeVisible();
     expect(screen.queryByRole('button', { name: '카페' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '장소 검색' })).toBeVisible();
-    expect(screen.getByRole('link', { name: '알림' })).toBeVisible();
-    expect(screen.getByRole('link', { name: '마이페이지' })).toBeVisible();
+    for (const link of topLinks) {
+      expect(link).not.toBeVisible();
+      expect(
+        screen.queryByRole('link', { name: link.getAttribute('aria-label')! })
+      ).not.toBeInTheDocument();
+    }
     expect(useMapCategoryFilterStore.getState().selectedCategory).toBe('카페');
 
     act(() => useHomeBottomSheetStore.getState().setSnapPoint('medium'));
 
     expect(filter).toBeVisible();
+    topLinks.forEach((link) => expect(link).toBeVisible());
     expect(filter.scrollLeft).toBe(100);
     expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
   });
@@ -104,6 +85,9 @@ describe('HomeMapOverlay', () => {
     act(() => useHomeBottomSheetStore.getState().showRecommendation());
 
     expect(screen.getByRole('group', { name: '가게 추천 및 카테고리 필터' })).toBeVisible();
+    expect(screen.getByRole('link', { name: '장소 검색' })).toBeVisible();
+    expect(screen.getByRole('link', { name: '알림' })).toBeVisible();
+    expect(screen.getByRole('link', { name: '마이페이지' })).toBeVisible();
     await user.click(screen.getByRole('button', { name: '가게 추천' }));
 
     expect(onOpenRecommendationSearch).toHaveBeenCalledTimes(1);

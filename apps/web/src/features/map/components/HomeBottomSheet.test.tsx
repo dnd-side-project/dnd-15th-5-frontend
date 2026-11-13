@@ -76,7 +76,6 @@ describe('HomeBottomSheet', () => {
       tab: 'frequentShops',
       scrollPositions: { frequentShops: 0, history: 0 },
       stepIndex: 0,
-      topActionBottomPx: 0,
       visibleHeightPx: 0,
     });
     useShopRecommendationStore.setState({
@@ -115,20 +114,34 @@ describe('HomeBottomSheet', () => {
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
   });
 
-  it('최대 높이에서 마이페이지 버튼 아래에 12px 간격을 유지한다', () => {
-    useHomeBottomSheetStore.setState({ stepIndex: 1, topActionBottomPx: 96 });
-    render(
+  it('최대 높이에서 상태바 아래 12px를 남기고 Safe Area 변경을 반영한다', () => {
+    useHomeBottomSheetStore.setState({ stepIndex: 1 });
+    const { container } = render(
       <HomeBottomSheet
         renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
         renderSelectedPlace={renderSelectedPlace}
         renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
       />
     );
+    const topSafeArea = container.querySelector<HTMLElement>('[class*="safe-area-inset-top"]')!;
+    const rect = topSafeArea.getBoundingClientRect();
+    const boundingClientRectSpy = jest
+      .spyOn(topSafeArea, 'getBoundingClientRect')
+      .mockReturnValue({ ...rect, height: 59, bottom: 59 });
+    try {
+      const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' })
+        .parentElement as HTMLElement;
 
-    const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' })
-      .parentElement as HTMLElement;
+      fireEvent.resize(window);
+      expect(sheet).toHaveStyle({ height: 'calc(100dvh - 71px)' });
 
-    expect(sheet).toHaveStyle({ height: 'calc(100dvh - 108px)' });
+      boundingClientRectSpy.mockReturnValue({ ...rect, height: 44, bottom: 44 });
+      fireEvent.resize(window);
+
+      expect(sheet).toHaveStyle({ height: 'calc(100dvh - 56px)' });
+    } finally {
+      boundingClientRectSpy.mockRestore();
+    }
   });
 
   it('최대 높이였더라도 장소 요약 시트로 전환하면 딤을 해제한다', () => {
@@ -250,6 +263,15 @@ describe('HomeBottomSheet', () => {
     expect(screen.getByRole('textbox', { name: '선택한 월' })).toBe(input);
     expect(input).toHaveValue('6월');
     expect(scrollContainer.scrollTop).toBe(240);
+    expect(sheet).toHaveStyle({ height: '45dvh' });
+
+    fireEvent.scroll(scrollContainer);
+    fireEvent.scroll(scrollContainer);
+    expect(sheet).toHaveStyle({ height: '45dvh' });
+
+    scrollContainer.scrollTop = 280;
+    fireEvent.scroll(scrollContainer);
+    expect(sheet).toHaveStyle({ height: 'calc(100dvh - 12px)' });
   });
 
   it('소비 기록 탭을 선택하면 페이지에서 전달한 소비내역을 표시한다', async () => {
@@ -305,6 +327,8 @@ describe('HomeBottomSheet', () => {
 
     expect(screen.getByRole('textbox', { name: '선택한 월' })).toHaveValue('6월');
     expect(scrollContainer.scrollTop).toBe(120);
+    fireEvent.scroll(scrollContainer);
+    expect(sheet).toHaveStyle({ height: '45dvh' });
   });
 
   it('기록 편집으로 언마운트된 뒤 돌아오면 소비 기록 탭과 탭별 스크롤을 복원한다', async () => {
@@ -430,7 +454,7 @@ describe('HomeBottomSheet', () => {
     scrollContainer.scrollTop = 33;
     fireEvent.scroll(scrollContainer);
 
-    expect(sheet).toHaveStyle({ height: '92dvh' });
+    expect(sheet).toHaveStyle({ height: 'calc(100dvh - 12px)' });
   });
 
   it('최대 높이의 콘텐츠 최상단에서 아래로 당기면 중간 높이로 축소한다', () => {
@@ -446,7 +470,7 @@ describe('HomeBottomSheet', () => {
       .parentElement as HTMLElement;
     const scrollContainer = sheet.lastElementChild as HTMLElement;
 
-    expect(sheet).toHaveStyle({ height: '92dvh' });
+    expect(sheet).toHaveStyle({ height: 'calc(100dvh - 12px)' });
     scrollContainer.scrollTop = 0;
     fireEvent.touchStart(scrollContainer, { touches: [{ clientY: 100 }] });
     fireEvent.touchMove(scrollContainer, { touches: [{ clientY: 165 }] });
@@ -957,10 +981,10 @@ describe('HomeBottomSheet', () => {
 
     fireEvent.click(handle);
 
-    expect(sheet).toHaveStyle({ height: '92dvh' });
+    expect(sheet).toHaveStyle({ height: 'calc(100dvh - 12px)' });
     expect(container.querySelector('[data-slot="overlay"]')).toHaveClass(
       'bg-neutral-900/20',
-      'z-0!'
+      'z-modal-backdrop'
     );
 
     fireEvent.click(handle);
@@ -971,7 +995,9 @@ describe('HomeBottomSheet', () => {
     fireEvent.click(handle);
 
     expect(sheet).not.toHaveClass('translate-y-full');
-    expect(sheet.style.height).toBe('calc(4.5rem + calc(6.5rem + env(safe-area-inset-bottom)))');
+    expect(sheet.style.height).toBe(
+      'calc(5.25rem + calc(6.5625rem + env(safe-area-inset-bottom)))'
+    );
     expect(container.querySelector('[data-slot="overlay"]')).not.toBeInTheDocument();
   });
 
