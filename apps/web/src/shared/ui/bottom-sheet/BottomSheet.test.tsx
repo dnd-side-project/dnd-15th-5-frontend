@@ -92,6 +92,31 @@ describe('BottomSheet', () => {
     expect(container.firstChild).toHaveStyle({ height: 'calc(100dvh - 96px)' });
   });
 
+  it('상단 경계가 있는 시트를 드래그할 때 허용된 높이를 기준으로 이동하고 스냅한다', () => {
+    const { flushAnimationFrames, restoreAnimationFrame } = mockAnimationFrameQueue();
+    const onSnapPointChange = jest.fn();
+    try {
+      const { container } = render(
+        <BottomSheet snapPoint="full" fullTopBoundaryPx={71} onSnapPointChange={onSnapPointChange}>
+          내용
+        </BottomSheet>
+      );
+      const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+      firePointerEvent(handle, 'pointerdown', 20);
+      firePointerEvent(document.body, 'pointermove', 50);
+      act(flushAnimationFrames);
+
+      expect(container.firstChild).toHaveStyle({ height: '699px' });
+
+      firePointerEvent(document.body, 'pointerup', 50);
+
+      expect(onSnapPointChange).toHaveBeenCalledWith('full');
+    } finally {
+      restoreAnimationFrame();
+    }
+  });
+
   it('접힘 단계가 있으면 아래로 드래그해도 최소 높이를 유지한다', () => {
     const { flushAnimationFrames, restoreAnimationFrame } = mockAnimationFrameQueue();
     const onSnapPointChange = jest.fn();
@@ -304,7 +329,7 @@ describe('BottomSheet', () => {
 
       expect(onExpand).toHaveBeenCalledTimes(expands ? 1 : 0);
       if (expands) {
-        fireEvent.click(handle);
+        fireEvent.click(handle, { detail: 1 });
         expect(onHandleClick).not.toHaveBeenCalled();
       }
     }
@@ -451,7 +476,30 @@ describe('BottomSheet', () => {
     restoreAnimationFrame();
   });
 
-  it('드래그 직후 발생한 click으로 높이 변경 콜백을 중복 호출하지 않는다', () => {
+  it.each([0, 1, 300])('드래그 후 %ims 지연된 클릭으로 높이를 중복 변경하지 않는다', (delayMs) => {
+    jest.useFakeTimers();
+    try {
+      const onHandleClick = jest.fn();
+      render(
+        <BottomSheet snapPoint="medium" onHandleClick={onHandleClick}>
+          내용
+        </BottomSheet>
+      );
+      const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+      firePointerEvent(handle, 'pointerdown', 500);
+      firePointerEvent(document.body, 'pointermove', 400);
+      firePointerEvent(document.body, 'pointerup', 400);
+      act(() => jest.advanceTimersByTime(delayMs));
+      fireEvent.click(handle, { detail: 1 });
+
+      expect(onHandleClick).not.toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('드래그 뒤 클릭이 발생하지 않았어도 다음 정상 탭은 처리한다', () => {
     const onHandleClick = jest.fn();
     render(
       <BottomSheet snapPoint="medium" onHandleClick={onHandleClick}>
@@ -463,9 +511,28 @@ describe('BottomSheet', () => {
     firePointerEvent(handle, 'pointerdown', 500);
     firePointerEvent(document.body, 'pointermove', 400);
     firePointerEvent(document.body, 'pointerup', 400);
-    fireEvent.click(handle);
+    firePointerEvent(handle, 'pointerdown', 400);
+    firePointerEvent(document.body, 'pointerup', 400);
+    fireEvent.click(handle, { detail: 1 });
 
-    expect(onHandleClick).not.toHaveBeenCalled();
+    expect(onHandleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('드래그 뒤에도 키보드·보조기술의 클릭은 허용한다', () => {
+    const onHandleClick = jest.fn();
+    render(
+      <BottomSheet snapPoint="medium" onHandleClick={onHandleClick}>
+        내용
+      </BottomSheet>
+    );
+    const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+    firePointerEvent(handle, 'pointerdown', 500);
+    firePointerEvent(document.body, 'pointermove', 400);
+    firePointerEvent(document.body, 'pointerup', 400);
+    fireEvent.click(handle, { detail: 0 });
+
+    expect(onHandleClick).toHaveBeenCalledTimes(1);
   });
 
   it('드래그를 놓으면 가장 가까운 단계로 스냅되고 onSnapPointChange를 호출한다', () => {
@@ -484,6 +551,38 @@ describe('BottomSheet', () => {
 
     expect(onSnapPointChange).toHaveBeenCalledWith('full');
   });
+
+  it.each([
+    { from: 'collapsed', distance: 65, to: 'medium' },
+    { from: 'medium', distance: 65, to: 'full' },
+    { from: 'full', distance: -65, to: 'medium' },
+    { from: 'medium', distance: -65, to: 'collapsed' },
+    { from: 'medium', distance: 64, to: 'medium' },
+    { from: 'collapsed', distance: 400, to: 'full' },
+  ] as const)(
+    '$from에서 손잡이를 $distance px 당기면 $to 단계로 이동한다',
+    ({ from, distance, to }) => {
+      const onSnapPointChange = jest.fn();
+      render(
+        <BottomSheet
+          snapPoint={from}
+          snapPoints={['collapsed', 'medium', 'full']}
+          collapsedHeight="200px"
+          fullTopBoundaryPx={71}
+          onSnapPointChange={onSnapPointChange}
+        >
+          내용
+        </BottomSheet>
+      );
+      const handle = screen.getByRole('button', { name: '바텀시트 높이 조절' });
+
+      firePointerEvent(handle, 'pointerdown', 500);
+      firePointerEvent(document.body, 'pointermove', 500 - distance);
+      firePointerEvent(document.body, 'pointerup', 500 - distance);
+
+      expect(onSnapPointChange).toHaveBeenCalledWith(to);
+    }
+  );
 
   it('핸들을 아래로 크게 드래그하면 숨김으로 스냅된다', () => {
     const onSnapPointChange = jest.fn();

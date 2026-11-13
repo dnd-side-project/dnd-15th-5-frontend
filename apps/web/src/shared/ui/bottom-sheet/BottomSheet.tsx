@@ -54,8 +54,9 @@ const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
  * 화면 하단에서 올라오는 공통 바텀시트입니다.
  *
  * 높이 단계(`snapPoint`)는 기본적으로 바깥에서 제어합니다(예: 다른 버튼 클릭으로 순환). 핸들을
- * 드래그하면 손가락을 따라 실시간으로 높이가 바뀌고, 손을 떼면 가장 가까운 단계로 스냅되면서
- * `onSnapPointChange`로 알립니다. 핸들에 포커스를 두고 위/아래 화살표 키를 누르면(`fitContent`가
+ * 드래그하면 손가락을 따라 실시간으로 높이가 바뀌고, 손을 떼면 가까운 단계로 스냅됩니다.
+ * 64px 넘게 당기면 당긴 방향으로 최소 한 단계 이동하며 `onSnapPointChange`로 알립니다.
+ * 핸들에 포커스를 두고 위/아래 화살표 키를 누르면(`fitContent`가
  * 아닐 때) 인접한 스냅 포인트로 바로 이동합니다. `fixed` 포지션이라 `mobile-frame` 유틸리티로
  * 모바일 프레임 폭에 맞춰 가운데 정렬됩니다.
  *
@@ -75,8 +76,7 @@ const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
  * @param props - 바텀시트 속성입니다.
  * @param props.snapPoint - 현재 높이 단계입니다(`full` | `large` | `medium` | `collapsed` | `hidden`).
  * @param props.snapPoints - 드래그를 놓았을 때 이동할 수 있는 단계입니다.
- * @param props.onSnapPointChange - 드래그를 놓아 스냅될 때 호출됩니다. 드래그가 끝난 위치와
- * 가장 가까운 단계로 알려줍니다.
+ * @param props.onSnapPointChange - 드래그 종료 높이와 당긴 방향으로 결정한 스냅 단계를 알립니다.
  * @param props.onHandleClick - 핸들을 클릭했을 때 호출됩니다. 클릭으로 단계를 순환시키는 등에 사용합니다.
  * @param props.onExpand - 콘텐츠 맞춤·접힘 시트의 콘텐츠를 위로 당겼을 때 실행할 동작입니다.
  * @param props.fitContent - `true`이면 콘텐츠 높이에 맞추고 내부 스크롤을 사용하지 않습니다.
