@@ -93,11 +93,11 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
                 aria-hidden={stepIndex !== currentStepIndex}
                 className="flex h-full min-w-full flex-col items-center overflow-hidden"
               >
-                <h1 className="relative z-10 min-h-17 shrink-0 whitespace-pre-line text-center text-heading-02-semibold text-neutral-700">
+                <h1 className="min-h-17 shrink-0 whitespace-pre-line text-center text-heading-02-semibold text-neutral-700">
                   {step.title}
                 </h1>
 
-                <div className="relative flex min-h-0 w-full flex-1 items-center justify-center">
+                <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
                   <OnboardingIllustration step={step.id} />
                 </div>
               </article>
@@ -106,7 +106,7 @@ export function OnboardingCarousel({ onBack, onComplete }: OnboardingCarouselPro
         </div>
       </section>
 
-      <div className="relative z-10 h-32.75 shrink-0 bg-neutral-00 px-5 pb-8">
+      <div className="h-32.75 shrink-0 bg-neutral-00 px-5 pb-8">
         <Button onClick={handlePrimaryAction}>{isLastStep ? '시작하기' : '다음으로'}</Button>
 
         <div className="mt-5 flex h-5 items-center justify-center">
