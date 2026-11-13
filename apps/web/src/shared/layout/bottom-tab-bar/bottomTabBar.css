@@ -17,7 +17,18 @@
   background-image: var(--background-image-record-glass);
 }
 
-/* NOTE: 유리 라이브러리의 기본 그림자는 제거하고 Figma의 표면 그림자만 적용한다. */
+/* NOTE: 기본 외부 그림자를 제거하고, 선택된 탭에는 별도 반사를 겹치지 않는다. */
 .bottom-tab-glass > div {
   box-shadow: none !important;
+}
+
+/* NOTE: 외부 그림자와 별개인 유리 표면의 안쪽 반사는 유지한다. */
+.bottom-tab-glass-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-index-bottom-navigation-highlight);
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--shadow-bottom-navigation-highlight);
 }

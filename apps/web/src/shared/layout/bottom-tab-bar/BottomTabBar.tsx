@@ -5,16 +5,37 @@ import { NavigationHomeIcon, NavigationAddIcon, NavigationReportIcon } from '@/s
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
 
-import type { ComponentType, SVGProps } from 'react';
+import type { ComponentProps, ComponentType, SVGProps } from 'react';
 
 import './bottomTabBar.css';
+
+const GLASS_BASE_PROPS = {
+  material: 'clear',
+  mobileFallback: 'svg',
+  quality: 'standard',
+  lensProfile: 'player',
+  dispersion: 50,
+  frost: 0,
+  saturation: 100,
+  glassColor: 'transparent',
+  borderColor: 'transparent',
+  background: 'transparent',
+  reveal: 'immediate',
+} satisfies ComponentProps<typeof LiquidGlass>;
+
+const SURFACE_GLASS_PROPS = {
+  ...GLASS_BASE_PROPS,
+  blur: 10,
+  iosMinBlur: 10,
+  lensOptions: { strength: 0.2, specular: 0.8, sheenAngle: -45 },
+} satisfies ComponentProps<typeof LiquidGlass>;
 
 /**
  * 하단 탭바가 차지하는 높이입니다. 탭바가 숨겨졌을 때(또는 탭바 위 다른 요소가 탭바와 겹치지
  * 않아야 할 때) 이 값을 그대로 오프셋으로 사용해, 탭바의 실제 패딩·아이콘 크기가 바뀌어도 두 곳이
- * 따로 어긋나지 않게 한다.
+ * 따로 어긋나지 않게 한다. 하단 여백 2rem과 캡슐 높이 4.5625rem을 합친 값이다.
  */
-export const BOTTOM_TAB_BAR_HEIGHT_CSS = 'calc(6.5rem + env(safe-area-inset-bottom))';
+export const BOTTOM_TAB_BAR_HEIGHT_CSS = 'calc(6.5625rem + env(safe-area-inset-bottom))';
 
 type TabNavLinkProps = {
   analyticsId: string;
@@ -37,13 +58,10 @@ function TabNavLink({ analyticsId, to, end, label, Icon, onClick }: TabNavLinkPr
     >
       {({ isActive }) => (
         <LiquidGlass
-          material="clear"
+          {...GLASS_BASE_PROPS}
           radius={300}
           blur={16}
           iosMinBlur={16}
-          mobileFallback="svg"
-          quality="standard"
-          lensProfile="player"
           lensOptions={{
             strength: 0.1,
             depth: 0.2,
@@ -53,14 +71,7 @@ function TabNavLink({ analyticsId, to, end, label, Icon, onClick }: TabNavLinkPr
             brightness: 0,
             sheenAngle: 0,
           }}
-          dispersion={50}
-          frost={0}
-          saturation={100}
-          glassColor="transparent"
-          borderColor="transparent"
-          background="transparent"
           effectMode={isActive ? 'auto' : 'off'}
-          reveal="immediate"
           className="bottom-tab-glass shrink-0"
           style={{ width: '4.375rem', height: '3.8125rem' }}
         >
@@ -109,22 +120,10 @@ export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
       style={{ minHeight: BOTTOM_TAB_BAR_HEIGHT_CSS }}
     >
       <LiquidGlass
-        material="clear"
+        {...SURFACE_GLASS_PROPS}
         radius={300}
-        blur={10}
-        iosMinBlur={10}
-        mobileFallback="svg"
-        quality="standard"
-        lensProfile="player"
-        lensOptions={{ strength: 0.2, depth: 0.4, specular: 0.8, sheenAngle: -45 }}
-        dispersion={50}
-        frost={0}
-        saturation={100}
-        glassColor="transparent"
-        borderColor="transparent"
-        background="transparent"
-        reveal="immediate"
-        className="bottom-tab-glass pointer-events-auto shrink-0 shadow-bottom-navigation"
+        lensOptions={{ ...SURFACE_GLASS_PROPS.lensOptions, depth: 0.4 }}
+        className="bottom-tab-glass bottom-tab-glass-surface pointer-events-auto shrink-0 shadow-bottom-navigation"
         style={{ width: '9.875rem', height: '4.5625rem' }}
       >
         {/* NOTE: WebGL이 glassColor를 자체 하이라이트로 대체하므로 Fill은 별도 배경으로 유지한다. */}
@@ -147,22 +146,10 @@ export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
       </LiquidGlass>
 
       <LiquidGlass
-        material="clear"
+        {...SURFACE_GLASS_PROPS}
         radius={31}
-        blur={10}
-        iosMinBlur={10}
-        mobileFallback="svg"
-        quality="standard"
-        lensProfile="player"
-        lensOptions={{ strength: 0.2, depth: 0.2259, specular: 0.8, sheenAngle: -45 }}
-        dispersion={50}
-        frost={0}
-        saturation={100}
-        glassColor="transparent"
-        borderColor="transparent"
-        background="transparent"
-        reveal="immediate"
-        className="bottom-tab-glass pointer-events-auto shrink-0 rounded-full shadow-bottom-navigation"
+        lensOptions={{ ...SURFACE_GLASS_PROPS.lensOptions, depth: 0.2259 }}
+        className="bottom-tab-glass bottom-tab-glass-surface pointer-events-auto shrink-0 rounded-full shadow-bottom-navigation"
         style={{ width: '3.8125rem', height: '3.8125rem' }}
       >
         <NavLink
