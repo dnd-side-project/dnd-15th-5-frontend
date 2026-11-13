@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 
 import RecordNavigationHeader from '@/features/record/components/RecordNavigationHeader';
 import VisitDateTimeSheet from '@/features/record/components/visit-date-time-sheet/VisitDateTimeSheet';
+import { useStickerRecordCategory } from '@/features/record/sticker/hooks/useStickerRecordCategory';
 import type { StickerRecordDraft } from '@/features/record/types';
 import { isValidStickerRecordShop } from '@/features/record/utils/createStickerConsumptionRequest';
 import { CalendarIcon, SearchIcon } from '@/shared/assets/icons';
@@ -100,10 +101,11 @@ export default function StickerRecordPreview({
   isCapturing = false,
 }: StickerRecordPreviewProps) {
   const isApp = isNativeApp();
-  const [photoCategory, setPhotoCategory] = useState<RecordCategory>(
-    initialDraft?.category ?? initialCategory
-  );
-  const category = defaultStickerCategory ?? photoCategory;
+  const [category, setCategory] = useStickerRecordCategory({
+    sticker,
+    stickerCategory: defaultStickerCategory,
+    initialCategory: initialDraft?.category ?? defaultStickerCategory ?? initialCategory,
+  });
   const [visitDateTime, setVisitDateTime] = useState(
     () => initialDraft?.visitDateTime ?? initialVisitDateTime ?? createInitialVisitDateTime()
   );
@@ -295,26 +297,18 @@ export default function StickerRecordPreview({
               </RecordField>
 
               <RecordField label="카테고리" required>
-                <div className="flex flex-wrap gap-2" inert={Boolean(defaultStickerCategory)}>
+                <div className="flex flex-wrap gap-2">
                   {RECORD_CATEGORIES.map((item) => (
                     <CategoryChip
                       key={item}
                       selected={category === item}
-                      aria-disabled={Boolean(defaultStickerCategory)}
-                      onSelectedChange={(selected) =>
-                        selected && !defaultStickerCategory && setPhotoCategory(item)
-                      }
+                      onSelectedChange={(selected) => selected && setCategory(item)}
                       className="h-8.5 px-4"
                     >
                       {item}
                     </CategoryChip>
                   ))}
                 </div>
-                {defaultStickerCategory && (
-                  <p className="mt-2 text-caption-01-regular text-neutral-500">
-                    카테고리를 바꾸려면 이미지 변경에서 다른 카테고리의 이모지를 선택해주세요.
-                  </p>
-                )}
               </RecordField>
 
               <RecordField label="금액">
