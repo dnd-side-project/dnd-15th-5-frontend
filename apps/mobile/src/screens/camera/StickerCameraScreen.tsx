@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import RecordExitConfirmDialog from '@/features/record/components/RecordExitConfirmDialog';
 import { finishStickerCapture, isStickerCaptureActive } from '@/native/sticker/captureStickerPhoto';
 import { prepareStickerPhoto } from '@/native/sticker/prepareStickerPhoto';
 import { CloseIcon } from '@/shared/assets/icons';
@@ -14,7 +15,11 @@ import type { BridgeResult } from '@chapchap/shared/bridge';
 
 /** REC_Take picture의 393×852 시안을 기준으로 구성한 스티커 전용 카메라입니다. */
 export default function StickerCameraScreen() {
-  const { captureId = '' } = useLocalSearchParams<{ captureId: string }>();
+  const { captureId = '', hasActiveRecord } = useLocalSearchParams<{
+    captureId: string;
+    hasActiveRecord?: string;
+  }>();
+  const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   const insets = useSafeAreaInsets();
   const camera = useRef<CameraView>(null);
   const mounted = useRef(false);
@@ -40,8 +45,12 @@ export default function StickerCameraScreen() {
   }, [captureId]);
 
   const handleClose = () => {
-    finishStickerCapture(captureId, { status: 'cancelled' });
+    finishStickerCapture(captureId, { status: 'closed' });
     router.back();
+  };
+  const handleRequestClose = () => {
+    if (hasActiveRecord === 'true') setIsExitConfirmOpen(true);
+    else handleClose();
   };
   const handleCapture = async () => {
     if (!camera.current || !isReady || processing.current) return;
@@ -85,7 +94,8 @@ export default function StickerCameraScreen() {
           촬영하기
         </Text>
         <Pressable
-          onPress={handleClose}
+          onPress={handleRequestClose}
+          disabled={isProcessing}
           accessibilityRole="button"
           accessibilityLabel="촬영 닫기"
           hitSlop={12}
@@ -148,6 +158,12 @@ export default function StickerCameraScreen() {
           <FlipIcon width={32} height={32} color="#ffffff" />
         </Pressable>
       </View>
+      {isExitConfirmOpen && (
+        <RecordExitConfirmDialog
+          onExit={handleClose}
+          onContinue={() => setIsExitConfirmOpen(false)}
+        />
+      )}
     </View>
   );
 }

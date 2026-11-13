@@ -57,7 +57,7 @@ export const BRIDGE_HANDLERS: BridgeHandlerMap = {
   },
   captureReceipt: () => openReceiptCamera(),
   scanReceipt: () => scanReceipt(),
-  captureStickerPhoto: () => captureStickerPhoto(),
+  captureStickerPhoto: (payload) => captureStickerPhoto(payload),
   getRefreshToken: async () => ({ refreshToken: await getRefreshToken() }),
   saveRefreshToken: async ({ refreshToken }) => {
     clearAccessToken();
