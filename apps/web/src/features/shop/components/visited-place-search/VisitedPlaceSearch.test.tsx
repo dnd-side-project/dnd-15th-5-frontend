@@ -156,7 +156,7 @@ describe('VisitedPlaceSearch', () => {
     expect(screen.queryByText('최근 검색어')).not.toBeInTheDocument();
   });
 
-  it('최근 검색어를 클릭하면 해당 검색어로 다시 검색한다', async () => {
+  it('최근 검색어를 클릭하면 입력만 채우고 Enter로 다시 검색한다', async () => {
     const user = userEvent.setup();
     render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);
 
@@ -170,10 +170,13 @@ describe('VisitedPlaceSearch', () => {
     await user.click(screen.getByRole('button', { name: '투썸' }));
 
     expect(input).toHaveValue('투썸');
+    expect(screen.queryByText('서울특별시 강남구 봉은사로 125 1층')).not.toBeInTheDocument();
+    await user.click(input);
+    await user.keyboard('{Enter}');
     expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
   });
 
-  it('같은 최근 검색어를 지웠다가 다시 클릭해도 재검색한다', async () => {
+  it('같은 최근 검색어를 지웠다가 다시 클릭해도 제출할 때 재검색한다', async () => {
     const user = userEvent.setup();
     render(<VisitedPlaceSearch onSelectPlace={jest.fn()} />);
 
@@ -192,6 +195,7 @@ describe('VisitedPlaceSearch', () => {
     await user.click(screen.getByRole('button', { name: '투썸' }));
 
     expect(input).toHaveValue('투썸');
+    await user.click(screen.getByRole('button', { name: '검색' }));
     expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
   });
 

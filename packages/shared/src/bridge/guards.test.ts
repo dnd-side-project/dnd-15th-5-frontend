@@ -1,6 +1,17 @@
 import { isBridgeEvent, isBridgeRequest, isBridgeResponse } from './guards';
 import { BRIDGE_MESSAGE_KIND } from './types';
 
+it('경로 이벤트의 화면 내부 뒤로가기 여부는 boolean만 허용한다', () => {
+  const event = { kind: 'event', type: 'routeChanged', payload: { pathname: '/home' } };
+  expect(isBridgeEvent(event)).toBe(true);
+  expect(isBridgeEvent({ ...event, payload: { pathname: '/home', canGoBackInPage: true } })).toBe(
+    true
+  );
+  expect(isBridgeEvent({ ...event, payload: { pathname: '/home', canGoBackInPage: 'true' } })).toBe(
+    false
+  );
+});
+
 describe('네이티브 ISNet 브릿지', () => {
   const payload = { requestId: 'photo-01', base64: 'cGhvdG8=', mimeType: 'image/png' };
   const request = { kind: 'request', id: 'native-01', type: 'removeStickerBackground', payload };

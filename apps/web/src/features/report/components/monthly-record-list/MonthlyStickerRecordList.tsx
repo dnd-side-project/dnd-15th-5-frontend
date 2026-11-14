@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { useFirstAvailableYearMonthQuery } from '@/features/report/apis/hooks/useFirstAvailableYearMonthQuery';
 import { useMonthlyStickerRecordsQuery } from '@/features/report/apis/hooks/useMonthlyStickerRecordsQuery';
@@ -6,8 +6,7 @@ import MonthlyRecordEmptyState from '@/features/report/components/common/Monthly
 import MonthPickerSheet from '@/features/report/components/common/MonthPickerSheet';
 import MonthSelector from '@/features/report/components/common/MonthSelector';
 import MonthlyStickerRecordListSkeleton from '@/features/report/components/monthly-record-list/MonthlyStickerRecordListSkeleton';
-import { formatAcquiredDateLabel } from '@/features/report/utils/monthlyStickerRecords';
-import { getStickerImages } from '@/shared/assets/images/stickers';
+import { formatStickerDateLabel } from '@/features/report/utils/monthlyStickerRecords';
 import type { YearMonth } from '@/shared/types/yearMonth';
 import { StateView } from '@/shared/ui/state-view';
 import { StickerCollection } from '@/shared/ui/sticker-collection';
@@ -32,15 +31,7 @@ export default function MonthlyStickerRecordList({ headerContent }: MonthlyStick
   const stickerRecordsQuery = useMonthlyStickerRecordsQuery(selectedMonth);
   const firstAvailableYearMonthQuery = useFirstAvailableYearMonthQuery();
   const isPastMonth = isBeforeMonth(selectedMonth, currentMonth);
-  const recordGroups = useMemo(
-    () =>
-      (stickerRecordsQuery.data ?? []).flatMap((recordGroup) => {
-        const stickerImages = getStickerImages(recordGroup.monthlyStickers);
-
-        return stickerImages.length > 0 ? [{ ...recordGroup, stickerImages }] : [];
-      }),
-    [stickerRecordsQuery.data]
-  );
+  const recordGroups = stickerRecordsQuery.data ?? [];
   const selectableMonths = createYearMonthRange(
     currentMonth,
     firstAvailableYearMonthQuery.data ?? currentMonth
@@ -89,22 +80,19 @@ export default function MonthlyStickerRecordList({ headerContent }: MonthlyStick
           />
         ) : recordGroups.length > 0 ? (
           <div className="flex flex-col gap-6.75 pb-page-bottom">
-            {recordGroups.map(({ acquiredDate, stickerImages }) => {
-              const acquiredDateLabel = formatAcquiredDateLabel(acquiredDate);
+            {recordGroups.map(({ date, stickerImages }) => {
+              const dateLabel = formatStickerDateLabel(date);
 
               return (
-                <section
-                  key={acquiredDate}
-                  aria-labelledby={`monthly-sticker-record-${acquiredDate}`}
-                >
+                <section key={date} aria-labelledby={`monthly-sticker-record-${date}`}>
                   <h2
-                    id={`monthly-sticker-record-${acquiredDate}`}
+                    id={`monthly-sticker-record-${date}`}
                     className="mb-2 text-body-01-semibold text-neutral-900"
                   >
-                    {acquiredDateLabel}
+                    {dateLabel}
                   </h2>
                   <StickerCollection
-                    ariaLabel={`${acquiredDateLabel}에 받은 스티커`}
+                    ariaLabel={`${dateLabel}에 받은 스티커`}
                     size="compact"
                     stickers={stickerImages}
                   />

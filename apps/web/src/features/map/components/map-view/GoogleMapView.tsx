@@ -33,6 +33,7 @@ export default function GoogleMapView({
   const [showLocationError, setShowLocationError] = useState(false);
   const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
+  const showRecommendation = useHomeBottomSheetStore((state) => state.showRecommendation);
   const mapCenter = useMapViewportStore((state) => state.center);
   const setMapCenter = useMapViewportStore((state) => state.setCenter);
   const updateSelectionAddress = useMapSelectionAddress();
@@ -57,6 +58,10 @@ export default function GoogleMapView({
 
   const handleMapClick = () => {
     setShowLocationError(false);
+    if (activeSheetType === 'recommendationPlace') {
+      showRecommendation();
+      return;
+    }
     if (activeSheetType === 'selectedPlace' || activeSheetType === 'likedRecommendation') {
       showHome();
     }
@@ -95,14 +100,16 @@ export default function GoogleMapView({
           <RecommendationMapMarkers />
         </>
       )}
-      {!isSelectingLocation && (
-        <CurrentLocationButton
-          position={position}
-          isLoading={isLoading}
-          errorMessage={showLocationError ? locationErrorMessage : null}
-          onRequestPosition={handleCurrentPositionRequest}
-        />
-      )}
+      {!isSelectingLocation &&
+        activeSheetType !== 'recommendation' &&
+        activeSheetType !== 'recommendationPlace' && (
+          <CurrentLocationButton
+            position={position}
+            isLoading={isLoading}
+            errorMessage={showLocationError ? locationErrorMessage : null}
+            onRequestPosition={handleCurrentPositionRequest}
+          />
+        )}
     </Map>
   );
 }

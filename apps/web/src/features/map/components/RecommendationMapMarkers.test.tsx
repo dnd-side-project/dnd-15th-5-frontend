@@ -5,6 +5,7 @@ import { useNearbyPlaceRecommendationsQuery } from '../apis/hooks/useNearbyPlace
 import { useVisitedPlaceStickersQuery } from '../apis/hooks/useVisitedPlaceStickersQuery';
 import { mockGoogleMapsIdleEvent } from '../googleMapsEventMock';
 import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
+import { useLocationSelectionStore } from '../stores/locationSelectionStore';
 import { useMapCategoryFilterStore } from '../stores/mapCategoryFilterStore';
 import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
 import { TEST_SHOP_RECOMMENDATIONS } from '../testFixtures';
@@ -21,6 +22,36 @@ jest.mock('../apis/hooks/useNearbyPlaceRecommendationsQuery');
 jest.mock('../apis/hooks/useVisitedPlaceStickersQuery');
 
 jest.mock('@/shared/assets/icons', () => ({
+  ShoppingPinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="shopping-active" {...props} />
+  ),
+  ShoppingPinIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="shopping-default" {...props} />
+  ),
+  BeautyPinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="beauty-active" {...props} />
+  ),
+  BeautyPinIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="beauty-default" {...props} />
+  ),
+  ExercisePinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="exercise-active" {...props} />
+  ),
+  ExercisePinIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="exercise-default" {...props} />
+  ),
+  MarketPinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="market-active" {...props} />
+  ),
+  MarketPinIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="market-default" {...props} />
+  ),
+  OtherPinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="other-active" {...props} />
+  ),
+  OtherPinIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="other-default" {...props} />
+  ),
   CafePinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
     <svg data-marker-icon="cafe-active" {...props} />
   ),
@@ -45,6 +76,9 @@ jest.mock('@/shared/assets/icons', () => ({
   RestaurantPinIcon: (props: SVGProps<SVGSVGElement>) => (
     <svg data-marker-icon="restaurant-default" {...props} />
   ),
+  RecommendationLocationPinIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="recommendation-fallback" {...props} />
+  ),
 }));
 
 const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
@@ -55,8 +89,9 @@ jest.mock('@vis.gl/react-google-maps', () => ({
     children,
     onClick,
     title,
-  }: PropsWithChildren<{ onClick?: () => void; title?: string }>) => (
-    <button type="button" aria-label={title} onClick={onClick}>
+    anchorTop,
+  }: PropsWithChildren<{ onClick?: () => void; title?: string; anchorTop?: string }>) => (
+    <button type="button" aria-label={title} data-anchor-top={anchorTop} onClick={onClick}>
       {children}
     </button>
   ),
@@ -70,8 +105,11 @@ describe('RecommendationMapMarkers', () => {
     mockGoogleMapsIdleEvent();
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
     useMapCategoryFilterStore.setState({ selectedCategory: null });
+    useLocationSelectionStore.setState({ confirmedPosition: { lat: 37.5665, lng: 126.978 } });
     useShopRecommendationStore.setState({
       activeRecommendationId: null,
+      selectedCategory: null,
+      listScrollTop: 0,
     });
     mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
       recommendations: TEST_SHOP_RECOMMENDATIONS,
@@ -81,7 +119,7 @@ describe('RecommendationMapMarkers', () => {
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
   });
 
-  it('좋아요하지 않은 추천 가게는 지원하는 카테고리만 마커를 표시한다', () => {
+  it('추천 가게는 각 카테고리 핀을 표시한다', () => {
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
     const restaurantRecommendation = {
       ...recommendation,
@@ -128,9 +166,27 @@ describe('RecommendationMapMarkers', () => {
       screen.getByRole('button', { name: '플레이 다트펍 추천 마커' }).firstElementChild
     ).toHaveAttribute('data-marker-icon', 'like-default');
     expect(
-      screen.queryByRole('button', { name: '추천 운동 시설 추천 마커' })
-    ).not.toBeInTheDocument();
+      screen.getByRole('button', { name: '추천 운동 시설 추천 마커' }).firstElementChild
+    ).toHaveAttribute('data-marker-icon', 'exercise-default');
   });
+
+  it.each(['recommendation', 'recommendationPlace'] as const)(
+    '확정한 동네가 없으면 %s 화면에서 캐시된 추천 마커를 표시하지 않는다',
+    (sheetType) => {
+      const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+      useLocationSelectionStore.setState({ confirmedPosition: null });
+      if (sheetType === 'recommendationPlace') {
+        useHomeBottomSheetStore.getState().showRecommendationPlace(recommendation.id);
+      } else {
+        useHomeBottomSheetStore.getState().showRecommendation();
+      }
+
+      render(<RecommendationMapMarkers />);
+
+      expect(mockedUseNearbyPlaceRecommendationsQuery).toHaveBeenLastCalledWith(false);
+      expect(screen.queryAllByRole('button')).toHaveLength(0);
+    }
+  );
 
   it('가게 추천 탭을 활성화하지 않으면 추천 마커를 표시하지 않는다', () => {
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
@@ -142,7 +198,98 @@ describe('RecommendationMapMarkers', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('추천 캐러셀에서 선택한 가게를 활성 카테고리 핀으로 표시한다', () => {
+  it.each([
+    ['운동', 'exercise'],
+    ['편의점/마트', 'market'],
+    ['미용/뷰티', 'beauty'],
+    ['기타', 'other'],
+    ['쇼핑', 'shopping'],
+  ] as const)('%s 핀을 선택하면 해당 선택 핀과 상세 시트를 표시한다', async (category, icon) => {
+    const user = userEvent.setup();
+    const recommendation = {
+      ...TEST_SHOP_RECOMMENDATIONS[0]!,
+      isLiked: false,
+      place: {
+        ...TEST_SHOP_RECOMMENDATIONS[0]!.place,
+        category,
+      },
+    };
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: [recommendation],
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    useHomeBottomSheetStore.getState().showRecommendation();
+
+    render(<RecommendationMapMarkers />);
+
+    const marker = screen.getByRole('button', {
+      name: `${recommendation.place.name} 추천 마커`,
+    });
+    expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', `${icon}-default`);
+    expect(marker.firstElementChild).toHaveAttribute('data-state', 'default');
+    await user.click(marker);
+
+    expect(marker).toHaveAccessibleName(`${recommendation.place.name} 추천 마커, 선택됨`);
+    expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', `${icon}-active`);
+    expect(marker.firstElementChild).toHaveAttribute('data-state', 'active');
+    expect(moveCamera).toHaveBeenCalledWith({ center: recommendation.position, zoom: 15 });
+    expect(panBy).toHaveBeenCalledWith(0, expect.any(Number));
+    expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(recommendation.id);
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+      type: 'recommendationPlace',
+      recommendationId: recommendation.id,
+    });
+  });
+
+  it('추천 목록과 상세는 무관한 좋아요 마커를 제외하고 추천 전용 카테고리 필터를 적용한다', async () => {
+    const user = userEvent.setup();
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    const unrelatedLikedRecommendation = {
+      ...recommendation,
+      id: 'unrelated-liked',
+      isLiked: true,
+      place: { ...recommendation.place, id: 'unrelated-place', name: '목록 밖 관심 카페' },
+    };
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      likedRecommendations: [unrelatedLikedRecommendation],
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+    useMapCategoryFilterStore.setState({ selectedCategory: '음식점' });
+    useShopRecommendationStore.setState({ selectedCategory: '카페' });
+    useHomeBottomSheetStore.getState().showRecommendation();
+
+    render(<RecommendationMapMarkers />);
+
+    const marker = screen.getByRole('button', {
+      name: `${recommendation.place.name} 추천 마커`,
+    });
+    expect(screen.getAllByRole('button')).toHaveLength(
+      TEST_SHOP_RECOMMENDATIONS.filter(({ place }) => place.category === '카페').length
+    );
+    expect(
+      screen.queryByRole('button', { name: '목록 밖 관심 카페 추천 마커' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: '플레이 다트펍 추천 마커' })
+    ).not.toBeInTheDocument();
+    await user.click(marker);
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+      type: 'recommendationPlace',
+      recommendationId: recommendation.id,
+    });
+    expect(
+      screen.queryByRole('button', { name: '목록 밖 관심 카페 추천 마커' })
+    ).not.toBeInTheDocument();
+
+    act(() => useShopRecommendationStore.getState().setSelectedCategory('취미/놀거리'));
+    expect(
+      screen.queryByRole('button', { name: `${recommendation.place.name} 추천 마커, 선택됨` })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '플레이 다트펍 추천 마커' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toHaveLength(
+      TEST_SHOP_RECOMMENDATIONS.filter(({ place }) => place.category === '취미/놀거리').length
+    );
+  });
+
+  it('추천 목록에서 선택한 가게를 활성 카테고리 핀으로 표시한다', () => {
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
     useHomeBottomSheetStore.getState().showRecommendation();
     useShopRecommendationStore.setState({ activeRecommendationId: recommendation.id });
@@ -155,8 +302,28 @@ describe('RecommendationMapMarkers', () => {
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'cafe-active');
     expect(marker.firstElementChild).toHaveClass('h-18', 'w-14');
     expect(marker.firstElementChild).toHaveAttribute('data-state', 'active');
+    expect(marker).toHaveAttribute('data-anchor-top', '-58px');
     expect(moveCamera).toHaveBeenCalledWith({ center: recommendation.position, zoom: 15 });
     expect(panBy).toHaveBeenCalledWith(0, expect.any(Number));
+  });
+
+  it('상세로 직접 진입하고 추천 응답이 늦게 도착해도 선택한 가게를 포커스한다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    useHomeBottomSheetStore.getState().showRecommendationPlace(recommendation.id);
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: [],
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    const { rerender } = render(<RecommendationMapMarkers />);
+    expect(moveCamera).not.toHaveBeenCalled();
+
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: [recommendation],
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    rerender(<RecommendationMapMarkers />);
+    expect(moveCamera).toHaveBeenCalledTimes(1);
+    expect(moveCamera).toHaveBeenCalledWith({ center: recommendation.position, zoom: 15 });
+    rerender(<RecommendationMapMarkers />);
+    expect(moveCamera).toHaveBeenCalledTimes(1);
   });
 
   it('지도 이동으로 추천 목록이 갱신돼도 같은 카드를 다시 포커스하지 않고 다음 카드 선택 시 포커스한다', () => {
@@ -227,7 +394,10 @@ describe('RecommendationMapMarkers', () => {
     await user.click(marker);
 
     expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(recommendation.id);
-    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'recommendation' });
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+      type: 'recommendationPlace',
+      recommendationId: recommendation.id,
+    });
     expect(marker).toHaveAccessibleName(`${recommendation.place.name} 추천 마커, 선택됨`);
     expect(marker.firstElementChild).toHaveAttribute('data-marker-icon', 'cafe-active');
     expect(marker.firstElementChild).toHaveClass('h-18', 'w-14');
@@ -276,7 +446,7 @@ describe('RecommendationMapMarkers', () => {
     expect(panBy).toHaveBeenCalledWith(0, expect.any(Number));
     expect(useShopRecommendationStore.getState().activeRecommendationId).toBe(recommendation.id);
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
-      type: 'likedRecommendation',
+      type: 'recommendationPlace',
       recommendationId: recommendation.id,
     });
     expect(marker).toHaveAccessibleName(`${recommendation.place.name} 추천 마커, 선택됨`);

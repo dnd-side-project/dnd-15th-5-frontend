@@ -6,19 +6,12 @@ describe('mapCurrentStatusToReportPageData', () => {
       {
         date: '2026-08-20',
         monthlyCount: 7,
-        monthlyStickers: [
-          { itemName: '커피' },
-          { itemName: '피자' },
-          { itemName: '다트' },
-          { itemName: '아이스크림' },
-          { itemName: 'LP' },
-          { itemName: '도넛' },
-          { itemName: '마이크' },
-        ],
         recentDiscoveryMessage: '밤 활동 비중이 늘었어요',
         weeklyCounts: [1, 0, 2, 0, 3, 0, 0],
       },
-      '2026-08'
+      '2026-08',
+      new Date(2026, 7, 20),
+      Array.from({ length: 7 }, (_, index) => `sticker-${index}.png`)
     );
 
     expect(report.monthLabel).toBe('8월');
@@ -53,17 +46,10 @@ describe('mapCurrentStatusToReportPageData', () => {
       {
         date: '2026-08-20',
         monthlyCount: 7,
-        monthlyStickers: [
-          { itemName: '커피' },
-          { itemName: '피자' },
-          { itemName: '다트' },
-          { itemName: '아이스크림' },
-          { itemName: 'LP' },
-          { itemName: '도넛' },
-          { itemName: '스페셜' },
-        ],
       },
-      '2026-08'
+      '2026-08',
+      new Date(2026, 7, 20),
+      Array.from({ length: 6 }, (_, index) => `sticker-${index}.png`)
     );
 
     expect(report.monthlyStickerImages).toHaveLength(5);

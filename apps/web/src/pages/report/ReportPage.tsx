@@ -18,7 +18,15 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { StateView } from '@/shared/ui/state-view';
 
 export default function ReportPage() {
-  const { data: report, hasReportError, isPending, refetch } = useCurrentReportQuery();
+  const {
+    data: report,
+    hasReportError,
+    hasStickerError,
+    isPending,
+    isStickerPending,
+    refetch,
+    refetchStickers,
+  } = useCurrentReportQuery();
 
   if (hasReportError) {
     return (
@@ -46,8 +54,8 @@ export default function ReportPage() {
   } = report;
 
   return (
-    <main aria-busy={isPending} className="overflow-hidden">
-      {isPending && (
+    <main aria-busy={isPending || isStickerPending} className="overflow-hidden">
+      {(isPending || isStickerPending) && (
         <span className="sr-only" role="status">
           리포트를 불러오는 중입니다.
         </span>
@@ -97,8 +105,18 @@ export default function ReportPage() {
               </>
             }
           >
-            {isPending ? (
+            {isStickerPending ? (
               <ReportContentSkeleton variant="stickers" />
+            ) : hasStickerError ? (
+              <StateView
+                actionLabel="다시 불러오기"
+                className="py-4"
+                description="잠시 후 다시 시도해주세요."
+                headingAs="h3"
+                onAction={() => void refetchStickers()}
+                title="스티커를 불러오지 못했어요"
+                variant="error"
+              />
             ) : (
               <MonthlyStickerSummary
                 additionalCount={monthlyAdditionalStickerCount}

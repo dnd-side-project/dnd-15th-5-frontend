@@ -1,3 +1,4 @@
+import { useMonthlyStickerRecordsQuery } from '@/features/report/apis/hooks/useMonthlyStickerRecordsQuery';
 import { useGetCurrentStatus } from '@/features/report/apis/queries';
 import {
   formatDateYearMonth,
@@ -8,19 +9,24 @@ import {
 export const useCurrentReportQuery = () => {
   const currentDate = new Date();
   const yearMonth = formatDateYearMonth(currentDate);
-  const query = useGetCurrentStatus(
-    { yearMonth },
-    {
-      query: {
-        select: ({ data }) => mapCurrentStatusToReportPageData(data, yearMonth, currentDate),
-      },
-    }
-  );
+  const query = useGetCurrentStatus({ yearMonth });
+  const stickerQuery = useMonthlyStickerRecordsQuery({
+    year: currentDate.getFullYear(),
+    month: currentDate.getMonth() + 1,
+  });
   const hasReportError = query.isError && query.data === undefined;
 
   return {
     ...query,
-    data: query.data ?? mapCurrentStatusToReportPageData(undefined, yearMonth, currentDate),
+    data: mapCurrentStatusToReportPageData(
+      query.data?.data,
+      yearMonth,
+      currentDate,
+      (stickerQuery.data ?? []).flatMap(({ stickerImages }) => stickerImages)
+    ),
+    isStickerPending: stickerQuery.isPending,
+    hasStickerError: stickerQuery.isError && stickerQuery.data === undefined,
+    refetchStickers: stickerQuery.refetch,
     hasReportError,
   };
 };

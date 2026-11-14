@@ -68,10 +68,10 @@ export const getStartQueryOptions = <
     start(provider, params, requestOptions, signal);
 
   return {
-    queryKey,
     queryFn,
     enabled: provider !== null && provider !== undefined,
     ...queryOptions,
+    queryKey,
   } as UseQueryOptions<Awaited<ReturnType<typeof start>>, TError, TData> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
@@ -276,10 +276,10 @@ export const getCompleteSocialOAuthQueryOptions = <
     completeSocialOAuth(provider, params, requestOptions, signal);
 
   return {
-    queryKey,
     queryFn,
     enabled: provider !== null && provider !== undefined,
     ...queryOptions,
+    queryKey,
   } as UseQueryOptions<Awaited<ReturnType<typeof completeSocialOAuth>>, TError, TData> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };

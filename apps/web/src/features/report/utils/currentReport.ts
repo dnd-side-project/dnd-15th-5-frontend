@@ -2,7 +2,6 @@ import { SUNDAY_FIRST_WEEKDAY_LABELS } from '@chapchap/shared/common/constants';
 
 import type { CurrentStatusResponse } from '@/features/report/apis/dto';
 import type { WeeklyRecord } from '@/features/report/types';
-import { getStickerImages } from '@/shared/assets/images/stickers';
 
 const DAYS_IN_WEEK = 7;
 const MAX_VISIBLE_STICKERS = 5;
@@ -92,30 +91,25 @@ const formatWeeklyPeriod = (weeklyRecords: readonly WeeklyRecord[]) => {
 };
 
 /**
- * 현재 리포트 API 필드를 유지하면서 메인 화면에 필요한 파생 표시값을 추가합니다.
+ * 현재 리포트 현황과 스티커보드 이미지로 메인 화면 표시값을 만듭니다.
  * 스티커는 최대 5개까지만 이미지로 노출하고 나머지는 추가 개수로 집계합니다.
  */
 export const mapCurrentStatusToReportPageData = (
   status: CurrentStatusResponse | undefined,
   requestedYearMonth: string,
-  fallbackDate = new Date()
+  fallbackDate = new Date(),
+  stickerImages: readonly string[] = []
 ) => {
   const statusDate = parseStatusDate(status?.date, requestedYearMonth, fallbackDate);
   const weeklyRecords = createWeeklyRecords(statusDate, status?.weeklyCounts ?? []);
-  const supportedStickerImages = getStickerImages(status?.monthlyStickers ?? []);
-  const monthlyStickerImages = supportedStickerImages.slice(0, MAX_VISIBLE_STICKERS);
+  const monthlyStickerImages = stickerImages.slice(0, MAX_VISIBLE_STICKERS);
 
   return {
-    ...status,
     date: status?.date ?? formatDateValue(statusDate),
     monthLabel: `${statusDate.getMonth() + 1}월`,
     monthlyCount: status?.monthlyCount ?? 0,
-    monthlyAdditionalStickerCount: Math.max(
-      supportedStickerImages.length - monthlyStickerImages.length,
-      0
-    ),
+    monthlyAdditionalStickerCount: Math.max(stickerImages.length - monthlyStickerImages.length, 0),
     monthlyStickerImages,
-    monthlyStickers: status?.monthlyStickers ?? [],
     recentDiscoveryMessage: status?.recentDiscoveryMessage?.trim() ?? '',
     weeklyCounts: status?.weeklyCounts ?? [],
     weeklyPeriodLabel: formatWeeklyPeriod(weeklyRecords),

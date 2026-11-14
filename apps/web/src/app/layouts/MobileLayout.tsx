@@ -1,9 +1,12 @@
+import { NATIVE_PAGE_BACK_EVENT } from '@chapchap/shared/bridge';
 import { useEffect } from 'react';
 import { matchPath, Outlet, useLocation } from 'react-router-dom';
 
 import AnalyticsIdentity from '@/app/providers/AnalyticsIdentity';
 import AnalyticsTracker from '@/app/providers/AnalyticsTracker';
+import MapSessionBoundary from '@/app/providers/MapSessionBoundary';
 import ScrollToTop from '@/app/routes/ScrollToTop';
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import { notifyNative } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
@@ -22,6 +25,10 @@ type MobileLayoutProps = PropsWithChildren;
  */
 export default function MobileLayout({ children }: MobileLayoutProps) {
   const { pathname } = useLocation();
+  const activeSheetType = useHomeBottomSheetStore((state) => state.activeSheet.type);
+  const canGoBackInPage =
+    pathname === ROUTE_PATHS.home &&
+    (activeSheetType === 'recommendation' || activeSheetType === 'recommendationPlace');
   const isEditRecord = Boolean(matchPath(ROUTE_PATTERNS.editRecord, pathname));
   const isShopDetail = Boolean(matchPath(ROUTE_PATTERNS.shopDetail, pathname));
   const isSharedReport = Boolean(matchPath(ROUTE_PATTERNS.sharedReport, pathname));
@@ -36,7 +43,21 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   useEffect(() => {
     // 모바일은 현재 경로를 기준으로 지도 화면의 edge-to-edge와 뒤로가기를 처리합니다.
     // 일반 브라우저에서는 ReactNativeWebView가 없어 전송 없이 종료된다.
-    notifyNative('routeChanged', { pathname });
+    notifyNative('routeChanged', {
+      pathname,
+      ...(canGoBackInPage ? { canGoBackInPage: true } : {}),
+    });
+  }, [pathname, canGoBackInPage]);
+
+  useEffect(() => {
+    if (pathname !== ROUTE_PATHS.home) return;
+    const handlePageBack = () => {
+      const store = useHomeBottomSheetStore.getState();
+      if (store.activeSheet.type === 'recommendationPlace') store.showRecommendation();
+      else if (store.activeSheet.type === 'recommendation') store.showHome();
+    };
+    window.addEventListener(NATIVE_PAGE_BACK_EVENT, handlePageBack);
+    return () => window.removeEventListener(NATIVE_PAGE_BACK_EVENT, handlePageBack);
   }, [pathname]);
 
   return (
@@ -52,7 +73,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
             !usesOwnBottomSafeArea && 'pb-safe-bottom'
           )}
         >
-          {children ?? <Outlet />}
+          <MapSessionBoundary>{children ?? <Outlet />}</MapSessionBoundary>
         </div>
       </div>
     </RouteHistoryProvider>

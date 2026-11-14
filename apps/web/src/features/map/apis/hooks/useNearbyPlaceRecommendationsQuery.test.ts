@@ -29,11 +29,14 @@ describe('useNearbyPlaceRecommendationsQuery', () => {
 
     renderHook(() => useNearbyPlaceRecommendationsQuery());
 
-    expect(mockedUseGetNearbyPlaces).toHaveBeenLastCalledWith({
-      lat: 37.559334,
-      lng: 126.990298,
-      radiusMeters: 1_500,
-    });
+    expect(mockedUseGetNearbyPlaces).toHaveBeenLastCalledWith(
+      {
+        lat: 37.559334,
+        lng: 126.990298,
+        radiusMeters: 1_500,
+      },
+      undefined
+    );
   });
 
   it('카테고리별 추천과 전체 추천을 중복 없이 기존 지도 모델로 변환한다', () => {
@@ -70,11 +73,14 @@ describe('useNearbyPlaceRecommendationsQuery', () => {
     });
     rerender();
 
-    expect(mockedUseGetNearbyPlaces).toHaveBeenLastCalledWith({
-      lat: 37.545,
-      lng: 127.056,
-      radiusMeters: 1_500,
-    });
+    expect(mockedUseGetNearbyPlaces).toHaveBeenLastCalledWith(
+      {
+        lat: 37.545,
+        lng: 127.056,
+        radiusMeters: 1_500,
+      },
+      undefined
+    );
   });
 
   it.each([

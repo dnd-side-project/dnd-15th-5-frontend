@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useRecommendationNeighborhood } from '@/features/map/apis/hooks/useRecommendationNeighborhood';
 import { useHomeBottomSheetTabs } from '@/features/map/hooks/useHomeBottomSheetTabs';
 import { useHomeSheetTopBoundary } from '@/features/map/hooks/useHomeSheetTopBoundary';
 import { useSelectedPlaceExpandTransition } from '@/features/map/hooks/useSelectedPlaceExpandTransition';
@@ -19,7 +20,8 @@ import { SegmentedToggle } from '@/shared/ui/segmented-toggle';
 import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from '@/shared/ui/toast';
 
 import LikedRecommendationSheet from './liked-places/LikedRecommendationSheet';
-import ShopRecommendationSheet from './ShopRecommendationSheet';
+import RecommendationPlaceSheet from './RecommendationPlaceSheet';
+import { RecommendationContent } from './ShopRecommendationSheet';
 
 import type { ReactNode, UIEvent } from 'react';
 
@@ -44,6 +46,7 @@ const HOME_SHEET_SNAP_POINTS = ['collapsed', 'medium', 'full'] as const;
 // NOTE: 핸들·탭 영역 72px 아래에 떠 있는 네비게이션 캡슐과 12px 간격을 두고, Safe Area를 확보한다.
 const COLLAPSED_SHEET_HEIGHT_CSS = `calc(4.5rem + 0.75rem + ${BOTTOM_TAB_BAR_HEIGHT_CSS})`;
 const AUTO_EXPAND_SCROLL_THRESHOLD_PX = 32;
+const TOP_ACTION_TO_SHEET_GAP_PX = 12;
 
 type ModalSheetContentProps = {
   ariaLabel: string;
@@ -76,6 +79,8 @@ function getSheetTransitionKey(activeSheet: HomeBottomSheetContent): string {
   switch (activeSheet.type) {
     case 'likedRecommendation':
       return `likedRecommendation:${activeSheet.recommendationId}`;
+    case 'recommendationPlace':
+      return `recommendationPlace:${activeSheet.recommendationId}`;
     case 'recommendation':
       return 'recommendation';
     case 'selectedPlace':
@@ -152,10 +157,36 @@ export default function HomeBottomSheet({
   const advance = useHomeBottomSheetStore((state) => state.advance);
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
+  const topActionBottomPx = useHomeBottomSheetStore((state) => state.topActionBottomPx);
   const setVisibleHeight = useHomeBottomSheetStore((state) => state.setVisibleHeight);
   const snapPoint = getHomeBottomSheetSnapPoint(stepIndex);
+  const [recommendationSnapPoint, setRecommendationSnapPoint] =
+    useState<BottomSheetSnapPoint>('medium');
+  const isRecommendationList = activeSheet.type === 'recommendation';
+  const neighborhood = useRecommendationNeighborhood({ enabled: isRecommendationList });
+  const isRecommendationCard = isRecommendationList && !neighborhood.hasNeighborhood;
+  const recommendationCardRef = useRef<HTMLElement>(null);
+  const isRecommendationDetail = activeSheet.type === 'recommendationPlace';
+  const isRecommendationFlow = isRecommendationList || isRecommendationDetail;
+  const closeRecommendationSheet = () => {
+    if (isRecommendationDetail) useHomeBottomSheetStore.getState().showRecommendation();
+    else showHome();
+  };
+  // NOTE: 추천 시트는 상단 닫기·뒤로 가기 버튼에 접근할 수 있도록 포커스를 가두지 않고 Escape만 연결한다.
+  useEffect(() => {
+    if (!isRecommendationFlow) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      const store = useHomeBottomSheetStore.getState();
+      if (store.activeSheet.type === 'recommendationPlace') store.showRecommendation();
+      else store.showHome();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isRecommendationFlow]);
   const { topSafeAreaRef, fullTopBoundaryPx } = useHomeSheetTopBoundary();
   const isCollapsed = activeSheet.type === 'home' && snapPoint === 'collapsed';
+
   const {
     tab,
     contentRootRef,
@@ -192,6 +223,22 @@ export default function HomeBottomSheet({
     [setVisibleHeight]
   );
 
+  useEffect(() => {
+    if (!isRecommendationCard) return;
+    const card = recommendationCardRef.current;
+    if (!card) return;
+    const measure = () =>
+      handleVisibleHeightChange(window.innerHeight - card.getBoundingClientRect().top);
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(card);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+      handleVisibleHeightChange(0);
+    };
+  }, [isRecommendationCard, handleVisibleHeightChange]);
   const handleHomeSheetExpand = () => {
     requestTabFocusRestoration();
     setSnapPoint('medium');
@@ -284,7 +331,15 @@ export default function HomeBottomSheet({
     key: 'home',
   };
 
-  if (activeSheet.type === 'likedRecommendation') {
+  if (activeSheet.type === 'recommendationPlace') {
+    sheetPresentation = {
+      ariaLabel: '추천 가게 상세',
+      content: <RecommendationPlaceSheet placeId={activeSheet.recommendationId} />,
+      contentClassName: 'pt-6 pb-[max(2rem,env(safe-area-inset-bottom))]',
+      isModal: true,
+      key: getSheetTransitionKey(activeSheet),
+    };
+  } else if (activeSheet.type === 'likedRecommendation') {
     sheetPresentation = {
       ariaLabel: '좋아요 가게 정보',
       content: <LikedRecommendationSheet recommendationId={activeSheet.recommendationId} />,
@@ -295,8 +350,13 @@ export default function HomeBottomSheet({
   } else if (activeSheet.type === 'recommendation') {
     sheetPresentation = {
       ariaLabel: '가게 추천',
-      content: <ShopRecommendationSheet onOpenRecommendationSearch={onOpenRecommendationSearch} />,
-      contentClassName: 'pt-2 pb-10',
+      content: (
+        <RecommendationContent
+          neighborhood={neighborhood}
+          onOpenRecommendationSearch={onOpenRecommendationSearch}
+        />
+      ),
+      contentClassName: 'overflow-visible pb-[env(safe-area-inset-bottom)]',
       isModal: true,
       key: getSheetTransitionKey(activeSheet),
     };
@@ -311,31 +371,87 @@ export default function HomeBottomSheet({
   }
 
   const isHomeSheet = !sheetPresentation.isModal;
+  const topSafeAreaProbe = (
+    <div
+      ref={topSafeAreaRef}
+      aria-hidden="true"
+      className="pointer-events-none invisible fixed top-0 h-[env(safe-area-inset-top)] w-0"
+    />
+  );
+
+  if (isRecommendationCard) {
+    return (
+      <>
+        {topSafeAreaProbe}
+        <div className="mobile-frame pointer-events-none fixed inset-x-0 bottom-0 z-bottom-sheet">
+          <section
+            ref={recommendationCardRef}
+            aria-label="추천 동네 설정 안내"
+            className="pointer-events-auto max-h-[calc(100dvh-6rem)] overflow-y-auto rounded-t-30 bg-neutral-00 px-4 pt-6 pb-[max(2rem,env(safe-area-inset-bottom))]"
+          >
+            <RecommendationContent
+              neighborhood={neighborhood}
+              onOpenRecommendationSearch={onOpenRecommendationSearch}
+            />
+          </section>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
-      <div
-        ref={topSafeAreaRef}
-        aria-hidden="true"
-        className="pointer-events-none invisible fixed top-0 h-[env(safe-area-inset-top)] w-0"
-      />
+      {topSafeAreaProbe}
       {isHomeSheet && snapPoint === 'full' && <Overlay />}
       <BottomSheet
+        showHandle={!isRecommendationDetail}
         rootRef={sheetRef}
-        snapPoint={isHomeSheet ? snapPoint : 'medium'}
-        snapPoints={isHomeSheet ? HOME_SHEET_SNAP_POINTS : MODAL_SHEET_SNAP_POINTS}
-        onSnapPointChange={isHomeSheet ? setSnapPoint : handleModalSheetSnapPointChange}
-        onHandleClick={isHomeSheet ? advance : showHome}
-        fitContent={!isHomeSheet}
+        snapPoint={
+          isRecommendationList ? recommendationSnapPoint : isHomeSheet ? snapPoint : 'medium'
+        }
+        snapPoints={
+          isRecommendationList
+            ? ['medium', 'full']
+            : isHomeSheet
+              ? HOME_SHEET_SNAP_POINTS
+              : MODAL_SHEET_SNAP_POINTS
+        }
+        onSnapPointChange={
+          isRecommendationList
+            ? setRecommendationSnapPoint
+            : isRecommendationDetail
+              ? (point) => {
+                  if (point === 'hidden') closeRecommendationSheet();
+                }
+              : isHomeSheet
+                ? setSnapPoint
+                : handleModalSheetSnapPointChange
+        }
+        onHandleClick={
+          isRecommendationList
+            ? () => setRecommendationSnapPoint((point) => (point === 'full' ? 'medium' : 'full'))
+            : isRecommendationDetail
+              ? closeRecommendationSheet
+              : isHomeSheet
+                ? advance
+                : showHome
+        }
+        fitContent={!isHomeSheet && !isRecommendationList}
         onExpand={isCollapsed ? handleHomeSheetExpand : handleSelectedPlaceExpand}
         contentClassName={sheetPresentation.contentClassName}
-        fullTopBoundaryPx={isHomeSheet ? fullTopBoundaryPx : undefined}
+        fullTopBoundaryPx={
+          isRecommendationList
+            ? Math.max(72, topActionBottomPx + TOP_ACTION_TO_SHEET_GAP_PX)
+            : isHomeSheet
+              ? fullTopBoundaryPx
+              : undefined
+        }
         collapsedHeight={COLLAPSED_SHEET_HEIGHT_CSS}
         onContentPullDown={isHomeSheet && !isCollapsed ? handleHomeSheetContentPullDown : undefined}
         onContentScroll={isHomeSheet && !isCollapsed ? handleHomeSheetContentScroll : undefined}
         onVisibleHeightChange={handleVisibleHeightChange}
       >
-        {sheetPresentation.isModal ? (
+        {sheetPresentation.isModal && !isRecommendationFlow ? (
           <ModalSheetContent
             key={sheetPresentation.key}
             ariaLabel={sheetPresentation.ariaLabel ?? '가게 정보'}

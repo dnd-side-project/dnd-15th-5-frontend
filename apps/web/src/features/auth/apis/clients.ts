@@ -11,6 +11,7 @@ import type {
   ApiResponseAuthenticationResponse,
   ApiResponseVoid,
   CompleteSocialOAuthParams,
+  IssueTokenParams,
   LoginCodeExchangeRequest,
   RefreshTokenRequest,
   SecondParameter,
@@ -144,6 +145,23 @@ export const logoutApp = (
 export const logoutWeb = (options?: SecondParameter<typeof apiClient>, signal?: AbortSignal) => {
   return apiClient<ApiResponseVoid>(
     { url: `/v1/auth/logout/web`, method: 'POST', signal },
+    options
+  );
+};
+
+/**
+ * 기존 ACTIVE 사용자의 토큰을 소셜 로그인 없이 발급합니다. 사용자를 생성하거나 상태를 변경하지 않습니다.
+ * local 또는 dev 프로필에서만 제공하며, Dev 배포는 prod,dev 프로필을 사용합니다.
+ * 응답의 accessToken을 Swagger Authorize에 입력하세요. Refresh Token은 APP 방식으로 본문에 반환합니다.
+ * @summary 테스트 토큰 발급
+ */
+export const issueToken = (
+  params?: IssueTokenParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseAuthenticationResponse>(
+    { url: `/v1/auth/dev/token`, method: 'POST', params, signal },
     options
   );
 };

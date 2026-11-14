@@ -1,4 +1,4 @@
-import type { ConsumptionResponse, StickerResponse } from '@/features/report/apis/dto';
+import type { ConsumptionResponse } from '@/features/report/apis/dto';
 import type { YearMonth } from '@/shared/types/yearMonth';
 
 import type { SpendingCategory } from '@chapchap/shared/common/types';
@@ -104,10 +104,10 @@ export type WeeklyRecord = {
   isToday?: boolean;
 };
 
-/** 같은 날짜에 획득한 월간 스티커 묶음입니다. */
+/** 스티커보드의 날짜별 사진·이모지 이미지 묶음입니다. */
 export type MonthlyStickerRecordGroup = {
-  acquiredDate: string;
-  monthlyStickers: readonly (StickerResponse & { acquiredDate: string })[];
+  date: string;
+  stickerImages: readonly string[];
 };
 
 /** 같은 구매일에 속한 소비 기록 묶음입니다. */

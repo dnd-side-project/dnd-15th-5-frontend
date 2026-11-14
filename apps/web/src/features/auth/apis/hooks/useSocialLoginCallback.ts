@@ -39,6 +39,8 @@ export const useSocialLoginCallback = () => {
             return;
           }
 
+          // NOTE: 로그인 중 다른 계정으로 전환하면 인증 해제 경계를 먼저 지나 이전 계정의 지도 상태를 비운다.
+          useAuthStore.getState().clearAuth();
           await persistAuthenticationTokens({
             accessToken: result.accessToken,
             refreshToken: response.data?.refreshToken,

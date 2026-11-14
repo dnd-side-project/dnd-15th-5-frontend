@@ -30,6 +30,7 @@ const getPathname = (url: string | undefined) => {
  */
 export function useWebViewNavigationState(initialUrl: string | undefined) {
   const [canGoBack, setCanGoBack] = useState(false);
+  const [canGoBackInPage, setCanGoBackInPage] = useState(false);
   const [pathname, setPathname] = useState(() => getPathname(initialUrl));
   const normalizedPathname = pathname ? normalizePathname(pathname) : null;
   const isMapHome = normalizedPathname === MAP_HOME_PATH;
@@ -45,6 +46,7 @@ export function useWebViewNavigationState(initialUrl: string | undefined) {
       const nextPathname = getPathname(url);
 
       if (nextPathname) {
+        if (normalizePathname(nextPathname) !== MAP_HOME_PATH) setCanGoBackInPage(false);
         updatePathState(nextPathname);
       }
     },
@@ -52,14 +54,16 @@ export function useWebViewNavigationState(initialUrl: string | undefined) {
   );
 
   const handleRouteChange = useCallback(
-    (nextPathname: string) => {
+    (nextPathname: string, nextCanGoBackInPage = false) => {
       updatePathState(nextPathname);
+      setCanGoBackInPage(normalizePathname(nextPathname) === MAP_HOME_PATH && nextCanGoBackInPage);
     },
     [updatePathState]
   );
 
   return {
     canGoBack,
+    canGoBackInPage,
     handleNavigationStateChange,
     handleRouteChange,
     isMapHome,
