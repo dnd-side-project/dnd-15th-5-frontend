@@ -1,5 +1,4 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
 import { getHomeBottomSheetSnapPoint, useHomeBottomSheetStore } from '@/features/map';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
@@ -34,7 +33,7 @@ export default function AppMainLayout() {
   };
 
   return (
-    <LiquidGlassScene
+    <div
       className={cn(
         'flex min-h-screen flex-col',
         isNativeApp() ? '[--bottom-tab-bar-gap:0px]' : '[--bottom-tab-bar-gap:32px]'
@@ -44,6 +43,6 @@ export default function AppMainLayout() {
         <Outlet />
       </div>
       {!isHomeModalSheetVisible && <BottomTabBar onHomeClick={handleHomeClick} />}
-    </LiquidGlassScene>
+    </div>
   );
 }

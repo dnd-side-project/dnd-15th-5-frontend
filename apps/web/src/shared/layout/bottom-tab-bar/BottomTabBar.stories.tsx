@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
-import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import {
@@ -24,7 +23,7 @@ function BottomTabBarPreview({ children }: BottomTabBarPreviewProps) {
   const [category, setCategory] = useState<string | null>(null);
 
   return (
-    <LiquidGlassScene className="mobile-frame min-h-screen bg-neutral-50">
+    <div className="mobile-frame min-h-screen bg-neutral-50">
       {pathname.startsWith(ROUTE_PATHS.report) ? (
         <StoryReportBackground />
       ) : pathname.startsWith(ROUTE_PATHS.record) ? (
@@ -49,7 +48,7 @@ function BottomTabBarPreview({ children }: BottomTabBarPreviewProps) {
         </>
       )}
       {children}
-    </LiquidGlassScene>
+    </div>
   );
 }
 
