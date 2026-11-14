@@ -256,8 +256,8 @@ for (const [group, statements] of Object.entries(groups)) {
   // Keep the resolved key when an options object explicitly passes queryKey: undefined.
   const moduleBody =
     group === 'queries'
-      ? body.replaceAll(
-          'return { queryKey, queryFn, ...queryOptions }',
+      ? body.replace(
+          /return\s*\{\s*queryKey\s*,\s*queryFn\s*,\s*\.\.\.queryOptions\s*\}/g,
           'return { queryFn, ...queryOptions, queryKey }'
         )
       : body;
