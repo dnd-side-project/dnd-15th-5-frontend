@@ -79,7 +79,7 @@ function TabNavLink({ analyticsId, to, end, label, Icon, onClick }: TabNavLinkPr
         >
           <span
             className={cn(
-              'flex size-full flex-col items-center justify-center gap-0.5 rounded-full transition-colors duration-200 motion-reduce:transition-none',
+              'flex size-full flex-col items-center justify-center gap-1 rounded-full transition-colors duration-200 motion-reduce:transition-none',
               isActive ? 'bg-neutral-400/40 text-neutral-700' : 'text-neutral-500'
             )}
           >
