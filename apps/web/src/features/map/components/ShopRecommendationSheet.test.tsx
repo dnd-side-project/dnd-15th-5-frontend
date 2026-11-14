@@ -71,7 +71,7 @@ it.each([
     jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
       recommendations: [],
       ...status,
-    } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
     const { rerender } = render(<ShopRecommendationSheet />);
     expect(useShopRecommendationStore.getState().selectedCategory).toBe('카페');
 
@@ -94,7 +94,7 @@ it('추천 결과가 없으면 전체 칩을 유지하고 빈 목록을 안내�
     recommendations: [],
     isPending: false,
     isError: false,
-  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
   render(<ShopRecommendationSheet />);
   const navigation = within(screen.getByRole('navigation', { name: '추천 가게 카테고리' }));
   expect(navigation.getAllByRole('button')).toHaveLength(1);
