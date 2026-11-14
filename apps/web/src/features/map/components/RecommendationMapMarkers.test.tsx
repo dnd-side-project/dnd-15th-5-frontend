@@ -407,6 +407,41 @@ describe('RecommendationMapMarkers', () => {
     expect(panBy).toHaveBeenCalledWith(0, getFocusedMarkerVerticalOffset(tallerSheetHeightPx));
   });
 
+  it('시트 높이가 연속으로 바뀌어도 마커 목록은 다시 렌더링하지 않는다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    useHomeBottomSheetStore.getState().showRecommendation();
+    useShopRecommendationStore.setState({ activeRecommendationId: recommendation.id });
+    render(<RecommendationMapMarkers />);
+    const initialQueries = mockedUseNearbyPlaceRecommendationsQuery.mock.calls.length;
+
+    for (let height = 300; height < 320; height += 1) {
+      act(() => useHomeBottomSheetStore.getState().setVisibleHeight(height));
+    }
+
+    expect(mockedUseNearbyPlaceRecommendationsQuery).toHaveBeenCalledTimes(initialQueries);
+    expect(panBy).toHaveBeenLastCalledWith(0, getFocusedMarkerVerticalOffset(319));
+  });
+
+  it('동네 설정이 해제됐다가 복원되면 같은 가게도 다시 포커스한다', () => {
+    const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;
+    useHomeBottomSheetStore.getState().showRecommendationPlace(recommendation.id);
+    render(<RecommendationMapMarkers />);
+    expect(moveCamera).toHaveBeenCalledTimes(1);
+    moveCamera.mockClear();
+
+    act(() => useLocationSelectionStore.setState({ confirmedPosition: null }));
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    expect(moveCamera).not.toHaveBeenCalled();
+
+    act(() =>
+      useLocationSelectionStore.setState({
+        confirmedPosition: { lat: 37.5665, lng: 126.978 },
+      })
+    );
+    expect(moveCamera).toHaveBeenCalledTimes(1);
+    expect(moveCamera).toHaveBeenCalledWith({ center: recommendation.position, zoom: 15 });
+  });
+
   it('카테고리 마커를 누르면 추천 시트를 열고 선택한 가게를 공유한다', async () => {
     const user = userEvent.setup();
     const recommendation = TEST_SHOP_RECOMMENDATIONS[0]!;

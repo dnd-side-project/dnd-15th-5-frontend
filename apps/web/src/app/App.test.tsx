@@ -18,7 +18,7 @@ jest.mock('@/features/record/sticker/background-removal/removeStickerBackground'
 }));
 
 describe('App', () => {
-  it('정상적으로 렌더링된다', () => {
+  it('정상적으로 렌더링된다', async () => {
     render(
       <QueryProvider>
         <ToastProvider>
@@ -27,7 +27,10 @@ describe('App', () => {
       </QueryProvider>
     );
 
-    expect(screen.getByRole('img', { name: 'ChapChap' })).toHaveAttribute('src', 'logo-login.png');
+    expect(await screen.findByRole('img', { name: 'ChapChap' })).toHaveAttribute(
+      'src',
+      'logo-login.png'
+    );
     expect(screen.getByRole('main')).toHaveClass('min-h-screen-safe-bottom');
     expect(screen.getByRole('button', { name: 'Kakao 로그인' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Google 로그인' })).toBeInTheDocument();

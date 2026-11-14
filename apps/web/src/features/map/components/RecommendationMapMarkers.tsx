@@ -1,5 +1,5 @@
 import { AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
@@ -33,7 +33,7 @@ import {
 } from '@/shared/assets/icons';
 import { cn } from '@/shared/lib/cn';
 
-import type { ComponentType, SVGProps } from 'react';
+import type { ComponentType, RefObject, SVGProps } from 'react';
 
 import './recommendationMapMarkers.css';
 import '@/shared/styles/stickerStamp.css';
@@ -96,6 +96,44 @@ const getRecommendationMarkerIcons = ({ isLiked, place }: ShopRecommendation) =>
   return CATEGORY_MARKER_ICONS[place.category];
 };
 
+type RecommendationFocus = { id: string | null; height?: number };
+
+type RecommendationMapFocusProps = {
+  recommendations: ShopRecommendation[];
+  selectedId: string | null;
+  isMapReady: boolean;
+  focusMap: ReturnType<typeof useFocusMapOnPosition>;
+  lastFocusRef: RefObject<RecommendationFocus>;
+};
+
+/** 시트 높이 변경은 지도 위치만 보정하고 마커 목록을 다시 렌더링하지 않습니다. */
+function RecommendationMapFocus({
+  recommendations,
+  selectedId,
+  isMapReady,
+  focusMap,
+  lastFocusRef,
+}: RecommendationMapFocusProps) {
+  const height = useHomeBottomSheetStore((state) =>
+    selectedId ? state.visibleHeightPx || undefined : undefined
+  );
+
+  useEffect(() => {
+    if (!selectedId) {
+      lastFocusRef.current = { id: null };
+      return;
+    }
+    if (!isMapReady) return;
+    if (lastFocusRef.current.id === selectedId && lastFocusRef.current.height === height) return;
+    const recommendation = recommendations.find(({ id }) => id === selectedId);
+    if (!recommendation) return;
+    lastFocusRef.current = { id: selectedId, height };
+    focusMap(recommendation.position, RECOMMENDATION_MAP_ZOOM, height);
+  }, [selectedId, height, isMapReady, recommendations, focusMap, lastFocusRef]);
+
+  return null;
+}
+
 /** 추천 가게와 좋아요 장소를 카테고리 필터에 맞춰 표시하고, 선택 시 지도와 시트를 동기화합니다. */
 export default function RecommendationMapMarkers() {
   const map = useMap();
@@ -122,72 +160,44 @@ export default function RecommendationMapMarkers() {
       : isRecommendationOpen
         ? activeRecommendationId
         : null;
-  const visibleHeightPx = useHomeBottomSheetStore((state) => state.visibleHeightPx) || undefined;
   const selectedCategory = useMapCategoryFilterStore((state) => state.selectedCategory);
   const { recommendations } = useNearbyPlaceRecommendationsQuery(
     isRecommendationFlow && Boolean(confirmedPosition)
   );
   const { likedRecommendations } = useVisitedPlaceStickersQuery();
-  const likedRecommendationById = new Map(
-    (isRecommendationFlow ? [] : likedRecommendations).map((recommendation) => [
-      recommendation.id,
-      recommendation,
-    ])
-  );
-  recommendations.forEach((recommendation) => {
-    const isLiked = recommendation.isLiked || likedRecommendationById.has(recommendation.id);
-    if (isRecommendationFlow || isLiked) {
-      likedRecommendationById.set(recommendation.id, {
-        ...recommendation,
-        ...likedRecommendationById.get(recommendation.id),
-        isLiked,
-      });
-    }
-  });
-  const visibleRecommendations = [...likedRecommendationById.values()].filter(({ place }) => {
-    const category = isRecommendationFlow ? recommendationCategory : selectedCategory;
-    return !category || place.category === category;
-  });
-  const lastFocusedRecommendationIdRef = useRef<string | null>(null);
-  const lastFocusedVisibleHeightPxRef = useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    if (!isRecommendationFlow || !selectedRecommendationId) {
-      lastFocusedRecommendationIdRef.current = null;
-      return;
-    }
-    if (!map) return;
-
-    // NOTE: id와 시트 실측 높이가 둘 다 이전과 같으면(= handleMarkerSelect가 이미 처리했거나
-    // 직전 실행과 동일) 다시 포커스하지 않는다. 높이만 바뀐 경우(콘텐츠 리플로우 등)는
-    // 같은 추천이라도 다시 포커스해서 핀이 바뀐 시트 높이에 가려지지 않게 한다.
-    if (
-      lastFocusedRecommendationIdRef.current === selectedRecommendationId &&
-      lastFocusedVisibleHeightPxRef.current === visibleHeightPx
-    ) {
-      return;
-    }
-
-    const activeRecommendation = recommendations.find(({ id }) => id === selectedRecommendationId);
-    if (!activeRecommendation) {
-      return;
-    }
-
-    lastFocusedRecommendationIdRef.current = selectedRecommendationId;
-    lastFocusedVisibleHeightPxRef.current = visibleHeightPx;
-    focusMap(activeRecommendation.position, RECOMMENDATION_MAP_ZOOM, visibleHeightPx);
+  const visibleRecommendations = useMemo(() => {
+    const likedRecommendationById = new Map(
+      (isRecommendationFlow ? [] : likedRecommendations).map((recommendation) => [
+        recommendation.id,
+        recommendation,
+      ])
+    );
+    recommendations.forEach((recommendation) => {
+      const isLiked = recommendation.isLiked || likedRecommendationById.has(recommendation.id);
+      if (isRecommendationFlow || isLiked) {
+        likedRecommendationById.set(recommendation.id, {
+          ...recommendation,
+          ...likedRecommendationById.get(recommendation.id),
+          isLiked,
+        });
+      }
+    });
+    return [...likedRecommendationById.values()].filter(({ place }) => {
+      const category = isRecommendationFlow ? recommendationCategory : selectedCategory;
+      return !category || place.category === category;
+    });
   }, [
-    selectedRecommendationId,
     recommendations,
-    focusMap,
-    map,
+    likedRecommendations,
     isRecommendationFlow,
-    visibleHeightPx,
+    recommendationCategory,
+    selectedCategory,
   ]);
+  const lastFocusRef = useRef<RecommendationFocus>({ id: null });
 
   const handleMarkerSelect = (recommendation: ShopRecommendation) => {
-    lastFocusedRecommendationIdRef.current = recommendation.id;
-    lastFocusedVisibleHeightPxRef.current = visibleHeightPx;
+    const visibleHeightPx = useHomeBottomSheetStore.getState().visibleHeightPx || undefined;
+    lastFocusRef.current = { id: recommendation.id, height: visibleHeightPx };
     focusMap(recommendation.position, RECOMMENDATION_MAP_ZOOM, visibleHeightPx);
     setActiveRecommendation(recommendation.id);
     if (isRecommendationFlow) {
@@ -202,36 +212,44 @@ export default function RecommendationMapMarkers() {
     showRecommendation();
   };
 
-  if (isRecommendationFlow && !confirmedPosition) return null;
+  const canShowMarkers = !isRecommendationFlow || Boolean(confirmedPosition);
 
   return (
     <>
-      {visibleRecommendations.map((recommendation) => {
-        const markerIcons = getRecommendationMarkerIcons(recommendation);
-        const isActive = recommendation.id === selectedRecommendationId;
-        const MarkerIcon = isActive ? markerIcons.active : markerIcons.default;
-        // 선택 SVG의 핀 끝은 y=58이며 그 아래는 그림자 여백입니다.
-        const anchorTop = isActive ? `-${ACTIVE_MARKER_TIP_OFFSET_PX}px` : '-50%';
+      <RecommendationMapFocus
+        recommendations={recommendations}
+        selectedId={isRecommendationFlow && canShowMarkers ? selectedRecommendationId : null}
+        isMapReady={Boolean(map)}
+        focusMap={focusMap}
+        lastFocusRef={lastFocusRef}
+      />
+      {canShowMarkers &&
+        visibleRecommendations.map((recommendation) => {
+          const markerIcons = getRecommendationMarkerIcons(recommendation);
+          const isActive = recommendation.id === selectedRecommendationId;
+          const MarkerIcon = isActive ? markerIcons.active : markerIcons.default;
+          // 선택 SVG의 핀 끝은 y=58이며 그 아래는 그림자 여백입니다.
+          const anchorTop = isActive ? `-${ACTIVE_MARKER_TIP_OFFSET_PX}px` : '-50%';
 
-        return (
-          <AdvancedMarker
-            key={recommendation.id}
-            position={recommendation.position}
-            anchorLeft="-50%"
-            anchorTop={anchorTop}
-            zIndex={isActive ? 2 : 1}
-            title={`${recommendation.place.name} 추천 마커${isActive ? ', 선택됨' : ''}`}
-            onClick={() => handleMarkerSelect(recommendation)}
-          >
-            <RecommendationMarkerIcon
-              key={isActive ? 'active' : 'default'}
-              placeId={recommendation.id}
-              isActive={isActive}
-              Icon={MarkerIcon}
-            />
-          </AdvancedMarker>
-        );
-      })}
+          return (
+            <AdvancedMarker
+              key={recommendation.id}
+              position={recommendation.position}
+              anchorLeft="-50%"
+              anchorTop={anchorTop}
+              zIndex={isActive ? 2 : 1}
+              title={`${recommendation.place.name} 추천 마커${isActive ? ', 선택됨' : ''}`}
+              onClick={() => handleMarkerSelect(recommendation)}
+            >
+              <RecommendationMarkerIcon
+                key={isActive ? 'active' : 'default'}
+                placeId={recommendation.id}
+                isActive={isActive}
+                Icon={MarkerIcon}
+              />
+            </AdvancedMarker>
+          );
+        })}
     </>
   );
 }
