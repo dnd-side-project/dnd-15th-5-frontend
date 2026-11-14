@@ -288,10 +288,10 @@ export const getGetPlaceDetailQueryOptions = <
     getPlaceDetail(placeId, requestOptions, signal);
 
   return {
-    queryKey,
     queryFn,
     enabled: placeId !== null && placeId !== undefined,
     ...queryOptions,
+    queryKey,
   } as UseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
@@ -497,10 +497,10 @@ export const getGetPlaceVisitsQueryOptions = <
     getPlaceVisits(placeId, params, requestOptions, signal);
 
   return {
-    queryKey,
     queryFn,
     enabled: placeId !== null && placeId !== undefined,
     ...queryOptions,
+    queryKey,
   } as UseQueryOptions<Awaited<ReturnType<typeof getPlaceVisits>>, TError, TData> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };

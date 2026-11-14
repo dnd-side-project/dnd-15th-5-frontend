@@ -474,10 +474,10 @@ export const getGetPlaceDetailQueryOptions = <
     getPlaceDetail(placeId, requestOptions, signal);
 
   return {
-    queryKey,
     queryFn,
     enabled: placeId !== null && placeId !== undefined,
     ...queryOptions,
+    queryKey,
   } as UseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
