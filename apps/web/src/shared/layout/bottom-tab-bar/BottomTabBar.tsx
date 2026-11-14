@@ -34,9 +34,10 @@ const SURFACE_GLASS_PROPS = {
 /**
  * 하단 탭바가 차지하는 높이입니다. 탭바가 숨겨졌을 때(또는 탭바 위 다른 요소가 탭바와 겹치지
  * 않아야 할 때) 이 값을 그대로 오프셋으로 사용해, 탭바의 실제 패딩·아이콘 크기가 바뀌어도 두 곳이
- * 따로 어긋나지 않게 한다. 하단 여백 2rem과 캡슐 높이 4.5625rem을 합친 값이다.
+ * 따로 어긋나지 않게 한다. 캡슐 높이에 앱·웹별 하단 여백과 Safe Area를 더합니다.
  */
-export const BOTTOM_TAB_BAR_HEIGHT_CSS = 'calc(6.5625rem + env(safe-area-inset-bottom))';
+export const BOTTOM_TAB_BAR_HEIGHT_CSS =
+  'calc(4.5625rem + var(--bottom-tab-bar-gap, 32px) + env(safe-area-inset-bottom))';
 
 type TabNavLinkProps = {
   analyticsId: string;
@@ -117,7 +118,7 @@ export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
     <nav
       aria-label="주요 메뉴"
       data-liquid-glass-ignore
-      className="mobile-frame pointer-events-none fixed right-0 bottom-0 left-0 z-bottom-navigation flex items-center justify-center gap-4 px-5 pb-[calc(2rem+env(safe-area-inset-bottom))]"
+      className="mobile-frame pointer-events-none fixed right-0 bottom-0 left-0 z-bottom-navigation flex items-center justify-center gap-4 px-5 pb-[calc(var(--bottom-tab-bar-gap,32px)+env(safe-area-inset-bottom))]"
       style={{ minHeight: BOTTOM_TAB_BAR_HEIGHT_CSS }}
     >
       <LiquidGlass

@@ -61,6 +61,26 @@ const mockMatchMedia = (matches: boolean) => {
 };
 
 describe('BottomSheet', () => {
+  it('숨김 상태의 접근성 제한을 다시 열 때 해제한다', () => {
+    const { container, rerender } = render(
+      <BottomSheet snapPoint="hidden">
+        <button type="button">목록 항목</button>
+      </BottomSheet>
+    );
+    const sheet = container.firstElementChild;
+    expect(sheet).toHaveAttribute('inert');
+    expect(sheet).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.queryByRole('button', { name: '목록 항목' })).not.toBeInTheDocument();
+    rerender(
+      <BottomSheet snapPoint="medium">
+        <button type="button">목록 항목</button>
+      </BottomSheet>
+    );
+    expect(sheet).not.toHaveAttribute('inert');
+    expect(sheet).not.toHaveAttribute('aria-hidden');
+    expect(screen.getByRole('button', { name: '목록 항목' })).toBeInTheDocument();
+  });
+
   beforeEach(() => {
     setInnerHeight(800);
   });
@@ -79,7 +99,8 @@ describe('BottomSheet', () => {
     expect(sheet).toHaveStyle({ height: '70dvh' });
 
     rerender(<BottomSheet snapPoint="hidden">내용</BottomSheet>);
-    expect(sheet.className).toContain('translate-y-full');
+    expect(sheet).toHaveStyle({ height: '0px' });
+    expect(sheet).toHaveClass('translate-y-0', 'overflow-hidden');
   });
 
   it('full 단계에서 지정한 화면 상단 경계를 넘지 않는다', () => {

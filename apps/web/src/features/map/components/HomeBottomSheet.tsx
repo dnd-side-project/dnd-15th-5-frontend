@@ -10,7 +10,6 @@ import {
 import type { HomeBottomSheetContent } from '@/features/map/stores/homeBottomSheetStore';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
-import { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/bottom-tab-bar';
 import { cn } from '@/shared/lib/cn';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
@@ -40,9 +39,7 @@ type BottomSheetPresentation = {
 };
 
 const MODAL_SHEET_SNAP_POINTS = ['hidden', 'medium'] as const;
-const HOME_SHEET_SNAP_POINTS = ['collapsed', 'medium', 'full'] as const;
-// NOTE: 핸들·탭 영역 72px 아래에 떠 있는 네비게이션 캡슐과 12px 간격을 두고, Safe Area를 확보한다.
-const COLLAPSED_SHEET_HEIGHT_CSS = `calc(4.5rem + 0.75rem + ${BOTTOM_TAB_BAR_HEIGHT_CSS})`;
+const HOME_SHEET_SNAP_POINTS = ['hidden', 'medium', 'full'] as const;
 const AUTO_EXPAND_SCROLL_THRESHOLD_PX = 32;
 
 type ModalSheetContentProps = {
@@ -124,7 +121,7 @@ function useSheetContentTransitionClassName(transitionKey: string) {
  * 홈 화면 지도 위에 뜨는 바텀시트입니다.
  *
  * 높이 단계는 `useHomeBottomSheetStore`가 갖고 있습니다. 하단 탭바의 "홈" 버튼을 누르면 정해진
- * 순서(중간 → 최대 → 중간 → 접힘)로 바뀌고, 핸들을 드래그하면 손가락을 따라 자유롭게 움직이다가
+ * 순서(중간 → 최대 → 중간 → 숨김)로 바뀌고, 핸들을 드래그하면 손가락을 따라 자유롭게 움직이다가
  * 가까운 단계로 스냅됩니다. 64px 넘게 당기면 당긴 방향으로 최소 한 단계 이동합니다.
  * 지도 스티커를 선택하면 탭 대신 해당 장소의 요약을 표시합니다.
  * 최대 단계에서는 상태바 아래에 12px 여백을 남기고 검색·알림·프로필 영역을 덮습니다.
@@ -155,7 +152,7 @@ export default function HomeBottomSheet({
   const setVisibleHeight = useHomeBottomSheetStore((state) => state.setVisibleHeight);
   const snapPoint = getHomeBottomSheetSnapPoint(stepIndex);
   const { topSafeAreaRef, fullTopBoundaryPx } = useHomeSheetTopBoundary();
-  const isCollapsed = activeSheet.type === 'home' && snapPoint === 'collapsed';
+  const isHomeSheetHidden = activeSheet.type === 'home' && snapPoint === 'hidden';
   const {
     tab,
     contentRootRef,
@@ -165,8 +162,7 @@ export default function HomeBottomSheet({
     handleContentTouchMove,
     handleContentWheel,
     handleContentKeyDown,
-    requestTabFocusRestoration,
-  } = useHomeBottomSheetTabs(activeSheet.type === 'home' && !isCollapsed);
+  } = useHomeBottomSheetTabs(activeSheet.type === 'home' && !isHomeSheetHidden);
 
   const handleVisibleHeightChange = useCallback(
     (heightPx: number) => {
@@ -192,13 +188,8 @@ export default function HomeBottomSheet({
     [setVisibleHeight]
   );
 
-  const handleHomeSheetExpand = () => {
-    requestTabFocusRestoration();
-    setSnapPoint('medium');
-  };
-
   const renderSegmentedToggle = () => (
-    <div className="pb-2" onClick={isCollapsed ? handleHomeSheetExpand : undefined}>
+    <div className="pb-2">
       <SegmentedToggle
         options={[
           { label: '자주 소비한 곳', value: 'frequentShops' },
@@ -228,7 +219,7 @@ export default function HomeBottomSheet({
   };
 
   const handleHomeSheetContentPullDown = () => {
-    setSnapPoint(snapPoint === 'full' ? 'medium' : 'collapsed');
+    setSnapPoint(snapPoint === 'full' ? 'medium' : 'hidden');
   };
 
   const { sheetRef, expandSelectedPlace } = useSelectedPlaceExpandTransition({
@@ -251,27 +242,20 @@ export default function HomeBottomSheet({
       onKeyDown={handleContentKeyDown}
       className={cn('flex min-h-full flex-col bg-neutral-00', contentTransitionClassName)}
     >
-      {isCollapsed && renderSegmentedToggle()}
       <div
-        data-active-tab-panel={!isCollapsed && tab === 'frequentShops' ? 'true' : undefined}
-        hidden={isCollapsed || tab !== 'frequentShops'}
-        aria-hidden={isCollapsed || tab !== 'frequentShops'}
-        className={cn(
-          'min-h-0 flex-1 flex-col',
-          !isCollapsed && tab === 'frequentShops' ? 'flex' : 'hidden'
-        )}
+        data-active-tab-panel={!isHomeSheetHidden && tab === 'frequentShops' ? 'true' : undefined}
+        hidden={tab !== 'frequentShops'}
+        aria-hidden={tab !== 'frequentShops'}
+        className={cn('min-h-0 flex-1 flex-col', tab === 'frequentShops' ? 'flex' : 'hidden')}
       >
         {renderFrequentShops(renderSegmentedToggle())}
       </div>
 
       <div
-        data-active-tab-panel={!isCollapsed && tab === 'history' ? 'true' : undefined}
-        hidden={isCollapsed || tab !== 'history'}
-        aria-hidden={isCollapsed || tab !== 'history'}
-        className={cn(
-          'min-h-0 flex-1 flex-col',
-          !isCollapsed && tab === 'history' ? 'flex' : 'hidden'
-        )}
+        data-active-tab-panel={!isHomeSheetHidden && tab === 'history' ? 'true' : undefined}
+        hidden={tab !== 'history'}
+        aria-hidden={tab !== 'history'}
+        className={cn('min-h-0 flex-1 flex-col', tab === 'history' ? 'flex' : 'hidden')}
       >
         {renderSpendingHistory(renderSegmentedToggle())}
       </div>
@@ -279,7 +263,6 @@ export default function HomeBottomSheet({
   );
   let sheetPresentation: BottomSheetPresentation = {
     content: homeSheetContent,
-    contentClassName: isCollapsed ? 'overflow-y-hidden pb-0' : undefined,
     isModal: false,
     key: 'home',
   };
@@ -327,12 +310,15 @@ export default function HomeBottomSheet({
         onSnapPointChange={isHomeSheet ? setSnapPoint : handleModalSheetSnapPointChange}
         onHandleClick={isHomeSheet ? advance : showHome}
         fitContent={!isHomeSheet}
-        onExpand={isCollapsed ? handleHomeSheetExpand : handleSelectedPlaceExpand}
+        onExpand={handleSelectedPlaceExpand}
         contentClassName={sheetPresentation.contentClassName}
         fullTopBoundaryPx={isHomeSheet ? fullTopBoundaryPx : undefined}
-        collapsedHeight={COLLAPSED_SHEET_HEIGHT_CSS}
-        onContentPullDown={isHomeSheet && !isCollapsed ? handleHomeSheetContentPullDown : undefined}
-        onContentScroll={isHomeSheet && !isCollapsed ? handleHomeSheetContentScroll : undefined}
+        onContentPullDown={
+          isHomeSheet && !isHomeSheetHidden ? handleHomeSheetContentPullDown : undefined
+        }
+        onContentScroll={
+          isHomeSheet && !isHomeSheetHidden ? handleHomeSheetContentScroll : undefined
+        }
         onVisibleHeightChange={handleVisibleHeightChange}
       >
         {sheetPresentation.isModal ? (

@@ -2,12 +2,12 @@ import { create } from 'zustand';
 
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 
-// NOTE: 클릭할 때마다 순환하며, 접힌 상태에서도 핸들과 탭은 남겨둔다.
+// NOTE: 홈 탭 클릭마다 순환하며, 최하단에서는 시트를 완전히 숨긴다.
 const HOME_BOTTOM_SHEET_SNAP_SEQUENCE: readonly BottomSheetSnapPoint[] = [
   'medium',
   'full',
   'medium',
-  'collapsed',
+  'hidden',
 ];
 
 // NOTE: 드래그로 직접 한 단계에 도착했을 때, 다음 클릭이 이어질 위치를 정하기 위한 매핑이다.

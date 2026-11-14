@@ -204,8 +204,5 @@ export const useHomeBottomSheetTabs = (isHomeSheet: boolean) => {
     handleContentTouchMove,
     handleContentWheel,
     handleContentKeyDown,
-    requestTabFocusRestoration: () => {
-      shouldRestoreFocusRef.current = true;
-    },
   };
 };
