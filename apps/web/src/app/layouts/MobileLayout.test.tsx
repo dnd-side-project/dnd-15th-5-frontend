@@ -1,7 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { NATIVE_PAGE_BACK_EVENT } from '@chapchap/shared/bridge';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Link, MemoryRouter } from 'react-router-dom';
 
+import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { notifyNative } from '@/shared/lib/bridge';
 
 import MobileLayout from './MobileLayout';
@@ -13,12 +15,35 @@ jest.mock('@/app/providers/AnalyticsIdentity', () => ({
   __esModule: true,
   default: () => null,
 }));
+jest.mock('@/app/providers/MapSessionBoundary', () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 const mockNotifyNative = jest.mocked(notifyNative);
 
 describe('<MobileLayout />', () => {
   beforeEach(() => {
     mockNotifyNative.mockReset();
+    useHomeBottomSheetStore.setState(useHomeBottomSheetStore.getInitialState());
+  });
+
+  it('시스템 뒤로 가기를 추천 상세 → 목록 → 홈으로 전달한다', () => {
+    useHomeBottomSheetStore.getState().showRecommendationPlace('101');
+    render(
+      <MemoryRouter initialEntries={['/home']}>
+        <MobileLayout>지도</MobileLayout>
+      </MemoryRouter>
+    );
+    expect(mockNotifyNative).toHaveBeenLastCalledWith('routeChanged', {
+      pathname: '/home',
+      canGoBackInPage: true,
+    });
+    act(() => window.dispatchEvent(new Event(NATIVE_PAGE_BACK_EVENT)));
+    expect(useHomeBottomSheetStore.getState().activeSheet.type).toBe('recommendation');
+    act(() => window.dispatchEvent(new Event(NATIVE_PAGE_BACK_EVENT)));
+    expect(useHomeBottomSheetStore.getState().activeSheet.type).toBe('home');
+    expect(mockNotifyNative).toHaveBeenLastCalledWith('routeChanged', { pathname: '/home' });
   });
 
   it('React Router 경로가 바뀔 때 네이티브에 알린다', async () => {

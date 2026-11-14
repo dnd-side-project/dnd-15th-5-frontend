@@ -3,10 +3,10 @@ import { runInThisContext } from 'node:vm';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import {
   createMemoryRouter,
-  MemoryRouter,
+  createRoutesFromElements,
+  Outlet,
   Route,
   RouterProvider,
-  Routes,
   useLocation,
 } from 'react-router-dom';
 
@@ -75,10 +75,17 @@ function LocationProbe() {
 const renderRecordPage = (
   initialEntry:
     string | { pathname: string; search?: string; state?: RecordLocationState } = '/record'
-) =>
-  render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
+) => {
+  const router = createMemoryRouter(
+    createRoutesFromElements(
+      <Route
+        element={
+          <>
+            <Outlet />
+            <LocationProbe />
+          </>
+        }
+      >
         <Route path="/record" element={<RecordPage />}>
           <Route path="shop/search" element={<ShopSearchPage />} />
         </Route>
@@ -91,10 +98,13 @@ const renderRecordPage = (
             </>
           }
         />
-      </Routes>
-      <LocationProbe />
-    </MemoryRouter>
+      </Route>
+    ),
+    { initialEntries: initialEntry === '/home' ? ['/home'] : ['/home', initialEntry] }
   );
+  render(<RouterProvider router={router} />);
+  return router;
+};
 
 const selectDefaultSticker = async () => {
   fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
@@ -231,14 +241,23 @@ it('기존 가게 검색 화면으로 이동하고 가게 선택 후 스티커�
   expect(loadDefaultSticker).toHaveBeenCalledTimes(1);
 });
 
+it('가게 검색에 직접 진입해 장소를 선택하면 새 기록에 가게와 연월을 적용한다', async () => {
+  renderRecordPage('/record/shop/search?yearMonth=2020-07');
+  fireEvent.click(screen.getByRole('button', { name: '검색 결과 선택' }));
+  await selectDefaultSticker();
+  expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
+  expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record?yearMonth=2020-07');
+});
+
 it('가게 검색에서 뒤로 돌아오면 선택을 바꾸지 않고 작성 중이던 폼을 유지한다', async () => {
-  renderRecordPage();
+  const router = renderRecordPage();
   const sticker = await selectDefaultSticker();
   fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
     target: { value: '검색 전 메모' },
   });
   fireEvent.click(screen.getByRole('button', { name: '가게 정보 검색' }));
-  fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
+  await act(() => router.navigate(-1));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record');
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('검색 전 메모');
   expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
@@ -258,10 +277,45 @@ it('가게 검색에서 작성을 종료할 때 확인한 뒤 홈으로 돌아�
   expect(jest.mocked(URL.revokeObjectURL).mock.calls.map(([url]) => url)).toContain('blob:sticker');
 });
 
-it('닫기를 누르면 홈으로 돌아간다', () => {
+it('초안 없이 닫기를 누르면 홈으로 돌아간다', () => {
   renderRecordPage();
   fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
   expect(screen.getByText('홈 화면')).toBeInTheDocument();
+});
+
+it('작성 중 X를 누르면 계속 작성하거나 홈으로 나갈 수 있다', async () => {
+  renderRecordPage();
+  await selectDefaultSticker();
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '작성 중인 메모' },
+  });
+
+  const closeButton = screen.getByRole('button', { name: '기록 닫고 홈으로 이동' });
+  fireEvent.click(closeButton);
+  expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '계속 작성하기' }));
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('작성 중인 메모');
+
+  fireEvent.click(closeButton);
+  fireEvent.click(screen.getByRole('button', { name: '나가기' }));
+  expect(await screen.findByText('홈 화면')).toBeInTheDocument();
+});
+
+it('브라우저 뒤로 가기를 취소하면 초안을 유지하고, 확인하면 이전 화면으로 이동한다', async () => {
+  const router = renderRecordPage();
+  await selectDefaultSticker();
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '작성 중인 메모' },
+  });
+
+  await act(() => router.navigate(-1));
+  expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '계속 작성하기' }));
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('작성 중인 메모');
+
+  await act(() => router.navigate(-1));
+  fireEvent.click(screen.getByRole('button', { name: '나가기' }));
+  expect(await screen.findByText('홈 화면')).toBeInTheDocument();
 });
 
 it('종료 후 홈 이동이 지연되어도 확인창을 유지하고 이동 완료 시 기록을 정리한다', async () => {

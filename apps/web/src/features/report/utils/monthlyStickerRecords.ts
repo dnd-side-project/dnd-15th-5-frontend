@@ -1,13 +1,14 @@
-import type { StickerResponse } from '@/features/report/apis/dto';
+import type { DayVisualsResponse } from '@/features/report/apis/dto';
 import type { MonthlyStickerRecordGroup } from '@/features/report/types';
+import { getStickerImage } from '@/shared/assets/images/stickers';
 
 const DATE_VALUE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})/;
 const KOREAN_WEEKDAY_FORMATTER = new Intl.DateTimeFormat('ko-KR', { weekday: 'long' });
 
-export const formatAcquiredDateLabel = (acquiredDate: string) => {
-  const match = DATE_VALUE_PATTERN.exec(acquiredDate);
+export const formatStickerDateLabel = (dateValue: string) => {
+  const match = DATE_VALUE_PATTERN.exec(dateValue);
 
-  if (!match) return acquiredDate;
+  if (!match) return dateValue;
 
   const [, year, month, day] = match;
   const date = new Date(Number(year), Number(month) - 1, Number(day));
@@ -16,27 +17,23 @@ export const formatAcquiredDateLabel = (acquiredDate: string) => {
   return `${Number(day)}일 ${weekdayLabel}`;
 };
 
-/** API 스티커 필드명을 유지한 채 획득일 내림차순으로 묶습니다. */
-export const createMonthlyStickerRecordGroups = (
-  stickers: readonly StickerResponse[] = []
+/** 스티커보드의 응답 순서를 유지하며 사진과 이모지의 표시 데이터를 만듭니다. */
+export const mapStickerBoardToRecordGroups = (
+  days: readonly DayVisualsResponse[] = []
 ): MonthlyStickerRecordGroup[] => {
-  const monthlyStickersByDate = new Map<string, (StickerResponse & { acquiredDate: string })[]>();
-  const sortedStickers = [...stickers]
-    .filter((sticker): sticker is StickerResponse & { acquiredDate: string } =>
-      Boolean(sticker.acquiredDate)
-    )
-    .sort((left, right) => right.acquiredDate.localeCompare(left.acquiredDate));
+  const imagesByDate = new Map<string, string[]>();
 
-  sortedStickers.forEach((sticker) => {
-    const acquiredDate = sticker.acquiredDate.slice(0, 10);
-    const monthlyStickers = monthlyStickersByDate.get(acquiredDate) ?? [];
+  days.forEach(({ date, visuals }) => {
+    if (!date) return;
 
-    monthlyStickers.push(sticker);
-    monthlyStickersByDate.set(acquiredDate, monthlyStickers);
+    const stickerImages = (visuals ?? []).flatMap(({ stickerName, imageId, imageUrl }) => {
+      const image = getStickerImage({ itemName: stickerName, imageId, imageUrl });
+      return image ? [image] : [];
+    });
+    if (stickerImages.length === 0) return;
+
+    imagesByDate.set(date, [...(imagesByDate.get(date) ?? []), ...stickerImages]);
   });
 
-  return Array.from(monthlyStickersByDate, ([acquiredDate, monthlyStickers]) => ({
-    acquiredDate,
-    monthlyStickers,
-  }));
+  return Array.from(imagesByDate, ([date, stickerImages]) => ({ date, stickerImages }));
 };

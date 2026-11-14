@@ -153,13 +153,9 @@ pages/
 │   ├── RecordPage.tsx
 │   ├── edit/
 │   │   └── EditRecordPage.tsx
-│   ├── manual/
-│   │   └── ManualRecordPage.tsx
 │   ├── shop/
 │   │   └── search/
 │   │       └── ShopSearchPage.tsx
-│   ├── receipt/
-│   │   └── ReceiptCameraPage.tsx
 ├── report/
 │   ├── ReportPage.tsx
 │   ├── MonthlyReportPage.tsx
@@ -180,6 +176,7 @@ pages/
 페이지를 추가하거나 이동할 때는 이 구조와 `apps/web/src/app/routes`의 라우트 설정을 함께 수정한다.
 
 사진 기록의 진입 경로는 `/record`다.
+기존 `/record/manual`과 `/record/receipt/camera` 라우트는 제거했으며, 영수증 인식은 기록 폼에서 시작한다.
 
 기록 방법 선택·사진 자르기·스티커 생성·정보 입력은 `features/record/sticker`의 로컬 단계로
 전환한다. 가져온 사진은 자르기 후 스티커를 약 1초간 한 번 튀어 오르게 표시하고 정보 입력으로
@@ -239,7 +236,7 @@ pages/
 ### Features 구조
 
 `features`는 화면이 아닌 비즈니스 도메인을 기준으로 구성한다.
-수기 입력과 영수증 입력은 모두 기록 생성 흐름에 속하므로 `receipt`를 별도 Feature로 분리하지 않고 `record`에서 관리한다.
+스티커 기록과 영수증 인식은 모두 기록 생성 흐름에 속하므로 `receipt`를 별도 Feature로 분리하지 않고 `record`에서 관리한다.
 영수증 관련 코드의 규모가 커지면 `features/record/receipt`와 같이 하위 영역으로 구분한다.
 
 ```text
@@ -368,7 +365,7 @@ apps/mobile/src/
 - 화면 컴포넌트는 `화면명 + Screen`으로 작성한다 (`HomeScreen`).
 - 웹과 모바일이 함께 쓰는 코드는 `apps/mobile/src/shared`가 아니라 `packages/shared`에 둔다.
 - WebView 화면은 `shared/layout/WebViewScreen`을 사용해 Safe Area·로딩·오류 복구 동작을 통일한다. 지도 홈(`/home`)은 전체 화면을 시스템 영역까지 표시하고, 나머지 웹 화면은 하단 배경만 확장한 뒤 웹의 `MobileLayout` 또는 자체 스크롤 영역에서 하단 Safe Area를 확보한다.
-- 수기 입력과 영수증 입력의 공통 규칙은 `packages/shared/record`, 네이티브 영수증 UI와 상태는 `features/record`에서 관리한다.
+- 스티커 기록과 영수증 입력의 공통 규칙은 `packages/shared/record`, 네이티브 영수증 UI와 상태는 `features/record`에서 관리한다.
 - 필요한 폴더만 만든다. 사용처가 생기기 전에는 만들지 않는다.
 
 `native/receipt`는 영수증 촬영·앨범 선택·이미지 정규화·스캔 요청을, `native/sticker`는 스티커

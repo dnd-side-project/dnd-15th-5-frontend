@@ -1,5 +1,6 @@
 import { ANALYTICS_EVENTS, NATIVE_ANALYTICS_EVENT } from '@chapchap/shared/analytics';
 import { act, render } from '@testing-library/react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { AppState, BackHandler, Linking } from 'react-native';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
@@ -9,6 +10,14 @@ import { resetNativeAnalyticsForTest } from '@/shared/lib/analytics/nativeAnalyt
 import HomeScreen from './HomeScreen';
 
 let mockNativePathname = '/';
+jest.mock('expo-web-browser', () => ({
+  openBrowserAsync: jest.fn(),
+  WebBrowserPresentationStyle: { FULL_SCREEN: 'fullScreen' },
+  WebBrowserResultType: { CANCEL: 'cancel' },
+}));
+jest.mock('uniwind', () => ({
+  useCSSVariable: () => ['#ffffff', '#1f1f1f'],
+}));
 jest.mock('@/native/sticker/stickerBackground', () => ({
   prepareNativeStickerBackground: jest.fn().mockResolvedValue({ ready: true, backend: 'cpu' }),
 }));
@@ -100,6 +109,10 @@ describe('<HomeScreen />', () => {
   const originalWebUrl = process.env.EXPO_PUBLIC_WEB_URL;
 
   beforeEach(() => {
+    jest.mocked(WebBrowser.openBrowserAsync).mockReset();
+    jest.mocked(WebBrowser.openBrowserAsync).mockResolvedValue({
+      type: WebBrowser.WebBrowserResultType.CANCEL,
+    });
     mockNativePathname = '/';
     resetNativeAnalyticsForTest();
     hardwareBackHandler = undefined;
@@ -122,7 +135,7 @@ describe('<HomeScreen />', () => {
       appStateChangeHandler = handler;
       return { remove: removeAppStateHandler };
     });
-    jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    jest.spyOn(Linking, 'openURL').mockReset().mockResolvedValue(true);
   });
 
   it('푸시 알림을 누르면 알림의 상세 경로로 이동한다', async () => {
@@ -137,6 +150,45 @@ describe('<HomeScreen />', () => {
     expect(mockInjectJavaScript).toHaveBeenCalledWith(
       'window.location.replace("https://chapchap.example.com/report/monthly-report?yearMonth=2026-09"); true;'
     );
+  });
+
+  it('홈 추천 내부의 뒤로가기는 WebView 기록 대신 웹 이벤트로 전달한다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { getByTestId } = await render(<HomeScreen />);
+    await act(async () => {
+      getByTestId('home-webview').props.onMessage({
+        nativeEvent: {
+          url: 'https://chapchap.example.com/home',
+          data: JSON.stringify({
+            kind: 'event',
+            type: 'routeChanged',
+            payload: { pathname: '/home', canGoBackInPage: true },
+          }),
+        },
+      });
+    });
+    let handled;
+    await act(async () => {
+      handled = hardwareBackHandler?.(hardwareBackPressEvent);
+    });
+    expect(handled).toBe(true);
+    expect(mockGoBack).not.toHaveBeenCalled();
+    expect(mockInjectJavaScript).toHaveBeenCalledWith(
+      expect.stringContaining('chapchap:native-page-back')
+    );
+    await act(async () => {
+      getByTestId('home-webview').props.onMessage({
+        nativeEvent: {
+          url: 'https://chapchap.example.com/home',
+          data: JSON.stringify({
+            kind: 'event',
+            type: 'routeChanged',
+            payload: { pathname: '/home' },
+          }),
+        },
+      });
+    });
+    expect(hardwareBackHandler?.(hardwareBackPressEvent)).toBe(false);
   });
 
   afterEach(() => {
@@ -309,7 +361,7 @@ describe('<HomeScreen />', () => {
     });
 
     expect(getByTestId('home-safe-area').props.edges).toEqual(bottomEdgeToEdgeEdges);
-    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
+    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
 
     await act(async () => {
       await getByTestId('home-webview').props.onMessage({
@@ -383,15 +435,74 @@ describe('<HomeScreen />', () => {
     expect(mockInjectJavaScript).toHaveBeenCalledWith('true;');
   });
 
-  it('같은 origin의 웹 경로는 WebView에서 열고 외부 지도 링크는 기기로 전달한다', async () => {
+  it.each([
+    'https://www.google.com/maps/search/?api=1&query=투썸플레이스',
+    'http://www.google.com/maps/search/?api=1&query=coffee',
+    'https://google.com/maps?query=coffee',
+    'https://maps.google.com/?q=coffee',
+  ])(
+    '같은 origin은 WebView에서 열고 Google Maps는 인앱 브라우저로 연다: %s',
+    async (googleMapsUrl) => {
+      process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+      const { getByTestId } = await render(<HomeScreen />);
+      const shouldStartLoad = getByTestId('home-webview').props.onShouldStartLoadWithRequest;
+
+      expect(shouldStartLoad({ url: 'https://chapchap.example.com/home/shop/101' })).toBe(true);
+      expect(shouldStartLoad({ url: googleMapsUrl })).toBe(false);
+      expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(googleMapsUrl, {
+        dismissButtonStyle: 'close',
+        presentationStyle: 'fullScreen',
+        enableBarCollapsing: false,
+        toolbarColor: '#ffffff',
+        controlsColor: '#1f1f1f',
+        showTitle: true,
+        createTask: false,
+      });
+      expect(Linking.openURL).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([
+    'https://example.com/maps',
+    'https://www.google.com/maps-other',
+    'https://maps.google.com.example.com/',
+    'https://www.google.com/search?q=maps',
+  ])('다른 HTTP(S) 링크는 기존처럼 기기로 전달한다: %s', async (url) => {
     process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
     const { getByTestId } = await render(<HomeScreen />);
-    const shouldStartLoad = getByTestId('home-webview').props.onShouldStartLoadWithRequest;
-    const googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=투썸플레이스';
 
-    expect(shouldStartLoad({ url: 'https://chapchap.example.com/home/shop/101' })).toBe(true);
-    expect(shouldStartLoad({ url: googleMapsUrl })).toBe(false);
-    expect(Linking.openURL).toHaveBeenCalledWith(googleMapsUrl);
+    expect(getByTestId('home-webview').props.onShouldStartLoadWithRequest({ url })).toBe(false);
+    expect(Linking.openURL).toHaveBeenCalledWith(url);
+    expect(WebBrowser.openBrowserAsync).not.toHaveBeenCalled();
+  });
+
+  it.each(['tel:0212345678', 'custom://maps', 'comgooglemaps://?q=coffee'])(
+    '기존에 허용하지 않던 스킴은 계속 차단한다: %s',
+    async (url) => {
+      process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+      const { getByTestId } = await render(<HomeScreen />);
+
+      expect(getByTestId('home-webview').props.onShouldStartLoadWithRequest({ url })).toBe(false);
+      expect(Linking.openURL).not.toHaveBeenCalled();
+      expect(WebBrowser.openBrowserAsync).not.toHaveBeenCalled();
+    }
+  );
+
+  it('인앱 브라우저 실행이 실패해도 Google Maps를 WebView에서 열지 않는다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    jest
+      .mocked(WebBrowser.openBrowserAsync)
+      .mockRejectedValueOnce(new Error('Browser unavailable'));
+    const { getByTestId } = await render(<HomeScreen />);
+
+    await act(async () => {
+      expect(
+        getByTestId('home-webview').props.onShouldStartLoadWithRequest({
+          url: 'https://www.google.com/maps/search/?api=1&query=coffee',
+        })
+      ).toBe(false);
+    });
+    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 
   it('이메일 링크는 WebView에서 막고 기기의 메일 앱으로 전달한다', async () => {

@@ -10,7 +10,6 @@ const meta = {
   component: PlaceSearchInput,
   args: { onSearch: fn() },
   argTypes: {
-    debounceMs: { control: 'number' },
     placeholder: { control: 'text' },
     appliedKeyword: { control: false },
   },
@@ -20,11 +19,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 function AppliedKeywordExample({
-  debounceMs,
   onSearch,
   placeholder,
 }: {
-  debounceMs?: number;
   onSearch: (keyword: string) => void;
   placeholder?: string;
 }) {
@@ -42,22 +39,17 @@ function AppliedKeywordExample({
     <PlaceSearchInput
       onSearch={onSearch}
       appliedKeyword={appliedKeyword}
-      debounceMs={debounceMs}
       placeholder={placeholder}
     />
   );
 }
 
-/** 입력 후 debounce 시간이 지나면 자동 검색하고 Enter 또는 검색 버튼으로 즉시 제출합니다. */
+/** 입력 중에는 검색하지 않고 완료·Enter 또는 검색 버튼으로 제출합니다. */
 export const Default: Story = {};
 
-/** 최근 검색어 선택처럼 외부에서 키워드를 채워 즉시 검색하는 예시입니다. */
+/** 최근 검색어로 입력을 채운 뒤 직접 제출하는 예시입니다. */
 export const AppliedKeyword: Story = {
   render: (args) => (
-    <AppliedKeywordExample
-      onSearch={args.onSearch}
-      placeholder={args.placeholder}
-      debounceMs={args.debounceMs}
-    />
+    <AppliedKeywordExample onSearch={args.onSearch} placeholder={args.placeholder} />
   ),
 };

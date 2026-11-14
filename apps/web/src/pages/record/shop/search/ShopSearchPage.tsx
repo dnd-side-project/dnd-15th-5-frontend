@@ -22,12 +22,9 @@ export default function ShopSearchPage() {
     shopSearchState?.isStickerRecordShopSearch && stickerRecord
   );
   const isReceiptNativeSearch = searchParams.get('source') === RECEIPT_SHOP_SEARCH_SOURCE;
-  const shouldConfirmClose =
-    isReceiptNativeSearch ||
-    isStickerRecordSearch ||
-    Boolean(shopSearchState?.isChangingManualRecordShop || shopSearchState?.manualRecordDraftDirty);
-  const manualRecordPath = createYearMonthPath(
-    ROUTE_PATHS.manualRecord,
+  const shouldConfirmClose = isReceiptNativeSearch || isStickerRecordSearch;
+  const recordPath = createYearMonthPath(
+    ROUTE_PATHS.record,
     searchParams.get(YEAR_MONTH_SEARCH_PARAM)
   );
 
@@ -42,27 +39,12 @@ export default function ShopSearchPage() {
       return;
     }
 
-    navigate(manualRecordPath, {
-      state: {
-        isDraftDirty: Boolean(shopSearchState?.manualRecordDraftDirty),
-        isShopChange: Boolean(shopSearchState?.isChangingManualRecordShop),
-        shop,
-        visitDateTime: shopSearchState?.manualRecordVisitDateTime,
-        amount: shopSearchState?.manualRecordAmount,
-        category: shopSearchState?.manualRecordCategory,
-      },
-    });
+    stickerRecord?.onSelectStickerShop(shop);
+    navigate(recordPath, { replace: true, state: { shop } });
   };
 
   const handleBack = () => {
     if (isReceiptNativeSearch && notifyNative('receiptShopSearchCancelled', {})) {
-      return;
-    }
-
-    // 가게 미선택 상태의 수기 입력 화면에서 교체 이동(replace)해온 경우에만 돌아갈
-    // 히스토리가 없다. 그 외에는 전부 일반 이동이라 navigate(-1)이 항상 맞는 위치로 돌아간다.
-    if (shopSearchState?.replacedManualRecord) {
-      navigate(ROUTE_PATHS.record, { replace: true });
       return;
     }
 

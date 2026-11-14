@@ -3,13 +3,26 @@ import { act, renderHook } from '@testing-library/react-native';
 import { useWebViewNavigationState } from './useWebViewNavigationState';
 
 describe('useWebViewNavigationState', () => {
+  it('홈의 중복 navigation 콜백은 내부 뒤로가기 상태를 유지하고 경로 이탈 시 해제한다', async () => {
+    const { result } = await renderHook(() =>
+      useWebViewNavigationState('https://chapchap.example.com/home')
+    );
+    await act(async () => result.current.handleRouteChange('/home', true));
+    await act(async () =>
+      result.current.handleNavigationStateChange('https://chapchap.example.com/home', true)
+    );
+    expect(result.current.canGoBackInPage).toBe(true);
+    await act(async () =>
+      result.current.handleNavigationStateChange('https://chapchap.example.com/report', true)
+    );
+    expect(result.current.canGoBackInPage).toBe(false);
+  });
   it('전체 문서 이동 경로가 지도 홈인지 추적한다', async () => {
     const { result } = await renderHook(() =>
       useWebViewNavigationState('https://chapchap.example.com/home')
     );
 
     expect(result.current.isMapHome).toBe(true);
-    expect(result.current.isMonthlyReport).toBe(false);
     expect(result.current.canGoBack).toBe(false);
 
     await act(async () => {
@@ -17,7 +30,6 @@ describe('useWebViewNavigationState', () => {
     });
 
     expect(result.current.isMapHome).toBe(false);
-    expect(result.current.isMonthlyReport).toBe(false);
     expect(result.current.canGoBack).toBe(true);
   });
 
@@ -35,23 +47,5 @@ describe('useWebViewNavigationState', () => {
       result.current.handleRouteChange('/my-page');
     });
     expect(result.current.isMapHome).toBe(false);
-  });
-
-  it('월간 리포트 경로를 다른 리포트 경로와 구분한다', async () => {
-    const { result } = await renderHook(() =>
-      useWebViewNavigationState('https://chapchap.example.com/report')
-    );
-
-    expect(result.current.isMonthlyReport).toBe(false);
-
-    await act(async () => {
-      result.current.handleRouteChange('/report/monthly-report/');
-    });
-    expect(result.current.isMonthlyReport).toBe(true);
-
-    await act(async () => {
-      result.current.handleRouteChange('/report/monthly-records');
-    });
-    expect(result.current.isMonthlyReport).toBe(false);
   });
 });

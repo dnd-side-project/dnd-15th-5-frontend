@@ -37,9 +37,7 @@ export const ROUTE_PATHS = {
 
   record: '/record',
   editRecord: (consumptionId: string) => generatePath(ROUTE_PATTERNS.editRecord, { consumptionId }),
-  manualRecord: '/record/manual',
   recordShopSearch: '/record/shop/search',
-  receiptCamera: '/record/receipt/camera',
 
   report: NOTIFICATION_ALLOWED_PATHS.report,
   spendingHistory: NOTIFICATION_ALLOWED_PATHS.spendingHistory,

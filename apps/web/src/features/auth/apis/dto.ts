@@ -86,6 +86,13 @@ export type ApiResponseVoid = {
   data?: unknown;
 };
 
+export type IssueTokenParams = {
+  /**
+   * 개발 DB에 존재하는 ACTIVE 사용자 ID (로컬 시드: 1, 2, 3)
+   */
+  userId?: number;
+};
+
 export type StartParams = {
   /**
    * 로그인을 시작한 클라이언트 유형

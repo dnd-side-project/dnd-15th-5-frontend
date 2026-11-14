@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 
 const MAP_HOME_PATH = '/home';
 const RECOMMENDATION_MAP_PATH = '/home/recommendation/map';
-const MONTHLY_REPORT_PATH = '/report/monthly-report';
 
 const normalizePathname = (pathname: string) => pathname.replace(/\/+$/, '') || '/';
 
@@ -31,10 +30,10 @@ const getPathname = (url: string | undefined) => {
  */
 export function useWebViewNavigationState(initialUrl: string | undefined) {
   const [canGoBack, setCanGoBack] = useState(false);
+  const [canGoBackInPage, setCanGoBackInPage] = useState(false);
   const [pathname, setPathname] = useState(() => getPathname(initialUrl));
   const normalizedPathname = pathname ? normalizePathname(pathname) : null;
   const isMapHome = normalizedPathname === MAP_HOME_PATH;
-  const isMonthlyReport = normalizedPathname === MONTHLY_REPORT_PATH;
 
   const updatePathState = useCallback((pathname: string) => {
     setPathname(pathname);
@@ -47,6 +46,7 @@ export function useWebViewNavigationState(initialUrl: string | undefined) {
       const nextPathname = getPathname(url);
 
       if (nextPathname) {
+        if (normalizePathname(nextPathname) !== MAP_HOME_PATH) setCanGoBackInPage(false);
         updatePathState(nextPathname);
       }
     },
@@ -54,18 +54,19 @@ export function useWebViewNavigationState(initialUrl: string | undefined) {
   );
 
   const handleRouteChange = useCallback(
-    (nextPathname: string) => {
+    (nextPathname: string, nextCanGoBackInPage = false) => {
       updatePathState(nextPathname);
+      setCanGoBackInPage(normalizePathname(nextPathname) === MAP_HOME_PATH && nextCanGoBackInPage);
     },
     [updatePathState]
   );
 
   return {
     canGoBack,
+    canGoBackInPage,
     handleNavigationStateChange,
     handleRouteChange,
     isMapHome,
     isMapEdgeToEdge: isMapHome || normalizedPathname === RECOMMENDATION_MAP_PATH,
-    isMonthlyReport,
   };
 }
