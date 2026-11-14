@@ -124,7 +124,7 @@ describe('ShopDetailPage', () => {
         </MemoryRouter>
       );
       await user.click(screen.getByRole('link', { name: /복귀 가게/ }));
-      await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
+      await user.click(await screen.findByRole('button', { name: '뒤로 가기' }));
       expect(
         await screen.findByText(`소비 목록 ${pathname}?filter=keep:2026-07-21:196`)
       ).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe('ShopDetailPage', () => {
       expect(useHomeBottomSheetStore.getState().scrollPositions.history).toBe(240);
       expect(useMapFocusStore.getState().focusPosition).toBeNull();
       await user.click(screen.getByRole('button', { name: '상세 앞으로' }));
-      expect(screen.getByRole('button', { name: '뒤로 가기' })).toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: '뒤로 가기' })).toBeInTheDocument();
     }
   );
 
