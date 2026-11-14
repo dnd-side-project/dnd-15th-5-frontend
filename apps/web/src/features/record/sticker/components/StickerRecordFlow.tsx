@@ -1,6 +1,6 @@
-import { RECORD_EXIT_CONFIRM_TEXT } from '@chapchap/shared/record';
 import { useEffect, useRef, useState } from 'react';
 
+import RecordExitDialog from '@/features/record/components/RecordExitDialog';
 import { STICKER_FLOW_HEADER_HEIGHT_CLASS } from '@/features/record/sticker/constants';
 import { useStickerRecordExit } from '@/features/record/sticker/hooks/useStickerRecordExit';
 import { useStickerRecordFlow } from '@/features/record/sticker/hooks/useStickerRecordFlow';
@@ -12,7 +12,6 @@ import type {
 import { isDefaultStickerMedia } from '@/features/record/utils/isDefaultStickerMedia';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
-import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 import { useToast } from '@/shared/ui/toast';
 
 import DefaultStickerPicker from './DefaultStickerPicker';
@@ -33,6 +32,7 @@ type StickerRecordFlowProps = {
   initialValue?: StickerRecordInitialValue;
   onDirtyChange?: (dirty: boolean) => void;
   onClose: () => void;
+  isExitBlocked?: boolean;
   onSearchShop?: () => void;
   onScanReceipt?: () => Promise<ReceiptScanData | null> | void;
   onReceiptShopSelected?: (shop: ShopSearchResult) => void;
@@ -50,6 +50,7 @@ export default function StickerRecordFlow({
   initialValue,
   onDirtyChange,
   onClose,
+  isExitBlocked = false,
   onSearchShop,
   onScanReceipt,
   onReceiptShopSelected,
@@ -100,8 +101,9 @@ export default function StickerRecordFlow({
     onExit: onClose,
   });
   const hasMediaChanges = Boolean(initialValue && recordResult?.source !== 'saved');
-  const hasPendingPhoto = Boolean(initialValue && isDark);
-  const hasChanges = isFormDirty || hasMediaChanges || hasPendingPhoto;
+  const hasPendingPhoto = isDark;
+  const hasChanges =
+    isFormDirty || hasMediaChanges || hasPendingPhoto || (!initialValue && recordResult !== null);
   const recordedDefaultSticker =
     recordResult && isDefaultStickerMedia(recordResult) ? recordResult : null;
   useEffect(() => {
@@ -118,7 +120,7 @@ export default function StickerRecordFlow({
   return (
     <>
       <main
-        inert={isExitConfirmOpen}
+        inert={isExitConfirmOpen || isExitBlocked}
         className={cn(
           'relative flex min-h-dvh flex-col [--sticker-primary:var(--color-primary-500)] [&_button:disabled:not([data-disabled])]:cursor-default [&_button:disabled:not([data-disabled])]:opacity-45 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-4 [&_button:focus-visible]:outline-primary-500',
           isDark && 'h-dvh',
@@ -190,7 +192,7 @@ export default function StickerRecordFlow({
             isCapturing={isCapturing}
             message={message}
             error={error}
-            isPaused={isExitConfirmOpen}
+            isPaused={isExitConfirmOpen || isExitBlocked}
             onCancel={cancelPreview}
             onRetry={retry}
             onReselect={handleCapturePhoto}
@@ -203,7 +205,7 @@ export default function StickerRecordFlow({
             sticker={preview.result?.sticker}
             isProcessing={isProcessing}
             message={message}
-            isPaused={isExitConfirmOpen}
+            isPaused={isExitConfirmOpen || isExitBlocked}
             onRevealComplete={confirm}
             onRevealError={failPreview}
           />
@@ -253,16 +255,7 @@ export default function StickerRecordFlow({
           </p>
         )}
       </main>
-      {isExitConfirmOpen && (
-        <UnsavedChangesDialog
-          title={RECORD_EXIT_CONFIRM_TEXT.title}
-          description={RECORD_EXIT_CONFIRM_TEXT.description}
-          exitLabel={RECORD_EXIT_CONFIRM_TEXT.exit}
-          continueLabel={RECORD_EXIT_CONFIRM_TEXT.continue}
-          onExit={onClose}
-          onContinue={continueWriting}
-        />
-      )}
+      {isExitConfirmOpen && <RecordExitDialog onExit={onClose} onContinue={continueWriting} />}
     </>
   );
 }

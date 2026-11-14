@@ -55,7 +55,6 @@ export default function HomeScreen() {
     handleRouteChange,
     isMapEdgeToEdge,
     isMapHome,
-    isMonthlyReport,
   } = useWebViewNavigationState(initialWebUrl ?? undefined);
 
   useEffect(() => {
@@ -215,7 +214,7 @@ export default function HomeScreen() {
       loadErrorTitle="웹 화면을 불러오지 못했습니다"
       loadErrorDescriptions={webUrl ? [webUrl] : []}
       safeAreaMode={isMapEdgeToEdge ? 'none' : 'except-bottom'}
-      allowsBackForwardNavigationGestures={!isMapHome && !isMonthlyReport}
+      allowsBackForwardNavigationGestures={!isMapHome}
       onNavigationStateChange={({ canGoBack: nextCanGoBack, url }) =>
         handleNavigationStateChange(url, nextCanGoBack)
       }
