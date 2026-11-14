@@ -18,12 +18,12 @@ export default function MyPageProfileSection({
   onEdit,
 }: MyPageProfileSectionProps) {
   return (
-    <section className="h-52.75" aria-labelledby="my-page-nickname">
+    <section className="shrink-0 pb-7" aria-labelledby="my-page-nickname">
       <div className="px-4">
         <PageHeader onBack={onBack} />
       </div>
 
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-4">
         <button
           type="button"
           aria-label="프로필 수정"
