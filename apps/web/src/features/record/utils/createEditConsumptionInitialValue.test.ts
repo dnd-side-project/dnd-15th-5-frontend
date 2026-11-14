@@ -2,6 +2,24 @@ import { TEST_CONSUMPTION_DETAIL } from '@/features/record/testFixtures';
 
 import { createEditConsumptionInitialValue } from './createEditConsumptionInitialValue';
 
+it('현재보다 늦은 오늘의 시간대로 저장된 기록도 정확한 시각을 유지해 복원한다', () => {
+  jest.useFakeTimers({ now: new Date(2026, 10, 15, 1) });
+  try {
+    const value = createEditConsumptionInitialValue({
+      ...TEST_CONSUMPTION_DETAIL,
+      purchaseDate: '2026-11-15',
+      purchaseTime: '17:00:00',
+    });
+    expect(value?.draft).toMatchObject({
+      visitDateTime: { date: new Date(2026, 10, 15, 17), period: 'evening' },
+      purchaseTime: '17:00:00',
+    });
+    expect(value?.media).toEqual({ source: 'saved', imageId: 42, category: '카페' });
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
 it('사진 ID와 기존 장소, 정확한 방문 시각 및 입력값을 복원한다', () => {
   const value = createEditConsumptionInitialValue(TEST_CONSUMPTION_DETAIL);
   expect(value?.media).toEqual({ source: 'saved', imageId: 42, category: '카페' });

@@ -28,7 +28,10 @@ export const isValidStickerRecordShop = (
 export const validateStickerRecordDraft = (draft: StickerRecordDraft) => {
   const { shop, visitDateTime, amount, memo, category, receiptImageId, purchaseTime } = draft;
   if (!isValidStickerRecordShop(shop)) throw new Error('가게 정보와 위치를 확인해주세요.');
-  if (Number.isNaN(visitDateTime.date.getTime()) || visitDateTime.date > new Date())
+  const now = new Date();
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  // NOTE: 방문 시간대는 오늘의 모든 선택지를 허용하는 달력 UI와 같은 기준으로 검증합니다.
+  if (Number.isNaN(visitDateTime.date.getTime()) || visitDateTime.date >= tomorrow)
     throw new Error('방문 일시를 확인해주세요.');
   if (
     amount !== '' &&

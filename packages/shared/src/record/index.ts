@@ -15,6 +15,7 @@ export {
   getCalendarDays,
   getCalendarWeekCount,
   getVisitPeriodForHour,
+  parsePurchaseDateTime,
   getVisitPeriodLabel,
   isSameDate,
   isSameOrAfterMonth,

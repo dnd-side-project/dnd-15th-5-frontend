@@ -1,4 +1,4 @@
-import { getVisitPeriodForHour } from './visitDateTime';
+import { parsePurchaseDateTime } from './visitDateTime';
 
 import type { VisitDateTimeValue } from './visitDateTime';
 
@@ -8,27 +8,9 @@ export const parseReceiptVisitDateTime = (
   purchaseTime?: string | null,
   now = new Date()
 ): VisitDateTimeValue | undefined => {
-  const dateMatch = purchaseDate?.match(/^(\d{4})-(\d{2})-(\d{2})$/u);
-  if (!dateMatch) return undefined;
-  const timeMatch = purchaseTime?.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/u);
-  if (purchaseTime && !timeMatch) return undefined;
-  const [, yearText, monthText, dayText] = dateMatch;
-  const hour = timeMatch ? Number(timeMatch[1]) : now.getHours();
-  const minute = timeMatch ? Number(timeMatch[2]) : 0;
-  const second = timeMatch?.[3] ? Number(timeMatch[3]) : 0;
-  const year = Number(yearText),
-    month = Number(monthText) - 1,
-    day = Number(dayText);
-  const date = new Date(year, month, day, hour, minute, second);
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month ||
-    date.getDate() !== day ||
-    date.getHours() !== hour ||
-    date.getMinutes() !== minute ||
-    date.getSeconds() !== second ||
-    date.getTime() > now.getTime()
-  )
-    return undefined;
-  return { date, period: getVisitPeriodForHour(hour) };
+  const value = parsePurchaseDateTime(
+    purchaseDate,
+    purchaseTime || `${String(now.getHours()).padStart(2, '0')}:00:00`
+  );
+  return value && value.date.getTime() <= now.getTime() ? value : undefined;
 };
