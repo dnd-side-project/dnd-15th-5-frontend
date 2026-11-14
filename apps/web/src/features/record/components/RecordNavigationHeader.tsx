@@ -1,7 +1,7 @@
 import { RECORD_EXIT_CONFIRM_TEXT } from '@chapchap/shared/record';
 import { useState } from 'react';
 
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 
 type PendingExitAction = 'back' | 'close' | null;

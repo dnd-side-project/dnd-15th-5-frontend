@@ -54,7 +54,7 @@ function BottomTabBarPreview({ children }: BottomTabBarPreviewProps) {
 }
 
 const meta = {
-  title: 'Shared/BottomTabBar',
+  title: 'Shared/Layout/BottomTabBar',
   component: BottomTabBar,
   parameters: {
     layout: 'fullscreen',

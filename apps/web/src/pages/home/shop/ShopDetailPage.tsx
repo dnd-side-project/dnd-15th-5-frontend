@@ -12,7 +12,7 @@ import ConsumptionSticker from '@/features/record/components/ConsumptionSticker'
 import { ShopDetail } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
-import { RouteHistoryContext } from '@/shared/lib/routeHistoryContext';
+import { RouteHistoryContext } from '@/shared/lib/route-history';
 import { BackButton } from '@/shared/ui/back-button';
 import {
   getConsumptionScrollDate,

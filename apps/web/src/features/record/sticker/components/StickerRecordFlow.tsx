@@ -11,7 +11,7 @@ import type {
   StickerRecordMedia,
 } from '@/features/record/types';
 import { isDefaultStickerMedia } from '@/features/record/utils/isDefaultStickerMedia';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 
