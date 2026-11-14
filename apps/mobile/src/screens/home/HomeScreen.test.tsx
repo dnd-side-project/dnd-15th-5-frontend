@@ -361,7 +361,7 @@ describe('<HomeScreen />', () => {
     });
 
     expect(getByTestId('home-safe-area').props.edges).toEqual(bottomEdgeToEdgeEdges);
-    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
+    expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
 
     await act(async () => {
       await getByTestId('home-webview').props.onMessage({
