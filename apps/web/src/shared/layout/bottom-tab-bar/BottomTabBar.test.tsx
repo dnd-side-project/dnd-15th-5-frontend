@@ -28,7 +28,7 @@ describe('BottomTabBar', () => {
       'mobile-frame',
       'fixed',
       'bottom-0',
-      'pb-[calc(2rem+env(safe-area-inset-bottom))]'
+      'pb-[calc(var(--bottom-tab-bar-gap,32px)+env(safe-area-inset-bottom))]'
     );
     expect(screen.getByRole('navigation', { name: '주요 메뉴' })).not.toHaveClass('sticky');
     expect(screen.getByRole('link', { name: '홈' })).toHaveAttribute('href', '/home');

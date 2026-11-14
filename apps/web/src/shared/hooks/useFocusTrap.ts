@@ -12,6 +12,7 @@ const FOCUSABLE_ELEMENT_SELECTOR = [
 ].join(',');
 
 type UseFocusTrapOptions = {
+  enabled?: boolean;
   initialFocusSelector?: string;
   onEscape?: () => void;
 };
@@ -20,13 +21,14 @@ type UseFocusTrapOptions = {
  * 컨테이너 안에서 키보드 포커스를 순환시키고 해제 시 기존 포커스를 복원합니다.
  *
  * @param containerRef - 포커스를 가둘 컨테이너 요소의 ref입니다.
- * @param options - 초기 포커스 선택자와 Escape 키 동작입니다.
+ * @param options - 활성화 여부, 초기 포커스 선택자와 Escape 키 동작입니다.
  */
 export function useFocusTrap(
   containerRef: RefObject<HTMLElement | null>,
-  { initialFocusSelector, onEscape }: UseFocusTrapOptions = {}
+  { enabled = true, initialFocusSelector, onEscape }: UseFocusTrapOptions = {}
 ) {
   useEffect(() => {
+    if (!enabled) return;
     const container = containerRef.current;
     const previouslyFocusedElement =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -60,6 +62,12 @@ export function useFocusTrap(
         return;
       }
 
+      if (!container?.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? lastFocusableElement : firstFocusableElement).focus();
+        return;
+      }
+
       if (event.shiftKey && document.activeElement === firstFocusableElement) {
         event.preventDefault();
         lastFocusableElement.focus();
@@ -77,5 +85,5 @@ export function useFocusTrap(
       window.removeEventListener('keydown', handleKeyDown);
       previouslyFocusedElement?.focus();
     };
-  }, [containerRef, initialFocusSelector, onEscape]);
+  }, [containerRef, enabled, initialFocusSelector, onEscape]);
 }

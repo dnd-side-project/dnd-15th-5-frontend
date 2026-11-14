@@ -37,7 +37,7 @@ export default function MyPage() {
   }
 
   return (
-    <main className="-mx-4 min-h-dvh bg-primary-100">
+    <main className="-mx-4 flex min-h-dvh flex-col bg-primary-100">
       <MyPageProfileSection
         nickname={account?.nickname}
         profileImageUrl={account?.profileImageUrl}
@@ -46,7 +46,7 @@ export default function MyPage() {
         onEdit={() => navigate(ROUTE_PATHS.myPageProfile)}
       />
 
-      <section className="min-h-[calc(100dvh-211px)] rounded-t-30 bg-neutral-00 shadow-my-page-sheet">
+      <section className="flex-1 rounded-t-30 bg-neutral-00 shadow-my-page-sheet">
         <h2 className="sr-only">마이페이지 메뉴</h2>
 
         <MyPageShortcutMenu

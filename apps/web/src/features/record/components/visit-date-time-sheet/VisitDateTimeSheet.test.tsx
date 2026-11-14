@@ -17,7 +17,7 @@ describe('<VisitDateTimeSheet />', () => {
 
     expect(screen.getByTestId('calendar-height-spacer')).toHaveClass('h-20');
 
-    await user.click(screen.getByRole('button', { name: '다음 달' }));
+    await user.click(await screen.findByRole('button', { name: '다음 달' }));
 
     expect(screen.getByTestId('calendar-height-spacer')).toHaveClass('h-10');
 

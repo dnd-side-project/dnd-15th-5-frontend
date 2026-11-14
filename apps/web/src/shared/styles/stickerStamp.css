@@ -1,3 +1,16 @@
+/* 터치와 기록 등록 시 동일한 스탬프 모션을 사용합니다. */
+.sticker-stamp-playing {
+  animation: sticker-stamp-in 486ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker-stamp-playing {
+    animation: none;
+  }
+}
+
 @keyframes sticker-stamp-in {
   0% {
     opacity: 0;

@@ -104,7 +104,7 @@ export default function FrequentShopList({
         </div>
       </header>
 
-      <div className="min-h-0 flex flex-1 flex-col overflow-y-auto">
+      <div className="min-h-0 flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
         <h1 className="sr-only">단골 리스트</h1>
         <div className="flex flex-1 flex-col">
           {frequentPlacesQuery.isPending && <FrequentShopListSkeleton />}
@@ -125,7 +125,7 @@ export default function FrequentShopList({
 
           {!frequentPlacesQuery.isPending && frequentPlaces.length > 0 && (
             <>
-              <ol className="-mx-4 flex flex-col gap-6 pt-4 pb-page-bottom">
+              <ol className="flex flex-col gap-6 pt-4 pb-page-bottom">
                 {frequentPlaces.map((place, index) => (
                   <FrequentShopItem
                     key={place.placeId ?? `${place.placeName ?? 'place'}-${index}`}

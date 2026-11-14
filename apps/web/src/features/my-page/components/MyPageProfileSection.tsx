@@ -1,6 +1,5 @@
-import { getProfileImageOption } from '@/features/my-page/constants/profileImageOptions';
 import { EditIcon } from '@/shared/assets/icons';
-import PageHeader from '@/shared/layout/page-header';
+import { BackButton } from '@/shared/ui/back-button';
 import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 
 type MyPageProfileSectionProps = {
@@ -18,33 +17,24 @@ export default function MyPageProfileSection({
   onBack,
   onEdit,
 }: MyPageProfileSectionProps) {
-  const profileImageOption = getProfileImageOption(profileImageCode);
-
   return (
-    <section className="h-52.75" aria-labelledby="my-page-nickname">
-      <div className="px-4">
-        <PageHeader onBack={onBack} />
+    <section className="shrink-0 pb-7" aria-labelledby="my-page-nickname">
+      <div className="px-4 pt-4 pb-5">
+        <BackButton onClick={onBack} className="mt-0" />
       </div>
 
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-4">
         <button
           type="button"
           aria-label="프로필 수정"
           onClick={onEdit}
           className="relative size-25 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
-          {profileImageCode ? (
-            <ProfileAvatar className="size-full" backgroundColor={profileImageOption.color} />
-          ) : profileImageUrl ? (
-            <img
-              className="size-full rounded-full object-cover"
-              src={profileImageUrl}
-              alt="프로필"
-              data-mp-block=""
-            />
-          ) : (
-            <ProfileAvatar className="size-full" backgroundColor={profileImageOption.color} />
-          )}
+          <ProfileAvatar
+            className="size-full"
+            profileImageCode={profileImageCode}
+            profileImageUrl={profileImageUrl}
+          />
           <span className="absolute right-0 bottom-0 flex size-7 items-center justify-center rounded-full bg-neutral-00">
             <EditIcon className="size-full" aria-hidden="true" />
           </span>

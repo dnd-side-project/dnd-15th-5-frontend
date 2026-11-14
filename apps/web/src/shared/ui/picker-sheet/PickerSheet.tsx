@@ -59,7 +59,7 @@ export function PickerSheet({
 
   useScrollLock();
   useOutsidePress(sheetRef, closePickerSheet, isVisible);
-  useFocusTrap(sheetRef, { initialFocusSelector, onEscape: closePickerSheet });
+  useFocusTrap(sheetRef, { enabled: isVisible, initialFocusSelector, onEscape: closePickerSheet });
 
   const handleSnapPointChange = (nextSnapPoint: BottomSheetSnapPoint) => {
     if (nextSnapPoint === 'hidden') {

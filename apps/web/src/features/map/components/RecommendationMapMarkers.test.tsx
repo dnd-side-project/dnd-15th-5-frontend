@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useNearbyPlaceRecommendationsQuery } from '../apis/hooks/useNearbyPlaceRecommendationsQuery';
@@ -7,6 +7,7 @@ import { mockGoogleMapsIdleEvent } from '../googleMapsEventMock';
 import { useHomeBottomSheetStore } from '../stores/homeBottomSheetStore';
 import { useLocationSelectionStore } from '../stores/locationSelectionStore';
 import { useMapCategoryFilterStore } from '../stores/mapCategoryFilterStore';
+import { useMapPlaceStampStore } from '../stores/mapPlaceStampStore';
 import { useShopRecommendationStore } from '../stores/shopRecommendationStore';
 import { TEST_SHOP_RECOMMENDATIONS } from '../testFixtures';
 import { getFocusedMarkerVerticalOffset } from '../utils/focusMapOnPosition';
@@ -99,7 +100,35 @@ jest.mock('@vis.gl/react-google-maps', () => ({
 }));
 
 describe('RecommendationMapMarkers', () => {
+  it('기록한 장소가 좋아요 핀이면 같은 모션을 한 번만 재생한다', () => {
+    const recommendation = { ...TEST_SHOP_RECOMMENDATIONS[0]!, isLiked: true };
+    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
+      recommendations: [],
+    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      likedRecommendations: [recommendation],
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+    useMapPlaceStampStore.getState().requestPlaceStamp(recommendation.id);
+    const { rerender } = render(<RecommendationMapMarkers />);
+    const marker = screen.getByRole('button', { name: `${recommendation.place.name} 추천 마커` });
+    const icon = marker.firstElementChild!;
+    expect(icon).toHaveClass('map-place-stamp');
+    expect(useMapPlaceStampStore.getState().stampRequest).toBeNull();
+    fireEvent.animationEnd(icon);
+    expect(icon).not.toHaveClass('map-place-stamp', 'recommendation-marker-icon');
+    rerender(<RecommendationMapMarkers />);
+    expect(marker.firstElementChild).toBe(icon);
+    expect(icon).not.toHaveClass('map-place-stamp');
+    fireEvent.click(marker);
+    expect(marker.firstElementChild).toHaveClass('recommendation-marker-icon');
+    expect(marker.firstElementChild).not.toHaveClass('map-place-stamp');
+    act(() => useHomeBottomSheetStore.getState().showHome());
+    expect(marker.firstElementChild).toHaveClass('recommendation-marker-icon');
+    expect(useMapPlaceStampStore.getState().stampRequest).toBeNull();
+  });
+
   beforeEach(() => {
+    useMapPlaceStampStore.setState(useMapPlaceStampStore.getInitialState());
     moveCamera.mockReset();
     panBy.mockReset();
     mockGoogleMapsIdleEvent();

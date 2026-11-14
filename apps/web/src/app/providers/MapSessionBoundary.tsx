@@ -6,6 +6,7 @@ import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetSt
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { useMapCategoryFilterStore } from '@/features/map/stores/mapCategoryFilterStore';
 import { useMapFocusStore } from '@/features/map/stores/mapFocusStore';
+import { useMapPlaceStampStore } from '@/features/map/stores/mapPlaceStampStore';
 import { useMapViewportStore } from '@/features/map/stores/mapViewportStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import { useGetMyAccount } from '@/features/my-page/apis/queries';
@@ -34,6 +35,8 @@ export default function MapSessionBoundary({ children }: MapSessionBoundaryProps
     useShopRecommendationStore.setState(useShopRecommendationStore.getInitialState());
     useMapCategoryFilterStore.setState(useMapCategoryFilterStore.getInitialState());
     useMapFocusStore.setState(useMapFocusStore.getInitialState());
+    // 같은 핀이 유지되어도 새 요청을 구분할 수 있도록 재생 순번은 유지합니다.
+    useMapPlaceStampStore.setState({ stampRequest: null });
     useMapViewportStore.setState(useMapViewportStore.getInitialState());
     client.removeQueries({
       predicate: ({ queryKey }) => {
