@@ -1,4 +1,4 @@
-import { StickerCoffeeImage, StickerDartImage } from '@/shared/assets/images/stickers';
+import { bowling, coffee } from '@/shared/assets/images/ios-stickers';
 
 import type { MapSticker, ShopRecommendation } from './types';
 
@@ -6,7 +6,7 @@ export const TEST_MAP_STICKERS: readonly MapSticker[] = [
   {
     googlePlaceId: 'ChIJ-twosome-101',
     id: '101',
-    image: StickerCoffeeImage,
+    image: coffee,
     isLiked: false,
     label: '커피',
     place: {
@@ -15,7 +15,7 @@ export const TEST_MAP_STICKERS: readonly MapSticker[] = [
       category: '카페',
       address: '서울특별시 강남구 봉은사로 125 1층',
       isRegular: true,
-      stickerImages: [StickerCoffeeImage],
+      stickerImages: [coffee],
     },
     position: { lat: 37.506481, lng: 127.024551 },
     visitCount: 3,
@@ -23,16 +23,16 @@ export const TEST_MAP_STICKERS: readonly MapSticker[] = [
   {
     googlePlaceId: 'ChIJ-dart-pub-102',
     id: '102',
-    image: StickerDartImage,
+    image: bowling,
     isLiked: false,
-    label: '다트',
+    label: '볼링',
     place: {
       id: '102',
       name: '플레이 다트펍',
       category: '취미/놀거리',
       address: '서울특별시 종로구 종로 51',
       isRegular: false,
-      stickerImages: [StickerDartImage],
+      stickerImages: [bowling],
     },
     position: { lat: 37.5705, lng: 126.975 },
     visitCount: 1,

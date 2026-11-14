@@ -29,7 +29,7 @@ it('기본 스티커는 사진 업로드 없이 유지할 서버 ID로 복원한
   expect(value?.defaultSticker).toMatchObject({ id: 'coffee', name: '커피', category: '카페' });
 });
 
-it('카탈로그에 없는 저장된 기본 스티커는 다른 스티커로 대신 선택하지 않는다', () => {
+it('카탈로그에 없는 저장된 기본 스티커는 수정 폼을 만들지 않는다', () => {
   const value = createEditConsumptionInitialValue({
     ...TEST_CONSUMPTION_DETAIL,
     imageId: null,
@@ -37,8 +37,7 @@ it('카탈로그에 없는 저장된 기본 스티커는 다른 스티커로 대
     stickerItemId: 5,
     stickerName: '도넛',
   });
-  expect(value).not.toBeNull();
-  expect(value?.defaultSticker).toBeUndefined();
+  expect(value).toBeNull();
 });
 
 it('소비 카테고리와 달라도 저장된 스티커 카테고리로 선택 항목을 찾는다', () => {

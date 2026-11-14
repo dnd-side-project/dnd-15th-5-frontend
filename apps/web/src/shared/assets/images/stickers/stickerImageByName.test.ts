@@ -14,16 +14,16 @@ describe('getStickerImages', () => {
     expect(
       getStickerImages([
         { imageUrl: photo, itemName: '커피', count: 2 },
-        { itemName: '눈' },
-        { imageUrl: '   ', itemName: '따봉' },
+        { itemName: '케이크' },
+        { imageUrl: '   ', itemName: '피자' },
         { imageId: 12 },
         { imageUrl: photo, count: 0 },
       ])
     ).toEqual([
       photo,
       photo,
-      getStickerImageByName('눈'),
-      getStickerImageByName('따봉'),
+      getStickerImageByName('케이크'),
+      getStickerImageByName('피자'),
       StickerEyesImage,
     ]);
     expect(getStickerImage({ imageUrl: ` ${photo} ` })).toBe(photo);
@@ -37,38 +37,47 @@ describe('getStickerImages', () => {
     }
     expect(getStickerImageByName('서버에 없는 이름')).toBeUndefined();
   });
+
+  it.each(['도넛', '다트', 'LP', '감자튀김', '뒤집개', '따봉', '눈', '왕관'])(
+    '이전 스티커 이름은 지원 목록에 포함하지 않는다: %s',
+    (name) => {
+      expect(getStickerImageByName(name)).toBeUndefined();
+      expect(getStickerImages([{ itemName: name }])).toEqual([]);
+    }
+  );
+
   it('지원하는 스티커의 이미지 경로만 반환한다', () => {
     expect(
       getStickerImages([
         { itemName: '커피' },
-        { itemName: '눈' },
-        { itemName: '왕관' },
-        { itemName: '따봉' },
+        { itemName: '케이크' },
+        { itemName: '게임기' },
+        { itemName: '피자' },
         { itemName: '미지원' },
         {},
       ])
     ).toEqual([
       getStickerImageByName('커피'),
-      getStickerImageByName('눈'),
-      getStickerImageByName('왕관'),
-      getStickerImageByName('따봉'),
+      getStickerImageByName('케이크'),
+      getStickerImageByName('게임기'),
+      getStickerImageByName('피자'),
     ]);
   });
 
   it('summary의 스티커를 count만큼 모두 펼친다', () => {
     expect(
       getStickerImages([
-        { itemName: '눈', count: 3 },
-        { itemName: '따봉', count: 2 },
-        { itemName: '왕관', count: 1 },
+        { itemName: '케이크', count: 3 },
+        { itemName: '피자', count: 2 },
+        { itemName: '게임기', count: 1 },
       ])
     ).toEqual([
-      getStickerImageByName('눈'),
-      getStickerImageByName('눈'),
-      getStickerImageByName('눈'),
-      getStickerImageByName('따봉'),
-      getStickerImageByName('따봉'),
-      getStickerImageByName('왕관'),
+      getStickerImageByName('케이크'),
+      getStickerImageByName('케이크'),
+      getStickerImageByName('케이크'),
+      getStickerImageByName('피자'),
+      getStickerImageByName('피자'),
+      getStickerImageByName('게임기'),
     ]);
   });
 });
