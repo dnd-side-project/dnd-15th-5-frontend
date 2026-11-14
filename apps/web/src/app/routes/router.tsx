@@ -24,8 +24,6 @@ import NotificationPage from '@/pages/notifications/NotificationPage';
 import NotificationSettingsPage from '@/pages/notifications/NotificationSettingsPage';
 import OnboardingPage from '@/pages/onboarding/OnboardingPage';
 import EditRecordPage from '@/pages/record/edit/EditRecordPage';
-import ManualRecordPage from '@/pages/record/manual/ManualRecordPage';
-import ReceiptCameraPage from '@/pages/record/receipt/ReceiptCameraPage';
 import RecordPage from '@/pages/record/RecordPage';
 import ShopSearchPage from '@/pages/record/shop/search/ShopSearchPage';
 import FrequentShopListPage from '@/pages/report/frequent-shops/FrequentShopListPage';
@@ -123,13 +121,8 @@ export const router = createSentryBrowserRouter([
               },
             ],
           },
-          // 영수증 촬영은 좌우 여백 없이 전체 너비를 사용한다.
           {
-            path: ROUTE_PATHS.receiptCamera,
-            element: <ReceiptCameraPage />,
-          },
-          {
-            // INFO: 지도 홈과 영수증 촬영을 제외한 화면에 좌우 여백을 적용한다.
+            // INFO: 일반 화면에 좌우 여백을 적용한다.
             element: <PaddedLayout />,
             children: [
               {
@@ -163,10 +156,6 @@ export const router = createSentryBrowserRouter([
               {
                 path: ROUTE_PATTERNS.shopDetail,
                 element: <ShopDetailPage />,
-              },
-              {
-                path: ROUTE_PATHS.manualRecord,
-                element: <ManualRecordPage />,
               },
               {
                 path: ROUTE_PATHS.spendingHistory,

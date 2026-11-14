@@ -241,6 +241,14 @@ it('기존 가게 검색 화면으로 이동하고 가게 선택 후 스티커�
   expect(loadDefaultSticker).toHaveBeenCalledTimes(1);
 });
 
+it('가게 검색에 직접 진입해 장소를 선택하면 새 기록에 가게와 연월을 적용한다', async () => {
+  renderRecordPage('/record/shop/search?yearMonth=2020-07');
+  fireEvent.click(screen.getByRole('button', { name: '검색 결과 선택' }));
+  await selectDefaultSticker();
+  expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
+  expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record?yearMonth=2020-07');
+});
+
 it('가게 검색에서 뒤로 돌아오면 선택을 바꾸지 않고 작성 중이던 폼을 유지한다', async () => {
   const router = renderRecordPage();
   const sticker = await selectDefaultSticker();
