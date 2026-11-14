@@ -62,7 +62,7 @@ export default function FrequentShopSummary({
           className="my-auto"
         />
       ) : frequentPlaces.length > 0 ? (
-        <ol className="-mx-4 flex flex-col gap-6 pt-4">
+        <ol className="flex flex-col gap-6 pt-4">
           {frequentPlaces.map((place, index) => {
             const placeId = place.placeId;
             const canSelectPlace =

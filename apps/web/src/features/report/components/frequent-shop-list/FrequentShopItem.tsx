@@ -67,7 +67,7 @@ export default function FrequentShopItem({
   );
 
   return (
-    <li className="px-4">
+    <li>
       {onSelect ? (
         <button
           type="button"
