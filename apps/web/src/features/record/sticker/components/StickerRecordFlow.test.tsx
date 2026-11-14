@@ -165,8 +165,8 @@ it('수정 중 사진 자르기의 X는 상위 종료 처리를 사용하고 생
   expect(screen.queryByRole('button', { name: '뒤로 가기' })).not.toBeInTheDocument();
 });
 
-it.each(['케이크', '도넛'])(
-  '저장된 기본 스티커 선택을 복원하고 알 수 없는 항목은 자동 선택하지 않는다: %s',
+it.each(['케이크', '피자'])(
+  '저장된 기본 스티커 선택을 복원하고 카테고리가 다른 항목은 자동 선택하지 않는다: %s',
   async (stickerName) => {
     const initialValue = createEditConsumptionInitialValue({
       ...TEST_CONSUMPTION_DETAIL,

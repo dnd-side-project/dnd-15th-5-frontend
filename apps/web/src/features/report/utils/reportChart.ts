@@ -8,6 +8,3 @@ export const getRelativeBarHeightPercentage = (amount: number, maximumAmount: nu
   const relativeHeight = (amount / maximumAmount) * PERCENTAGE_TOTAL;
   return Math.max(relativeHeight, MINIMUM_VISIBLE_BAR_HEIGHT_PERCENTAGE);
 };
-
-/** 소비 금액을 한국어 원화 문자열로 표시합니다. */
-export const formatWon = (amount: number) => `${amount.toLocaleString('ko-KR')}원`;

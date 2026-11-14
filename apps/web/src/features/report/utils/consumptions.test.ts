@@ -1,5 +1,4 @@
 import {
-  createRecentSpendingMonths,
   formatPurchaseDateTimeLabel,
   formatSpendingYearMonth,
   groupConsumptionsByDate,
@@ -64,12 +63,7 @@ describe('consumptions', () => {
     ).toEqual([]);
   });
 
-  it('연월을 API 형식으로 만들고 연도를 넘어 최근 월 목록을 계산한다', () => {
+  it('연월을 API 형식으로 만든다', () => {
     expect(formatSpendingYearMonth({ year: 2026, month: 8 })).toBe('2026-08');
-    expect(createRecentSpendingMonths(3, new Date(2026, 0, 15))).toEqual([
-      { year: 2026, month: 1 },
-      { year: 2025, month: 12 },
-      { year: 2025, month: 11 },
-    ]);
   });
 });
