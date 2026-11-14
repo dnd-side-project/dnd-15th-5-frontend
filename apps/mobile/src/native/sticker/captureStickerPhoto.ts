@@ -2,10 +2,17 @@ import { router } from 'expo-router';
 
 import { createCameraRequest } from '@/native/camera/createCameraRequest';
 
-import type { BridgeResult } from '@chapchap/shared/bridge';
+import type { BridgePayload, BridgeResult } from '@chapchap/shared/bridge';
 
-const stickerCamera = createCameraRequest<BridgeResult<'captureStickerPhoto'>>({
-  open: (captureId) => router.push({ pathname: '/sticker-camera', params: { captureId } }),
+const stickerCamera = createCameraRequest<
+  BridgeResult<'captureStickerPhoto'>,
+  BridgePayload<'captureStickerPhoto'>
+>({
+  open: (captureId, context) =>
+    router.push({
+      pathname: '/sticker-camera',
+      params: { captureId, hasActiveRecord: context?.hasActiveRecord ? 'true' : 'false' },
+    }),
   alreadyOpenMessage: '카메라가 이미 열려 있어요.',
 });
 

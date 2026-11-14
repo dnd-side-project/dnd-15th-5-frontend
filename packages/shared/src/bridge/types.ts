@@ -115,9 +115,10 @@ export type BridgeMessageMap = {
     result: { saved: true };
   };
   captureStickerPhoto: {
-    payload: Record<string, never>;
+    payload: { hasActiveRecord?: boolean };
     result:
       | { status: 'success'; base64: string; mimeType: 'image/jpeg' }
+      | { status: 'closed' }
       | { status: 'cancelled' }
       | { status: 'permissionDenied' };
   };

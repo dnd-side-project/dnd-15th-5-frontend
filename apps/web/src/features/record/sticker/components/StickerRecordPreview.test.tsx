@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 import { TEST_CONSUMPTION_DETAIL } from '@/features/record/testFixtures';
 import { createEditConsumptionInitialValue } from '@/features/record/utils/createEditConsumptionInitialValue';
@@ -74,6 +74,61 @@ it('제출하지 않는 매장 썸네일만 바뀐 경우 저장을 활성화하
     />
   );
   expect(screen.getByRole('button', { name: '수정완료' })).toBeDisabled();
+});
+
+it('기본 스티커를 유지한 채 소비 카테고리를 변경하고 제출할 수 있다', () => {
+  const onSubmit = jest.fn();
+  const initial = createEditConsumptionInitialValue(TEST_CONSUMPTION_DETAIL)!;
+  render(
+    <StickerRecordPreview
+      sticker="coffee.png"
+      isDefaultSticker
+      defaultStickerCategory="카페"
+      selectedShop={initial.draft.shop}
+      onSubmit={onSubmit}
+      {...callbacks}
+    />
+  );
+  fireEvent.change(screen.getByRole('textbox', { name: '금액' }), { target: { value: '5500' } });
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '입력 유지' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: '음식점' }));
+  expect(screen.getByAltText('기록에 적용한 스티커')).toHaveAttribute('src', 'coffee.png');
+  expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('5,500');
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('입력 유지');
+  fireEvent.click(screen.getByRole('button', { name: '기록하기' }));
+  expect(onSubmit).toHaveBeenCalledWith(
+    expect.objectContaining({ category: '음식점', amount: '5500', memo: '입력 유지' })
+  );
+});
+
+it('스티커를 재선택하면 새 스티커의 카테고리를 적용하고 다른 입력은 유지한다', () => {
+  const props = { ...callbacks, isDefaultSticker: true, defaultStickerCategory: '카페' as const };
+  const { rerender } = render(<StickerRecordPreview {...props} sticker="coffee.png" />);
+  fireEvent.click(screen.getByRole('button', { name: '기타' }));
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '그대로 유지' },
+  });
+  rerender(<StickerRecordPreview {...props} sticker="cake.png" />);
+  expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('그대로 유지');
+  fireEvent.click(screen.getByRole('button', { name: '운동' }));
+  expect(screen.getByRole('button', { name: '운동' })).toHaveAttribute('aria-pressed', 'true');
+});
+
+it('저장된 기록의 소비 카테고리는 스티커의 기본 카테고리와 달라도 복원한다', () => {
+  const initial = createEditConsumptionInitialValue(TEST_CONSUMPTION_DETAIL)!;
+  render(
+    <StickerRecordPreview
+      sticker="coffee.png"
+      isDefaultSticker
+      defaultStickerCategory="카페"
+      initialDraft={{ ...initial.draft, category: '음식점' }}
+      {...callbacks}
+    />
+  );
+  expect(screen.getByRole('button', { name: '음식점' })).toHaveAttribute('aria-pressed', 'true');
 });
 
 it('카테고리 8개를 정해진 순서로 표시한다', () => {
@@ -195,4 +250,40 @@ it('앱에서는 영수증 촬영 진입을 요청한다', () => {
   renderPreview();
   fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
   expect(callbacks.onScanReceipt).toHaveBeenCalledTimes(1);
+});
+
+it('사진 스티커는 사진 변경 버튼으로 이미지 선택을 연다', () => {
+  render(<StickerRecordPreview sticker="photo.png" isDefaultSticker={false} {...callbacks} />);
+  fireEvent.click(screen.getByRole('button', { name: '사진 변경' }));
+  expect(callbacks.onChangeImage).toHaveBeenCalledTimes(1);
+});
+
+it('영수증 인식 후 완료 안내를 표시하고 재인식 취소 시 입력 내용을 유지한다', async () => {
+  jest.mocked(isNativeApp).mockReturnValue(true);
+  const receipt = {
+    receiptImageId: 23,
+    purchaseDate: '2026-08-09',
+    purchaseTime: '09:30',
+    amount: 5500,
+    shop: null,
+  };
+  callbacks.onScanReceipt
+    .mockResolvedValueOnce(receipt)
+    .mockResolvedValueOnce(null)
+    .mockResolvedValueOnce({ ...receipt, receiptImageId: 24, amount: 8200 });
+  renderPreview();
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '남길 메모' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: /영수증 인식하기/ }));
+  expect(await screen.findByRole('status')).toHaveTextContent('영수증을 인식해 정보를 가져왔어요');
+  expect(screen.queryByRole('button', { name: /영수증 인식하기/ })).not.toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('5,500');
+  fireEvent.click(screen.getByRole('button', { name: '다시 인식' }));
+  await waitFor(() => expect(callbacks.onScanReceipt).toHaveBeenCalledTimes(2));
+  expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('5,500');
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('남길 메모');
+  fireEvent.click(screen.getByRole('button', { name: '다시 인식' }));
+  await waitFor(() => expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('8,200'));
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('남길 메모');
 });

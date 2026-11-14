@@ -2,7 +2,7 @@ import { ANALYTICS_EVENTS, createStepAttemptProperties } from '@chapchap/shared/
 import { CameraView } from 'expo-camera';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
@@ -225,6 +225,14 @@ export default function ReceiptCameraScreen() {
 
       <View pointerEvents="none" className="absolute inset-x-0 top-0 h-33.5 bg-neutral-900/80" />
       <View pointerEvents="none" className="absolute inset-x-0 bottom-0 h-44.5 bg-neutral-900/80" />
+
+      <View pointerEvents="none" className="absolute right-4 bottom-48.5 left-4 items-center">
+        <View className="toast-surface toast-content toast-primary px-5">
+          <Text className="toast-text text-center font-pretendard-regular">
+            주요정보를 중앙에 배치시켜 촬영해주세요
+          </Text>
+        </View>
+      </View>
 
       <BackButton
         onPress={() => router.back()}

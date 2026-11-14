@@ -1,22 +1,24 @@
 import { useRef, useState } from 'react';
 
 import {
-  STICKER_FLOW_CROP_AREA_TOP,
   STICKER_FLOW_HEADER_HEIGHT_CLASS,
   STICKER_FLOW_HEADER_TOP_CLASS,
 } from '@/features/record/sticker/constants';
 import { FULL_STICKER_CROP, moveCropCorner } from '@/features/record/sticker/image/stickerImage';
 import type { StickerCrop, StickerCropCorner } from '@/features/record/sticker/image/stickerImage';
-import { CheckIcon } from '@/shared/assets/icons';
+import PageHeader from '@/shared/layout/page-header';
 import { cn } from '@/shared/lib/cn';
-import { BackButton } from '@/shared/ui/back-button';
+import { Button } from '@/shared/ui/button';
 
 import type { CSSProperties, PointerEvent } from 'react';
 
 type StickerCropperProps = {
   src: string;
+  initialCrop?: StickerCrop;
   isCropping: boolean;
   onCancel: () => void;
+  onReselect: () => void;
+  closeButtonLabel?: string;
   onConfirm: (crop: StickerCrop) => void;
 };
 
@@ -34,13 +36,16 @@ const toPercent = (value: number) => `${value * 100}%`;
 /** 시안 REC_Crop을 기준으로 가져온 사진의 네 모서리를 드래그해 자를 영역을 정합니다. */
 export default function StickerCropper({
   src,
+  initialCrop = FULL_STICKER_CROP,
   isCropping,
   onCancel,
+  onReselect,
+  closeButtonLabel = '사진 자르기 닫기',
   onConfirm,
 }: StickerCropperProps) {
   const imageBox = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState<number | null>(null);
-  const [crop, setCrop] = useState(FULL_STICKER_CROP);
+  const [crop, setCrop] = useState(initialCrop);
   const [activeCorner, setActiveCorner] = useState<StickerCropCorner | null>(null);
 
   const handlePointerDown = (corner: StickerCropCorner) => (event: PointerEvent) => {
@@ -72,47 +77,25 @@ export default function StickerCropper({
 
   return (
     <>
-      <header className={cn('absolute inset-x-0 top-0 z-10', STICKER_FLOW_HEADER_HEIGHT_CLASS)}>
-        <BackButton
-          variant="light"
-          onClick={onCancel}
-          aria-label="사진 다시 선택"
-          className={cn('absolute left-4 mt-0', STICKER_FLOW_HEADER_TOP_CLASS)}
+      <div className={cn('relative shrink-0', STICKER_FLOW_HEADER_HEIGHT_CLASS)}>
+        <PageHeader
+          title="사진 자르기"
+          tone="inverse"
+          onClose={onCancel}
+          closeButtonLabel={closeButtonLabel}
+          className={cn('absolute inset-x-4 h-6 py-0', STICKER_FLOW_HEADER_TOP_CLASS)}
         />
-        <h1
-          className={cn(
-            'absolute inset-x-14 text-center text-title-02-semibold',
-            STICKER_FLOW_HEADER_TOP_CLASS
-          )}
-        >
-          사진 자르기
-        </h1>
-        <button
-          type="button"
-          className={cn(
-            'absolute right-4 grid size-6 place-items-center',
-            STICKER_FLOW_HEADER_TOP_CLASS
-          )}
-          aria-label="자르기 완료"
-          disabled={!ratio || isCropping}
-          onClick={() => onConfirm(crop)}
-        >
-          <CheckIcon className="h-3.5 w-4.25" aria-hidden="true" />
-        </button>
-      </header>
-      {/* NOTE: 모서리 터치 영역의 가로 넘침을 막고, 절대 위치 영역으로 컨테이너 높이를 확정한다. */}
-      <div
-        className="absolute inset-x-0 bottom-0 overflow-hidden"
-        style={{ top: STICKER_FLOW_CROP_AREA_TOP }}
-      >
-        <div className="absolute inset-x-4 top-20 bottom-0 flex flex-col items-center justify-start @container-size">
+      </div>
+      {/* NOTE: 낮은 화면에서도 모서리를 조절할 공간을 확보하고, 부족한 높이는 상위 화면에서 스크롤한다. */}
+      <div className="flex min-h-80 flex-1 flex-col overflow-hidden px-4 pt-16">
+        <div className="flex min-h-0 flex-1 items-center justify-center @container-size">
           <div
             ref={imageBox}
             className="relative max-w-full shrink-0 touch-none select-none aspect-(--crop-ratio)"
             style={
               {
                 '--crop-ratio': ratio ?? 1,
-                width: ratio ? `min(100cqw, calc((100cqh - 2.8125rem) * ${ratio}))` : '100cqw',
+                width: ratio ? `min(100cqw, calc(100cqh * ${ratio}))` : '100cqw',
               } as CSSProperties
             }
           >
@@ -149,10 +132,26 @@ export default function StickerCropper({
               ))}
             </div>
           </div>
-          <p className="mt-7 shrink-0 text-center text-body-02-regular leading-4.25 text-neutral-500">
-            {isCropping ? '사진을 자르고 있어요' : '모서리를 드래그하여 자르기'}
-          </p>
         </div>
+        <p className="mt-5 shrink-0 text-center text-body-02-regular text-neutral-500">
+          {isCropping ? '사진을 자르고 있어요' : '모서리를 드래그하여 자르기'}
+        </p>
+      </div>
+      <div className="grid shrink-0 grid-cols-2 gap-3 px-4 pt-8 pb-[max(32px,env(safe-area-inset-bottom))]">
+        <Button
+          onClick={onReselect}
+          disabled={isCropping}
+          className="bg-neutral-600 hover:bg-neutral-500 active:bg-neutral-700"
+        >
+          사진 다시 고르기
+        </Button>
+        <Button
+          onClick={() => onConfirm(crop)}
+          disabled={!ratio || isCropping}
+          isLoading={isCropping}
+        >
+          스티커로 만들기
+        </Button>
       </div>
     </>
   );
