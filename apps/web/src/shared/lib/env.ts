@@ -1,4 +1,5 @@
 export const IS_DEVELOPMENT = import.meta.env.DEV;
+export const IS_PRODUCTION = import.meta.env.PROD;
 export const APP_ENVIRONMENT = import.meta.env.MODE;
 export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 export const KAKAO_JAVASCRIPT_KEY = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
