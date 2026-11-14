@@ -12,12 +12,14 @@ import {
   useOpenVisitedPlaceOnMap,
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
+import { useGetMyAccount } from '@/features/my-page';
 import { useHasUnreadNotificationQuery } from '@/features/notification';
 import ConsumptionRecordActions from '@/features/record/components/ConsumptionRecordActions';
 import ConsumptionSticker from '@/features/record/components/ConsumptionSticker';
 import { FrequentShopSummary, SpendingHistory } from '@/features/report';
 import { SelectedPlaceSheet } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 import {
   getConsumptionScrollDate,
   getConsumptionScrollId,
@@ -29,6 +31,8 @@ export default function HomePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const accountQuery = useGetMyAccount();
+  const account = accountQuery.data?.data;
   const { hasUnreadNotification } = useHasUnreadNotificationQuery();
   const { stickers } = useVisitedPlaceStickersQuery();
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
@@ -70,7 +74,16 @@ export default function HomePage() {
       {(actions) => (
         <div className="mobile-frame fixed inset-0 z-0 flex flex-col">
           <GoogleMapView />
-          <HomeMapOverlay hasUnreadNotification={hasUnreadNotification} />
+          <HomeMapOverlay
+            hasUnreadNotification={hasUnreadNotification}
+            profileAvatar={
+              <ProfileAvatar
+                className="size-full"
+                profileImageCode={account?.profileImageCode}
+                profileImageUrl={account?.profileImageUrl}
+              />
+            }
+          />
           <HomeBottomSheet
             onOpenRecommendationSearch={handleOpenRecommendationSearch}
             onSelectedPlaceExpand={handleSelectedPlaceExpand}

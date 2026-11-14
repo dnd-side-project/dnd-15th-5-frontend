@@ -9,8 +9,11 @@ import { CloseIcon, ChevronLeftIcon } from '@/shared/assets/icons';
 import HomeCategoryFilter from './HomeCategoryFilter';
 import HomeTopBar from './HomeTopBar';
 
+import type { ReactNode } from 'react';
+
 type HomeMapOverlayProps = {
   hasUnreadNotification: boolean;
+  profileAvatar?: ReactNode;
 };
 
 /**
@@ -20,7 +23,10 @@ type HomeMapOverlayProps = {
  * `pointer-events-none`을 두고, 실제 UI가 있는 영역에만 `pointer-events-auto`로 되돌립니다.
  * 홈 시트가 최대 확장되면 상단 UI 전체를 숨기고 카테고리 선택 상태와 가로 스크롤 위치는 유지합니다.
  */
-export default function HomeMapOverlay({ hasUnreadNotification }: HomeMapOverlayProps) {
+export default function HomeMapOverlay({
+  hasUnreadNotification,
+  profileAvatar,
+}: HomeMapOverlayProps) {
   const isHomeSheetFullyExpanded = useHomeBottomSheetStore(selectIsHomeSheetFullyExpanded);
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
@@ -75,7 +81,7 @@ export default function HomeMapOverlay({ hasUnreadNotification }: HomeMapOverlay
       className="pointer-events-none fixed top-0 right-0 left-0 z-map-control mx-auto flex max-w-120 flex-col pt-[env(safe-area-inset-top)]"
     >
       <div className="pointer-events-auto">
-        <HomeTopBar hasUnreadNotification={hasUnreadNotification} />
+        <HomeTopBar hasUnreadNotification={hasUnreadNotification} profileAvatar={profileAvatar} />
       </div>
       <div className="pointer-events-auto">
         <HomeCategoryFilter />

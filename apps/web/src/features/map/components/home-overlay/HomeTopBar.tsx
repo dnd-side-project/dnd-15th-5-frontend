@@ -4,12 +4,15 @@ import { NotificationDefaultIcon, NotificationUnreadIcon, SearchIcon } from '@/s
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 
+import type { ReactNode } from 'react';
+
 type HomeTopBarProps = {
   hasUnreadNotification: boolean;
+  profileAvatar?: ReactNode;
 };
 
 /** 지도 홈 상단에 장소 검색과 알림·마이페이지 바로가기를 표시합니다. */
-export default function HomeTopBar({ hasUnreadNotification }: HomeTopBarProps) {
+export default function HomeTopBar({ hasUnreadNotification, profileAvatar }: HomeTopBarProps) {
   const NotificationIcon = hasUnreadNotification ? NotificationUnreadIcon : NotificationDefaultIcon;
 
   return (
@@ -45,7 +48,7 @@ export default function HomeTopBar({ hasUnreadNotification }: HomeTopBarProps) {
           title="마이페이지"
           className="flex size-10 items-center justify-center overflow-hidden rounded-full shadow-home-overlay transition-transform active:scale-95"
         >
-          <ProfileAvatar className="size-full [&_img]:size-7" />
+          {profileAvatar ?? <ProfileAvatar className="size-full" />}
         </Link>
       </div>
     </div>

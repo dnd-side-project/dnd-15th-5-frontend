@@ -8,6 +8,7 @@ import {
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
 import { TEST_MAP_STICKERS } from '@/features/map/testFixtures';
+import { MyPageProfileSection, useGetMyAccount } from '@/features/my-page';
 import { useHasUnreadNotificationQuery } from '@/features/notification';
 import {
   ANALYTICS_EVENTS,
@@ -38,7 +39,9 @@ jest.mock('@/features/record/components/ConsumptionSticker', () => ({
 jest.mock('@/features/map', () => ({
   ...jest.requireActual('@/features/map'),
   GoogleMapView: () => null,
-  HomeMapOverlay: () => null,
+  HomeMapOverlay: ({ profileAvatar }: { profileAvatar: ReactNode }) => (
+    <div data-testid="home-profile">{profileAvatar}</div>
+  ),
   HomeBottomSheet: ({
     onSelectedPlaceExpand,
     renderFrequentShops,
@@ -56,6 +59,7 @@ jest.mock('@/features/map', () => ({
   ),
 }));
 jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
+jest.mock('@/features/my-page/apis/queries');
 jest.mock('@/shared/lib/analytics/mixpanel', () => ({
   ...jest.requireActual('@/shared/lib/analytics/mixpanel'),
   trackAnalyticsEvent: jest.fn(),
@@ -122,6 +126,57 @@ const renderHomePage = (createdPlace?: {
   );
 
 describe('<HomePage />', () => {
+  it.each([
+    ['BLUE', '#4a6bff'],
+    ['SKY_BLUE', '#98d7f0'],
+    ['PINK', '#ff68a3'],
+    ['YELLOW', '#ffb743'],
+    ['TEAL', '#4ca49d'],
+    ['RED', '#ff6243'],
+    ['UNKNOWN', '#4a6bff'],
+    [undefined, '#4a6bff'],
+  ])('홈과 마이페이지에서 %s 프로필을 동일하게 표시한다', (profileImageCode, color) => {
+    jest.mocked(useGetMyAccount).mockReturnValue({
+      data: { data: { profileImageCode } },
+    } as ReturnType<typeof useGetMyAccount>);
+    renderHomePage();
+    render(
+      <MyPageProfileSection
+        profileImageCode={profileImageCode}
+        onBack={jest.fn()}
+        onEdit={jest.fn()}
+      />
+    );
+
+    const homeAvatar = screen.getByTestId('home-profile').firstElementChild;
+    const myPageAvatar = screen.getByRole('button', { name: '프로필 수정' }).firstElementChild;
+    expect(homeAvatar).toHaveStyle({ backgroundColor: color });
+    expect(myPageAvatar).toHaveStyle({ backgroundColor: color });
+    expect(homeAvatar?.innerHTML).toBe(myPageAvatar?.innerHTML);
+  });
+
+  it('프로필 캐시가 변경되면 홈 아바타도 갱신한다', () => {
+    jest.mocked(useGetMyAccount).mockReturnValue({
+      data: { data: { profileImageCode: 'PINK' } },
+    } as ReturnType<typeof useGetMyAccount>);
+    const { rerender } = renderHomePage();
+    expect(screen.getByTestId('home-profile').firstElementChild).toHaveStyle({
+      backgroundColor: '#ff68a3',
+    });
+
+    jest.mocked(useGetMyAccount).mockReturnValue({
+      data: { data: { profileImageCode: 'TEAL' } },
+    } as ReturnType<typeof useGetMyAccount>);
+    rerender(
+      <MemoryRouter>
+        <HomePage />
+      </MemoryRouter>
+    );
+    expect(screen.getByTestId('home-profile').firstElementChild).toHaveStyle({
+      backgroundColor: '#4ca49d',
+    });
+  });
+
   it('편집 복귀 날짜를 전달하고 스크롤은 홈 바텀시트가 복원하도록 한다', () => {
     render(
       <MemoryRouter initialEntries={[{ pathname: '/home', state: { scrollToDate: '2026-10-31' } }]}>
@@ -154,6 +209,9 @@ describe('<HomePage />', () => {
   });
   beforeEach(() => {
     jest.clearAllMocks();
+    jest
+      .mocked(useGetMyAccount)
+      .mockReturnValue({ data: undefined } as ReturnType<typeof useGetMyAccount>);
     mockShowToast.mockReturnValue('toast-1');
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' }, stepIndex: 0 });
     useMapFocusStore.setState({ focusPosition: null, focusZoom: undefined });
