@@ -1,13 +1,17 @@
+import { QueryClient, QueryObserver } from '@tanstack/react-query';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { AxiosError } from 'axios';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationNeighborhood } from '@/features/map/apis/hooks/useRecommendationNeighborhood';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
+import { getGetNearbyPlacesQueryOptions } from '@/features/map/apis/queries';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import { TEST_SHOP_RECOMMENDATIONS } from '@/features/map/testFixtures';
+import type { ShopRecommendation } from '@/features/map/types';
 
 import ShopRecommendationSheet from './ShopRecommendationSheet';
 
@@ -17,6 +21,42 @@ jest.mock('@/features/map/apis/hooks/useRecommendationNeighborhood');
 jest.mock('./RecommendationAddressHint', () => () => null);
 
 const mutate = jest.fn();
+
+type NearbyQueryFixtureOptions = {
+  recommendations?: readonly ShopRecommendation[];
+  status?: 'pending' | 'error' | 'success';
+};
+
+// NOTE: 실제 QueryObserver 결과로 상태별 필수 필드와 판별 유니온을 유지합니다.
+const createNearbyQueryFixture = ({
+  recommendations = TEST_SHOP_RECOMMENDATIONS,
+  status = 'success',
+}: NearbyQueryFixtureOptions = {}): ReturnType<typeof useNearbyPlaceRecommendationsQuery> => {
+  const client = new QueryClient();
+  const options = getGetNearbyPlacesQueryOptions(
+    { lat: 37.54, lng: 127.05, radiusMeters: 1_500 },
+    { query: { enabled: false, retry: false, gcTime: Infinity } }
+  );
+  if (status === 'success' || recommendations.length > 0) {
+    client.setQueryData(options.queryKey, { data: {} });
+  }
+  const observer = new QueryObserver(client, options);
+  const query = observer.getCurrentQuery();
+  if (status === 'error') {
+    query.setState({ status: 'error', error: new AxiosError('추천 조회 실패') });
+  } else if (status === 'pending') {
+    query.setState({ fetchStatus: 'fetching' });
+  }
+  observer.setOptions(options);
+  const result = observer.getCurrentResult();
+  return {
+    ...result,
+    queryKey: options.queryKey,
+    recommendations: [...recommendations],
+    refetch: jest.fn().mockResolvedValue(result),
+  };
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
   useHomeBottomSheetStore.setState({ activeSheet: { type: 'recommendation' } });
@@ -31,11 +71,7 @@ beforeEach(() => {
     .mockReturnValue({ hasNeighborhood: true, isLoading: false, isError: false } as ReturnType<
       typeof useRecommendationNeighborhood
     >);
-  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
-    recommendations: TEST_SHOP_RECOMMENDATIONS,
-    isPending: false,
-    isError: false,
-  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue(createNearbyQueryFixture());
   jest
     .mocked(useTogglePlaceLikeMutation)
     .mockReturnValue({ mutate, isPending: false } as unknown as ReturnType<
@@ -44,11 +80,11 @@ beforeEach(() => {
 });
 
 it('추천 결과가 있는 카테고리만 홈 순서로 표시하며 필터를 선택해도 다른 칩을 유지한다', async () => {
-  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
-    recommendations: [...TEST_SHOP_RECOMMENDATIONS].reverse(),
-    isPending: false,
-    isError: false,
-  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue(
+    createNearbyQueryFixture({
+      recommendations: [...TEST_SHOP_RECOMMENDATIONS].reverse(),
+    })
+  );
   render(<ShopRecommendationSheet />);
   const navigation = within(screen.getByRole('navigation', { name: '추천 가게 카테고리' }));
   expect(navigation.getAllByRole('button').map((button) => button.textContent)).toEqual([
@@ -61,26 +97,25 @@ it('추천 결과가 있는 카테고리만 홈 순서로 표시하며 필터를
   expect(navigation.queryByRole('button', { name: '쇼핑' })).not.toBeInTheDocument();
 });
 
-it.each([
-  { isPending: true, isError: false },
-  { isPending: false, isError: true },
-])(
+it.each(['pending', 'error'] as const)(
   '로딩·오류 중에는 선택을 유지하고 성공한 결과에서 카테고리가 사라지면 전체로 복귀한다 (%j)',
   (status) => {
     useShopRecommendationStore.setState({ selectedCategory: '카페', listScrollTop: 100 });
-    jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
-      recommendations: [],
-      ...status,
-    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue(
+      createNearbyQueryFixture({
+        recommendations: [],
+        status,
+      })
+    );
     const { rerender } = render(<ShopRecommendationSheet />);
     expect(useShopRecommendationStore.getState().selectedCategory).toBe('카페');
 
     const remaining = TEST_SHOP_RECOMMENDATIONS.filter(({ place }) => place.category !== '카페');
-    jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
-      recommendations: remaining,
-      isPending: false,
-      isError: false,
-    } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue(
+      createNearbyQueryFixture({
+        recommendations: remaining,
+      })
+    );
     rerender(<ShopRecommendationSheet />);
     expect(useShopRecommendationStore.getState().selectedCategory).toBeNull();
     expect(useShopRecommendationStore.getState().listScrollTop).toBe(0);
@@ -90,11 +125,11 @@ it.each([
 );
 
 it('추천 결과가 없으면 전체 칩을 유지하고 빈 목록을 안내한다', () => {
-  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
-    recommendations: [],
-    isPending: false,
-    isError: false,
-  } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue(
+    createNearbyQueryFixture({
+      recommendations: [],
+    })
+  );
   render(<ShopRecommendationSheet />);
   const navigation = within(screen.getByRole('navigation', { name: '추천 가게 카테고리' }));
   expect(navigation.getAllByRole('button')).toHaveLength(1);
@@ -113,11 +148,11 @@ it('쇼핑 칩을 선택하면 쇼핑 가게만 표시하고 선택 상태를 �
       category: '쇼핑' as const,
     },
   };
-  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
-    recommendations: [...TEST_SHOP_RECOMMENDATIONS, shopping],
-    isPending: false,
-    isError: false,
-  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue(
+    createNearbyQueryFixture({
+      recommendations: [...TEST_SHOP_RECOMMENDATIONS, shopping],
+    })
+  );
   render(<ShopRecommendationSheet />);
   await userEvent.click(screen.getByRole('button', { name: '쇼핑' }));
   expect(screen.getByRole('button', { name: '쇼핑' })).toHaveAttribute('aria-pressed', 'true');
@@ -211,21 +246,15 @@ it('재조회 오류가 끝나 목록이 다시 나타나면 오류 전 스크�
   const list = screen.getByRole('list', { name: '추천 가게 목록' }).parentElement!;
   expect(list.scrollTop).toBe(150);
 
-  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
-    recommendations: TEST_SHOP_RECOMMENDATIONS,
-    isPending: false,
-    isError: true,
-  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  jest
+    .mocked(useNearbyPlaceRecommendationsQuery)
+    .mockReturnValue(createNearbyQueryFixture({ status: 'error' }));
   rerender(<ShopRecommendationSheet />);
   list.scrollTop = 0;
   fireEvent.scroll(list);
   expect(useShopRecommendationStore.getState().listScrollTop).toBe(150);
 
-  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
-    recommendations: TEST_SHOP_RECOMMENDATIONS,
-    isPending: false,
-    isError: false,
-  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue(createNearbyQueryFixture());
   rerender(<ShopRecommendationSheet />);
   expect(list.scrollTop).toBe(150);
 });
