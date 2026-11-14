@@ -9,7 +9,7 @@ import {
 } from '@/features/map';
 import { TEST_MAP_STICKERS } from '@/features/map/testFixtures';
 import SpendingRecordItem from '@/features/report/components/spending-history/SpendingRecordItem';
-import RouteHistoryProvider from '@/shared/layout/RouteHistoryProvider';
+import RouteHistoryProvider from '@/shared/lib/route-history';
 import type { ConsumptionActions } from '@/shared/types/consumptionActions';
 
 import ShopDetailPage from './ShopDetailPage';

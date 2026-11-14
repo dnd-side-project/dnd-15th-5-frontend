@@ -35,7 +35,7 @@ import MonthlyReportPage from '@/pages/report/MonthlyReportPage';
 import ReportPage from '@/pages/report/ReportPage';
 import SharedReportPage from '@/pages/report/shared/SharedReportPage';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
-import PaddedLayout from '@/shared/layout/PaddedLayout';
+import PaddedLayout from '@/shared/layout/padded-layout';
 
 const createSentryBrowserRouter = Sentry.wrapCreateBrowserRouter(createBrowserRouter);
 
@@ -78,7 +78,6 @@ export const router = createSentryBrowserRouter([
         element: <AuthenticatedRoute />,
         children: [
           {
-            // INFO: 온보딩 이미지는 전체 너비를 사용하고 조작 영역만 자체 여백을 적용한다.
             path: ROUTE_PATHS.onboarding,
             element: <OnboardingPage />,
           },

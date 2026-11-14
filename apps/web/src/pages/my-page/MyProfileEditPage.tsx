@@ -1,5 +1,5 @@
 import { ProfileImageSelector, useProfileEditor } from '@/features/my-page';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 import { Button } from '@/shared/ui/button';
 import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 import { StateView } from '@/shared/ui/state-view';

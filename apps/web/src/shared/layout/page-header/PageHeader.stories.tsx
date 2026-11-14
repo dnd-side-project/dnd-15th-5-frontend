@@ -5,7 +5,7 @@ import PageHeader from './PageHeader';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
-  title: 'Shared/PageHeader',
+  title: 'Shared/Layout/PageHeader',
   component: PageHeader,
   args: {
     title: '좋아요',

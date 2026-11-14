@@ -7,7 +7,7 @@ import {
   useRecommendationLocationActions,
 } from '@/features/map';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 
 export default function RecommendationLocationMapPage() {
   const navigate = useNavigate();

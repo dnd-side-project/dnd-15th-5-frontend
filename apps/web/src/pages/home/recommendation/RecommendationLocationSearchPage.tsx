@@ -11,7 +11,7 @@ import {
 } from '@/features/map';
 import { RecommendationLocationPinIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 import { PlaceSearchInput } from '@/shared/ui/place-search';
 
 export default function RecommendationLocationSearchPage() {

@@ -1,6 +1,9 @@
 import { useLayoutEffect, useRef } from 'react';
 
-import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import {
+  selectIsHomeSheetFullyExpanded,
+  useHomeBottomSheetStore,
+} from '@/features/map/stores/homeBottomSheetStore';
 import { CloseIcon, ChevronLeftIcon } from '@/shared/assets/icons';
 
 import HomeCategoryFilter from './HomeCategoryFilter';
@@ -15,8 +18,10 @@ type HomeMapOverlayProps = {
  *
  * 바텀시트와 독립적으로 화면 최상단에 고정됩니다. 빈 공간은 지도 제스처가 그대로 통과하도록
  * `pointer-events-none`을 두고, 실제 UI가 있는 영역에만 `pointer-events-auto`로 되돌립니다.
+ * 홈 시트가 최대 확장되면 상단 UI 전체를 숨기고 카테고리 선택 상태와 가로 스크롤 위치는 유지합니다.
  */
 export default function HomeMapOverlay({ hasUnreadNotification }: HomeMapOverlayProps) {
+  const isHomeSheetFullyExpanded = useHomeBottomSheetStore(selectIsHomeSheetFullyExpanded);
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
   const showRecommendation = useHomeBottomSheetStore((state) => state.showRecommendation);
@@ -63,8 +68,12 @@ export default function HomeMapOverlay({ hasUnreadNotification }: HomeMapOverlay
       </div>
     );
   }
+
   return (
-    <div className="pointer-events-none fixed top-0 right-0 left-0 z-10 mx-auto flex max-w-120 flex-col pt-[env(safe-area-inset-top)]">
+    <div
+      hidden={isHomeSheetFullyExpanded}
+      className="pointer-events-none fixed top-0 right-0 left-0 z-map-control mx-auto flex max-w-120 flex-col pt-[env(safe-area-inset-top)]"
+    >
       <div className="pointer-events-auto">
         <HomeTopBar hasUnreadNotification={hasUnreadNotification} />
       </div>

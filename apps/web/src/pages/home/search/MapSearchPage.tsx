@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOpenVisitedPlaceOnMap } from '@/features/map';
 import { VisitedPlaceSearch } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 
 export default function MapSearchPage() {
   const navigate = useNavigate();

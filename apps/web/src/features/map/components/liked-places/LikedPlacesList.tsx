@@ -9,7 +9,7 @@ import {
 } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { getLikedPlacePhotoUrls } from '@/features/map/utils/likedPlacePhotos';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 import { Button } from '@/shared/ui/button';
 import { CategoryChip } from '@/shared/ui/category-chip';
 import { StateView } from '@/shared/ui/state-view';

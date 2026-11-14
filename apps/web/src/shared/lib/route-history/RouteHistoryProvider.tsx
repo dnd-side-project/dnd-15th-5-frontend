@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 
-import { RouteHistoryContext } from '@/shared/lib/routeHistoryContext';
+import { RouteHistoryContext } from './routeHistoryContext';
 
 import type { PropsWithChildren } from 'react';
 

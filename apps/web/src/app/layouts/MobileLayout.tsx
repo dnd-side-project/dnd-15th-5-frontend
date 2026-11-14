@@ -8,9 +8,9 @@ import MapSessionBoundary from '@/app/providers/MapSessionBoundary';
 import ScrollToTop from '@/app/routes/ScrollToTop';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
-import RouteHistoryProvider from '@/shared/layout/RouteHistoryProvider';
 import { notifyNative } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
+import RouteHistoryProvider from '@/shared/lib/route-history';
 
 import type { PropsWithChildren } from 'react';
 
