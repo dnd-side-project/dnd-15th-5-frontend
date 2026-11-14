@@ -118,6 +118,25 @@ describe('useSocialLoginCallback', () => {
     });
   });
 
+  it('로그인된 상태에서 다른 계정으로 로그인하면 인증 해제를 거친 뒤 새 토큰을 적용한다', async () => {
+    useAuthStore.getState().setAccessToken('previous-access-token');
+    const authenticationChanges: boolean[] = [];
+    const unsubscribe = useAuthStore.subscribe((state, previous) => {
+      if (state.isAuthenticated !== previous.isAuthenticated) {
+        authenticationChanges.push(state.isAuthenticated);
+      }
+    });
+    saveCodeVerifier('code-verifier');
+    renderCallback('/auth/callback?loginCode=login-code');
+    await waitFor(() => expect(mockMutate).toHaveBeenCalled());
+
+    await act(() => handleSuccess?.({ data: { accessToken: 'next-access-token' } }));
+    unsubscribe();
+
+    expect(authenticationChanges).toEqual([false, true]);
+    expect(useAuthStore.getState().accessToken).toBe('next-access-token');
+  });
+
   it('앱 인증 완료 응답에 Refresh Token이 없으면 로그인 상태를 적용하지 않는다', async () => {
     mockIsNativeApp.mockReturnValue(true);
     saveCodeVerifier('code-verifier');

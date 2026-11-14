@@ -18,6 +18,7 @@ import type { ErrorType, BodyType } from '@/shared/apis/orvalMutator';
 
 import type {
   ApiResponse,
+  IssueTokenParams,
   LoginCodeExchangeRequest,
   RefreshTokenRequest,
   SecondParameter,
@@ -27,6 +28,7 @@ import type {
 import {
   agree,
   exchangeSocialLoginCode,
+  issueToken,
   logoutApp,
   logoutWeb,
   refreshApp,
@@ -369,4 +371,67 @@ export const useLogoutWeb = <TError = ErrorType<ApiResponse>, TContext = unknown
   queryClient?: QueryClient
 ): UseMutationResult<Awaited<ReturnType<typeof logoutWeb>>, TError, void, TContext> => {
   return useMutation(getLogoutWebMutationOptions(options), queryClient);
+};
+
+export const getIssueTokenMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof issueToken>>,
+    TError,
+    { params?: IssueTokenParams },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof issueToken>>,
+  TError,
+  { params?: IssueTokenParams },
+  TContext
+> => {
+  const mutationKey = ['issueToken'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof issueToken>>,
+    { params?: IssueTokenParams }
+  > = (props) => {
+    const { params } = props ?? {};
+
+    return issueToken(params, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type IssueTokenMutationResult = NonNullable<Awaited<ReturnType<typeof issueToken>>>;
+
+export type IssueTokenMutationError = ErrorType<unknown>;
+
+/**
+ * @summary 테스트 토큰 발급
+ */
+export const useIssueToken = <TError = ErrorType<unknown>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof issueToken>>,
+      TError,
+      { params?: IssueTokenParams },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof issueToken>>,
+  TError,
+  { params?: IssueTokenParams },
+  TContext
+> => {
+  return useMutation(getIssueTokenMutationOptions(options), queryClient);
 };

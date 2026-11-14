@@ -9,6 +9,7 @@ describe('isConsumptionRelatedQuery', () => {
     ['/v1/consumptions/places/101/visits', true],
     ['/v1/recommendations/places/101', false],
     ['/v1/reports/current', true],
+    ['/v2/reports/sticker-board', true],
     ['/v1/reports/monthly', false],
     ['/v1/reports/share/token', false],
     ['/v1/accounts/me', false],

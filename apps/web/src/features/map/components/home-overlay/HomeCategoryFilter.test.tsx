@@ -23,9 +23,15 @@ describe('HomeCategoryFilter', () => {
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
   });
 
+  it('가게 추천은 검색으로 바로 이동하지 않고 동네 복원을 위한 추천 모드를 연다', async () => {
+    render(<HomeCategoryFilter />);
+    await userEvent.click(screen.getByRole('button', { name: '가게 추천' }));
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'recommendation' });
+  });
+
   it('선택한 카테고리 칩을 다시 누르면 비활성화한다', async () => {
     const user = userEvent.setup();
-    render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
+    render(<HomeCategoryFilter />);
     const cafeChip = screen.getByRole('button', { name: '카페' });
 
     await user.click(cafeChip);
@@ -43,7 +49,7 @@ describe('HomeCategoryFilter', () => {
       stickers: [{ place: { category: '카페' } }],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
 
-    render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
+    render(<HomeCategoryFilter />);
 
     expect(screen.getByRole('button', { name: '카페' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '운동' })).not.toBeInTheDocument();
@@ -56,7 +62,7 @@ describe('HomeCategoryFilter', () => {
       stickers: [{ place: { category: '카페' } }],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
 
-    render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
+    render(<HomeCategoryFilter />);
 
     expect(useMapCategoryFilterStore.getState().selectedCategory).toBeNull();
   });
@@ -69,7 +75,7 @@ describe('HomeCategoryFilter', () => {
       place: { ...TEST_SHOP_RECOMMENDATIONS[0]!.place, category: '기타' as const },
     };
     useHomeBottomSheetStore.getState().showLikedRecommendation(recommendation.id);
-    const { rerender } = render(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
+    const { rerender } = render(<HomeCategoryFilter />);
     expect(useMapCategoryFilterStore.getState().selectedCategory).toBeNull();
 
     // 다른 카페가 응답에 있어도 선택 장소의 '기타' 카테고리를 따라야 한다.
@@ -79,7 +85,7 @@ describe('HomeCategoryFilter', () => {
       likedRecommendations: [recommendation],
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
     act(() => useMapCategoryFilterStore.setState({ selectedCategory: '카페' }));
-    rerender(<HomeCategoryFilter onOpenRecommendationSearch={jest.fn()} />);
+    rerender(<HomeCategoryFilter />);
 
     expect(screen.getByRole('button', { name: '기타' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'false');

@@ -66,10 +66,10 @@ export const getGetConsumptionQueryOptions = <
     getConsumption(consumptionId, requestOptions, signal);
 
   return {
-    queryKey,
     queryFn,
     enabled: consumptionId !== null && consumptionId !== undefined,
     ...queryOptions,
+    queryKey,
   } as UseQueryOptions<Awaited<ReturnType<typeof getConsumption>>, TError, TData> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
@@ -461,10 +461,10 @@ export const getGetReadUrlQueryOptions = <
     getReadUrl(imageId, requestOptions, signal);
 
   return {
-    queryKey,
     queryFn,
     enabled: imageId !== null && imageId !== undefined,
     ...queryOptions,
+    queryKey,
   } as UseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };

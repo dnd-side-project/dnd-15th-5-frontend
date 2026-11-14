@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
@@ -43,6 +44,7 @@ describe('AppMainLayout', () => {
 
   it('숨겨진 홈 시트는 홈 탭으로 다시 열린다', () => {
     useHomeBottomSheetStore.setState({ stepIndex: 3 });
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
       <MemoryRouter initialEntries={['/home']}>
         <Routes>
@@ -59,7 +61,12 @@ describe('AppMainLayout', () => {
             />
           </Route>
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
+      {
+        wrapper: ({ children }) => (
+          <QueryClientProvider client={client}>{children}</QueryClientProvider>
+        ),
+      }
     );
     expect(screen.queryByRole('button', { name: '바텀시트 높이 조절' })).not.toBeInTheDocument();
     expect(useHomeBottomSheetStore.getState().visibleHeightPx).toBe(0);

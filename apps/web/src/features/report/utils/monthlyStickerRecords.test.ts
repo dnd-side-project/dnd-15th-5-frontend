@@ -1,45 +1,60 @@
-import { createMonthlyStickerRecordGroups, formatAcquiredDateLabel } from './monthlyStickerRecords';
+import { getStickerImageByName } from '@/shared/assets/images/stickers';
+
+import { formatStickerDateLabel, mapStickerBoardToRecordGroups } from './monthlyStickerRecords';
 
 describe('monthlyStickerRecords', () => {
-  it('스티커 API 응답을 획득일 내림차순으로 묶는다', () => {
+  it('스티커보드의 사진과 이모지를 응답 순서대로 함께 표시한다', () => {
+    const groups = mapStickerBoardToRecordGroups([
+      { date: '2026-08-21', visuals: [{ stickerName: '커피' }] },
+      {
+        date: '2026-08-23',
+        visuals: [
+          { imageId: 1, imageUrl: 'https://example.com/photo.png' },
+          { stickerName: '피자' },
+        ],
+      },
+    ]);
+
+    expect(groups).toEqual([
+      { date: '2026-08-21', stickerImages: [getStickerImageByName('커피')] },
+      {
+        date: '2026-08-23',
+        stickerImages: ['https://example.com/photo.png', getStickerImageByName('피자')],
+      },
+    ]);
+  });
+
+  it('날짜나 표시할 이미지가 없는 항목은 제외한다', () => {
     expect(
-      createMonthlyStickerRecordGroups([
-        { acquiredDate: '2026-08-21', itemName: '감자튀김' },
-        { acquiredDate: '2026-08-23', itemName: '피자' },
-        { acquiredDate: '2026-08-21', itemName: '커피' },
+      mapStickerBoardToRecordGroups([
+        { visuals: [{ stickerName: '커피' }] },
+        { date: '2026-08-24' },
+        { date: '2026-08-23', visuals: [{ stickerName: '미지원' }] },
+      ])
+    ).toEqual([]);
+    expect(mapStickerBoardToRecordGroups()).toEqual([]);
+  });
+
+  it('같은 날짜의 이미지와 중복된 이모지는 응답 순서와 개수대로 유지한다', () => {
+    expect(
+      mapStickerBoardToRecordGroups([
+        { date: '2026-08-23', visuals: [{ stickerName: '커피' }, { stickerName: '커피' }] },
+        { date: '2026-08-23', visuals: [{ imageUrl: 'https://example.com/photo.png' }] },
       ])
     ).toEqual([
       {
-        acquiredDate: '2026-08-23',
-        monthlyStickers: [{ acquiredDate: '2026-08-23', itemName: '피자' }],
-      },
-      {
-        acquiredDate: '2026-08-21',
-        monthlyStickers: [
-          { acquiredDate: '2026-08-21', itemName: '감자튀김' },
-          { acquiredDate: '2026-08-21', itemName: '커피' },
+        date: '2026-08-23',
+        stickerImages: [
+          getStickerImageByName('커피'),
+          getStickerImageByName('커피'),
+          'https://example.com/photo.png',
         ],
       },
     ]);
   });
 
-  it('획득일이 없는 스티커는 날짜 그룹에서 제외한다', () => {
-    expect(createMonthlyStickerRecordGroups([{ itemName: '감자튀김' }])).toEqual([]);
-  });
-
-  it('지원하지 않는 스티커도 API 응답 그대로 날짜 그룹에 유지한다', () => {
-    expect(
-      createMonthlyStickerRecordGroups([{ acquiredDate: '2026-08-21', itemName: '미지원' }])
-    ).toEqual([
-      {
-        acquiredDate: '2026-08-21',
-        monthlyStickers: [{ acquiredDate: '2026-08-21', itemName: '미지원' }],
-      },
-    ]);
-  });
-
-  it('획득일을 요일이 포함된 표시 문구로 변환한다', () => {
-    expect(formatAcquiredDateLabel('2026-08-23')).toBe('23일 일요일');
-    expect(formatAcquiredDateLabel('invalid')).toBe('invalid');
+  it('날짜를 요일이 포함된 표시 문구로 변환한다', () => {
+    expect(formatStickerDateLabel('2026-08-23')).toBe('23일 일요일');
+    expect(formatStickerDateLabel('invalid')).toBe('invalid');
   });
 });

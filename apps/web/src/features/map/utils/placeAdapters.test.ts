@@ -1,6 +1,20 @@
-import { toMapStickers, toShopRecommendations, toShopSearchResult } from './placeAdapters';
+import {
+  normalizeHomeCategory,
+  toMapStickers,
+  toShopRecommendations,
+  toShopSearchResult,
+} from './placeAdapters';
 
 describe('placeAdapters', () => {
+  it('쇼핑 카테고리를 기타로 바꾸지 않고 추천 목록에 유지한다', () => {
+    expect(normalizeHomeCategory('쇼핑')).toBe('쇼핑');
+    const places = toShopRecommendations({
+      allPlaces: [
+        { placeId: 301, name: '쇼핑 가게', category: '쇼핑', latitude: 37.5, longitude: 127 },
+      ],
+    });
+    expect(places[0]?.place.category).toBe('쇼핑');
+  });
   it.each([
     [undefined, true, true],
     [undefined, false, false],
