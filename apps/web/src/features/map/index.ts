@@ -8,7 +8,10 @@ export { useVisitedPlaceStickersQuery } from './apis/hooks/useVisitedPlaceSticke
 export { useCreatedConsumptionResult } from './hooks/useCreatedConsumptionResult';
 export { useOpenLikedPlaceFromLocation } from './hooks/useOpenLikedPlaceFromLocation';
 export { useOpenVisitedPlaceOnMap } from './hooks/useOpenVisitedPlaceOnMap';
-export { useHomeBottomSheetStore } from './stores/homeBottomSheetStore';
+export {
+  getHomeBottomSheetSnapPoint,
+  useHomeBottomSheetStore,
+} from './stores/homeBottomSheetStore';
 export { useMapCategoryFilterStore } from './stores/mapCategoryFilterStore';
 export { useLocationSelectionStore } from './stores/locationSelectionStore';
 export { useMapFocusStore } from './stores/mapFocusStore';

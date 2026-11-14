@@ -1,8 +1,8 @@
 import {
   getProfileImageOption,
   PROFILE_IMAGE_OPTIONS,
-} from '@/features/my-page/constants/profileImageOptions';
-import type { ProfileImageCode } from '@/features/my-page/constants/profileImageOptions';
+} from '@/shared/constants/profileImageOptions';
+import type { ProfileImageCode } from '@/shared/constants/profileImageOptions';
 import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 
 type ProfileImageSelectorProps = {

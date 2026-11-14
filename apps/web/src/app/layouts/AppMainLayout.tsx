@@ -1,9 +1,11 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
-import { useHomeBottomSheetStore } from '@/features/map';
+import { getHomeBottomSheetSnapPoint, useHomeBottomSheetStore } from '@/features/map';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { BottomTabBar } from '@/shared/layout/bottom-tab-bar';
+import { isNativeApp } from '@/shared/lib/bridge';
+import { cn } from '@/shared/lib/cn';
 
 /**
  * 홈·기록하기·리포트 탭 이동이 필요한 화면에 하단 탭바를 함께 렌더링합니다.
@@ -20,15 +22,24 @@ export default function AppMainLayout() {
     location.pathname === ROUTE_PATHS.home && activeSheetType !== 'home';
 
   const handleHomeClick = () => {
-    // NOTE: 다른 화면에서 홈으로 처음 들어올 때는 순환시키지 않는다. 이미 홈 화면을 보고 있는
-    // 상태에서 다시 누를 때만 다음 단계로 넘어간다.
+    // NOTE: 홈으로 복귀할 때 숨겨진 시트만 다시 열고, 열린 시트의 높이는 유지한다.
     if (location.pathname === ROUTE_PATHS.home) {
       advanceHomeBottomSheet();
+    } else {
+      const { stepIndex, setSnapPoint } = useHomeBottomSheetStore.getState();
+      if (getHomeBottomSheetSnapPoint(stepIndex) === 'hidden') {
+        setSnapPoint('medium');
+      }
     }
   };
 
   return (
-    <LiquidGlassScene className="flex min-h-screen flex-col">
+    <LiquidGlassScene
+      className={cn(
+        'flex min-h-screen flex-col',
+        isNativeApp() ? '[--bottom-tab-bar-gap:0px]' : '[--bottom-tab-bar-gap:32px]'
+      )}
+    >
       <div className="flex-1">
         <Outlet />
       </div>

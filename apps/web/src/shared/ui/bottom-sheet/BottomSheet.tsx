@@ -15,7 +15,7 @@ const SNAP_POINT_HEIGHT: Record<Exclude<BottomSheetSnapPoint, 'collapsed'>, stri
   full: `${BOTTOM_SHEET_HEIGHT_RATIO.full * 100}dvh`,
   large: `${BOTTOM_SHEET_HEIGHT_RATIO.large * 100}dvh`,
   medium: `${BOTTOM_SHEET_HEIGHT_RATIO.medium * 100}dvh`,
-  hidden: `${BOTTOM_SHEET_HEIGHT_RATIO.medium * 100}dvh`,
+  hidden: '0px',
 };
 
 type BottomSheetProps = {
@@ -166,6 +166,8 @@ export function BottomSheet({
   const handleClassName =
     'flex w-full shrink-0 touch-none select-none items-center justify-center py-3';
   const handleBar = <span className="h-1 w-10 rounded-full bg-neutral-300" aria-hidden="true" />;
+  // NOTE: 일반 시트는 숨김도 높이 0으로 전환한다. 콘텐츠 맞춤 시트는 높이가 auto이므로
+  // 높이를 유지한 채 translate로 숨긴다.
   const heightAtSnapPoint =
     snapPoint === 'collapsed'
       ? collapsedHeight
@@ -197,8 +199,10 @@ export function BottomSheet({
       onPointerDown={isContentDragEnabled ? handleContentPointerDown : undefined}
       onClickCapture={isContentDragEnabled ? handleContentClickCapture : undefined}
       onDragStart={isContentDragEnabled ? (event) => event.preventDefault() : undefined}
+      aria-hidden={isHidden || undefined}
+      inert={isHidden || undefined}
       style={{
-        minHeight: hasCollapsedSnapPoint ? collapsedHeight : undefined,
+        minHeight: hasCollapsedSnapPoint && !isHidden ? collapsedHeight : undefined,
         height: isDragging
           ? `${dragStartHeightPx ?? 0}px`
           : fitContent
@@ -207,12 +211,15 @@ export function BottomSheet({
         // NOTE: Tailwind duration 클래스 대신 상수를 그대로 써서, 이 값을 재사용하는
         // 다른 컴포넌트(예: 선택 시트 전환 로직)와 항상 같은 값을 유지한다.
         transitionDuration: prefersReducedMotion ? '0ms' : `${BOTTOM_SHEET_TRANSITION_MS}ms`,
+        transitionTimingFunction: 'cubic-bezier(0.45, 0, 0.55, 1)',
       }}
       className={cn(
         'mobile-frame fixed right-0 bottom-0 left-0 z-bottom-sheet flex flex-col rounded-t-30 bg-neutral-00 shadow-sheet',
-        isContentDragEnabled && 'touch-pan-x select-none overflow-hidden',
-        !isDragging && 'transition-[height,transform] ease-out',
-        isHidden ? 'translate-y-full' : 'translate-y-0'
+        isContentDragEnabled && 'touch-pan-x select-none',
+        (!fitContent || isContentDragEnabled) && 'overflow-hidden',
+        !isDragging && 'transition-[height,transform]',
+        isHidden && 'pointer-events-none shadow-none',
+        isHidden && fitContent ? 'translate-y-full' : 'translate-y-0'
       )}
     >
       {showHandle &&

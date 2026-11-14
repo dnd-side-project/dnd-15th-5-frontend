@@ -271,43 +271,6 @@ describe('HomeBottomSheet', () => {
     ).toHaveClass('pb-2');
   });
 
-  it.each(['자주 소비한 곳', '소비 기록'])(
-    '접힌 상태에서 %s 탭을 누르면 목록을 펼친다',
-    async (label) => {
-      useHomeBottomSheetStore.setState({ stepIndex: 3 });
-      const user = userEvent.setup();
-      render(
-        <HomeBottomSheet
-          renderFrequentShops={(headerContent) => (
-            <div>
-              {headerContent}
-              <p>가게 목록</p>
-            </div>
-          )}
-          renderSelectedPlace={renderSelectedPlace}
-          renderSpendingHistory={(headerContent) => (
-            <div>
-              {headerContent}
-              <p>기록 목록</p>
-            </div>
-          )}
-        />
-      );
-      const sheet = screen.getByRole('button', { name: '바텀시트 높이 조절' }).parentElement!;
-
-      expect(sheet).not.toHaveClass('translate-y-full');
-      expect(screen.getByText('가게 목록')).not.toBeVisible();
-      expect(screen.getByText('기록 목록')).not.toBeVisible();
-      expect(screen.getAllByRole('button', { name: /자주 소비한 곳|소비 기록/ })).toHaveLength(2);
-
-      await user.click(screen.getByRole('button', { name: label }));
-
-      expect(sheet).toHaveStyle({ height: '45dvh' });
-      expect(screen.getByRole('button', { name: label })).toHaveFocus();
-      expect(screen.getByText(label === '소비 기록' ? '기록 목록' : '가게 목록')).toBeVisible();
-    }
-  );
-
   it('목록을 접었다 펼쳐도 입력 상태와 스크롤 위치를 유지한다', async () => {
     const user = userEvent.setup();
     render(
@@ -331,12 +294,12 @@ describe('HomeBottomSheet', () => {
     scrollContainer.scrollTop = 240;
     fireEvent.scroll(scrollContainer);
 
-    act(() => useHomeBottomSheetStore.getState().setSnapPoint('collapsed'));
+    act(() => useHomeBottomSheetStore.getState().setSnapPoint('hidden'));
     scrollContainer.scrollTop = 0;
     fireEvent.scroll(scrollContainer);
     expect(useHomeBottomSheetStore.getState().scrollPositions.history).toBe(240);
 
-    await user.click(screen.getByRole('button', { name: '소비 기록' }));
+    act(() => useHomeBottomSheetStore.getState().advance());
 
     expect(screen.getByRole('textbox', { name: '선택한 월' })).toBe(input);
     expect(input).toHaveValue('6월');
@@ -562,8 +525,7 @@ describe('HomeBottomSheet', () => {
 
       act(() => jest.advanceTimersByTime(150));
       fireEvent.wheel(scrollContainer, { deltaY: -65 });
-      expect(screen.getByRole('button', { name: '자주 소비한 곳' })).toBeInTheDocument();
-      expect(sheet).not.toHaveStyle({ height: '45dvh' });
+      expect(sheet).toHaveStyle({ height: '0px' });
       expect(useHomeBottomSheetStore.getState().stepIndex).toBe(3);
     } finally {
       jest.useRealTimers();
@@ -1138,10 +1100,11 @@ describe('HomeBottomSheet', () => {
 
     fireEvent.click(handle);
 
-    expect(sheet).not.toHaveClass('translate-y-full');
-    expect(sheet.style.height).toBe(
-      'calc(5.25rem + calc(6.5625rem + env(safe-area-inset-bottom)))'
-    );
+    expect(sheet).toHaveStyle({ height: '0px' });
+    expect(sheet).toHaveAttribute('inert');
+    // 닫히는 동안 목록을 먼저 제거하지 않고 시트와 함께 이동시킨다.
+    expect(sheet.querySelector('[hidden=""]')).toBeInTheDocument();
+    expect(sheet.querySelectorAll('[hidden=""]')).toHaveLength(1);
     expect(container.querySelector('[data-slot="overlay"]')).not.toBeInTheDocument();
   });
 
