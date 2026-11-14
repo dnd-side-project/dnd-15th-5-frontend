@@ -11,6 +11,8 @@ import AccountRecordIcon from './ic-account-record.svg?react';
 import AccountRemoveIcon from './ic-account-remove.svg?react';
 import AddIcon from './ic-add.svg?react';
 import AnnouncementIcon from './ic-announcement.svg?react';
+import BeautyPinActiveIcon from './ic-beauty-pin-active.svg?react';
+import BeautyPinIcon from './ic-beauty-pin.svg?react';
 import BlueLocationPinIcon from './ic-blue-location-pin.svg?react';
 import CafePinActiveIcon from './ic-cafe-pin-active.svg?react';
 import CafePinIcon from './ic-cafe-pin.svg?react';
@@ -25,6 +27,8 @@ import CrownIcon from './ic-crown.svg?react';
 import CurrentLocationIcon from './ic-current-location.svg?react';
 import DeleteIcon from './ic-delete.svg?react';
 import EditIcon from './ic-edit.svg?react';
+import ExercisePinActiveIcon from './ic-exercise-pin-active.svg?react';
+import ExercisePinIcon from './ic-exercise-pin.svg?react';
 import ExternalLinkIcon from './ic-external-link.svg?react';
 import FilterIcon from './ic-filter.svg?react';
 import GoogleIcon from './ic-google.svg?react';
@@ -37,11 +41,15 @@ import LikedPlacePinIcon from './ic-liked-place-pin.svg?react';
 import LocationPinOutlineIcon from './ic-location-pin-outline.svg?react';
 import LogoutIcon from './ic-logout.svg?react';
 import MapIcon from './ic-map.svg?react';
+import MarketPinActiveIcon from './ic-market-pin-active.svg?react';
+import MarketPinIcon from './ic-market-pin.svg?react';
 import NavigationHomeIcon from './ic-navigation-home.svg?react';
 import NavigationRecordIcon from './ic-navigation-record.svg?react';
 import NavigationReportIcon from './ic-navigation-report.svg?react';
 import NotificationDefaultIcon from './ic-notification-default.svg?react';
 import NotificationUnreadIcon from './ic-notification-unread.svg?react';
+import OtherPinActiveIcon from './ic-other-pin-active.svg?react';
+import OtherPinIcon from './ic-other-pin.svg?react';
 import RankFirstIcon from './ic-rank-first.svg?react';
 import RankSecondIcon from './ic-rank-second.svg?react';
 import RankThirdIcon from './ic-rank-third.svg?react';
@@ -56,6 +64,14 @@ import TermsIcon from './ic-terms.svg?react';
 import ChapchapLogo from './logo-chapchap.svg?react';
 
 export {
+  BeautyPinActiveIcon,
+  BeautyPinIcon,
+  ExercisePinActiveIcon,
+  ExercisePinIcon,
+  MarketPinActiveIcon,
+  MarketPinIcon,
+  OtherPinActiveIcon,
+  OtherPinIcon,
   AccountRecordIcon,
   AccountRemoveIcon,
   AddIcon,
