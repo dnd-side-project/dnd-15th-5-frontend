@@ -24,6 +24,7 @@ type ShopDetailProps = ConsumptionActions & {
   scrollToDate?: string;
   scrollToConsumptionId?: number;
   isRestoreTargetPending?: boolean;
+  restoreScrollTop?: number;
 };
 
 export default function ShopDetail({
@@ -37,6 +38,7 @@ export default function ShopDetail({
   scrollToDate,
   scrollToConsumptionId,
   isRestoreTargetPending,
+  restoreScrollTop,
 }: ShopDetailProps) {
   const isValidPlaceId = isPositiveSafeInteger(placeId);
   const placeDetailQuery = useGetPlaceDetail(placeId, {
@@ -110,6 +112,7 @@ export default function ShopDetail({
       scrollToDate={scrollToDate}
       scrollToConsumptionId={scrollToConsumptionId}
       isRestoreTargetPending={isRestoreTargetPending || placeVisitsQuery.isRefetching}
+      restoreScrollTop={restoreScrollTop}
       visitHistory={{
         onEditRecord,
         onDeleteRecord,

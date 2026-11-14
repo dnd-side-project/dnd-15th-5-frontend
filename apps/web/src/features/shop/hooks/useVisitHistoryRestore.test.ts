@@ -7,11 +7,13 @@ type Options = Parameters<typeof useVisitHistoryRestore>[0];
 const setup = (overrides: Partial<Options> = {}) => {
   const root = document.createElement('div');
   const header = document.createElement('div');
+  const status = document.createElement('div');
   jest.spyOn(root, 'getBoundingClientRect').mockReturnValue({ top: 58 } as DOMRect);
   jest.spyOn(header, 'getBoundingClientRect').mockReturnValue({ height: 120 } as DOMRect);
   const options: Options = {
     scrollRootRef: { current: root },
     stickyHeaderRef: { current: header },
+    restoreStatusRef: { current: status },
     scrollToConsumptionId: 196,
     scrollToDate: '2026-11-01',
     visits: [],
@@ -32,7 +34,7 @@ const setup = (overrides: Partial<Options> = {}) => {
     root.append(row);
     return row;
   };
-  return { root, options, addRow };
+  return { root, status, options, addRow };
 };
 
 it('같은 날짜의 다른 방문을 건너뛰고 고정 헤더 아래로 수정한 ID를 한 번 복원한다', () => {
@@ -132,19 +134,37 @@ it('대상 날짜에 다른 기록도 없으면 날짜를 지난 시점에 자�
 });
 
 it('대상 방문을 기다리다 직접 스크롤하면 추가 조회와 늦은 복원을 중단한다', () => {
-  const { root, options, addRow } = setup({ hasNextPage: true });
+  const { root, status, options, addRow } = setup({ hasNextPage: true });
   const { rerender } = renderHook((props: Options) => useVisitHistoryRestore(props), {
     initialProps: options,
   });
   expect(options.onLoadMore).toHaveBeenCalledTimes(1);
+  expect(status.hidden).toBe(false);
   root.scrollTop = 120;
   fireEvent.scroll(root);
+  expect(status.hidden).toBe(true);
+  expect(root.style.visibility).toBe('');
   rerender({ ...options, loadedPageCount: 2 });
   expect(options.onLoadMore).toHaveBeenCalledTimes(1);
   addRow(196);
   rerender({ ...options, loadedPageCount: 3, visits: [{ consumptionId: 196 }] });
   expect(root.scrollTop).toBe(120);
 });
+
+it.each([{ isError: true }, { isFetchNextPageError: true }, { hasNextPage: false }])(
+  '복원을 완료할 수 없으면 로딩을 종료하고 내용을 표시한다: %p',
+  (overrides) => {
+    const { root, status, options } = setup({ hasNextPage: true });
+    const { rerender } = renderHook((props: Options) => useVisitHistoryRestore(props), {
+      initialProps: options,
+    });
+    expect(status.hidden).toBe(false);
+    expect(root.style.visibility).toBe('hidden');
+    rerender({ ...options, ...overrides });
+    expect(status.hidden).toBe(true);
+    expect(root.style.visibility).toBe('');
+  }
+);
 
 it('최신 기록 조회 중 스크롤한 경우에도 자동 복원을 취소하고 새로운 대상은 복원한다', () => {
   const { root, options, addRow } = setup({ isRestoreTargetPending: true });
