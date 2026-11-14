@@ -22,6 +22,12 @@ jest.mock('../apis/hooks/useNearbyPlaceRecommendationsQuery');
 jest.mock('../apis/hooks/useVisitedPlaceStickersQuery');
 
 jest.mock('@/shared/assets/icons', () => ({
+  ShoppingPinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="shopping-active" {...props} />
+  ),
+  ShoppingPinIcon: (props: SVGProps<SVGSVGElement>) => (
+    <svg data-marker-icon="shopping-default" {...props} />
+  ),
   BeautyPinActiveIcon: (props: SVGProps<SVGSVGElement>) => (
     <svg data-marker-icon="beauty-active" {...props} />
   ),
@@ -197,6 +203,7 @@ describe('RecommendationMapMarkers', () => {
     ['편의점/마트', 'market'],
     ['미용/뷰티', 'beauty'],
     ['기타', 'other'],
+    ['쇼핑', 'shopping'],
   ] as const)('%s 핀을 선택하면 해당 선택 핀과 상세 시트를 표시한다', async (category, icon) => {
     const user = userEvent.setup();
     const recommendation = {

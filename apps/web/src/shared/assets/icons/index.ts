@@ -60,10 +60,14 @@ import RestaurantPinIcon from './ic-restaurant-pin.svg?react';
 import SearchIcon from './ic-search.svg?react';
 import ShareIcon from './ic-share.svg?react';
 import ShopRecommendIcon from './ic-shop-recommend.svg?react';
+import ShoppingPinActiveIcon from './ic-shopping-pin-active.svg?react';
+import ShoppingPinIcon from './ic-shopping-pin.svg?react';
 import TermsIcon from './ic-terms.svg?react';
 import ChapchapLogo from './logo-chapchap.svg?react';
 
 export {
+  ShoppingPinActiveIcon,
+  ShoppingPinIcon,
   BeautyPinActiveIcon,
   BeautyPinIcon,
   ExercisePinActiveIcon,

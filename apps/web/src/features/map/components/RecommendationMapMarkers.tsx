@@ -11,6 +11,8 @@ import { useMapCategoryFilterStore } from '@/features/map/stores/mapCategoryFilt
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
 import type { HomeCategory, ShopRecommendation } from '@/features/map/types';
 import {
+  ShoppingPinActiveIcon,
+  ShoppingPinIcon,
   BeautyPinActiveIcon,
   BeautyPinIcon,
   ExercisePinActiveIcon,
@@ -54,6 +56,7 @@ const CATEGORY_MARKER_ICONS: Record<HomeCategory, RecommendationMarkerIcons> = {
   '편의점/마트': { active: MarketPinActiveIcon, default: MarketPinIcon },
   '미용/뷰티': { active: BeautyPinActiveIcon, default: BeautyPinIcon },
   기타: { active: OtherPinActiveIcon, default: OtherPinIcon },
+  쇼핑: { active: ShoppingPinActiveIcon, default: ShoppingPinIcon },
 };
 
 const getRecommendationMarkerIcons = ({ isLiked, place }: ShopRecommendation) => {

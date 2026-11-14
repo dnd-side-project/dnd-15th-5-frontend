@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationNeighborhood } from '@/features/map/apis/hooks/useRecommendationNeighborhood';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
+import { HOME_CATEGORIES } from '@/features/map/constants';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
@@ -21,16 +22,6 @@ type ShopRecommendationSheetProps = { onOpenRecommendationSearch?: () => void };
 type RecommendationContentProps = ShopRecommendationSheetProps & {
   neighborhood: ReturnType<typeof useRecommendationNeighborhood>;
 };
-
-const RECOMMENDATION_CATEGORIES = [
-  '카페',
-  '운동',
-  '편의점/마트',
-  '취미/놀거리',
-  '음식점',
-  '미용/뷰티',
-  '기타',
-] as const;
 
 /** 동네 복원이 끝난 뒤에만 추천 목록을 마운트해 임의의 지도 중심으로 조회하지 않습니다. */
 export default function ShopRecommendationSheet(props: ShopRecommendationSheetProps) {
@@ -130,7 +121,7 @@ function RecommendationList({ onOpenRecommendationSearch }: ShopRecommendationSh
         >
           전체
         </CategoryChip>
-        {RECOMMENDATION_CATEGORIES.map((category) => (
+        {HOME_CATEGORIES.map((category) => (
           <CategoryChip
             key={category}
             selected={selectedCategory === category}

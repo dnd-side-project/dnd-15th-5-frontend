@@ -43,6 +43,30 @@ beforeEach(() => {
     >);
 });
 
+it('쇼핑 칩을 선택하면 쇼핑 가게만 표시하고 선택 상태를 유지한다', async () => {
+  const shopping = {
+    ...TEST_SHOP_RECOMMENDATIONS[0]!,
+    id: 'shopping-store',
+    place: {
+      ...TEST_SHOP_RECOMMENDATIONS[0]!.place,
+      id: 'shopping-store',
+      name: '동네 쇼핑 가게',
+      category: '쇼핑' as const,
+    },
+  };
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
+    recommendations: [...TEST_SHOP_RECOMMENDATIONS, shopping],
+    isPending: false,
+    isError: false,
+  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  render(<ShopRecommendationSheet />);
+  await userEvent.click(screen.getByRole('button', { name: '쇼핑' }));
+  expect(screen.getByRole('button', { name: '쇼핑' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  expect(screen.getByRole('button', { name: '동네 쇼핑 가게 상세 보기' })).toBeInTheDocument();
+  expect(useShopRecommendationStore.getState().selectedCategory).toBe('쇼핑');
+});
+
 it('등록한 동네가 없으면 위치 설정을 안내하고 추천 조회는 하지 않는다', async () => {
   jest
     .mocked(useRecommendationNeighborhood)
