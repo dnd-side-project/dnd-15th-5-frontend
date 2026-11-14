@@ -37,6 +37,23 @@ const callbacks = {
 const renderPreview = () =>
   render(<StickerRecordPreview sticker="sticker.png" isDefaultSticker {...callbacks} />);
 
+it.each([false, true])(
+  '수정 화면은 닫기만 표시하고 앱 여부(%s)에 따라 상단 여백을 적용한다',
+  (isApp) => {
+    jest.mocked(isNativeApp).mockReturnValue(isApp);
+    render(
+      <StickerRecordPreview sticker="saved.png" isDefaultSticker={false} isEditing {...callbacks} />
+    );
+    expect(screen.queryByRole('button', { name: '뒤로 가기' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '기록 수정 종료' })).toBeInTheDocument();
+    const header = screen
+      .getByRole('heading', { name: '기록 수정' })
+      .closest('header')!.parentElement!;
+    if (isApp) expect(header).not.toHaveClass('pt-8');
+    else expect(header).toHaveClass('pt-8');
+  }
+);
+
 it.each([{ name: '새 이름' }, { address: '새 주소' }, { latitude: 38 }, { longitude: 128 }])(
   '같은 장소 ID여도 제출할 가게 정보가 바뀌면 저장할 수 있다: %p',
   (changes) => {

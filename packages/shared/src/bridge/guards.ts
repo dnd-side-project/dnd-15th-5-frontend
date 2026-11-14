@@ -13,6 +13,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
 const BRIDGE_MESSAGE_TYPES: BridgeMessageType[] = [
+  'pickStickerImage',
   'prepareStickerBackground',
   'removeStickerBackground',
   'cancelStickerBackground',
@@ -91,8 +92,10 @@ export const isBridgeRequest = (value: unknown): value is BridgeRequest => {
 
   if (value.type === 'captureStickerPhoto') {
     return (
-      value.payload.hasActiveRecord === undefined ||
-      typeof value.payload.hasActiveRecord === 'boolean'
+      (value.payload.hasActiveRecord === undefined ||
+        typeof value.payload.hasActiveRecord === 'boolean') &&
+      (value.payload.isChangingImage === undefined ||
+        typeof value.payload.isChangingImage === 'boolean')
     );
   }
 
@@ -175,11 +178,11 @@ export const isBridgeResponse = (value: unknown): value is BridgeResponse => {
     return value.result.saved === true;
   }
 
-  if (value.type === 'captureStickerPhoto') {
+  if (value.type === 'captureStickerPhoto' || value.type === 'pickStickerImage') {
     if (
-      value.result.status === 'closed' ||
+      (value.type === 'captureStickerPhoto' && value.result.status === 'closed') ||
       value.result.status === 'cancelled' ||
-      value.result.status === 'permissionDenied'
+      (value.type === 'captureStickerPhoto' && value.result.status === 'permissionDenied')
     )
       return true;
     return (

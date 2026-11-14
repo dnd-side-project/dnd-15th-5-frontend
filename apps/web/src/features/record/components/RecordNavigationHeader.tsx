@@ -9,6 +9,8 @@ type PendingExitAction = 'back' | 'close' | null;
 type RecordNavigationHeaderProps = {
   /** 버튼 사이 가운데에 표시할 화면 제목입니다. */
   title?: string;
+  showBack?: boolean;
+  closeButtonLabel?: string;
   onBack: () => void;
   onClose: () => void;
   /** 뒤로가기 전에 확인창을 띄울지 여부입니다. 기본값은 `false`입니다. */
@@ -17,9 +19,11 @@ type RecordNavigationHeaderProps = {
   confirmBeforeClose?: boolean;
 };
 
-/** 기록 플로우에서 이전 화면 이동과 홈으로 나가기를 제공하는 공통 헤더. */
+/** 기록 플로우에서 이전 화면 이동과 종료를 제공하는 공통 헤더입니다. */
 export default function RecordNavigationHeader({
   title,
+  showBack = true,
+  closeButtonLabel = '기록 닫고 홈으로 이동',
   onBack,
   onClose,
   confirmBeforeBack = false,
@@ -61,9 +65,9 @@ export default function RecordNavigationHeader({
     <>
       <PageHeader
         title={title}
-        onBack={handleBackClick}
+        onBack={showBack ? handleBackClick : undefined}
         onClose={handleCloseClick}
-        closeButtonLabel="기록 닫고 홈으로 이동"
+        closeButtonLabel={closeButtonLabel}
       />
 
       {pendingExitAction && (

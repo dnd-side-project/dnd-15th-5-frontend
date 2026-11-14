@@ -188,9 +188,11 @@ export default function StickerRecordPreview({
   return (
     <section className="flex min-h-dvh flex-1 flex-col bg-primary-50 text-neutral-700">
       <fieldset disabled={isSubmitting} className="contents">
-        <header className="shrink-0 px-4 pt-8">
+        <header className={cn('shrink-0 px-4', !isNativeApp() && 'pt-8')}>
           <RecordNavigationHeader
+            closeButtonLabel={isEditing ? '기록 수정 종료' : undefined}
             title={isEditing ? '기록 수정' : '기록하기'}
+            showBack={!isEditing}
             onBack={onBack}
             onClose={onClose}
           />

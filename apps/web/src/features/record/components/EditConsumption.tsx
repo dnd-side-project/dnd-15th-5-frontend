@@ -73,6 +73,7 @@ function ConsumptionEditor({
         <main className="min-h-dvh bg-neutral-00 px-4">
           <RecordNavigationHeader
             title="가게 변경"
+            closeButtonLabel="기록 수정 종료"
             onBack={() => setIsShopSearchOpen(false)}
             onClose={onClose}
           />
@@ -114,7 +115,13 @@ export default function EditConsumption(props: EditConsumptionProps) {
   if (!isValidId || !initialValue)
     return (
       <main className="px-4">
-        <RecordNavigationHeader title="기록 수정" onBack={props.onClose} onClose={props.onClose} />
+        <RecordNavigationHeader
+          title="기록 수정"
+          closeButtonLabel="기록 수정 종료"
+          showBack={false}
+          onBack={props.onClose}
+          onClose={props.onClose}
+        />
         <StateView
           variant="error"
           headingAs="h1"

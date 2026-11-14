@@ -141,18 +141,18 @@ it('백그라운드 재조회가 실패해도 작성 중인 입력과 변경 확
   act(() => failRefetch());
   expect(screen.getByRole('textbox', { name: '메모' })).toBe(memo);
   expect(memo).toHaveValue('유실되면 안 되는 메모');
-  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+  fireEvent.click(screen.getByRole('button', { name: '기록 수정 종료' }));
   expect(await screen.findByRole('dialog', { name: '수정을 그만할까요?' })).toBeInTheDocument();
 });
 
 it('변경 후 닫으면 확인창에서 계속 수정하거나 변경을 버리고 나간다', async () => {
   setup();
   fireEvent.change(screen.getByRole('textbox', { name: '메모' }), { target: { value: '수정 중' } });
-  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+  fireEvent.click(screen.getByRole('button', { name: '기록 수정 종료' }));
   expect(await screen.findByRole('dialog', { name: '수정을 그만할까요?' })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: '계속 수정하기' }));
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('수정 중');
-  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+  fireEvent.click(screen.getByRole('button', { name: '기록 수정 종료' }));
   fireEvent.click(await screen.findByRole('button', { name: '그만하기' }));
   await waitFor(() => expect(screen.getByText('기록 목록')).toBeInTheDocument());
 });
@@ -186,11 +186,11 @@ it('사진 생성 모션 후 새 스티커를 적용하고 종료 확인에서 �
   expect(chosenSticker).not.toHaveAttribute('src', originalSticker);
   const chosenUrl = chosenSticker.getAttribute('src');
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('작성 중인 메모');
-  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+  fireEvent.click(screen.getByRole('button', { name: '기록 수정 종료' }));
   expect(await screen.findByRole('dialog', { name: '수정을 그만할까요?' })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: '계속 수정하기' }));
   expect(screen.getByAltText('기록에 적용한 스티커')).toHaveAttribute('src', chosenUrl);
-  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
+  fireEvent.click(screen.getByRole('button', { name: '기록 수정 종료' }));
   fireEvent.click(await screen.findByRole('button', { name: '그만하기' }));
   expect(await screen.findByText('기록 목록')).toBeInTheDocument();
   expect(mockSubmit).not.toHaveBeenCalled();
