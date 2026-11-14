@@ -1,6 +1,7 @@
 import type { RecentNeighborhood } from '@/features/map/apis/hooks/useRecentNeighborhoods';
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { CloseIcon, LocationPinOutlineIcon } from '@/shared/assets/icons';
+import { Chip } from '@/shared/ui/chip';
 import { Spinner } from '@/shared/ui/spinner';
 
 type RecentNeighborhoodListProps = {
@@ -64,14 +65,14 @@ export default function RecentNeighborhoodList({
               </span>
               <button
                 type="button"
-                className="min-w-0 flex-1 truncate py-4 text-left text-body-01-semibold text-neutral-700"
+                className="flex min-w-0 flex-1 items-center gap-2 py-4 text-left text-body-01-semibold text-neutral-700"
                 disabled={isSelecting || removingId === neighborhood.id}
                 onClick={() => onSelect(neighborhood)}
               >
-                {neighborhood.address}
+                <span className="min-w-0 truncate">{neighborhood.address}</span>
                 {currentNeighborhood?.id === neighborhood.id && (
-                  <span className="ml-2 text-label-01-medium text-primary-500">
-                    현재 설정된 동네
+                  <span className="shrink-0">
+                    <Chip>현재 설정된 동네</Chip>
                   </span>
                 )}
               </button>
