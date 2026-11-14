@@ -9,8 +9,10 @@ import type { ComponentProps, ComponentType, SVGProps } from 'react';
 
 import './bottomTabBar.css';
 
-const GLASS_BASE_PROPS = {
+// NOTE: 캡처용 Scene 없이 Chromium은 SVG 굴절, Safari·iOS WebView·Firefox는 CSS 블러를 사용합니다.
+const SURFACE_GLASS_PROPS = {
   material: 'clear',
+  renderer: 'auto',
   mobileFallback: 'svg',
   quality: 'standard',
   lensProfile: 'player',
@@ -22,14 +24,14 @@ const GLASS_BASE_PROPS = {
   borderColor: 'transparent',
   background: 'transparent',
   reveal: 'immediate',
-} satisfies ComponentProps<typeof LiquidGlass>;
-
-const SURFACE_GLASS_PROPS = {
-  ...GLASS_BASE_PROPS,
   blur: 10,
   iosMinBlur: 10,
   lensOptions: { strength: 0.2, specular: 0.8, sheenAngle: -45 },
 } satisfies ComponentProps<typeof LiquidGlass>;
+
+// NOTE: 옵션 참조가 바뀌면 라이브러리가 굴절 맵을 다시 계산하므로 렌더 밖에 고정합니다.
+const CAPSULE_LENS_OPTIONS = { ...SURFACE_GLASS_PROPS.lensOptions, depth: 0.4 };
+const RECORD_LENS_OPTIONS = { ...SURFACE_GLASS_PROPS.lensOptions, depth: 0.2259 };
 
 /**
  * 하단 탭바가 차지하는 높이입니다. 탭바가 숨겨졌을 때(또는 탭바 위 다른 요소가 탭바와 겹치지
@@ -48,7 +50,7 @@ type TabNavLinkProps = {
   onClick?: () => void;
 };
 
-/** 활성 탭에 유리 배경을 표시하고 아이콘과 라벨 색을 전환하는 탭 링크입니다. */
+/** 활성 탭의 선택 배경과 아이콘·라벨 색을 전환하는 탭 링크입니다. */
 function TabNavLink({ analyticsId, to, end, label, Icon, onClick }: TabNavLinkProps) {
   return (
     <NavLink
@@ -59,34 +61,16 @@ function TabNavLink({ analyticsId, to, end, label, Icon, onClick }: TabNavLinkPr
       className="flex min-w-0 justify-center rounded-full outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary-500"
     >
       {({ isActive }) => (
-        <LiquidGlass
-          {...GLASS_BASE_PROPS}
-          radius={300}
-          blur={16}
-          iosMinBlur={16}
-          lensOptions={{
-            strength: 0.1,
-            depth: 0.2,
-            specular: 0,
-            sheen: 0,
-            glow: 0,
-            brightness: 0,
-            sheenAngle: 0,
-          }}
-          effectMode={isActive ? 'auto' : 'off'}
-          className="bottom-tab-glass shrink-0"
+        <span
+          className={cn(
+            'flex shrink-0 flex-col items-center justify-center gap-1 rounded-full transition-colors duration-200 motion-reduce:transition-none',
+            isActive ? 'bg-neutral-400/40 text-neutral-700' : 'text-neutral-500'
+          )}
           style={{ width: '4.375rem', height: '3.8125rem' }}
         >
-          <span
-            className={cn(
-              'flex size-full flex-col items-center justify-center gap-1 rounded-full transition-colors duration-200 motion-reduce:transition-none',
-              isActive ? 'bg-neutral-400/40 text-neutral-700' : 'text-neutral-500'
-            )}
-          >
-            <Icon className="shrink-0" aria-hidden="true" />
-            <span className="text-body-02-medium">{label}</span>
-          </span>
-        </LiquidGlass>
+          <Icon className="shrink-0" aria-hidden="true" />
+          <span className="text-body-02-medium">{label}</span>
+        </span>
       )}
     </NavLink>
   );
@@ -117,18 +101,17 @@ export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
   return (
     <nav
       aria-label="주요 메뉴"
-      data-liquid-glass-ignore
       className="mobile-frame pointer-events-none fixed right-0 bottom-0 left-0 z-bottom-navigation flex items-center justify-center gap-4 px-5 pb-[calc(var(--bottom-tab-bar-gap,32px)+env(safe-area-inset-bottom))]"
       style={{ minHeight: BOTTOM_TAB_BAR_HEIGHT_CSS }}
     >
       <LiquidGlass
         {...SURFACE_GLASS_PROPS}
         radius={300}
-        lensOptions={{ ...SURFACE_GLASS_PROPS.lensOptions, depth: 0.4 }}
-        className="bottom-tab-glass bottom-tab-glass-surface pointer-events-auto shrink-0 shadow-bottom-navigation"
+        lensOptions={CAPSULE_LENS_OPTIONS}
+        className="bottom-tab-glass pointer-events-auto shrink-0 shadow-bottom-navigation"
         style={{ width: '9.875rem', height: '4.5625rem' }}
       >
-        {/* NOTE: WebGL이 glassColor를 자체 하이라이트로 대체하므로 Fill은 별도 배경으로 유지한다. */}
+        {/* NOTE: SVG와 CSS 블러에서 동일한 Fill을 유지합니다. */}
         <div className="flex h-full items-center justify-center gap-0.5 rounded-full bg-neutral-00/65 px-2 py-1.5">
           <TabNavLink
             analyticsId="bottom-navigation-home"
@@ -150,8 +133,8 @@ export default function BottomTabBar({ onHomeClick }: BottomTabBarProps) {
       <LiquidGlass
         {...SURFACE_GLASS_PROPS}
         radius={31}
-        lensOptions={{ ...SURFACE_GLASS_PROPS.lensOptions, depth: 0.2259 }}
-        className="bottom-tab-glass bottom-tab-glass-surface pointer-events-auto shrink-0 rounded-full shadow-bottom-navigation"
+        lensOptions={RECORD_LENS_OPTIONS}
+        className="bottom-tab-glass pointer-events-auto shrink-0 rounded-full shadow-bottom-navigation"
         style={{ width: '3.8125rem', height: '3.8125rem' }}
       >
         <NavLink
