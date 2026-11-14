@@ -1,5 +1,3 @@
-import { domToBlob } from 'modern-screenshot';
-
 const OBJECT_URL_REVOKE_DELAY_MS = 1_000;
 const REPORT_IMAGE_CAPTURE_SCALE = 2;
 
@@ -8,7 +6,7 @@ export const captureReportImageBlob = async (
   element: HTMLElement,
   scale = REPORT_IMAGE_CAPTURE_SCALE
 ) => {
-  await document.fonts.ready;
+  const [{ domToBlob }] = await Promise.all([import('modern-screenshot'), document.fonts.ready]);
 
   return domToBlob(element, { scale });
 };

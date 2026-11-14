@@ -1,14 +1,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, render, waitFor } from '@testing-library/react';
 
-import { useGetMyAccount } from '@/features/my-page';
+import { useGetMyAccount } from '@/features/my-page/apis/queries';
 import { getGetMyAccountQueryKey } from '@/features/my-page/apis/queryKeys';
 import { identifyAnalyticsUser, resetAnalyticsUser } from '@/shared/lib/analytics/mixpanel';
 import { useAuthStore } from '@/shared/stores/authStore';
 
 import AnalyticsIdentity from './AnalyticsIdentity';
 
-jest.mock('@/features/my-page', () => ({ useGetMyAccount: jest.fn() }));
+jest.mock('@/features/my-page/apis/queries', () => ({ useGetMyAccount: jest.fn() }));
 jest.mock('@/shared/lib/analytics/mixpanel', () => ({
   identifyAnalyticsUser: jest.fn(),
   resetAnalyticsUser: jest.fn(),

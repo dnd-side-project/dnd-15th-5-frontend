@@ -1,7 +1,10 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
-import { getHomeBottomSheetSnapPoint, useHomeBottomSheetStore } from '@/features/map';
+import {
+  getHomeBottomSheetSnapPoint,
+  useHomeBottomSheetStore,
+} from '@/features/map/stores/homeBottomSheetStore';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { BottomTabBar } from '@/shared/layout/bottom-tab-bar';
 import { isNativeApp } from '@/shared/lib/bridge';
