@@ -13,6 +13,20 @@ jest.mock('@/features/map/apis/hooks/useVisitedPlaceStickersQuery');
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 
 describe('HomeMapOverlay', () => {
+  it('페이지에서 전달한 사용자 프로필을 마이페이지 링크에 표시한다', () => {
+    render(
+      <MemoryRouter>
+        <HomeMapOverlay
+          hasUnreadNotification={false}
+          profileAvatar={<img src="/profile.png" alt="사용자 프로필" />}
+        />
+      </MemoryRouter>
+    );
+    expect(screen.getByRole('link', { name: '마이페이지' })).toContainElement(
+      screen.getByRole('img', { name: '사용자 프로필' })
+    );
+  });
+
   beforeEach(() => {
     useHomeBottomSheetStore.setState(useHomeBottomSheetStore.getInitialState());
     useMapCategoryFilterStore.setState({ selectedCategory: null });

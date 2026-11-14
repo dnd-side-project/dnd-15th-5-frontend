@@ -3,10 +3,10 @@ import { useState } from 'react';
 import type { ProfileUpdateRequest } from '@/features/my-page/apis/dto';
 import { useUpdateMyProfileMutation } from '@/features/my-page/apis/hooks/useUpdateMyProfileMutation';
 import { useGetMyAccount } from '@/features/my-page/apis/queries';
-import type { ProfileImageCode } from '@/features/my-page/constants/profileImageOptions';
-import { getProfileImageOption } from '@/features/my-page/constants/profileImageOptions';
 import { useProfileEditNavigationGuard } from '@/features/my-page/hooks/useProfileEditNavigationGuard';
 import { NICKNAME_MAX_LENGTH, nicknameSchema } from '@/features/my-page/nicknameSchema';
+import type { ProfileImageCode } from '@/shared/constants/profileImageOptions';
+import { getProfileImageOption } from '@/shared/constants/profileImageOptions';
 
 /** 프로필 수정 화면의 조회·편집·저장·이탈 확인 상태를 관리합니다. */
 export const useProfileEditor = () => {

@@ -1,4 +1,3 @@
-import { getProfileImageOption } from '@/features/my-page/constants/profileImageOptions';
 import { EditIcon } from '@/shared/assets/icons';
 import PageHeader from '@/shared/layout/page-header';
 import { ProfileAvatar } from '@/shared/ui/profile-avatar';
@@ -18,8 +17,6 @@ export default function MyPageProfileSection({
   onBack,
   onEdit,
 }: MyPageProfileSectionProps) {
-  const profileImageOption = getProfileImageOption(profileImageCode);
-
   return (
     <section className="h-52.75" aria-labelledby="my-page-nickname">
       <div className="px-4">
@@ -33,18 +30,11 @@ export default function MyPageProfileSection({
           onClick={onEdit}
           className="relative size-25 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
-          {profileImageCode ? (
-            <ProfileAvatar className="size-full" backgroundColor={profileImageOption.color} />
-          ) : profileImageUrl ? (
-            <img
-              className="size-full rounded-full object-cover"
-              src={profileImageUrl}
-              alt="프로필"
-              data-mp-block=""
-            />
-          ) : (
-            <ProfileAvatar className="size-full" backgroundColor={profileImageOption.color} />
-          )}
+          <ProfileAvatar
+            className="size-full"
+            profileImageCode={profileImageCode}
+            profileImageUrl={profileImageUrl}
+          />
           <span className="absolute right-0 bottom-0 flex size-7 items-center justify-center rounded-full bg-neutral-00">
             <EditIcon className="size-full" aria-hidden="true" />
           </span>
