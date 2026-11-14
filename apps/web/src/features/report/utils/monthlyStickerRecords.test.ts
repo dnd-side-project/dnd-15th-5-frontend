@@ -3,7 +3,7 @@ import { getStickerImageByName } from '@/shared/assets/images/stickers';
 import { formatStickerDateLabel, mapStickerBoardToRecordGroups } from './monthlyStickerRecords';
 
 describe('monthlyStickerRecords', () => {
-  it('스티커보드의 사진과 이모지를 날짜 내림차순으로 함께 표시한다', () => {
+  it('스티커보드의 사진과 이모지를 응답 순서대로 함께 표시한다', () => {
     const groups = mapStickerBoardToRecordGroups([
       { date: '2026-08-21', visuals: [{ stickerName: '커피' }] },
       {
@@ -16,11 +16,11 @@ describe('monthlyStickerRecords', () => {
     ]);
 
     expect(groups).toEqual([
+      { date: '2026-08-21', stickerImages: [getStickerImageByName('커피')] },
       {
         date: '2026-08-23',
         stickerImages: ['https://example.com/photo.png', getStickerImageByName('피자')],
       },
-      { date: '2026-08-21', stickerImages: [getStickerImageByName('커피')] },
     ]);
   });
 

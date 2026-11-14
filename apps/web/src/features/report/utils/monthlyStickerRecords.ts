@@ -17,7 +17,7 @@ export const formatStickerDateLabel = (dateValue: string) => {
   return `${Number(day)}일 ${weekdayLabel}`;
 };
 
-/** 스티커보드의 사진과 이모지를 날짜 내림차순의 표시 데이터로 변환합니다. */
+/** 스티커보드의 응답 순서를 유지하며 사진과 이모지의 표시 데이터를 만듭니다. */
 export const mapStickerBoardToRecordGroups = (
   days: readonly DayVisualsResponse[] = []
 ): MonthlyStickerRecordGroup[] => {
@@ -35,7 +35,5 @@ export const mapStickerBoardToRecordGroups = (
     imagesByDate.set(date, [...(imagesByDate.get(date) ?? []), ...stickerImages]);
   });
 
-  return Array.from(imagesByDate, ([date, stickerImages]) => ({ date, stickerImages })).sort(
-    (left, right) => right.date.localeCompare(left.date)
-  );
+  return Array.from(imagesByDate, ([date, stickerImages]) => ({ date, stickerImages }));
 };
