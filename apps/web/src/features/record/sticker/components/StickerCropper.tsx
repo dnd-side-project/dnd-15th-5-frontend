@@ -6,7 +6,7 @@ import {
 } from '@/features/record/sticker/constants';
 import { FULL_STICKER_CROP, moveCropCorner } from '@/features/record/sticker/image/stickerImage';
 import type { StickerCrop, StickerCropCorner } from '@/features/record/sticker/image/stickerImage';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 

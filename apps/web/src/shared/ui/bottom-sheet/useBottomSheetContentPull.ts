@@ -28,7 +28,10 @@ type UseBottomSheetContentPullParams = {
   onContentPullUp?: () => void;
 };
 
-/** 콘텐츠 경계에서 위아래로 당기는 제스처를 감지하며 위로 당긴 터치는 놓을 때 처리합니다. */
+/**
+ * 콘텐츠 경계에서 위아래로 당기는 제스처를 감지하며 위로 당긴 터치는 놓을 때 처리합니다.
+ * 휠은 150ms 동안 입력이 끊길 때까지 하나의 제스처로 보고 전환을 한 번만 요청합니다.
+ */
 export const useBottomSheetContentPull = ({
   onContentPullDown,
   onContentPullUp,
@@ -37,6 +40,7 @@ export const useBottomSheetContentPull = ({
   const hasTriggeredTouchRef = useRef(false);
   const touchPullUpDistanceRef = useRef(0);
   const wheelPullDistanceRef = useRef(0);
+  const hasTriggeredWheelRef = useRef(false);
   const wheelResetTimeoutRef = useRef<number | null>(null);
 
   const resetTouchGesture = () => {
@@ -47,6 +51,7 @@ export const useBottomSheetContentPull = ({
 
   const resetWheelGesture = () => {
     wheelPullDistanceRef.current = 0;
+    hasTriggeredWheelRef.current = false;
     if (wheelResetTimeoutRef.current !== null) {
       window.clearTimeout(wheelResetTimeoutRef.current);
       wheelResetTimeoutRef.current = null;
@@ -112,6 +117,12 @@ export const useBottomSheetContentPull = ({
   };
 
   const handleWheel: WheelEventHandler<HTMLDivElement> = (event) => {
+    if (wheelResetTimeoutRef.current !== null) {
+      window.clearTimeout(wheelResetTimeoutRef.current);
+    }
+    wheelResetTimeoutRef.current = window.setTimeout(resetWheelGesture, WHEEL_GESTURE_RESET_MS);
+    if (hasTriggeredWheelRef.current) return;
+
     const callback =
       event.deltaY > 0 && isAtBottom(event.currentTarget)
         ? onContentPullUp
@@ -119,7 +130,7 @@ export const useBottomSheetContentPull = ({
           ? onContentPullDown
           : undefined;
     if (!callback) {
-      resetWheelGesture();
+      wheelPullDistanceRef.current = 0;
       return;
     }
 
@@ -130,15 +141,9 @@ export const useBottomSheetContentPull = ({
     }
     wheelPullDistanceRef.current += deltaYPixels;
     if (Math.abs(wheelPullDistanceRef.current) > BOTTOM_SHEET_PULL_THRESHOLD_PX) {
-      resetWheelGesture();
+      hasTriggeredWheelRef.current = true;
       callback();
-      return;
     }
-
-    if (wheelResetTimeoutRef.current !== null) {
-      window.clearTimeout(wheelResetTimeoutRef.current);
-    }
-    wheelResetTimeoutRef.current = window.setTimeout(resetWheelGesture, WHEEL_GESTURE_RESET_MS);
   };
 
   return {

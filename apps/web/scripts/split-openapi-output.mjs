@@ -253,8 +253,17 @@ for (const [group, statements] of Object.entries(groups)) {
     .map((declaration) => buildFilteredImport(declaration, body))
     .filter(Boolean);
   const crossImports = buildCrossImports(group, body);
-  const moduleBody = body || 'export {};';
-  const output = [header, ...externalImports, ...crossImports, moduleBody].join('\n\n');
+  // Keep the resolved key when an options object explicitly passes queryKey: undefined.
+  const moduleBody =
+    group === 'queries'
+      ? body.replaceAll(
+          'return { queryKey, queryFn, ...queryOptions }',
+          'return { queryFn, ...queryOptions, queryKey }'
+        )
+      : body;
+  const output = [header, ...externalImports, ...crossImports, moduleBody || 'export {};'].join(
+    '\n\n'
+  );
   const formatted = await prettier.format(output, { ...prettierConfig, parser: 'typescript' });
 
   await writeFile(path.join(apiDirectory, `${group}.ts`), formatted);

@@ -6,12 +6,17 @@
   /* 배경이 투명한 스티커 PNG는 box-shadow가 이미지 사각형 테두리를 따라가 버리므로, 대신 이 filter 버전을 쓴다. */
   --drop-shadow-sticker: 0 8px 10px rgba(0, 0, 0, 0.2);
   --drop-shadow-rank: 0 2px 4px rgba(99, 99, 99, 0.2);
+  --drop-shadow-map-selection-pin: 0 3px 1.5px rgb(0 0 0 / 19%);
   --shadow-record: 0 0 10px 0 rgba(42, 75, 239, 0.4);
   --shadow-sheet: 0 -4px 4px 0 rgba(0, 0, 0, 0.05);
   --shadow-my-page-sheet: 0 0 5px 0 rgba(0, 0, 0, 0.05);
   --shadow-current-location: 0 0 30px 0 var(--color-primary-500);
   --shadow-current-location-button: 0 5.33px 13.33px 0 rgba(0, 0, 0, 0.1);
   --shadow-home-overlay: 0 1px 4px 0 rgba(0, 0, 0, 0.2);
+  --shadow-bottom-navigation: 0 0 6px rgb(0 0 0 / 25%);
+  --shadow-bottom-navigation-highlight:
+    inset 0 1px 2px color-mix(in srgb, var(--color-neutral-00) 63%, transparent),
+    inset 0 -1px 2px color-mix(in srgb, var(--color-neutral-00) 19%, transparent);
   --shadow-map-sticker-glass:
     inset 1px 1px 1px color-mix(in srgb, var(--color-neutral-00) 45%, transparent),
     inset -1px -1px 2px color-mix(in srgb, var(--color-neutral-00) 20%, transparent);

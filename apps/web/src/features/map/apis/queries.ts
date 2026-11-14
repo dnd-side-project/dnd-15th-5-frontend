@@ -81,7 +81,7 @@ export const getSearchTownsQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof searchTowns>>> = ({ signal }) =>
     searchTowns(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof searchTowns>>,
     TError,
     TData
@@ -187,7 +187,7 @@ export const getSearchTownsSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof searchTowns>>> = ({ signal }) =>
     searchTowns(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof searchTowns>>,
     TError,
     TData
@@ -279,7 +279,7 @@ export const getGetRecentTownsQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getRecentTowns>>> = ({ signal }) =>
     getRecentTowns(requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getRecentTowns>>,
     TError,
     TData
@@ -378,7 +378,7 @@ export const getGetRecentTownsSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getRecentTowns>>> = ({ signal }) =>
     getRecentTowns(requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getRecentTowns>>,
     TError,
     TData
@@ -582,7 +582,7 @@ export const getGetPlaceDetailSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlaceDetail>>> = ({ signal }) =>
     getPlaceDetail(placeId, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getPlaceDetail>>,
     TError,
     TData
@@ -681,7 +681,7 @@ export const getGetNearbyPlacesQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNearbyPlaces>>> = ({ signal }) =>
     getNearbyPlaces(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getNearbyPlaces>>,
     TError,
     TData
@@ -787,7 +787,7 @@ export const getGetNearbyPlacesSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNearbyPlaces>>> = ({ signal }) =>
     getNearbyPlaces(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getNearbyPlaces>>,
     TError,
     TData
@@ -886,7 +886,7 @@ export const getGetLikedPlacesQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getLikedPlaces>>> = ({ signal }) =>
     getLikedPlaces(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getLikedPlaces>>,
     TError,
     TData
@@ -992,7 +992,7 @@ export const getGetLikedPlacesSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getLikedPlaces>>> = ({ signal }) =>
     getLikedPlaces(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getLikedPlaces>>,
     TError,
     TData
@@ -1093,7 +1093,7 @@ export const getGetVisitedPlaceMarkersQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getVisitedPlaceMarkers>>> = ({ signal }) =>
     getVisitedPlaceMarkers(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getVisitedPlaceMarkers>>,
     TError,
     TData
@@ -1209,7 +1209,7 @@ export const getGetVisitedPlaceMarkersSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getVisitedPlaceMarkers>>> = ({ signal }) =>
     getVisitedPlaceMarkers(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getVisitedPlaceMarkers>>,
     TError,
     TData

@@ -41,7 +41,6 @@ export const TEST_MAP_STICKERS: readonly MapSticker[] = [
 
 export const TEST_SHOP_RECOMMENDATIONS: readonly ShopRecommendation[] = [
   ...TEST_MAP_STICKERS.map((sticker, index) => ({
-    googleMapsUri: `https://maps.google.com/?cid=${sticker.id}`,
     id: sticker.id,
     isLiked: index === 1,
     place: sticker.place,

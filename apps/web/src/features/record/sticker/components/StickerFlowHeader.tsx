@@ -1,5 +1,5 @@
 import { STICKER_FLOW_HEADER_TOP_CLASS } from '@/features/record/sticker/constants';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 
 type StickerFlowHeaderProps = {
   title?: string;

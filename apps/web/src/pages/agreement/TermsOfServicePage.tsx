@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { MarkdownPolicyContent, TERMS_OF_SERVICE_CONTENT } from '@/features/auth';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 
 export default function TermsOfServicePage() {
   const navigate = useNavigate();

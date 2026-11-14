@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import { createReadStream, createWriteStream } from 'node:fs';
+import { createReadStream } from 'node:fs';
 import { access, mkdir, rename, rm, stat } from 'node:fs/promises';
-import { Readable } from 'node:stream';
-import { pipeline } from 'node:stream/promises';
 
 import { ISNET_MODELS } from '../src/features/record/sticker/background-removal/isnetModels.ts';
+import { downloadModelFile } from './download-model-file.mjs';
 
 const directory = new URL('../public/models/', import.meta.url);
+
 const checksum = async (path, algorithm) => {
   const hash = createHash(algorithm);
   for await (const chunk of createReadStream(path)) hash.update(chunk);
@@ -28,10 +28,7 @@ const downloadModel = async (model) => {
     model.filename + ' 다운로드 (' + Math.round(model.bytes / 1024 / 1024) + 'MiB)\n'
   );
   try {
-    const response = await fetch(model.url);
-    if (!response.ok || !response.body)
-      throw new Error('모델 다운로드 실패: HTTP ' + response.status);
-    await pipeline(Readable.fromWeb(response.body), createWriteStream(temporary));
+    await downloadModelFile(model, temporary);
     if (
       (await stat(temporary)).size !== model.bytes ||
       (await checksum(temporary, model.checksum.algorithm)) !== model.checksum.value
