@@ -17,6 +17,8 @@ import { isNativeApp, requestToNative } from '@/shared/lib/bridge';
 
 import StickerRecordFlow from './StickerRecordFlow';
 
+import type { BridgeResult } from '@chapchap/shared/bridge';
+
 const mockShowToast = jest.fn();
 
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: jest.fn(), requestToNative: jest.fn() }));
@@ -203,6 +205,58 @@ it('이미지 변경을 그만둔 뒤 도착한 결과는 무시하고 다음 �
   await waitFor(() =>
     expect(screen.getByAltText('기록에 적용한 스티커')).not.toHaveAttribute('src', originalUrl)
   );
+});
+
+it.each([
+  ['단계 이동', '성공'],
+  ['단계 이동', '실패'],
+  ['변경 종료', '성공'],
+  ['변경 종료', '실패'],
+])('갤러리 요청 후 %s하면 늦은 %s 응답을 무시한다', async (transition, outcome) => {
+  jest.mocked(isNativeApp).mockReturnValue(true);
+  let finish!: (result: BridgeResult<'pickStickerImage'>) => void;
+  let fail!: (error: Error) => void;
+  jest.mocked(requestToNative).mockImplementationOnce(
+    () =>
+      new Promise((resolve, reject) => {
+        finish = resolve;
+        fail = reject;
+      })
+  );
+  const initialValue = createEditConsumptionInitialValue(TEST_CONSUMPTION_DETAIL)!;
+  render(
+    <StickerRecordFlow
+      initialValue={initialValue}
+      selectedShop={initialValue.draft.shop}
+      onClose={mockClose}
+    />
+  );
+  const originalSticker = screen.getByAltText('기록에 적용한 스티커');
+  fireEvent.change(screen.getByRole('textbox', { name: '금액' }), { target: { value: '8800' } });
+  fireEvent.click(screen.getByRole('button', { name: '사진 변경' }));
+  fireEvent.click(screen.getByRole('button', { name: '이미지 가져오기' }));
+  await waitFor(() => expect(requestToNative).toHaveBeenCalledWith('pickStickerImage', {}));
+  fireEvent.click(screen.getByRole('button', { name: '사진 변경' }));
+  fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
+  await screen.findByRole('heading', { name: '스티커를 골라주세요' });
+  if (transition === '변경 종료') {
+    fireEvent.click(screen.getByRole('button', { name: '이미지 변경 종료' }));
+    fireEvent.click(screen.getByRole('button', { name: '그만두기' }));
+  }
+  await act(async () => {
+    if (outcome === '성공')
+      finish({ status: 'success', base64: btoa('gallery'), mimeType: 'image/jpeg' });
+    else fail(new Error('late gallery failure'));
+  });
+  expect(screen.queryByRole('heading', { name: '사진 자르기' })).not.toBeInTheDocument();
+  expect(originalSticker).toHaveAttribute('src', initialValue.sticker);
+  expect(mockShowToast).not.toHaveBeenCalled();
+  if (transition === '변경 종료') {
+    expect(originalSticker).toBeVisible();
+    expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('8,800');
+  } else {
+    expect(screen.getByRole('heading', { name: '스티커를 골라주세요' })).toBeVisible();
+  }
 });
 
 it('앱 갤러리를 취소하면 기존 스티커와 폼 입력을 유지한다', async () => {

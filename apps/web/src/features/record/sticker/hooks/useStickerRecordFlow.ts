@@ -295,6 +295,8 @@ export const useStickerRecordFlow = ({
     message: task.message,
     error: task.error,
     openCrop,
+    /** 단계 이동·변경 취소·새 이미지 작업 시작 시 갤러리 응답도 함께 무효화합니다. */
+    beginGallerySelection: () => task.start().signal,
     confirmCrop,
     capturePhoto,
     selectDefaultSticker,

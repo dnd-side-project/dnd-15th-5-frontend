@@ -78,6 +78,7 @@ export default function StickerRecordFlow({
     message,
     error,
     openCrop,
+    beginGallerySelection,
     confirmCrop,
     capturePhoto,
     selectDefaultSticker,
@@ -132,6 +133,7 @@ export default function StickerRecordFlow({
     openGallery: handleImportImage,
   } = useStickerGallery({
     isApp,
+    onRequestStart: beginGallerySelection,
     onSelect: openCrop,
     onError: () =>
       showToast({ type: 'error', message: '이미지를 가져오지 못했어요. 다시 시도해주세요.' }),
