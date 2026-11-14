@@ -44,7 +44,8 @@ describe('<CurrentLocationButton />', () => {
       ?.parentElement as HTMLElement;
 
     expect(buttonContainer).toHaveStyle({
-      bottom: 'max(calc(320px + 0.75rem), calc(6.5625rem + env(safe-area-inset-bottom)))',
+      bottom:
+        'max(calc(320px + 0.75rem), calc(4.5625rem + var(--bottom-tab-bar-gap, 32px) + env(safe-area-inset-bottom)))',
     });
   });
 
@@ -62,7 +63,8 @@ describe('<CurrentLocationButton />', () => {
       ?.parentElement as HTMLElement;
 
     expect(buttonContainer).toHaveStyle({
-      bottom: 'max(calc(0px + 0.75rem), calc(6.5625rem + env(safe-area-inset-bottom)))',
+      bottom:
+        'max(calc(0px + 0.75rem), calc(4.5625rem + var(--bottom-tab-bar-gap, 32px) + env(safe-area-inset-bottom)))',
     });
   });
 
