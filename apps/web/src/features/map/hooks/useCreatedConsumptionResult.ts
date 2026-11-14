@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react';
 
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useMapCategoryFilterStore } from '@/features/map/stores/mapCategoryFilterStore';
 import { useMapFocusStore } from '@/features/map/stores/mapFocusStore';
+import { useMapPlaceStampStore } from '@/features/map/stores/mapPlaceStampStore';
 import { findCreatedConsumptionSticker } from '@/features/map/utils/findCreatedConsumptionSticker';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import {
@@ -87,6 +89,8 @@ export const useCreatedConsumptionResult = ({
 
       if (matchedSticker) {
         const isFirstVisit = matchedSticker.visitCount === 1;
+        useMapCategoryFilterStore.getState().setSelectedCategory(null);
+        useMapPlaceStampStore.getState().requestPlaceStamp(matchedSticker.id);
         setSelectedPlaceFocus(matchedSticker.position);
         showSelectedPlace(matchedSticker.id);
         showToast({

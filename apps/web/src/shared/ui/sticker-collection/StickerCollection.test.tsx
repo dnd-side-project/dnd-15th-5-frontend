@@ -34,6 +34,7 @@ describe('StickerCollection', () => {
     await user.click(firstStickerButton);
     const firstStickerImage = firstStickerButton.querySelector('img') as HTMLImageElement;
     expect(firstStickerImage).toHaveClass('sticker-collection__stamp--playing');
+    expect(firstStickerImage).toHaveClass('sticker-stamp-playing');
 
     fireEvent.animationEnd(firstStickerImage);
     expect(firstStickerButton.querySelector('img')).toBe(firstStickerImage);

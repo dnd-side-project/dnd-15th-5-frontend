@@ -7,7 +7,7 @@ import '@/shared/styles/stickerStamp.css';
 import './StickerCollection.css';
 
 const STICKER_COLUMN_COUNT = 5;
-const STAMP_PLAYING_CLASS = 'sticker-collection__stamp--playing';
+const STAMP_PLAYING_CLASS = 'sticker-collection__stamp--playing sticker-stamp-playing';
 
 type StampPlayback = {
   index: number;

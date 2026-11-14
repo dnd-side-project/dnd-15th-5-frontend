@@ -2,6 +2,8 @@ import { act, renderHook } from '@testing-library/react';
 
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useMapCategoryFilterStore } from '@/features/map/stores/mapCategoryFilterStore';
+import { useMapPlaceStampStore } from '@/features/map/stores/mapPlaceStampStore';
 import { TEST_MAP_STICKERS } from '@/features/map/testFixtures';
 import type { MapSticker } from '@/features/map/types';
 import { useToast } from '@/shared/ui/toast';
@@ -37,6 +39,8 @@ const setCachedStickers = (stickers: readonly MapSticker[]) => {
 describe('useCreatedConsumptionResult', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    useMapPlaceStampStore.setState(useMapPlaceStampStore.getInitialState());
+    useMapCategoryFilterStore.setState({ selectedCategory: '운동' });
     useHomeBottomSheetStore.setState({ activeSheet: { type: 'home' } });
     jest.mocked(useToast).mockReturnValue({ showToast, closeToast: jest.fn() });
     setCachedStickers([]);
@@ -63,6 +67,10 @@ describe('useCreatedConsumptionResult', () => {
       placement: 'above-bottom-sheet',
     });
     expect(onHandled).toHaveBeenCalledTimes(1);
+    expect(useMapPlaceStampStore.getState().stampRequest?.placeId).toBe(firstVisitSticker.id);
+    expect(useMapCategoryFilterStore.getState().selectedCategory).toBeNull();
+    rerender({ place: { ...createdPlace } });
+    expect(useMapPlaceStampStore.getState().stampSequence).toBe(1);
   });
 
   it('재조회가 실패하면 대기 중 갱신된 캐시로 첫 방문을 안내한다', async () => {

@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useVisitedPlaceStickersQuery } from '@/features/map/apis/hooks/useVisitedPlaceStickersQuery';
 import { RECOMMENDATION_MAP_ZOOM } from '@/features/map/constants';
+import { useCreatedPlaceStamp } from '@/features/map/hooks/useCreatedPlaceStamp';
 import { useFocusMapOnPosition } from '@/features/map/hooks/useFocusMapOnPosition';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
@@ -35,6 +36,34 @@ import { cn } from '@/shared/lib/cn';
 import type { ComponentType, SVGProps } from 'react';
 
 import './recommendationMapMarkers.css';
+import '@/shared/styles/stickerStamp.css';
+
+function RecommendationMarkerIcon({
+  placeId,
+  isActive,
+  Icon,
+}: {
+  placeId: string;
+  isActive: boolean;
+  Icon: ComponentType<SVGProps<SVGSVGElement>>;
+}) {
+  const stamp = useCreatedPlaceStamp(placeId);
+  return (
+    <Icon
+      key={`${isActive ? 'active' : 'default'}-${stamp.animationKey}`}
+      aria-hidden="true"
+      data-state={isActive ? 'active' : 'default'}
+      onAnimationEnd={stamp.onAnimationEnd}
+      className={cn(
+        stamp.isPlaying
+          ? 'map-place-stamp sticker-stamp-playing'
+          : stamp.animationKey === 0 && 'recommendation-marker-icon',
+        'block',
+        isActive ? 'h-18 w-14' : 'size-9'
+      )}
+    />
+  );
+}
 
 type RecommendationMarkerIcons = {
   active: ComponentType<SVGProps<SVGSVGElement>>;
@@ -194,11 +223,11 @@ export default function RecommendationMapMarkers() {
             title={`${recommendation.place.name} 추천 마커${isActive ? ', 선택됨' : ''}`}
             onClick={() => handleMarkerSelect(recommendation)}
           >
-            <MarkerIcon
+            <RecommendationMarkerIcon
               key={isActive ? 'active' : 'default'}
-              aria-hidden="true"
-              data-state={isActive ? 'active' : 'default'}
-              className={cn('recommendation-marker-icon block', isActive ? 'h-18 w-14' : 'size-9')}
+              placeId={recommendation.id}
+              isActive={isActive}
+              Icon={MarkerIcon}
             />
           </AdvancedMarker>
         );

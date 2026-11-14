@@ -1,9 +1,12 @@
 import { AdvancedMarker } from '@vis.gl/react-google-maps';
 import { useId, useState } from 'react';
 
+import { useCreatedPlaceStamp } from '@/features/map/hooks/useCreatedPlaceStamp';
 import type { MapSticker as MapStickerData } from '@/features/map/types';
 import { useStickerImage } from '@/shared/hooks/useStickerImage';
 import { cn } from '@/shared/lib/cn';
+
+import '@/shared/styles/stickerStamp.css';
 
 const VISIT_BADGE_THRESHOLD = 2;
 const SELECTED_PIN_TIP_HEIGHT = 8;
@@ -33,6 +36,7 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
     isSquare: boolean;
   } | null>(null);
   const isLandscape = loadedImage?.source === image && loadedImage.isLandscape;
+  const stamp = useCreatedPlaceStamp(sticker.id, loadedImage?.source === image);
   const isSquare = loadedImage?.source === image && loadedImage.isSquare;
   const isProtruding = isSelected && loadedImage?.source === image && !isSquare;
   const isVisitBadgeVisible = visitCount >= VISIT_BADGE_THRESHOLD;
@@ -59,7 +63,13 @@ export default function MapSticker({ isSelected, onSelect, sticker }: MapSticker
       onClick={onSelect}
     >
       <div
-        className={cn('relative', isSelected ? 'size-16.5' : 'size-11.5')}
+        key={stamp.animationKey}
+        onAnimationEnd={stamp.onAnimationEnd}
+        className={cn(
+          'relative',
+          isSelected ? 'size-16.5' : 'size-11.5',
+          stamp.isPlaying && 'map-place-stamp sticker-stamp-playing'
+        )}
         data-analytics-id="map-place-sticker"
         data-state={isSelected ? 'selected' : 'default'}
       >
