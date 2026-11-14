@@ -22,6 +22,19 @@ describe('SegmentedToggle', () => {
     );
   });
 
+  it('접근성 이름을 토글 그룹에 전달한다', () => {
+    render(
+      <SegmentedToggle
+        options={OPTIONS}
+        value="frequentShops"
+        onValueChange={jest.fn()}
+        ariaLabel="정책 선택"
+      />
+    );
+
+    expect(screen.getByRole('group', { name: '정책 선택' })).toBeInTheDocument();
+  });
+
   it('다른 옵션을 누르면 그 값으로 변경을 알린다', async () => {
     const user = userEvent.setup();
     const onValueChange = jest.fn();

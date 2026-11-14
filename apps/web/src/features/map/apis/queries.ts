@@ -24,16 +24,29 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 import type { ErrorType } from '@/shared/apis/orvalMutator';
 
 import type {
+  GetLikedPlacesParams,
   GetNearbyPlacesParams,
   GetVisitedPlaceMarkersParams,
+  SearchTownsParams,
   SecondParameter,
 } from '@/features/map/apis/dto';
 
-import { getNearbyPlaces, getVisitedPlaceMarkers } from '@/features/map/apis/clients';
+import {
+  getLikedPlaces,
+  getNearbyPlaces,
+  getPlaceDetail,
+  getRecentTowns,
+  getVisitedPlaceMarkers,
+  searchTowns,
+} from '@/features/map/apis/clients';
 
 import {
+  getGetLikedPlacesQueryKey,
   getGetNearbyPlacesQueryKey,
+  getGetPlaceDetailQueryKey,
+  getGetRecentTownsQueryKey,
   getGetVisitedPlaceMarkersQueryKey,
+  getSearchTownsQueryKey,
 } from '@/features/map/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
@@ -50,6 +63,606 @@ export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { 
   }
   return result;
 };
+
+export const getSearchTownsQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchTownsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchTowns>>> = ({ signal }) =>
+    searchTowns(params, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+    Awaited<ReturnType<typeof searchTowns>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SearchTownsQueryResult = NonNullable<Awaited<ReturnType<typeof searchTowns>>>;
+
+export type SearchTownsQueryError = ErrorType<unknown>;
+
+export function useSearchTowns<
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchTowns>>,
+          TError,
+          Awaited<ReturnType<typeof searchTowns>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useSearchTowns<
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchTowns>>,
+          TError,
+          Awaited<ReturnType<typeof searchTowns>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useSearchTowns<
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 행정동 검색
+ */
+
+export function useSearchTowns<
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getSearchTownsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getSearchTownsSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getSearchTownsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof searchTowns>>> = ({ signal }) =>
+    searchTowns(params, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof searchTowns>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SearchTownsSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof searchTowns>>>;
+
+export type SearchTownsSuspenseQueryError = ErrorType<unknown>;
+
+export function useSearchTownsSuspense<
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options: {
+    query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useSearchTownsSuspense<
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useSearchTownsSuspense<
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 행정동 검색
+ */
+
+export function useSearchTownsSuspense<
+  TData = Awaited<ReturnType<typeof searchTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  params: SearchTownsParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof searchTowns>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getSearchTownsSuspenseQueryOptions(params, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetRecentTownsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>>;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetRecentTownsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getRecentTowns>>> = ({ signal }) =>
+    getRecentTowns(requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRecentTowns>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetRecentTownsQueryResult = NonNullable<Awaited<ReturnType<typeof getRecentTowns>>>;
+
+export type GetRecentTownsQueryError = ErrorType<unknown>;
+
+export function useGetRecentTowns<
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRecentTowns>>,
+          TError,
+          Awaited<ReturnType<typeof getRecentTowns>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetRecentTowns<
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRecentTowns>>,
+          TError,
+          Awaited<ReturnType<typeof getRecentTowns>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetRecentTowns<
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 최근 설정한 동네 목록
+ */
+
+export function useGetRecentTowns<
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetRecentTownsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetRecentTownsSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetRecentTownsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getRecentTowns>>> = ({ signal }) =>
+    getRecentTowns(requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getRecentTowns>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetRecentTownsSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRecentTowns>>
+>;
+
+export type GetRecentTownsSuspenseQueryError = ErrorType<unknown>;
+
+export function useGetRecentTownsSuspense<
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetRecentTownsSuspense<
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetRecentTownsSuspense<
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 최근 설정한 동네 목록
+ */
+
+export function useGetRecentTownsSuspense<
+  TData = Awaited<ReturnType<typeof getRecentTowns>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getRecentTowns>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetRecentTownsSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetPlaceDetailQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPlaceDetailQueryKey(placeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlaceDetail>>> = ({ signal }) =>
+    getPlaceDetail(placeId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: placeId !== null && placeId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+};
+
+export type GetPlaceDetailQueryResult = NonNullable<Awaited<ReturnType<typeof getPlaceDetail>>>;
+
+export type GetPlaceDetailQueryError = ErrorType<unknown>;
+
+export function useGetPlaceDetail<
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPlaceDetail>>,
+          TError,
+          Awaited<ReturnType<typeof getPlaceDetail>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetPlaceDetail<
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPlaceDetail>>,
+          TError,
+          Awaited<ReturnType<typeof getPlaceDetail>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetPlaceDetail<
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 가게 추천 상세보기
+ */
+
+export function useGetPlaceDetail<
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetPlaceDetailQueryOptions(placeId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetPlaceDetailSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetPlaceDetailQueryKey(placeId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlaceDetail>>> = ({ signal }) =>
+    getPlaceDetail(placeId, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getPlaceDetail>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPlaceDetailSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPlaceDetail>>
+>;
+
+export type GetPlaceDetailSuspenseQueryError = ErrorType<unknown>;
+
+export function useGetPlaceDetailSuspense<
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetPlaceDetailSuspense<
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetPlaceDetailSuspense<
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 가게 추천 상세보기
+ */
+
+export function useGetPlaceDetailSuspense<
+  TData = Awaited<ReturnType<typeof getPlaceDetail>>,
+  TError = ErrorType<unknown>,
+>(
+  placeId: number,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getPlaceDetail>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetPlaceDetailSuspenseQueryOptions(placeId, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
 
 export const getGetNearbyPlacesQueryOptions = <
   TData = Awaited<ReturnType<typeof getNearbyPlaces>>,
@@ -68,7 +681,7 @@ export const getGetNearbyPlacesQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNearbyPlaces>>> = ({ signal }) =>
     getNearbyPlaces(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getNearbyPlaces>>,
     TError,
     TData
@@ -174,7 +787,7 @@ export const getGetNearbyPlacesSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNearbyPlaces>>> = ({ signal }) =>
     getNearbyPlaces(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getNearbyPlaces>>,
     TError,
     TData
@@ -256,6 +869,211 @@ export function useGetNearbyPlacesSuspense<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
+export const getGetLikedPlacesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetLikedPlacesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetLikedPlacesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getLikedPlaces>>> = ({ signal }) =>
+    getLikedPlaces(params, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLikedPlaces>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetLikedPlacesQueryResult = NonNullable<Awaited<ReturnType<typeof getLikedPlaces>>>;
+
+export type GetLikedPlacesQueryError = ErrorType<unknown>;
+
+export function useGetLikedPlaces<
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params: undefined | GetLikedPlacesParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLikedPlaces>>,
+          TError,
+          Awaited<ReturnType<typeof getLikedPlaces>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetLikedPlaces<
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetLikedPlacesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLikedPlaces>>,
+          TError,
+          Awaited<ReturnType<typeof getLikedPlaces>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetLikedPlaces<
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetLikedPlacesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 좋아요한 가게 목록
+ */
+
+export function useGetLikedPlaces<
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetLikedPlacesParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetLikedPlacesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetLikedPlacesSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetLikedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetLikedPlacesQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getLikedPlaces>>> = ({ signal }) =>
+    getLikedPlaces(params, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getLikedPlaces>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetLikedPlacesSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getLikedPlaces>>
+>;
+
+export type GetLikedPlacesSuspenseQueryError = ErrorType<unknown>;
+
+export function useGetLikedPlacesSuspense<
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params: undefined | GetLikedPlacesParams,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetLikedPlacesSuspense<
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetLikedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetLikedPlacesSuspense<
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetLikedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 좋아요한 가게 목록
+ */
+
+export function useGetLikedPlacesSuspense<
+  TData = Awaited<ReturnType<typeof getLikedPlaces>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: GetLikedPlacesParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getLikedPlaces>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetLikedPlacesSuspenseQueryOptions(params, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 export const getGetVisitedPlaceMarkersQueryOptions = <
   TData = Awaited<ReturnType<typeof getVisitedPlaceMarkers>>,
   TError = ErrorType<unknown>,
@@ -275,7 +1093,7 @@ export const getGetVisitedPlaceMarkersQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getVisitedPlaceMarkers>>> = ({ signal }) =>
     getVisitedPlaceMarkers(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getVisitedPlaceMarkers>>,
     TError,
     TData
@@ -391,7 +1209,7 @@ export const getGetVisitedPlaceMarkersSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getVisitedPlaceMarkers>>> = ({ signal }) =>
     getVisitedPlaceMarkers(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getVisitedPlaceMarkers>>,
     TError,
     TData

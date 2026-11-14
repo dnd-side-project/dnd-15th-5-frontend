@@ -8,13 +8,20 @@ import {
   parseCreatedConsumptionPlace,
   toShopSearchResult,
   useCreatedConsumptionResult,
+  useOpenLikedPlaceFromLocation,
   useOpenVisitedPlaceOnMap,
   useVisitedPlaceStickersQuery,
 } from '@/features/map';
 import { useHasUnreadNotificationQuery } from '@/features/notification';
+import ConsumptionRecordActions from '@/features/record/components/ConsumptionRecordActions';
+import ConsumptionSticker from '@/features/record/components/ConsumptionSticker';
 import { FrequentShopSummary, SpendingHistory } from '@/features/report';
 import { SelectedPlaceSheet } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import {
+  getConsumptionScrollDate,
+  getConsumptionScrollId,
+} from '@/shared/utils/consumptionNavigation';
 
 import type { CreatedConsumptionPlace } from '@chapchap/shared/record';
 
@@ -25,8 +32,8 @@ export default function HomePage() {
   const { hasUnreadNotification } = useHasUnreadNotificationQuery();
   const { stickers } = useVisitedPlaceStickersQuery();
   const { openVisitedPlaceOnMap } = useOpenVisitedPlaceOnMap();
-  const stateCreatedPlace = (location.state as { createdPlace?: CreatedConsumptionPlace } | null)
-    ?.createdPlace;
+  const homePageState = location.state as { createdPlace?: CreatedConsumptionPlace } | null;
+  const stateCreatedPlace = homePageState?.createdPlace;
   const receiptCreatedPlace = parseCreatedConsumptionPlace(searchParams);
   const createdPlace = stateCreatedPlace ?? receiptCreatedPlace;
   const recordMethod = stateCreatedPlace ? 'manual' : receiptCreatedPlace ? 'receipt' : undefined;
@@ -39,6 +46,18 @@ export default function HomePage() {
     },
     [openVisitedPlaceOnMap]
   );
+  const handleSelectedPlaceExpand = useCallback(
+    (placeId: string) => {
+      navigate(ROUTE_PATHS.shopDetail(placeId), { state: { fromMapSheet: true } });
+    },
+    [navigate]
+  );
+
+  useOpenLikedPlaceFromLocation();
+
+  const handleOpenRecommendationSearch = () => {
+    navigate(ROUTE_PATHS.homeRecommendationSearch, { state: 'home' });
+  };
 
   useCreatedConsumptionResult({
     createdPlace,
@@ -47,31 +66,47 @@ export default function HomePage() {
   });
 
   return (
-    <div className="mobile-frame fixed inset-0 z-0 flex flex-col">
-      <GoogleMapView />
-      <HomeMapOverlay hasUnreadNotification={hasUnreadNotification} />
-      <HomeBottomSheet
-        renderFrequentShops={(headerContent) => (
-          <FrequentShopSummary
-            headerContent={headerContent}
-            onShopSelect={handleFrequentShopSelect}
+    <ConsumptionRecordActions>
+      {(actions) => (
+        <div className="mobile-frame fixed inset-0 z-0 flex flex-col">
+          <GoogleMapView />
+          <HomeMapOverlay
+            hasUnreadNotification={hasUnreadNotification}
+            onOpenRecommendationSearch={handleOpenRecommendationSearch}
           />
-        )}
-        renderSelectedPlace={(placeId) => (
-          <SelectedPlaceSheet
-            placeId={placeId}
-            recordShop={toShopSearchResult(stickers.find(({ id }) => id === placeId))}
+          <HomeBottomSheet
+            onOpenRecommendationSearch={handleOpenRecommendationSearch}
+            onSelectedPlaceExpand={handleSelectedPlaceExpand}
+            renderFrequentShops={(headerContent) => (
+              <FrequentShopSummary
+                headerContent={headerContent}
+                onShopSelect={handleFrequentShopSelect}
+              />
+            )}
+            renderSelectedPlace={(placeId) => (
+              <SelectedPlaceSheet
+                placeId={placeId}
+                recordShop={toShopSearchResult(stickers.find(({ id }) => id === placeId))}
+              />
+            )}
+            renderSpendingHistory={(headerContent) => (
+              <SpendingHistory
+                {...actions}
+                scrollToDate={getConsumptionScrollDate(location.state)}
+                scrollToConsumptionId={getConsumptionScrollId(location.state)}
+                autoScrollToDate={false}
+                renderRecordSticker={(consumptionId) => (
+                  <ConsumptionSticker consumptionId={consumptionId} size="large" />
+                )}
+                contentBottomPaddingClassName="pb-28"
+                headerContent={headerContent}
+                headerContentGapClassName="mt-2"
+                headerDescription="작성한 소비기록을 확인해보세요"
+              />
+            )}
           />
-        )}
-        renderSpendingHistory={(headerContent) => (
-          <SpendingHistory
-            contentBottomPaddingClassName="pb-28"
-            headerContent={headerContent}
-            headerContentGapClassName="mt-2"
-            headerDescription="이번달 작성한 소비기록을 확인해보세요"
-          />
-        )}
-      />
-    </div>
+        </div>
+      )}
+    </ConsumptionRecordActions>
   );
 }

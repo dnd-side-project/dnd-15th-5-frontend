@@ -170,8 +170,8 @@ export const mapMonthlyReportResponse = (
           months: calculateKnownMonthCount(shop.firstVisitedDate, reportMonth),
           name,
           rank: rank as 1 | 2 | 3,
-          stickerImages: (shop.stickerNames ?? []).flatMap((stickerName) => {
-            const image = getStickerImageByName(stickerName);
+          stickerImages: (shop.visuals ?? []).flatMap(({ imageUrl, stickerName }) => {
+            const image = imageUrl?.trim() || getStickerImageByName(stickerName);
             return image ? [image] : [];
           }),
           visits: toSafeNumber(shop.visitCount),

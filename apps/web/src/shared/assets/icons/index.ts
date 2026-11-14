@@ -1,6 +1,7 @@
 import CalendarIcon from '@chapchap/shared/assets/icons/ic-calendar.svg?react';
 import ChevronLeftIcon from '@chapchap/shared/assets/icons/ic-chevron-left.svg?react';
 import CloseIcon from '@chapchap/shared/assets/icons/ic-close.svg?react';
+import LikeIcon from '@chapchap/shared/assets/icons/ic-like.svg?react';
 import LocationPinIcon from '@chapchap/shared/assets/icons/ic-location-pin.svg?react';
 import StatusErrorIcon from '@chapchap/shared/assets/icons/ic-status-error.svg?react';
 import StatusSuccessIcon from '@chapchap/shared/assets/icons/ic-status-success.svg?react';
@@ -16,22 +17,27 @@ import CafePinIcon from './ic-cafe-pin.svg?react';
 import CaretLeftIcon from './ic-caret-left.svg?react';
 import CaretRightIcon from './ic-caret-right.svg?react';
 import CheckIcon from './ic-check.svg?react';
+import ChevronRightThinIcon from './ic-chevron-right-thin.svg?react';
 import ChevronRightIcon from './ic-chevron-right.svg?react';
+import CircleWarningIcon from './ic-circle-warning.svg?react';
 import ContactIcon from './ic-contact.svg?react';
 import CrownIcon from './ic-crown.svg?react';
 import CurrentLocationIcon from './ic-current-location.svg?react';
+import DeleteIcon from './ic-delete.svg?react';
 import EditIcon from './ic-edit.svg?react';
+import ExternalLinkIcon from './ic-external-link.svg?react';
 import FilterIcon from './ic-filter.svg?react';
 import GoogleIcon from './ic-google.svg?react';
 import HobbyPinActiveIcon from './ic-hobby-pin-active.svg?react';
 import HobbyPinIcon from './ic-hobby-pin.svg?react';
 import ImageDownloadIcon from './ic-image-download.svg?react';
 import KakaoIcon from './ic-kakao.svg?react';
-import LikePinActiveIcon from './ic-like-pin-active.svg?react';
-import LikePinIcon from './ic-like-pin.svg?react';
-import LikeIcon from './ic-like.svg?react';
+import LikedPlacePinActiveIcon from './ic-liked-place-pin-active.svg?react';
+import LikedPlacePinIcon from './ic-liked-place-pin.svg?react';
+import LocationPinOutlineIcon from './ic-location-pin-outline.svg?react';
 import LogoutIcon from './ic-logout.svg?react';
 import MapIcon from './ic-map.svg?react';
+import NavigationAddIcon from './ic-navigation-add.svg?react';
 import NavigationHomeIcon from './ic-navigation-home.svg?react';
 import NavigationRecordIcon from './ic-navigation-record.svg?react';
 import NavigationReportIcon from './ic-navigation-report.svg?react';
@@ -40,6 +46,7 @@ import NotificationUnreadIcon from './ic-notification-unread.svg?react';
 import RankFirstIcon from './ic-rank-first.svg?react';
 import RankSecondIcon from './ic-rank-second.svg?react';
 import RankThirdIcon from './ic-rank-third.svg?react';
+import RecommendationLocationPinIcon from './ic-recommendation-location-pin.svg?react';
 import ReportCardFlipIcon from './ic-report-card-flip.svg?react';
 import RestaurantPinActiveIcon from './ic-restaurant-pin-active.svg?react';
 import RestaurantPinIcon from './ic-restaurant-pin.svg?react';
@@ -62,13 +69,17 @@ export {
   CaretRightIcon,
   ChapchapLogo,
   CheckIcon,
+  CircleWarningIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronRightThinIcon,
   CloseIcon,
   ContactIcon,
   CrownIcon,
   CurrentLocationIcon,
+  DeleteIcon,
   EditIcon,
+  ExternalLinkIcon,
   FilterIcon,
   GoogleIcon,
   HobbyPinActiveIcon,
@@ -76,11 +87,13 @@ export {
   ImageDownloadIcon,
   KakaoIcon,
   LikeIcon,
-  LikePinActiveIcon,
-  LikePinIcon,
+  LikedPlacePinActiveIcon,
+  LikedPlacePinIcon,
   LocationPinIcon,
+  LocationPinOutlineIcon,
   LogoutIcon,
   MapIcon,
+  NavigationAddIcon,
   NavigationHomeIcon,
   NavigationRecordIcon,
   NavigationReportIcon,
@@ -90,6 +103,7 @@ export {
   RankSecondIcon,
   RankThirdIcon,
   ReportCardFlipIcon,
+  RecommendationLocationPinIcon,
   RestaurantPinActiveIcon,
   RestaurantPinIcon,
   SearchIcon,

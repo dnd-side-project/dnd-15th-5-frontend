@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -57,7 +57,10 @@ describe('SelectedPlaceSheet', () => {
           category: '카페',
           address: '서울특별시 강남구 봉은사로 125 1층',
           isRegular: true,
-          recentStickers: [{ itemName: '커피' }],
+          recentStickers: [
+            { itemName: '커피' },
+            { imageId: 12, imageUrl: 'https://example.com/photo.png' },
+          ],
         },
       },
       isPending: false,
@@ -75,6 +78,16 @@ describe('SelectedPlaceSheet', () => {
     expect(screen.getByText('나의 단골')).toBeInTheDocument();
     expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '1번째 스티커 붙이기' })).toBeInTheDocument();
+    const photo = screen.getByRole('button', { name: '2번째 스티커 붙이기' }).querySelector('img')!;
+    expect(photo).toHaveAttribute('src', 'https://example.com/photo.png');
+    fireEvent.error(photo);
+    expect(photo).not.toHaveAttribute('src', 'https://example.com/photo.png');
+    expect(
+      screen.getByRole('button', { name: '1번째 스티커 붙이기' }).querySelector('img')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '1번째 스티커 붙이기' }).querySelector('img')
+    ).toHaveClass('size-13.75');
     expect(screen.getByRole('link', { name: '상세보기' })).toHaveAttribute(
       'href',
       '/home/shop/101'

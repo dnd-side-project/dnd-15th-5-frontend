@@ -21,6 +21,7 @@ export default function MapStickers() {
   const visibleStickers = selectedCategory
     ? stickers.filter(({ place }) => place.category === selectedCategory)
     : stickers;
+  const nonLikedStickers = visibleStickers.filter(({ isLiked }) => !isLiked);
 
   const handleStickerSelect = (sticker: MapStickerData) => {
     showSelectedPlace(sticker.id);
@@ -29,7 +30,7 @@ export default function MapStickers() {
 
   return (
     <>
-      {visibleStickers.map((sticker) => (
+      {nonLikedStickers.map((sticker) => (
         <MapSticker
           key={sticker.id}
           sticker={sticker}

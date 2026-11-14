@@ -1,6 +1,6 @@
 import { useGetPlaceDetail } from '@/features/shop/apis/queries';
 import { AddIcon, LocationPinIcon } from '@/shared/assets/icons';
-import { getStickerImageByName } from '@/shared/assets/images/stickers';
+import { getStickerImages } from '@/shared/assets/images/stickers';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { LinkButton } from '@/shared/ui/button';
 import { Chip } from '@/shared/ui/chip';
@@ -65,10 +65,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
     );
   }
 
-  const stickerImages = (place.recentStickers ?? []).flatMap((sticker) => {
-    const image = getStickerImageByName(sticker.itemName);
-    return image ? [image] : [];
-  });
+  const stickerImages = getStickerImages(place.recentStickers ?? []);
   const recordLocationState = createShopRecordLocationState({
     address: place.address,
     category: place.category,
@@ -101,6 +98,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
       </div>
 
       <StickerCollection
+        size="compact"
         stickers={stickerImages}
         maxItems={5}
         replayStampAnimationOnClick

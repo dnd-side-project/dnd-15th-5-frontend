@@ -7,7 +7,7 @@ import type { MapPosition } from '../types';
 type MapFocusStore = {
   focusPosition: MapPosition | null;
   focusZoom: number | undefined;
-  setFocusPosition: (position: MapPosition) => void;
+  setFocusPosition: (position: MapPosition, zoom?: number) => void;
   setSelectedPlaceFocus: (position: MapPosition) => void;
   clearFocusPosition: () => void;
 };
@@ -19,7 +19,7 @@ type MapFocusStore = {
 export const useMapFocusStore = create<MapFocusStore>((set) => ({
   focusPosition: null,
   focusZoom: undefined,
-  setFocusPosition: (position) => set({ focusPosition: position, focusZoom: undefined }),
+  setFocusPosition: (focusPosition, focusZoom) => set({ focusPosition, focusZoom }),
   setSelectedPlaceFocus: (position) =>
     set({ focusPosition: position, focusZoom: SELECTED_PLACE_MAP_ZOOM }),
   clearFocusPosition: () => set({ focusPosition: null, focusZoom: undefined }),

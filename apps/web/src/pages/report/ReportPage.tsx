@@ -13,6 +13,7 @@ import {
 } from '@/features/report';
 import { ChevronRightIcon } from '@/shared/assets/icons';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
+import { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/bottom-tab-bar';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { StateView } from '@/shared/ui/state-view';
 
@@ -54,7 +55,10 @@ export default function ReportPage() {
 
       <ReportHeroSection monthlyReportPath={ROUTE_PATHS.monthlyReport} monthLabel={monthLabel} />
 
-      <div className="relative rounded-t-30 bg-neutral-00 pt-10 pr-4 pb-[calc(var(--spacing-page-bottom)+6.5rem)] pl-4.25">
+      <div
+        className="relative rounded-t-30 bg-neutral-00 pt-10 pr-4 pl-4.25"
+        style={{ paddingBottom: `calc(var(--spacing-page-bottom) + ${BOTTOM_TAB_BAR_HEIGHT_CSS})` }}
+      >
         <div className="flex flex-col gap-6">
           <ReportSection title="이 주의 소비 기록">
             {isPending ? (

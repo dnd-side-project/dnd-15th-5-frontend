@@ -50,14 +50,14 @@ function RequiredField({ children, errorId, errorMessage, label }: RequiredField
   return (
     <fieldset>
       <legend className="text-body-02-medium text-neutral-700">
-        <span className="mr-1 text-notification" aria-hidden="true">
+        <span className="mr-1 text-red" aria-hidden="true">
           *
         </span>
         {label}
       </legend>
       <div className="mt-2">{children}</div>
       {errorMessage && (
-        <p id={errorId} role="alert" className="mt-2 text-label-01-medium text-notification">
+        <p id={errorId} role="alert" className="mt-2 text-label-01-medium text-red">
           {errorMessage}
         </p>
       )}
@@ -140,7 +140,7 @@ export default function ManualRecordForm({
         confirmBeforeClose={isDraftDirty}
       />
 
-      <h1 className="mt-6 text-heading-01-bold text-neutral-700">소비 정보를 입력해주세요</h1>
+      <h1 className="mt-1.5 text-heading-01-bold text-neutral-700">소비 정보를 입력해주세요</h1>
 
       {hasSelectedShop ? (
         <div className="mt-6 flex items-center rounded-16 border border-neutral-300 p-2">
@@ -175,7 +175,7 @@ export default function ManualRecordForm({
         <p
           id="manual-record-shop-location-error"
           role="alert"
-          className="mt-2 text-label-01-medium text-notification"
+          className="mt-2 text-label-01-medium text-red"
         >
           선택한 가게의 위치 정보가 없어 기록할 수 없어요. 다른 가게를 선택해주세요.
         </p>
@@ -206,7 +206,7 @@ export default function ManualRecordForm({
           >
             <label
               className={`flex items-center rounded-08 border p-4 focus-within:ring-2 focus-within:ring-primary-300 ${
-                showAmountError ? 'border-notification' : 'border-neutral-300'
+                showAmountError ? 'border-red' : 'border-neutral-300'
               }`}
             >
               <input

@@ -8,6 +8,12 @@ import { resetNativeAnalyticsForTest } from '@/shared/lib/analytics/nativeAnalyt
 
 import HomeScreen from './HomeScreen';
 
+let mockNativePathname = '/';
+jest.mock('@/native/sticker/stickerBackground', () => ({
+  prepareNativeStickerBackground: jest.fn().mockResolvedValue({ ready: true, backend: 'cpu' }),
+}));
+jest.mock('expo-router', () => ({ usePathname: () => mockNativePathname }));
+
 const mockCreateBridgeResponse = jest.fn();
 const mockCreateResponseScript = jest.fn((_response: unknown, _trustedOrigin: string) => 'true;');
 const mockCreateAppActiveScript = jest.fn((_trustedOrigin: string) => 'app-active;');
@@ -94,6 +100,7 @@ describe('<HomeScreen />', () => {
   const originalWebUrl = process.env.EXPO_PUBLIC_WEB_URL;
 
   beforeEach(() => {
+    mockNativePathname = '/';
     resetNativeAnalyticsForTest();
     hardwareBackHandler = undefined;
     appStateChangeHandler = undefined;
@@ -233,7 +240,7 @@ describe('<HomeScreen />', () => {
     );
   });
 
-  it('지도 홈은 전체 화면, 다른 웹 경로는 하단 배경만 edge-to-edge로 표시한다', async () => {
+  it('지도 홈과 추천 지도는 전체 화면, 검색과 기록은 하단만 edge-to-edge로 표시한다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173';
     const { getByTestId } = await render(<HomeScreen />);
 
@@ -252,6 +259,25 @@ describe('<HomeScreen />', () => {
 
     expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
+
+    for (const [pathname, edges] of [
+      ['/home/recommendation/search', bottomEdgeToEdgeEdges],
+      ['/home/recommendation/map', edgeToEdgeEdges],
+      ['/home/recommendation/search', bottomEdgeToEdgeEdges],
+      ['/record', bottomEdgeToEdgeEdges],
+      ['/record/shop/search', bottomEdgeToEdgeEdges],
+      ['/record/manual', bottomEdgeToEdgeEdges],
+    ] as const) {
+      await act(async () => {
+        await getByTestId('home-webview').props.onMessage({
+          nativeEvent: {
+            data: JSON.stringify({ kind: 'event', type: 'routeChanged', payload: { pathname } }),
+            url: `http://192.168.0.2:5173${pathname}`,
+          },
+        });
+      });
+      expect(getByTestId('home-safe-area').props.edges).toEqual(edges);
+    }
 
     await act(async () => {
       await getByTestId('home-webview').props.onMessage({

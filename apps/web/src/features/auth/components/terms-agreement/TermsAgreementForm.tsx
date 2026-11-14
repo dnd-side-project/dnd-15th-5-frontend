@@ -138,7 +138,7 @@ export default function TermsAgreementForm({
       <div className="mt-10 flex flex-col items-center gap-3 px-1 pb-8">
         <p
           className={cn(
-            'text-body-02-regular tracking-[-0.02em] text-notification',
+            'text-body-02-regular tracking-[-0.02em] text-red',
             areRequiredTermsAgreed && 'invisible'
           )}
           role={areRequiredTermsAgreed ? undefined : 'alert'}

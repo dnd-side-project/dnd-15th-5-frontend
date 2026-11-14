@@ -41,12 +41,11 @@ export const TEST_MAP_STICKERS: readonly MapSticker[] = [
 
 export const TEST_SHOP_RECOMMENDATIONS: readonly ShopRecommendation[] = [
   ...TEST_MAP_STICKERS.map((sticker, index) => ({
-    googleMapsUri: `https://maps.google.com/?cid=${sticker.id}`,
     id: sticker.id,
     isLiked: index === 1,
     place: sticker.place,
     position: sticker.position,
-    reason: '나의 관심 카테고리' as const,
+    reason: '카테고리별 인기 가게' as const,
     thumbnailSrc: null,
     visitCount: sticker.visitCount,
   })),
@@ -59,7 +58,7 @@ export const TEST_SHOP_RECOMMENDATIONS: readonly ShopRecommendation[] = [
       name: `${sticker.place.name} ${index + 2}`,
     },
     position: { lat: sticker.position.lat + 0.01, lng: sticker.position.lng + 0.01 },
-    reason: '내 동네에서 많이 방문한 곳' as const,
+    reason: '카테고리별 인기 가게' as const,
     thumbnailSrc: null,
     visitCount: sticker.visitCount,
   })),

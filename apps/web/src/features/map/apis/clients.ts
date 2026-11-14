@@ -5,17 +5,28 @@
 
 import { apiClient } from '@/shared/apis/orvalMutator';
 
+import type { BodyType } from '@/shared/apis/orvalMutator';
+
 import type {
+  ApiResponseLikedPlaceScrollResponse,
   ApiResponseNearbyPlacesResponse,
   ApiResponsePlaceLikeResponse,
+  ApiResponseRecentTownsResponse,
+  ApiResponseRecommendedPlaceDetailResponse,
+  ApiResponseTownSearchResponse,
+  ApiResponseUserTownResponse,
   ApiResponseVisitedPlaceMarkerResponse,
+  ApiResponseVoid,
+  GetLikedPlacesParams,
   GetNearbyPlacesParams,
   GetVisitedPlaceMarkersParams,
+  SearchTownsParams,
   SecondParameter,
+  UserTownSaveRequest,
 } from '@/features/map/apis/dto';
 
 /**
- * 좋아요 상태를 등록하고 취소한다
+ * 좋아요 상태를 등록하고 취소합니다. 동시 등록·해제 충돌은 409(PLACE007)를 반환합니다.
  * @summary 가게 좋아요 토글
  */
 export const toggleLike = (
@@ -30,7 +41,72 @@ export const toggleLike = (
 };
 
 /**
- * 지도 중심 좌표 반경 안의 인기 가게를 조회. myTownPlaces는 전체 인기순, sameCategoryPlaces는 내가 가장 많이 방문한 카테고리로 필터링한 결과로 둘 중 중복된건 1개만 응 답
+ * 검색 결과 중 선택한 행정동을 사용자의 동네로 저장합니다. 좌표는 클라이언트가 변환해서 함께 전달해야 하며, 이미 설정한 적 있는 행정동이면 좌표와 설정 시각만 갱신합니다. 최근 설정한 동네는 최신 10개까지만 유지됩니다.
+ * @summary 동네 설정하기
+ */
+export const saveTown = (
+  userTownSaveRequest: BodyType<UserTownSaveRequest>,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseUserTownResponse>(
+    {
+      url: `/v1/towns`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: userTownSaveRequest,
+      signal,
+    },
+    options
+  );
+};
+
+/**
+ * 키워드로 행정동 후보를 검색합니다. 전국 행정동을 대상으로 검색하며, 좌표는 포함하지 않습니다(좌표 변환은 클라이언트에서 수행).
+ * @summary 행정동 검색
+ */
+export const searchTowns = (
+  params: SearchTownsParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseTownSearchResponse>(
+    { url: `/v1/towns/search`, method: 'GET', params, signal },
+    options
+  );
+};
+
+/**
+ * 최근 설정한 동네를 최신순으로 조회합니다.
+ * @summary 최근 설정한 동네 목록
+ */
+export const getRecentTowns = (
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseRecentTownsResponse>(
+    { url: `/v1/towns/recent`, method: 'GET', signal },
+    options
+  );
+};
+
+/**
+ * 추천 목록에서 선택한 가게의 이름, 카테고리, 위치와 Google 사진 최대 3장, 실제 Google 지도 링크를 조회
+ * @summary 가게 추천 상세보기
+ */
+export const getPlaceDetail = (
+  placeId: number,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseRecommendedPlaceDetailResponse>(
+    { url: `/v1/recommendations/places/${placeId}`, method: 'GET', signal },
+    options
+  );
+};
+
+/**
+ * 지도 중심 좌표 반경 안의 인기 가게를 조회. categoryPlaces는 카테고리 전체 목록 각각에 대해 인기순 상위 4개씩 묶어서 응답하고(해당 카테고리에 후보가 없으면 빈 배열), allPlaces는 그 카테고리별 추천을 모두 합친 것(최대 카테고리 수 × 4개)을 인기순으로 응답
  * @summary 내 주변 가게 추천
  */
 export const getNearbyPlaces = (
@@ -40,6 +116,21 @@ export const getNearbyPlaces = (
 ) => {
   return apiClient<ApiResponseNearbyPlacesResponse>(
     { url: `/v1/recommendations/nearby-places`, method: 'GET', params, signal },
+    options
+  );
+};
+
+/**
+ * 최근 좋아요순으로 조회합니다. category를 생략하면 전체를 조회합니다. categories는 페이지·필터와 무관하게 내 좋아요 전체에 존재하는 대표 카테고리입니다. 대표 카테고리는 전체 소비기록 수 기준이며 동률이면 이름순입니다. 기록이 없으면 null입니다. 필터를 바꾸면 cursorId를 생략하고 처음부터 조회합니다. 사진은 장소당 최대 3개입니다.
+ * @summary 좋아요한 가게 목록
+ */
+export const getLikedPlaces = (
+  params?: GetLikedPlacesParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseLikedPlaceScrollResponse>(
+    { url: `/v1/places/likes`, method: 'GET', params, signal },
     options
   );
 };
@@ -55,6 +146,21 @@ export const getVisitedPlaceMarkers = (
 ) => {
   return apiClient<ApiResponseVisitedPlaceMarkerResponse>(
     { url: `/v1/consumptions/visited-places`, method: 'GET', params, signal },
+    options
+  );
+};
+
+/**
+ * 최근 설정한 동네 목록에서 하나를 삭제합니다.
+ * @summary 최근 설정한 동네 삭제
+ */
+export const deleteRecentTown = (
+  userTownId: number,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseVoid>(
+    { url: `/v1/towns/recent/${userTownId}`, method: 'DELETE', signal },
     options
   );
 };

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -30,11 +30,24 @@ const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation)
 
 jest.mock('@vis.gl/react-google-maps', () => ({
   AdvancedMarker: ({
+    anchorLeft,
+    anchorTop,
     children,
     onClick,
     title,
-  }: PropsWithChildren<{ onClick?: () => void; title?: string }>) => (
-    <button type="button" aria-label={title} onClick={onClick}>
+  }: PropsWithChildren<{
+    anchorLeft?: string;
+    anchorTop?: string;
+    onClick?: () => void;
+    title?: string;
+  }>) => (
+    <button
+      type="button"
+      aria-label={title}
+      data-anchor-left={anchorLeft}
+      data-anchor-top={anchorTop}
+      onClick={onClick}
+    >
       {children}
     </button>
   ),
@@ -75,7 +88,9 @@ describe('MapStickers', () => {
 
     render(
       <>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <MapStickers />
       </>
     );
@@ -97,15 +112,21 @@ describe('MapStickers', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('스티커를 선택하면 해당 좌표로 지도를 이동하고 70px로 확대한다', async () => {
+  it('이미지 크기를 확인하기 전 선택하면 핀 중앙에 표시하고 화살표 끝이 장소 좌표를 가리킨다', async () => {
     const user = userEvent.setup();
     render(<MapStickers />);
 
     const sticker = TEST_MAP_STICKERS[0]!;
     const stickerButton = screen.getByRole('button', { name: `${sticker.label} 스티커` });
-    const stickerImage = stickerButton.querySelector('img');
+    const stickerImage = stickerButton.querySelector('svg image');
 
-    expect(stickerImage).toHaveClass('size-17.5', 'scale-[0.7143]');
+    expect(stickerImage).toHaveAttribute('width', '40');
+    expect(stickerImage).toHaveAttribute('height', '40');
+    expect(stickerImage?.closest('[data-analytics-id="map-place-sticker"]')).toHaveClass(
+      'size-11.5'
+    );
+    expect(stickerButton).toHaveAttribute('data-anchor-top', '-50%');
+    expect(stickerButton.querySelector('[data-map-sticker-glass]')).not.toBeInTheDocument();
 
     await user.click(stickerButton);
 
@@ -116,7 +137,18 @@ describe('MapStickers', () => {
       stickerId: sticker.id,
     });
     expect(stickerButton).toHaveAccessibleName(`${sticker.label} 스티커, 선택됨`);
-    expect(stickerImage).toHaveClass('size-17.5', 'scale-100');
+    expect(stickerImage).toHaveAttribute('width', '62');
+    expect(stickerImage).toHaveAttribute('height', '62');
+    expect(stickerImage).toHaveAttribute('x', '2');
+    expect(stickerImage).toHaveAttribute('y', '2');
+    expect(stickerImage).toHaveAttribute('preserveAspectRatio', 'xMidYMid meet');
+    expect(stickerButton.querySelector('clipPath rect')).not.toBeInTheDocument();
+    expect(stickerImage?.closest('[data-analytics-id="map-place-sticker"]')).toHaveClass(
+      'size-16.5'
+    );
+    expect(stickerButton).toHaveAttribute('data-anchor-left', '-50%');
+    expect(stickerButton).toHaveAttribute('data-anchor-top', 'calc(-100% - 8px)');
+    expect(stickerButton.querySelector('[data-map-sticker-glass]')).toBeInTheDocument();
   });
 
   it('다른 스티커를 선택하면 이전 스티커를 기본 크기로 되돌린다', async () => {
@@ -134,9 +166,183 @@ describe('MapStickers', () => {
     await user.click(secondSticker);
 
     expect(firstSticker).toHaveAccessibleName(`${TEST_MAP_STICKERS[0]!.label} 스티커`);
-    expect(firstSticker.querySelector('img')).toHaveClass('scale-[0.7143]');
+    expect(firstSticker.querySelector('svg image')).toHaveAttribute('width', '40');
+    expect(firstSticker.querySelector('svg image')).toHaveAttribute('height', '40');
+    expect(firstSticker).toHaveAttribute('data-anchor-top', '-50%');
     expect(secondSticker).toHaveAccessibleName(`${TEST_MAP_STICKERS[1]!.label} 스티커, 선택됨`);
-    expect(secondSticker.querySelector('img')).toHaveClass('scale-100');
+    expect(secondSticker.querySelector('svg image')).toHaveAttribute('width', '62');
+    expect(secondSticker.querySelector('svg image')).toHaveAttribute('height', '62');
+    expect(secondSticker).toHaveAttribute('data-anchor-top', 'calc(-100% - 8px)');
+  });
+
+  it.each([
+    {
+      width: 400,
+      height: 800,
+      alignment: 'xMidYMax meet',
+      size: [62, 80],
+    },
+    {
+      width: 800,
+      height: 400,
+      alignment: 'xMinYMid meet',
+      size: [80, 62],
+    },
+    {
+      width: 400,
+      height: 400,
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
+    },
+    {
+      width: 512,
+      height: 487,
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
+    },
+    {
+      width: 487,
+      height: 512,
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
+    },
+    {
+      width: 512,
+      height: 469,
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
+    },
+    {
+      width: 440,
+      height: 400,
+      alignment: 'xMidYMid meet',
+      size: [62, 62],
+    },
+    {
+      width: 441,
+      height: 400,
+      alignment: 'xMinYMid meet',
+      size: [80, 62],
+    },
+    {
+      width: 400,
+      height: 441,
+      alignment: 'xMidYMax meet',
+      size: [62, 80],
+    },
+  ])(
+    '사진 비율 $width × $height에 맞춰 선택한 사진의 정렬과 돌출 여부를 정한다',
+    async ({ width, height, alignment, size }) => {
+      const user = userEvent.setup();
+      render(<MapStickers />);
+      const stickerButton = screen.getByRole('button', {
+        name: `${TEST_MAP_STICKERS[0]!.label} 스티커`,
+      });
+      const stickerImage = stickerButton.querySelector('img')!;
+      Object.defineProperties(stickerImage, {
+        naturalWidth: { value: width },
+        naturalHeight: { value: height },
+      });
+      const renderedImage = stickerButton.querySelector('svg image');
+      expect(renderedImage).toHaveAttribute('width', '40');
+      expect(renderedImage).toHaveAttribute('height', '40');
+      expect(stickerImage).toHaveAttribute('hidden');
+
+      await user.click(stickerButton);
+
+      expect(renderedImage).toHaveAttribute('width', '62');
+      expect(renderedImage).toHaveAttribute('height', '62');
+      expect(renderedImage).toHaveAttribute('preserveAspectRatio', 'xMidYMid meet');
+      expect(stickerButton.querySelector('clipPath rect')).not.toBeInTheDocument();
+
+      fireEvent.load(stickerImage);
+
+      expect(stickerButton.querySelectorAll('svg image')).toHaveLength(1);
+      expect(renderedImage).toHaveAttribute('href', stickerImage.getAttribute('src'));
+      expect(renderedImage).toHaveAttribute('width', String(size[0]));
+      expect(renderedImage).toHaveAttribute('height', String(size[1]));
+      expect(renderedImage).toHaveAttribute('preserveAspectRatio', alignment);
+      expect(stickerButton.querySelector('clipPath circle')).toHaveAttribute('r', '31');
+      const protrudingArea = stickerButton.querySelector('clipPath rect');
+      if (alignment === 'xMidYMid meet') {
+        expect(protrudingArea).not.toBeInTheDocument();
+        expect(renderedImage).toHaveAttribute('x', '2');
+        expect(renderedImage).toHaveAttribute('y', '2');
+      } else if (width > height) {
+        expect(protrudingArea).toHaveAttribute('x', '33');
+        expect(protrudingArea).toHaveAttribute('y', '2');
+        expect(protrudingArea).toHaveAttribute('height', '62');
+      } else {
+        expect(protrudingArea).toHaveAttribute('x', '2');
+        expect(protrudingArea).toHaveAttribute('y', '-16');
+        expect(protrudingArea).toHaveAttribute('width', '62');
+      }
+      expect(stickerButton).toHaveAttribute('data-anchor-top', 'calc(-100% - 8px)');
+    }
+  );
+
+  it.each([
+    {
+      width: 800,
+      height: 400,
+      hitArea: { left: '2px', top: '2px', width: '80px', height: '62px' },
+    },
+    {
+      width: 400,
+      height: 800,
+      hitArea: { left: '2px', top: '-16px', width: '62px', height: '80px' },
+    },
+  ])(
+    '돌출된 $width × $height 이미지 영역을 눌러도 해당 장소를 선택한다',
+    async ({ width, height, hitArea }) => {
+      const user = userEvent.setup();
+      render(<MapStickers />);
+      const sticker = TEST_MAP_STICKERS[0]!;
+      const stickerButton = screen.getByRole('button', { name: `${sticker.label} 스티커` });
+      const image = stickerButton.querySelector('img')!;
+      Object.defineProperties(image, {
+        naturalWidth: { value: width },
+        naturalHeight: { value: height },
+      });
+      fireEvent.load(image);
+      await user.click(stickerButton);
+
+      const protrudingHitArea = stickerButton.querySelector<HTMLElement>(
+        '[data-map-sticker-hit-area]'
+      )!;
+      expect(protrudingHitArea).toHaveStyle(hitArea);
+      expect(protrudingHitArea.parentElement).toHaveClass('size-16.5');
+      expect(stickerButton).toHaveAttribute('data-anchor-left', '-50%');
+      expect(stickerButton).toHaveAttribute('data-anchor-top', 'calc(-100% - 8px)');
+
+      moveCamera.mockClear();
+      await user.click(protrudingHitArea);
+
+      expect(moveCamera).toHaveBeenCalledTimes(1);
+      expect(moveCamera).toHaveBeenCalledWith({ center: sticker.position, zoom: 16 });
+      expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+        type: 'selectedPlace',
+        stickerId: sticker.id,
+      });
+    }
+  );
+
+  it.each([
+    [1, null],
+    [2, '+1'],
+    [4, '+3'],
+  ])('총 기록이 %i개이면 대표 기록을 제외한 추가 개수만 표시한다', (visitCount, badge) => {
+    mockedUseVisitedPlaceStickersQuery.mockReturnValue({
+      stickers: [{ ...TEST_MAP_STICKERS[0]!, visitCount }],
+    } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
+
+    const { container } = render(<MapStickers />);
+
+    if (badge) {
+      expect(screen.getByText(badge)).toBeInTheDocument();
+    } else {
+      expect(container).not.toHaveTextContent(/\+\d+/);
+    }
   });
 
   it('스티커 클릭으로 홈 탭 시트를 해당 장소 상세 시트로 교체한다', async () => {
@@ -166,7 +372,9 @@ describe('MapStickers', () => {
     const sticker = TEST_MAP_STICKERS[0]!;
     render(
       <MemoryRouter>
-        <HomeCategoryFilter />
+        <HomeCategoryFilter
+          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
+        />
         <MapStickers />
         <HomeBottomSheet
           renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
@@ -179,12 +387,11 @@ describe('MapStickers', () => {
     const recommendationChip = screen.getByRole('button', { name: '가게 추천' });
     await user.click(recommendationChip);
 
-    expect(recommendationChip).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('heading', { level: 1, name: '가게 추천' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: `${sticker.label} 스티커` }));
 
-    expect(recommendationChip).toHaveAttribute('aria-pressed', 'false');
+    expect(recommendationChip).not.toHaveAttribute('aria-pressed');
     expect(screen.queryByRole('heading', { level: 1, name: '가게 추천' })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: sticker.place.name })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: '바텀시트 높이 조절' })).toHaveLength(1);

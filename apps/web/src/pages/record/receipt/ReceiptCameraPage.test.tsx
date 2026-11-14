@@ -12,7 +12,7 @@ jest.mock('@/features/record', () => ({
 const mockUseOpenReceiptCamera = jest.mocked(useOpenReceiptCamera);
 
 describe('<ReceiptCameraPage />', () => {
-  it('앱에서 카메라가 열리면 WebView를 기록 방법 선택 화면으로 되돌린다', async () => {
+  it('앱에서 카메라가 열리면 WebView를 이전 기록 화면으로 되돌린다', async () => {
     mockUseOpenReceiptCamera.mockReturnValue({
       state: { status: 'opened' },
       retry: jest.fn(),
@@ -21,13 +21,13 @@ describe('<ReceiptCameraPage />', () => {
     render(
       <MemoryRouter initialEntries={['/record', '/record/receipt/camera']} initialIndex={1}>
         <Routes>
-          <Route path="/record" element={<p>기록 방법 선택</p>} />
+          <Route path="/record" element={<p>기록 화면</p>} />
           <Route path="/record/receipt/camera" element={<ReceiptCameraPage />} />
         </Routes>
       </MemoryRouter>
     );
 
-    await waitFor(() => expect(screen.getByText('기록 방법 선택')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('기록 화면')).toBeInTheDocument());
   });
 
   it('일반 웹에서는 앱 전용 안내를 보여준다', () => {

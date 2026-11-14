@@ -24,27 +24,37 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 import type { ErrorType } from '@/shared/apis/orvalMutator';
 
 import type {
+  GetCalendarParams,
   GetConsumptionsParams,
   GetCurrentStatusParams,
   GetFrequentPlacesParams,
   GetMonthlyReportParams,
+  GetStickerBoardParams,
   SecondParameter,
 } from '@/features/report/apis/dto';
 
 import {
+  getCalendar,
+  getCategoryDistribution,
   getConsumptions,
   getCurrentStatus,
   getFrequentPlaces,
   getMonthlyReport,
   getSharedPersonaCard,
+  getStickerBoard,
+  getSummaryHighlight,
 } from '@/features/report/apis/clients';
 
 import {
+  getGetCalendarQueryKey,
+  getGetCategoryDistributionQueryKey,
   getGetConsumptionsQueryKey,
   getGetCurrentStatusQueryKey,
   getGetFrequentPlacesQueryKey,
   getGetMonthlyReportQueryKey,
   getGetSharedPersonaCardQueryKey,
+  getGetStickerBoardQueryKey,
+  getGetSummaryHighlightQueryKey,
 } from '@/features/report/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
@@ -79,7 +89,7 @@ export const getGetConsumptionsQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getConsumptions>>> = ({ signal }) =>
     getConsumptions(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getConsumptions>>,
     TError,
     TData
@@ -185,7 +195,7 @@ export const getGetConsumptionsSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getConsumptions>>> = ({ signal }) =>
     getConsumptions(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getConsumptions>>,
     TError,
     TData
@@ -258,6 +268,818 @@ export function useGetConsumptionsSuspense<
   queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetConsumptionsSuspenseQueryOptions(params, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetSummaryHighlightQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>>;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSummaryHighlightQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSummaryHighlight>>> = ({ signal }) =>
+    getSummaryHighlight(requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSummaryHighlight>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetSummaryHighlightQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSummaryHighlight>>
+>;
+
+export type GetSummaryHighlightQueryError = ErrorType<unknown>;
+
+export function useGetSummaryHighlight<
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSummaryHighlight>>,
+          TError,
+          Awaited<ReturnType<typeof getSummaryHighlight>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetSummaryHighlight<
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSummaryHighlight>>,
+          TError,
+          Awaited<ReturnType<typeof getSummaryHighlight>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetSummaryHighlight<
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 상단 핵심요약 카드 조회
+ */
+
+export function useGetSummaryHighlight<
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetSummaryHighlightQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetSummaryHighlightSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetSummaryHighlightQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getSummaryHighlight>>> = ({ signal }) =>
+    getSummaryHighlight(requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getSummaryHighlight>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetSummaryHighlightSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSummaryHighlight>>
+>;
+
+export type GetSummaryHighlightSuspenseQueryError = ErrorType<unknown>;
+
+export function useGetSummaryHighlightSuspense<
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetSummaryHighlightSuspense<
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetSummaryHighlightSuspense<
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 상단 핵심요약 카드 조회
+ */
+
+export function useGetSummaryHighlightSuspense<
+  TData = Awaited<ReturnType<typeof getSummaryHighlight>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getSummaryHighlight>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetSummaryHighlightSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetStickerBoardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetStickerBoardQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getStickerBoard>>> = ({ signal }) =>
+    getStickerBoard(params, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+    Awaited<ReturnType<typeof getStickerBoard>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetStickerBoardQueryResult = NonNullable<Awaited<ReturnType<typeof getStickerBoard>>>;
+
+export type GetStickerBoardQueryError = ErrorType<unknown>;
+
+export function useGetStickerBoard<
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStickerBoard>>,
+          TError,
+          Awaited<ReturnType<typeof getStickerBoard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetStickerBoard<
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStickerBoard>>,
+          TError,
+          Awaited<ReturnType<typeof getStickerBoard>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetStickerBoard<
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 이번달 쌓인 기록 스티커보드 조회
+ */
+
+export function useGetStickerBoard<
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetStickerBoardQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetStickerBoardSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetStickerBoardQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getStickerBoard>>> = ({ signal }) =>
+    getStickerBoard(params, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getStickerBoard>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetStickerBoardSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getStickerBoard>>
+>;
+
+export type GetStickerBoardSuspenseQueryError = ErrorType<unknown>;
+
+export function useGetStickerBoardSuspense<
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetStickerBoardSuspense<
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetStickerBoardSuspense<
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 이번달 쌓인 기록 스티커보드 조회
+ */
+
+export function useGetStickerBoardSuspense<
+  TData = Awaited<ReturnType<typeof getStickerBoard>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetStickerBoardParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getStickerBoard>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetStickerBoardSuspenseQueryOptions(params, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetCategoryDistributionQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCategoryDistributionQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCategoryDistribution>>> = ({
+    signal,
+  }) => getCategoryDistribution(requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCategoryDistribution>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetCategoryDistributionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCategoryDistribution>>
+>;
+
+export type GetCategoryDistributionQueryError = ErrorType<unknown>;
+
+export function useGetCategoryDistribution<
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCategoryDistribution>>,
+          TError,
+          Awaited<ReturnType<typeof getCategoryDistribution>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCategoryDistribution<
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCategoryDistribution>>,
+          TError,
+          Awaited<ReturnType<typeof getCategoryDistribution>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCategoryDistribution<
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 카테고리 분포도 조회
+ */
+
+export function useGetCategoryDistribution<
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCategoryDistributionQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetCategoryDistributionSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCategoryDistributionQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCategoryDistribution>>> = ({
+    signal,
+  }) => getCategoryDistribution(requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getCategoryDistribution>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetCategoryDistributionSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCategoryDistribution>>
+>;
+
+export type GetCategoryDistributionSuspenseQueryError = ErrorType<unknown>;
+
+export function useGetCategoryDistributionSuspense<
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCategoryDistributionSuspense<
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCategoryDistributionSuspense<
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 카테고리 분포도 조회
+ */
+
+export function useGetCategoryDistributionSuspense<
+  TData = Awaited<ReturnType<typeof getCategoryDistribution>>,
+  TError = ErrorType<unknown>,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCategoryDistribution>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCategoryDistributionSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetCalendarQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCalendarQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCalendar>>> = ({ signal }) =>
+    getCalendar(params, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCalendar>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetCalendarQueryResult = NonNullable<Awaited<ReturnType<typeof getCalendar>>>;
+
+export type GetCalendarQueryError = ErrorType<unknown>;
+
+export function useGetCalendar<
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCalendar>>,
+          TError,
+          Awaited<ReturnType<typeof getCalendar>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCalendar<
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCalendar>>,
+          TError,
+          Awaited<ReturnType<typeof getCalendar>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCalendar<
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 리포트 캘린더 조회
+ */
+
+export function useGetCalendar<
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCalendarQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetCalendarSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCalendarQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCalendar>>> = ({ signal }) =>
+    getCalendar(params, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getCalendar>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetCalendarSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof getCalendar>>>;
+
+export type GetCalendarSuspenseQueryError = ErrorType<unknown>;
+
+export function useGetCalendarSuspense<
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options: {
+    query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCalendarSuspense<
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCalendarSuspense<
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 리포트 캘린더 조회
+ */
+
+export function useGetCalendarSuspense<
+  TData = Awaited<ReturnType<typeof getCalendar>>,
+  TError = ErrorType<unknown>,
+>(
+  params: GetCalendarParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getCalendar>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCalendarSuspenseQueryOptions(params, options);
 
   const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
     TData,
@@ -405,7 +1227,7 @@ export const getGetSharedPersonaCardSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getSharedPersonaCard>>> = ({ signal }) =>
     getSharedPersonaCard(shareToken, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getSharedPersonaCard>>,
     TError,
     TData
@@ -504,7 +1326,7 @@ export const getGetMonthlyReportQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getMonthlyReport>>> = ({ signal }) =>
     getMonthlyReport(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getMonthlyReport>>,
     TError,
     TData
@@ -610,7 +1432,7 @@ export const getGetMonthlyReportSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getMonthlyReport>>> = ({ signal }) =>
     getMonthlyReport(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getMonthlyReport>>,
     TError,
     TData
@@ -709,7 +1531,7 @@ export const getGetCurrentStatusQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentStatus>>> = ({ signal }) =>
     getCurrentStatus(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getCurrentStatus>>,
     TError,
     TData
@@ -815,7 +1637,7 @@ export const getGetCurrentStatusSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentStatus>>> = ({ signal }) =>
     getCurrentStatus(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getCurrentStatus>>,
     TError,
     TData
@@ -914,7 +1736,7 @@ export const getGetFrequentPlacesQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getFrequentPlaces>>> = ({ signal }) =>
     getFrequentPlaces(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getFrequentPlaces>>,
     TError,
     TData
@@ -1022,7 +1844,7 @@ export const getGetFrequentPlacesSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getFrequentPlaces>>> = ({ signal }) =>
     getFrequentPlaces(params, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getFrequentPlaces>>,
     TError,
     TData

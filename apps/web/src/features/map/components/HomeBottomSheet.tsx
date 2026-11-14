@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useHomeBottomSheetTabs } from '@/features/map/hooks/useHomeBottomSheetTabs';
+import { useHomeSheetTopBoundary } from '@/features/map/hooks/useHomeSheetTopBoundary';
+import { useSelectedPlaceExpandTransition } from '@/features/map/hooks/useSelectedPlaceExpandTransition';
 import {
   getHomeBottomSheetSnapPoint,
   useHomeBottomSheetStore,
@@ -7,20 +10,22 @@ import {
 import type { HomeBottomSheetContent } from '@/features/map/stores/homeBottomSheetStore';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
+import { BOTTOM_TAB_BAR_HEIGHT_CSS } from '@/shared/layout/bottom-tab-bar';
 import { cn } from '@/shared/lib/cn';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
+import { Overlay } from '@/shared/ui/overlay';
 import { SegmentedToggle } from '@/shared/ui/segmented-toggle';
 import { TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE } from '@/shared/ui/toast';
 
-import LikedRecommendationSheet from './LikedRecommendationSheet';
+import LikedRecommendationSheet from './liked-places/LikedRecommendationSheet';
 import ShopRecommendationSheet from './ShopRecommendationSheet';
 
 import type { ReactNode, UIEvent } from 'react';
 
-type TabValue = 'frequentShops' | 'history';
-
 type HomeBottomSheetProps = {
+  onOpenRecommendationSearch?: () => void;
+  onSelectedPlaceExpand?: (placeId: string) => void;
   renderFrequentShops: (headerContent: ReactNode) => ReactNode;
   renderSelectedPlace: (placeId: string) => ReactNode;
   renderSpendingHistory: (headerContent: ReactNode) => ReactNode;
@@ -35,8 +40,10 @@ type BottomSheetPresentation = {
 };
 
 const MODAL_SHEET_SNAP_POINTS = ['hidden', 'medium'] as const;
+const HOME_SHEET_SNAP_POINTS = ['collapsed', 'medium', 'full'] as const;
+// NOTE: 핸들·탭 영역 72px 아래에 떠 있는 네비게이션 캡슐과 12px 간격을 두고, Safe Area를 확보한다.
+const COLLAPSED_SHEET_HEIGHT_CSS = `calc(4.5rem + 0.75rem + ${BOTTOM_TAB_BAR_HEIGHT_CSS})`;
 const AUTO_EXPAND_SCROLL_THRESHOLD_PX = 32;
-const TOP_ACTION_TO_SHEET_GAP_PX = 12;
 
 type ModalSheetContentProps = {
   ariaLabel: string;
@@ -117,19 +124,25 @@ function useSheetContentTransitionClassName(transitionKey: string) {
  * 홈 화면 지도 위에 뜨는 바텀시트입니다.
  *
  * 높이 단계는 `useHomeBottomSheetStore`가 갖고 있습니다. 하단 탭바의 "홈" 버튼을 누르면 정해진
- * 순서(중간 → 최대 → 중간 → 숨김)로 바뀌고, 핸들을 드래그하면 손가락을 따라 자유롭게 움직이다가
- * 가장 가까운 단계로 스냅됩니다. 지도 스티커를 선택하면 탭 대신 해당 장소의 요약을 표시합니다.
- * 최대 단계는 상단 마이페이지 버튼 아래의 측정된 경계를 넘지 않으며, 실제 노출 높이를 스토어에
- * 기록해 현재 위치 버튼이 모든 시트에서 핸들과 같은 간격을 유지하도록 합니다. 핸들은 키보드로도
- * 조작할 수 있고(홈 시트는 단계 순환, 모달형 시트는 닫기), 모달형 시트는 포커스를 가두고 Escape로
- * 닫을 수 있는 실제 다이얼로그로 동작합니다.
+ * 순서(중간 → 최대 → 중간 → 접힘)로 바뀌고, 핸들을 드래그하면 손가락을 따라 자유롭게 움직이다가
+ * 가까운 단계로 스냅됩니다. 64px 넘게 당기면 당긴 방향으로 최소 한 단계 이동합니다.
+ * 지도 스티커를 선택하면 탭 대신 해당 장소의 요약을 표시합니다.
+ * 최대 단계에서는 상태바 아래에 12px 여백을 남기고 검색·알림·프로필 영역을 덮습니다.
+ * 위에 남은 지도 배경에는 딤을 적용합니다.
+ * 실제 노출 높이를 스토어에 기록해 현재 위치 버튼이 모든 시트에서 핸들과 같은 간격을 유지하도록
+ * 합니다. 핸들은 키보드로도 조작할 수 있고(홈 시트는 단계 순환, 모달형 시트는 닫기), 모달형
+ * 시트는 포커스를 가두고 Escape로 닫을 수 있는 실제 다이얼로그로 동작합니다.
  *
  * @param props - 홈 바텀시트 속성입니다.
  * @param props.renderFrequentShops - 세그먼트 토글과 자주 소비한 곳을 하나의 sticky 헤더로 조립합니다.
  * @param props.renderSelectedPlace - 선택한 장소 ID로 상세 요약을 조립합니다.
+ * @param props.onSelectedPlaceExpand - 선택한 가게 시트를 위로 올렸을 때 상세 화면 이동을 요청합니다.
+ * @param props.onOpenRecommendationSearch - 추천 결과가 없을 때 동네 검색을 다시 엽니다.
  * @param props.renderSpendingHistory - 세그먼트 토글과 소비내역을 하나의 sticky 헤더로 조립합니다.
  */
 export default function HomeBottomSheet({
+  onOpenRecommendationSearch,
+  onSelectedPlaceExpand,
   renderFrequentShops,
   renderSelectedPlace,
   renderSpendingHistory,
@@ -139,20 +152,30 @@ export default function HomeBottomSheet({
   const advance = useHomeBottomSheetStore((state) => state.advance);
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const topActionBottomPx = useHomeBottomSheetStore((state) => state.topActionBottomPx);
   const setVisibleHeight = useHomeBottomSheetStore((state) => state.setVisibleHeight);
   const snapPoint = getHomeBottomSheetSnapPoint(stepIndex);
-  const [tab, setTab] = useState<TabValue>('frequentShops');
-  const contentRootRef = useRef<HTMLDivElement>(null);
-  const scrollPositionsRef = useRef<Record<TabValue, number>>({
-    frequentShops: 0,
-    history: 0,
-  });
-  const shouldRestoreFocusRef = useRef(false);
+  const { topSafeAreaRef, fullTopBoundaryPx } = useHomeSheetTopBoundary();
+  const isCollapsed = activeSheet.type === 'home' && snapPoint === 'collapsed';
+  const {
+    tab,
+    contentRootRef,
+    handleTabChange,
+    handleContentScroll,
+    handleContentTouchStart,
+    handleContentTouchMove,
+    handleContentWheel,
+    handleContentKeyDown,
+    requestTabFocusRestoration,
+  } = useHomeBottomSheetTabs(activeSheet.type === 'home' && !isCollapsed);
 
   const handleVisibleHeightChange = useCallback(
     (heightPx: number) => {
       setVisibleHeight(heightPx);
+      if (heightPx === 0) {
+        document.documentElement.style.removeProperty(TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE);
+        return;
+      }
+
       document.documentElement.style.setProperty(
         TOAST_BOTTOM_SHEET_HEIGHT_CSS_VARIABLE,
         `${heightPx}px`
@@ -169,34 +192,13 @@ export default function HomeBottomSheet({
     [setVisibleHeight]
   );
 
-  useLayoutEffect(() => {
-    const scrollContainer = contentRootRef.current?.parentElement;
-    if (scrollContainer) {
-      scrollContainer.scrollTop = scrollPositionsRef.current[tab];
-    }
-
-    if (!shouldRestoreFocusRef.current) {
-      return;
-    }
-
-    shouldRestoreFocusRef.current = false;
-    contentRootRef.current
-      ?.querySelector<HTMLElement>('[data-active-tab-panel="true"] [data-pressed]')
-      ?.focus();
-  }, [activeSheet, tab]);
-
-  const handleTabChange = (nextTab: TabValue) => {
-    const scrollContainer = contentRootRef.current?.parentElement;
-    if (scrollContainer) {
-      scrollPositionsRef.current[tab] = scrollContainer.scrollTop;
-    }
-
-    shouldRestoreFocusRef.current = true;
-    setTab(nextTab);
+  const handleHomeSheetExpand = () => {
+    requestTabFocusRestoration();
+    setSnapPoint('medium');
   };
 
   const renderSegmentedToggle = () => (
-    <div className="pb-2">
+    <div className="pb-2" onClick={isCollapsed ? handleHomeSheetExpand : undefined}>
       <SegmentedToggle
         options={[
           { label: '자주 소비한 곳', value: 'frequentShops' },
@@ -215,14 +217,26 @@ export default function HomeBottomSheet({
   };
 
   const handleHomeSheetContentScroll = (event: UIEvent<HTMLDivElement>) => {
-    if (snapPoint === 'medium' && event.currentTarget.scrollTop > AUTO_EXPAND_SCROLL_THRESHOLD_PX) {
+    const shouldAutoExpand = handleContentScroll(event);
+    if (
+      shouldAutoExpand &&
+      snapPoint === 'medium' &&
+      event.currentTarget.scrollTop > AUTO_EXPAND_SCROLL_THRESHOLD_PX
+    ) {
       setSnapPoint('full');
     }
   };
 
   const handleHomeSheetContentPullDown = () => {
-    setSnapPoint('medium');
+    setSnapPoint(snapPoint === 'full' ? 'medium' : 'collapsed');
   };
+
+  const { sheetRef, expandSelectedPlace } = useSelectedPlaceExpandTransition({
+    placeId: activeSheet.type === 'selectedPlace' ? activeSheet.stickerId : undefined,
+    onExpanded: onSelectedPlaceExpand,
+  });
+  const handleSelectedPlaceExpand =
+    activeSheet.type === 'selectedPlace' && onSelectedPlaceExpand ? expandSelectedPlace : undefined;
 
   const contentTransitionClassName = useSheetContentTransitionClassName(
     getSheetTransitionKey(activeSheet)
@@ -231,20 +245,33 @@ export default function HomeBottomSheet({
   const homeSheetContent = (
     <div
       ref={contentRootRef}
+      onTouchStartCapture={handleContentTouchStart}
+      onTouchMoveCapture={handleContentTouchMove}
+      onWheelCapture={handleContentWheel}
+      onKeyDown={handleContentKeyDown}
       className={cn('flex min-h-full flex-col bg-neutral-00', contentTransitionClassName)}
     >
+      {isCollapsed && renderSegmentedToggle()}
       <div
-        data-active-tab-panel={tab === 'frequentShops' ? 'true' : undefined}
-        aria-hidden={tab !== 'frequentShops'}
-        className={cn('min-h-0 flex-1 flex-col', tab === 'frequentShops' ? 'flex' : 'hidden')}
+        data-active-tab-panel={!isCollapsed && tab === 'frequentShops' ? 'true' : undefined}
+        hidden={isCollapsed || tab !== 'frequentShops'}
+        aria-hidden={isCollapsed || tab !== 'frequentShops'}
+        className={cn(
+          'min-h-0 flex-1 flex-col',
+          !isCollapsed && tab === 'frequentShops' ? 'flex' : 'hidden'
+        )}
       >
         {renderFrequentShops(renderSegmentedToggle())}
       </div>
 
       <div
-        data-active-tab-panel={tab === 'history' ? 'true' : undefined}
-        aria-hidden={tab !== 'history'}
-        className={cn('min-h-0 flex-1 flex-col', tab === 'history' ? 'flex' : 'hidden')}
+        data-active-tab-panel={!isCollapsed && tab === 'history' ? 'true' : undefined}
+        hidden={isCollapsed || tab !== 'history'}
+        aria-hidden={isCollapsed || tab !== 'history'}
+        className={cn(
+          'min-h-0 flex-1 flex-col',
+          !isCollapsed && tab === 'history' ? 'flex' : 'hidden'
+        )}
       >
         {renderSpendingHistory(renderSegmentedToggle())}
       </div>
@@ -252,6 +279,7 @@ export default function HomeBottomSheet({
   );
   let sheetPresentation: BottomSheetPresentation = {
     content: homeSheetContent,
+    contentClassName: isCollapsed ? 'overflow-y-hidden pb-0' : undefined,
     isModal: false,
     key: 'home',
   };
@@ -267,7 +295,7 @@ export default function HomeBottomSheet({
   } else if (activeSheet.type === 'recommendation') {
     sheetPresentation = {
       ariaLabel: '가게 추천',
-      content: <ShopRecommendationSheet />,
+      content: <ShopRecommendationSheet onOpenRecommendationSearch={onOpenRecommendationSearch} />,
       contentClassName: 'pt-2 pb-10',
       isModal: true,
       key: getSheetTransitionKey(activeSheet),
@@ -283,38 +311,43 @@ export default function HomeBottomSheet({
   }
 
   const isHomeSheet = !sheetPresentation.isModal;
-  const fullTopBoundaryPx =
-    isHomeSheet && topActionBottomPx > 0
-      ? topActionBottomPx + TOP_ACTION_TO_SHEET_GAP_PX
-      : undefined;
 
   return (
-    <BottomSheet
-      snapPoint={isHomeSheet ? snapPoint : 'medium'}
-      snapPoints={isHomeSheet ? undefined : MODAL_SHEET_SNAP_POINTS}
-      onSnapPointChange={isHomeSheet ? setSnapPoint : handleModalSheetSnapPointChange}
-      onHandleClick={isHomeSheet ? advance : showHome}
-      fitContent={!isHomeSheet}
-      contentClassName={sheetPresentation.contentClassName}
-      fullTopBoundaryPx={fullTopBoundaryPx}
-      onContentPullDown={
-        isHomeSheet && snapPoint === 'full' ? handleHomeSheetContentPullDown : undefined
-      }
-      onContentScroll={isHomeSheet ? handleHomeSheetContentScroll : undefined}
-      onVisibleHeightChange={handleVisibleHeightChange}
-    >
-      {sheetPresentation.isModal ? (
-        <ModalSheetContent
-          key={sheetPresentation.key}
-          ariaLabel={sheetPresentation.ariaLabel ?? '가게 정보'}
-          className={contentTransitionClassName}
-          onClose={showHome}
-        >
-          {sheetPresentation.content}
-        </ModalSheetContent>
-      ) : (
-        sheetPresentation.content
-      )}
-    </BottomSheet>
+    <>
+      <div
+        ref={topSafeAreaRef}
+        aria-hidden="true"
+        className="pointer-events-none invisible fixed top-0 h-[env(safe-area-inset-top)] w-0"
+      />
+      {isHomeSheet && snapPoint === 'full' && <Overlay />}
+      <BottomSheet
+        rootRef={sheetRef}
+        snapPoint={isHomeSheet ? snapPoint : 'medium'}
+        snapPoints={isHomeSheet ? HOME_SHEET_SNAP_POINTS : MODAL_SHEET_SNAP_POINTS}
+        onSnapPointChange={isHomeSheet ? setSnapPoint : handleModalSheetSnapPointChange}
+        onHandleClick={isHomeSheet ? advance : showHome}
+        fitContent={!isHomeSheet}
+        onExpand={isCollapsed ? handleHomeSheetExpand : handleSelectedPlaceExpand}
+        contentClassName={sheetPresentation.contentClassName}
+        fullTopBoundaryPx={isHomeSheet ? fullTopBoundaryPx : undefined}
+        collapsedHeight={COLLAPSED_SHEET_HEIGHT_CSS}
+        onContentPullDown={isHomeSheet && !isCollapsed ? handleHomeSheetContentPullDown : undefined}
+        onContentScroll={isHomeSheet && !isCollapsed ? handleHomeSheetContentScroll : undefined}
+        onVisibleHeightChange={handleVisibleHeightChange}
+      >
+        {sheetPresentation.isModal ? (
+          <ModalSheetContent
+            key={sheetPresentation.key}
+            ariaLabel={sheetPresentation.ariaLabel ?? '가게 정보'}
+            className={contentTransitionClassName}
+            onClose={showHome}
+          >
+            {sheetPresentation.content}
+          </ModalSheetContent>
+        ) : (
+          sheetPresentation.content
+        )}
+      </BottomSheet>
+    </>
   );
 }

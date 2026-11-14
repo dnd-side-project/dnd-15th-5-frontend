@@ -13,6 +13,106 @@ export type ApiResponsePlaceLikeResponse = {
   data?: PlaceLikeResponse;
 };
 
+/**
+ * 동네 설정하기 요청. 동네 검색 결과를 선택한 경우 administrativeDongCode를 같이 보내고, 지도에서 핀을 찍어 저장한 정밀 위치(도로명 주소 등)는 우리 쪽 행정동코드를 알 수 없으므로 생략한다.
+ */
+export type UserTownSaveRequest = {
+  /**
+   * 행정동 코드. 동네 검색 결과를 선택한 경우에만 보낸다 - 지도 핀 찍기 저장은 생략 가능
+   * @minLength 0
+   * @maxLength 20
+   * @nullable
+   */
+  administrativeDongCode?: string | null;
+  /**
+   * 최근 설정한 동네 목록에 보여줄 이름. 행정동 이름일 수도, 도로명 주소일 수도 있다
+   * @minLength 0
+   * @maxLength 100
+   */
+  administrativeDongName: string;
+  /**
+   * 프론트에서 변환한 위도
+   * @minimum -90
+   * @maximum 90
+   */
+  latitude: number;
+  /**
+   * 프론트에서 변환한 경도
+   * @minimum -180
+   * @maximum 180
+   */
+  longitude: number;
+};
+
+export type UserTownResponse = {
+  id?: number;
+  administrativeDongCode?: string;
+  administrativeDongName?: string;
+  latitude?: number;
+  longitude?: number;
+  selectedAt?: string;
+};
+
+export type ApiResponseUserTownResponse = {
+  code?: string;
+  message?: string;
+  data?: UserTownResponse;
+};
+
+export type TownSearchItem = {
+  administrativeDongCode?: string;
+  sidoName?: string;
+  sigunguName?: string;
+  dongName?: string;
+  fullName?: string;
+};
+
+export type TownSearchResponse = {
+  towns?: TownSearchItem[];
+};
+
+export type ApiResponseTownSearchResponse = {
+  code?: string;
+  message?: string;
+  data?: TownSearchResponse;
+};
+
+export type RecentTownsResponse = {
+  towns?: UserTownResponse[];
+};
+
+export type ApiResponseRecentTownsResponse = {
+  code?: string;
+  message?: string;
+  data?: RecentTownsResponse;
+};
+
+export type RecommendedPlaceDetailResponse = {
+  placeId?: number;
+  /** Google Place ID. 구글 지도 딥링크(예: maps/place/?q=place_id:{googlePlaceId}) 생성에 사용 */
+  googlePlaceId?: string;
+  name?: string;
+  category?: string;
+  dongName?: string;
+  /** 도로명주소 */
+  roadAddress?: string;
+  latitude?: number;
+  longitude?: number;
+  /** Google Places 사진의 URL(장소당 최대 3장). 사진이 없거나 조회에 실패하면 빈 배열 */
+  thumbnailUrls?: string[];
+  /**
+   * 사진 페이지 링크. 사진 조회에 실패하면 null
+   * @nullable
+   */
+  googleMapsUri?: string | null;
+};
+
+export type ApiResponseRecommendedPlaceDetailResponse = {
+  code?: string;
+  message?: string;
+  data?: RecommendedPlaceDetailResponse;
+};
+
 export type RecommendedPlaceItem = {
   placeId?: number;
   name?: string;
@@ -27,19 +127,51 @@ export type RecommendedPlaceItem = {
    * @nullable
    */
   thumbnailUrl?: string | null;
-  googleMapsUri?: string;
-  googlePlaceId?: string;
+};
+
+export type CategoryPlacesResponse = {
+  category?: string;
+  places?: RecommendedPlaceItem[];
 };
 
 export type NearbyPlacesResponse = {
-  myTownPlaces?: RecommendedPlaceItem[];
-  sameCategoryPlaces?: RecommendedPlaceItem[];
+  currentDongName?: string;
+  allPlaces?: RecommendedPlaceItem[];
+  categoryPlaces?: CategoryPlacesResponse[];
 };
 
 export type ApiResponseNearbyPlacesResponse = {
   code?: string;
   message?: string;
   data?: NearbyPlacesResponse;
+};
+
+export type PhotoResponse = {
+  thumbnailUrl?: string;
+  googleMapsUri?: string;
+};
+
+export type LikedPlaceResponse = {
+  placeId?: number;
+  name?: string;
+  category?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  photos?: PhotoResponse[];
+};
+
+export type LikedPlaceScrollResponse = {
+  places?: LikedPlaceResponse[];
+  categories?: string[];
+  hasNext?: boolean;
+  nextCursorId?: number;
+};
+
+export type ApiResponseLikedPlaceScrollResponse = {
+  code?: string;
+  message?: string;
+  data?: LikedPlaceScrollResponse;
 };
 
 export type VisitedPlaceMarkerItem = {
@@ -50,8 +182,8 @@ export type VisitedPlaceMarkerItem = {
   longitude?: number;
   visitCount?: number;
   liked?: boolean;
-  stickerCategory?: string;
   stickerName?: string;
+  imageUrl?: string;
   googlePlaceId?: string;
 };
 
@@ -67,6 +199,19 @@ export type ApiResponseVisitedPlaceMarkerResponse = {
   data?: VisitedPlaceMarkerResponse;
 };
 
+export type ApiResponseVoid = {
+  code?: string;
+  message?: string;
+  data?: unknown;
+};
+
+export type SearchTownsParams = {
+  /**
+   * 검색 키워드
+   */
+  keyword: string;
+};
+
 export type GetNearbyPlacesParams = {
   /**
    * 위도
@@ -77,9 +222,21 @@ export type GetNearbyPlacesParams = {
    */
   lng: number;
   /**
-   * 검색 반경(미터), 생략시 1500m / 위치기반이면 적정범위 500m~1km
+   * 검색 반경(미터), 생략시 5000m
    */
   radiusMeters?: number;
+};
+
+export type GetLikedPlacesParams = {
+  category?: string;
+  /**
+   * 이전 응답의 nextCursorId (첫 조회 시 생략)
+   */
+  cursorId?: number;
+  /**
+   * 조회 개수 (1~5)
+   */
+  size?: number;
 };
 
 export type GetVisitedPlaceMarkersParams = {

@@ -2,12 +2,12 @@ import { create } from 'zustand';
 
 import type { BottomSheetSnapPoint } from '@/shared/ui/bottom-sheet';
 
-// NOTE: 클릭할 때마다 이 순서대로 순환한다. 마지막(hidden) 다음 클릭은 다시 처음(medium)으로 돌아간다.
+// NOTE: 클릭할 때마다 순환하며, 접힌 상태에서도 핸들과 탭은 남겨둔다.
 const HOME_BOTTOM_SHEET_SNAP_SEQUENCE: readonly BottomSheetSnapPoint[] = [
   'medium',
   'full',
   'medium',
-  'hidden',
+  'collapsed',
 ];
 
 // NOTE: 드래그로 직접 한 단계에 도착했을 때, 다음 클릭이 이어질 위치를 정하기 위한 매핑이다.
@@ -16,6 +16,7 @@ const SNAP_POINT_TO_STEP_INDEX: Record<BottomSheetSnapPoint, number> = {
   medium: 0,
   large: 0,
   full: 1,
+  collapsed: 3,
   hidden: 3,
 };
 
@@ -23,37 +24,46 @@ export type HomeBottomSheetContent =
   | { type: 'home' }
   | { type: 'recommendation' }
   | { type: 'selectedPlace'; stickerId: string }
-  | { type: 'likedRecommendation'; recommendationId: string };
+  | {
+      type: 'likedRecommendation';
+      recommendationId: string;
+    };
+
+export type HomeBottomSheetTab = 'frequentShops' | 'history';
 
 type HomeBottomSheetStore = {
   activeSheet: HomeBottomSheetContent;
-  topActionBottomPx: number;
+  tab: HomeBottomSheetTab;
+  scrollPositions: Record<HomeBottomSheetTab, number>;
   visibleHeightPx: number;
   stepIndex: number;
   advance: () => void;
   showHome: () => void;
+  closeLikedRecommendationIfMatches: (recommendationId: string) => void;
   showLikedRecommendation: (recommendationId: string) => void;
   showRecommendation: () => void;
   showSelectedPlace: (stickerId: string) => void;
-  setTopActionBottom: (bottomPx: number) => void;
   setVisibleHeight: (heightPx: number) => void;
   setSnapPoint: (snapPoint: BottomSheetSnapPoint) => void;
+  setTab: (tab: HomeBottomSheetTab) => void;
+  setScrollPosition: (tab: HomeBottomSheetTab, scrollTop: number) => void;
 };
 
 /**
- * 홈 화면에 표시할 바텀시트 하나와 기본 홈 시트의 높이 단계를 관리합니다.
+ * 홈 화면에 표시할 바텀시트와 높이 단계, 선택 탭·탭별 스크롤 위치를 관리합니다.
+ * 편집 화면 등으로 이동해 홈 시트가 언마운트되어도 목록의 탐색 상태를 유지합니다.
  *
- * `activeSheet`를 판별 가능한 유니온으로 제한해 홈·추천·선택 장소·좋아요 장소 중 두 종류가
- * 동시에 열릴 수 없도록 합니다. `features/map` 안에서만 사용하며, 하단 탭바 표시 여부는
+ * `activeSheet`를 판별 가능한 유니온으로 제한해 홈·위치 검색·위치 선택·추천·장소 상세 화면 중
+ * 두 종류가 동시에 열릴 수 없도록 합니다. `features/map` 안에서만 사용하며, 하단 탭바 표시 여부는
  * `app/layouts/AppMainLayout`이 이 상태를 구독해 결정합니다.
  *
- * `topActionBottomPx`는 최대 시트의 상단 경계를 계산하고, `visibleHeightPx`는 현재 위치 버튼을
- * 실제 시트 높이에 맞추는 레이아웃 측정값입니다. 두 값은 서버 상태가 아니므로 이 feature
- * 전용 스토어 밖으로 노출하지 않습니다.
+ * `visibleHeightPx`는 현재 위치 버튼을 실제 시트 높이에 맞추는 레이아웃 측정값입니다. 서버
+ * 상태가 아니므로 이 feature 전용 스토어 밖으로 노출하지 않습니다.
  */
 export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
   activeSheet: { type: 'home' },
-  topActionBottomPx: 0,
+  tab: 'frequentShops',
+  scrollPositions: { frequentShops: 0, history: 0 },
   visibleHeightPx: 0,
   stepIndex: 0,
   advance: () =>
@@ -61,21 +71,40 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
       stepIndex: (state.stepIndex + 1) % HOME_BOTTOM_SHEET_SNAP_SEQUENCE.length,
     })),
   showHome: () => set({ activeSheet: { type: 'home' } }),
+  closeLikedRecommendationIfMatches: (recommendationId) =>
+    set((state) =>
+      state.activeSheet.type === 'likedRecommendation' &&
+      state.activeSheet.recommendationId === recommendationId
+        ? { activeSheet: { type: 'home' } }
+        : state
+    ),
   showLikedRecommendation: (recommendationId) =>
-    set({ activeSheet: { type: 'likedRecommendation', recommendationId } }),
+    set({
+      activeSheet: {
+        type: 'likedRecommendation',
+        recommendationId,
+      },
+    }),
   showRecommendation: () => set({ activeSheet: { type: 'recommendation' } }),
   showSelectedPlace: (stickerId) => set({ activeSheet: { type: 'selectedPlace', stickerId } }),
-  setTopActionBottom: (bottomPx) =>
-    set((state) =>
-      state.topActionBottomPx === bottomPx ? state : { topActionBottomPx: bottomPx }
-    ),
   setVisibleHeight: (heightPx) =>
     set((state) => (state.visibleHeightPx === heightPx ? state : { visibleHeightPx: heightPx })),
   // NOTE: 드래그로 직접 높이를 바꿨을 때 호출한다. 그 이후 홈 버튼 클릭이 드래그로 도착한
   // 위치를 기준으로 이어지도록 stepIndex를 맞춰준다.
   setSnapPoint: (snapPoint) => set({ stepIndex: SNAP_POINT_TO_STEP_INDEX[snapPoint] }),
+  setTab: (tab) => set({ tab }),
+  setScrollPosition: (tab, scrollTop) =>
+    set((state) =>
+      state.scrollPositions[tab] === scrollTop
+        ? state
+        : { scrollPositions: { ...state.scrollPositions, [tab]: scrollTop } }
+    ),
 }));
 
 /** `stepIndex`를 `HOME_BOTTOM_SHEET_SNAP_SEQUENCE` 길이로 순환시켜 해당하는 높이 단계를 반환합니다. */
 export const getHomeBottomSheetSnapPoint = (stepIndex: number): BottomSheetSnapPoint =>
   HOME_BOTTOM_SHEET_SNAP_SEQUENCE[stepIndex % HOME_BOTTOM_SHEET_SNAP_SEQUENCE.length]!;
+
+/** 홈 목록이 최대 확장된 경우에만 지도 컨트롤을 숨기며, 모달형 시트는 이전 홈 높이와 구분합니다. */
+export const selectIsHomeSheetFullyExpanded = (state: HomeBottomSheetStore): boolean =>
+  state.activeSheet.type === 'home' && getHomeBottomSheetSnapPoint(state.stepIndex) === 'full';

@@ -150,7 +150,9 @@ pages/
 │   └── shop/
 │       └── ShopDetailPage.tsx
 ├── record/
-│   ├── RecordMethodPage.tsx
+│   ├── RecordPage.tsx
+│   ├── edit/
+│   │   └── EditRecordPage.tsx
 │   ├── manual/
 │   │   └── ManualRecordPage.tsx
 │   ├── shop/
@@ -176,6 +178,63 @@ pages/
 ```
 
 페이지를 추가하거나 이동할 때는 이 구조와 `apps/web/src/app/routes`의 라우트 설정을 함께 수정한다.
+
+사진 기록의 진입 경로는 `/record`다.
+
+기록 방법 선택·사진 자르기·스티커 생성·정보 입력은 `features/record/sticker`의 로컬 단계로
+전환한다. 가져온 사진은 자르기 후 스티커를 약 1초간 한 번 튀어 오르게 표시하고 정보 입력으로
+자동 이동한다. 앱 촬영 결과는 같은 모션을 표시한 뒤 사용자가 `이 스티커 사용`으로 확정한다.
+모션은 `StickerReveal`에서 관리하며, 종료 확인 중에는 일시 정지하고 계속 작성 시 이어서 재생한다.
+시스템의 동작 줄이기 설정에서는 모션을 생략한다.
+
+새 기록의 입력 화면에서 뒤로 가면 작성 내용을 보존한 채 확정한 미디어를 만든 단계로 돌아간다.
+가져온 사진은 같은 원본과 자르기 영역으로, 촬영 사진은 다시 찍지 않고 생성 결과로, 기본 스티커는
+선택했던 스티커로 복원한다.
+작업 화면(방법 선택·자르기·기본 스티커·촬영 결과)의 X는 이미지 변경 중에도 기록 종료 확인을 거친다.
+가져온 사진의 생성 화면은 자동으로 넘어가는 경유 화면이라 뒤로가기·X·재시도 버튼을 두지 않고,
+생성이나 결과 표시가 실패하면 같은 원본과 자르기 영역으로 돌아가 오류 토스트를 띄운다.
+촬영 사진의 생성 화면은 화면 안에서 재시도·다시 찍기를 제공한다. 앱 카메라의 X는 작성 중인 기록이 있으면
+네이티브 확인창을 거친 뒤 `closed`를 반환하고, 웹은 확인 없이 바로 기록을 종료한다.
+기록 종료를 확인하면 홈으로 이동하며, 이동 완료 전까지 현재 화면과 확인창을 유지한다.
+화면 전환·확정 미디어는 `useStickerRecordFlow`가, 비동기 요청 취소와 임시 이미지 URL 해제는
+`useStickerImageTask`가 언마운트 정리까지 담당한다. 배경 제거 Worker는 취소 시 종료되므로
+사진 가져오기·촬영 진입마다 다시 준비한다.
+
+소비 기록 수정은 `/record/:consumptionId/edit`에서 처리한다. 기존 사진·스티커 ID와 정확한 방문
+시각을 복원하고 이미지 교체 시에만 업로드한다. 지도 소비 기록·가게 상세·월별 소비내역의
+수정·삭제 동작은 페이지에서 `features/record`와 각 목록을 조합해 연결한다.
+공통 스와이프 UI는 `shared/ui/swipe-actions`, API 호출과 확인 모달은 `features/record`에서 관리한다.
+수정·삭제 후 소비 기록·방문 장소·현재 리포트 캐시를 갱신하며, 서버에서 이미 생성한 월간
+리포트 스냅샷은 수정 API의 정책에 따라 유지한다.
+
+생성·수정 폼의 입력 검증·미디어 준비·중복 제출 방지는
+`features/record/apis/hooks/useStickerRecordSubmission`에서 공통으로 처리한다.
+업로드·스티커 ID 조회는 같은 feature의 `apis/services`에 두고, 생성·수정·삭제 훅은
+각 API 호출 뒤의 캐시 갱신과 완료 동작을 담당한다. 스와이프 UI의 제스처 처리는
+`shared/ui/swipe-actions/useSwipeActions`에서 관리하며 기록 API를 참조하지 않는다.
+
+- 일반 브라우저는 기존 ISNet WebGPU·WASM을, iOS 앱 WebView는 `removeStickerBackground` 브릿지와
+  `apps/mobile/modules/chapchap-isnet` 로컬 네이티브 모듈을 사용한다. 앱은 모델을 미리 준비해 재사용하고
+  투명 PNG만 웹으로 반환하며 외곽선·그림자와 기록 저장 흐름은 웹에 유지한다.
+  모델 준비와 빌드는 아래 [iOS 스티커 배경 제거](#ios-스티커-배경-제거)를 참고한다.
+
+- 사진 촬영·이미지 선택으로 만든 스티커는 최종 PNG를
+  `/v1/consumptions/images`에 업로드한 뒤, 반환된 `imageId`로 `/v1/consumptions`에 등록한다.
+- 지도 마커와 가게 상세의 스티커는 조회 응답의 `imageUrl`을 우선 표시하고, URL이 없는
+  기본 스티커는 `itemName`(지도는 `stickerName`)으로 로컬 이미지를 찾는다. 사진과 기본
+  스티커는 함께 표시하며 로딩에 실패한 이미지만 기본 대체 스티커로 바꾼다.
+- 기본 이모지는 프론트 이미지를 사용하고 `/v1/consumptions/stickers`에서 카테고리·이름으로
+  찾은 `stickerItemId`를 등록한다. 이모지 이미지는 업로드하지 않는다. 스티커 ID 조회는 이모지의
+  카테고리를 쓰고, 소비 카테고리는 이모지를 고를 때 그 카테고리로 맞춘 뒤 사용자가 따로 바꿀 수 있다.
+  이미지·카테고리·이름의 기준은 `shared/assets/images/ios-stickers/catalog.ts`이며, 서버 목록도
+  이 64종과 일치해야 한다. 목록에 없는 항목이나 유효하지 않은 ID는 등록하지 않고 오류를 안내한다.
+  카테고리의 표시 순서는 `packages/shared/common/constants`의 `SPENDING_CATEGORIES`를 따르며,
+  카테고리 안의 스티커는 `catalog.ts`의 배열 순서대로 4열로 표시한다.
+  기록 폼·이모지 선택·라우트 상태 복원도 같은 목록을 재사용하는 `RECORD_CATEGORIES`를 사용한다.
+  기본 스티커는 투명 PNG 64종(카페 8종)을 긴 변 최대 512px로 배포하며 외곽선·그림자는 파일에 포함한다.
+- 기록 폼의 영수증 인식은 `scanReceipt` 브릿지로 네이티브 카메라를 열고 OCR 결과를
+  같은 폼에 채운다. 최종 등록 시 선택한 이미지와 `receiptImageId`를 함께 전달한다.
+- 기존 `captureReceipt` 진입은 별도의 네이티브 영수증 확인 화면 흐름을 유지한다.
 
 ### Features 구조
 
@@ -258,6 +317,31 @@ features/report/
 - `apis/` 생성 파일 사용 규칙은 기본형과 동일하다
 - `apis/hooks/` 파일은 자동 생성 대상이 아니므로 화면 요구사항에 맞게 직접 작성하고 테스트한다
 
+기록 기능은 공통 코드와 스티커 처리 역할을 기준으로 다음과 같이 구분한다.
+
+```text
+features/record/
+├── apis/
+│   └── hooks/
+├── components/
+│   └── visit-date-time-sheet/
+├── hooks/
+├── camera/
+│   └── utils/               # 네이티브 촬영 결과를 웹 이미지로 변환
+├── sticker/
+│   ├── components/          # 선택·자르기·생성·기록 화면
+│   ├── hooks/               # 스티커 기록 흐름과 상태
+│   ├── image/               # 자르기·알파·외곽선·PNG 합성
+│   ├── background-removal/  # ISNet·Worker·네이티브 누끼 연동
+│   └── utils/
+├── utils/
+├── types.ts
+└── index.ts
+```
+
+- 기본 스티커 PNG는 `shared/assets/images/ios-stickers/img-*.png`로 관리하고, 해당 폴더의
+  `index.ts`에서 이미지를 export한다. `catalog.ts`는 이 export를 가져와 카테고리·이름과 연결한다.
+
 ### Mobile
 
 아래 구조와 규칙은 `apps/mobile`에만 적용한다.
@@ -279,11 +363,46 @@ apps/mobile/src/
 ```
 
 - `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 관리한다. 웹의 `app/routes`와 `pages` 관계와 같다.
+- 모바일 번들의 진입점은 `apps/mobile/index.js`이며 `expo-router/entry`를 불러온다.
+  개발 서버는 pnpm의 `node_modules` 링크 대신 이 앱 내부 파일을 시작 URL로 사용한다.
 - 화면 컴포넌트는 `화면명 + Screen`으로 작성한다 (`HomeScreen`).
 - 웹과 모바일이 함께 쓰는 코드는 `apps/mobile/src/shared`가 아니라 `packages/shared`에 둔다.
 - WebView 화면은 `shared/layout/WebViewScreen`을 사용해 Safe Area·로딩·오류 복구 동작을 통일한다. 지도 홈(`/home`)은 전체 화면을 시스템 영역까지 표시하고, 나머지 웹 화면은 하단 배경만 확장한 뒤 웹의 `MobileLayout` 또는 자체 스크롤 영역에서 하단 Safe Area를 확보한다.
 - 수기 입력과 영수증 입력의 공통 규칙은 `packages/shared/record`, 네이티브 영수증 UI와 상태는 `features/record`에서 관리한다.
 - 필요한 폴더만 만든다. 사용처가 생기기 전에는 만들지 않는다.
+
+`native/receipt`는 영수증 촬영·앨범 선택·이미지 정규화·스캔 요청을, `native/sticker`는 스티커
+촬영·사진 준비·배경 제거 연동을 관리한다. 두 기능이 공유하는 카메라 요청 처리는
+`native/camera`에 둔다.
+
+#### iOS 스티커 배경 제거
+
+- `apps/mobile/modules/chapchap-isnet`은 Apple 전용 Expo 로컬 모듈이다. `ChapChapIsnetModule`은
+  요청·모델 세션·취소 상태를, `IsnetImageProcessor`는 이미지 검사·입력 변환·마스크 적용을 담당한다.
+- `HomeScreen`에서 ISNet을 미리 로딩·워밍업하고 재사용한다. UI·JS 스레드 밖의 단일 큐에서
+  Core ML 가속을 시도하고, 준비·실행 실패 시 네이티브 CPU로 한 번 전환한다.
+  서버로 사진을 전송하거나 WebView 추론으로 자동 재시도하지 않는다.
+- 웹에서 긴 변 1536px 이하 PNG를 전달하고, 네이티브는 1024×1024 입력으로 추론한 투명 PNG를 반환한다.
+  취소·브릿지 시간 초과 시 요청 대기를 정리하고, 이미 시작한 추론은 반환 후 결과를 버린다.
+  재시도는 거절하지 않고 기존 연산이 정리된 뒤 자동으로 이어 처리하며, 대기 중인 요청도 취소할 수 있다.
+- 모델은 약 170MiB이며 앱에 포함한다. 원본 URL·크기·체크섬은 `packages/shared/src/record/isnetModel.ts`에서
+  관리하고, `modules/chapchap-isnet/models/*.onnx`는 Git에서 제외한다. 관련 라이선스는 앱에 함께 포함한다.
+- EAS는 `eas-build-pre-install`에서 모델을 준비·검증한다. 직접 `expo prebuild`를 실행할 때도
+  Pod 리소스 목록 생성 전에 `sticker:prepare`를 실행한다. `onnxruntime-objc`는 1.23.0으로 고정한다.
+
+```powershell
+# 저장소 루트: 모델 준비 및 macOS iOS 개발 빌드
+pnpm --filter @chapchap/mobile sticker:prepare
+pnpm ios
+
+# Windows: EAS iOS 개발 빌드
+cd apps/mobile
+pnpm dlx eas-cli build --profile development --platform ios
+```
+
+네이티브 변경은 앱을 다시 빌드·설치해야 적용된다. Jest와 `expo export`는 Swift 컴파일을 검증하지 않으므로
+iOS 빌드와 실기기에서 Core ML 실행·속도·마스크 품질을 확인한다. 개발 로그의
+`[ISNet native] { backend, elapsedMs }`에는 웹↔앱 전송·외곽선 합성 시간이 포함되지 않는다.
 
 ---
 

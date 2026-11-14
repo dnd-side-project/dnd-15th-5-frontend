@@ -23,13 +23,14 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type { ErrorType } from '@/shared/apis/orvalMutator';
 
-import type { SecondParameter } from '@/features/record/apis/dto';
+import type { ApiResponse, SecondParameter } from '@/features/record/apis/dto';
 
-import { findStickers, getConsumption } from '@/features/record/apis/clients';
+import { findStickers, getConsumption, getReadUrl } from '@/features/record/apis/clients';
 
 import {
   getFindStickersQueryKey,
   getGetConsumptionQueryKey,
+  getGetReadUrlQueryKey,
 } from '@/features/record/apis/queryKeys';
 
 export const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
@@ -173,7 +174,7 @@ export const getGetConsumptionSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getConsumption>>> = ({ signal }) =>
     getConsumption(consumptionId, requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getConsumption>>,
     TError,
     TData
@@ -269,7 +270,7 @@ export const getFindStickersQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof findStickers>>> = ({ signal }) =>
     findStickers(requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof findStickers>>,
     TError,
     TData
@@ -366,7 +367,7 @@ export const getFindStickersSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof findStickers>>> = ({ signal }) =>
     findStickers(requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof findStickers>>,
     TError,
     TData
@@ -433,6 +434,202 @@ export function useFindStickersSuspense<
   queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getFindStickersSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetReadUrlQueryOptions = <
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetReadUrlQueryKey(imageId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getReadUrl>>> = ({ signal }) =>
+    getReadUrl(imageId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: imageId !== null && imageId !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+};
+
+export type GetReadUrlQueryResult = NonNullable<Awaited<ReturnType<typeof getReadUrl>>>;
+
+export type GetReadUrlQueryError = ErrorType<ApiResponse>;
+
+export function useGetReadUrl<
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReadUrl>>,
+          TError,
+          Awaited<ReturnType<typeof getReadUrl>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetReadUrl<
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReadUrl>>,
+          TError,
+          Awaited<ReturnType<typeof getReadUrl>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetReadUrl<
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 소비기록 이미지 조회 URL 재발급
+ */
+
+export function useGetReadUrl<
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetReadUrlQueryOptions(imageId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGetReadUrlSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetReadUrlQueryKey(imageId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getReadUrl>>> = ({ signal }) =>
+    getReadUrl(imageId, requestOptions, signal);
+
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getReadUrl>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetReadUrlSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof getReadUrl>>>;
+
+export type GetReadUrlSuspenseQueryError = ErrorType<ApiResponse>;
+
+export function useGetReadUrlSuspense<
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options: {
+    query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetReadUrlSuspense<
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetReadUrlSuspense<
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+/**
+ * @summary 소비기록 이미지 조회 URL 재발급
+ */
+
+export function useGetReadUrlSuspense<
+  TData = Awaited<ReturnType<typeof getReadUrl>>,
+  TError = ErrorType<ApiResponse>,
+>(
+  imageId: number,
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getReadUrl>>, TError, TData>>;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetReadUrlSuspenseQueryOptions(imageId, options);
 
   const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
     TData,

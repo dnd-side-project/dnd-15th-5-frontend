@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useOpenReceiptCamera } from '@/features/record';
-import { BackButton } from '@/shared/ui/back-button';
+import PageHeader from '@/shared/layout/page-header';
 import { Button } from '@/shared/ui/button';
 
 /**
@@ -17,14 +17,14 @@ export default function ReceiptCameraPage() {
 
   useEffect(() => {
     if (state.status === 'opened') {
-      // 카메라 뒤에는 기록 방법 선택 화면이 남아 있도록 숨겨진 WebView만 이전 경로로 돌린다.
+      // 카메라 뒤에는 이전 웹 화면이 남도록 숨겨진 WebView만 이전 경로로 돌린다.
       navigate(-1);
     }
   }, [navigate, state.status]);
 
   return (
     <main className="flex min-h-full flex-col">
-      <BackButton className="ml-4" onClick={() => navigate(-1)} />
+      <PageHeader onBack={() => navigate(-1)} />
 
       {state.status === 'error' && (
         <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">

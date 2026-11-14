@@ -238,7 +238,7 @@ describe('<ReceiptReviewForm />', () => {
 
     expect(getByTestId('amount-field')).toHaveProp(
       'className',
-      expect.stringContaining('border-notification')
+      expect.stringContaining('border-red')
     );
     expect(getByLabelText('금액')).toHaveProp('aria-invalid', true);
     getByText('필수항목을 작성해주세요');
@@ -273,14 +273,14 @@ describe('<ReceiptReviewForm />', () => {
     expect(getByText('가게 정보를 변경해주세요')).toBeOnTheScreen();
     expect(getByTestId('shop-field')).toHaveProp(
       'className',
-      expect.stringContaining('border-notification')
+      expect.stringContaining('border-red')
     );
 
     await user.press(getByRole('button', { name: '기록하기' }));
 
     expect(getByTestId('shop-field')).toHaveProp(
       'className',
-      expect.stringContaining('border-notification')
+      expect.stringContaining('border-red')
     );
     getByText('필수항목을 작성해주세요');
   });

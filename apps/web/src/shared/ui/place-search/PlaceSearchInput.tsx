@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { SearchIcon } from '@/shared/assets/icons';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
+import { cn } from '@/shared/lib/cn';
 
 import type { FormEvent } from 'react';
 
@@ -20,6 +21,8 @@ type PlaceSearchInputProps = {
   debounceMs?: number;
   onSearch: (keyword: string) => void;
   placeholder?: string;
+  inputClassName?: string;
+  searchIconClassName?: string;
 };
 
 /** 입력 중 자동 검색과 즉시 제출을 함께 제공하는 공통 장소 검색창입니다. */
@@ -28,6 +31,8 @@ export function PlaceSearchInput({
   debounceMs = DEFAULT_SEARCH_DEBOUNCE_MS,
   onSearch,
   placeholder = '장소를 검색해주세요',
+  inputClassName,
+  searchIconClassName,
 }: PlaceSearchInputProps) {
   const [keyword, setKeyword] = useState('');
   const debouncedKeyword = useDebouncedValue(keyword, debounceMs);
@@ -76,14 +81,16 @@ export function PlaceSearchInput({
         value={keyword}
         onChange={(event) => setKeyword(event.target.value)}
         placeholder={placeholder}
-        className="min-w-0 flex-1 bg-transparent text-body-01-regular text-neutral-700 outline-none placeholder:text-neutral-500"
+        className={cn(
+          'min-w-0 flex-1 bg-transparent text-body-01-regular text-neutral-700 outline-none placeholder:text-neutral-500',
+          inputClassName
+        )}
       />
-      <button
-        type="submit"
-        aria-label="검색"
-        className="flex size-6 shrink-0 items-center justify-center"
-      >
-        <SearchIcon className="size-6 text-neutral-500" aria-hidden="true" />
+      <button type="submit" aria-label="검색" className="flex shrink-0 items-center justify-center">
+        <SearchIcon
+          className={cn('size-6 text-neutral-600', searchIconClassName)}
+          aria-hidden="true"
+        />
       </button>
     </form>
   );

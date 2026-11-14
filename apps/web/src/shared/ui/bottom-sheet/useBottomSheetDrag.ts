@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { BOTTOM_SHEET_PULL_THRESHOLD_PX } from './constants';
+
 import type { BottomSheetSnapPoint, BottomSheetSnapPoints } from './types';
 import type {
   KeyboardEvent as ReactKeyboardEvent,
+  MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
   RefObject,
 } from 'react';
@@ -17,12 +20,59 @@ type DragStart = {
   pointerY: number;
   heightPx: number;
   hasDragged: boolean;
+  draggedUpBy: number;
+};
+
+type SnapPointCandidate = readonly [point: BottomSheetSnapPoint, heightPx: number];
+
+type GetDragSnapPointParams = {
+  candidates: readonly SnapPointCandidate[];
+  snapPoint: BottomSheetSnapPoint;
+  startHeightPx: number;
+  finalHeightPx: number;
+  draggedUpBy: number;
+  fitContent: boolean;
+};
+
+/** 종료 높이와 당긴 방향으로 다음 단계를 결정하며, DOM이나 이벤트 상태를 변경하지 않습니다. */
+const getDragSnapPoint = ({
+  candidates,
+  snapPoint,
+  startHeightPx,
+  finalHeightPx,
+  draggedUpBy,
+  fitContent,
+}: GetDragSnapPointParams): BottomSheetSnapPoint => {
+  const [nearestSnapPoint] = candidates.reduce((closest, candidate) => {
+    const candidateDistance = Math.abs(candidate[1] - finalHeightPx);
+    const closestDistance = Math.abs(closest[1] - finalHeightPx);
+    return candidateDistance < closestDistance ||
+      (candidateDistance === closestDistance && candidate[0] === snapPoint)
+      ? candidate
+      : closest;
+  });
+
+  if (
+    fitContent ||
+    nearestSnapPoint !== snapPoint ||
+    Math.abs(draggedUpBy) <= BOTTOM_SHEET_PULL_THRESHOLD_PX
+  ) {
+    return nearestSnapPoint;
+  }
+
+  const direction = Math.sign(draggedUpBy);
+  const [adjacentCandidate] = candidates
+    .filter(([, height]) => (height - startHeightPx) * direction > 0)
+    .sort((left, right) => Math.abs(left[1] - startHeightPx) - Math.abs(right[1] - startHeightPx));
+
+  return adjacentCandidate?.[0] ?? nearestSnapPoint;
 };
 
 type UseBottomSheetDragOptions = {
   fitContent: boolean;
   getSnapPointHeightPx: (snapPoint: BottomSheetSnapPoint) => number;
   onHandleClick?: () => void;
+  onExpand?: () => void;
   onSnapPointChange?: (snapPoint: BottomSheetSnapPoint) => void;
   sheetElementRef: RefObject<HTMLDivElement | null>;
   snapPoint: BottomSheetSnapPoint;
@@ -30,7 +80,8 @@ type UseBottomSheetDragOptions = {
 };
 
 /**
- * 바텀시트 핸들의 포인터·키보드 조작과 가장 가까운 스냅 포인트 계산을 담당합니다.
+ * 바텀시트 핸들의 포인터·키보드 조작과 스냅 포인트 계산을 담당합니다.
+ * 64px 넘게 당긴 경우에는 가장 가까운 높이가 현재 단계여도 당긴 방향으로 한 단계 이동합니다.
  *
  * 핸들 밖으로 포인터가 이동해도 드래그가 끊기지 않도록 동작 중에는 `window`에 리스너를 붙이고
  * 종료·취소·언마운트 시 제거합니다. iOS WebView가 드래그 직후 추가로 발생시키는 click은 한 번
@@ -44,11 +95,13 @@ type UseBottomSheetDragOptions = {
  * @param options.getSnapPointHeightPx - 각 스냅 포인트를 현재 뷰포트의 픽셀 높이로 변환합니다.
  * @param options.sheetElementRef - 드래그 중 높이를 직접 반영할 시트 루트 요소입니다.
  * @param options.snapPoints - 드래그 종료·키보드 조작 시 선택할 수 있는 단계입니다.
+ * @param options.onExpand - 콘텐츠 맞춤 시트를 위로 64px 넘게 당기고 놓았을 때 실행합니다.
  */
 export const useBottomSheetDrag = ({
   fitContent,
   getSnapPointHeightPx,
   onHandleClick,
+  onExpand,
   onSnapPointChange,
   sheetElementRef,
   snapPoint,
@@ -62,7 +115,6 @@ export const useBottomSheetDrag = ({
   const rafIdRef = useRef<number | null>(null);
   const removeDragListenersRef = useRef<() => void>(() => undefined);
   const shouldIgnoreHandleClickRef = useRef(false);
-  const ignoreClickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resolvedSnapPoints = snapPoints ?? DEFAULT_SNAP_POINTS;
   const canDismissFitContent = fitContent && Boolean(snapPoints?.includes('hidden'));
 
@@ -93,15 +145,13 @@ export const useBottomSheetDrag = ({
     () => () => {
       removeDragListenersRef.current();
       cancelPendingHeightFlush();
-      if (ignoreClickTimeoutRef.current) {
-        clearTimeout(ignoreClickTimeoutRef.current);
-      }
     },
     []
   );
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (fitContent && !canDismissFitContent) {
+    shouldIgnoreHandleClickRef.current = false;
+    if (fitContent && !canDismissFitContent && !onExpand) {
       return;
     }
 
@@ -115,6 +165,7 @@ export const useBottomSheetDrag = ({
       pointerY: event.clientY,
       heightPx: startHeightPx,
       hasDragged: false,
+      draggedUpBy: 0,
     };
     dragHeightRef.current = startHeightPx;
     setDragStartHeightPx(startHeightPx);
@@ -147,22 +198,25 @@ export const useBottomSheetDrag = ({
 
       // NOTE: iOS WebView가 드래그 직후 발생시키는 click으로 한 단계 더 이동하지 않게 한다.
       shouldIgnoreHandleClickRef.current = true;
-      ignoreClickTimeoutRef.current = setTimeout(() => {
-        shouldIgnoreHandleClickRef.current = false;
-        ignoreClickTimeoutRef.current = null;
-      }, 0);
 
-      const candidates: [BottomSheetSnapPoint, number][] = resolvedSnapPoints.map((point) => [
+      if (fitContent && dragStart.draggedUpBy > BOTTOM_SHEET_PULL_THRESHOLD_PX && onExpand) {
+        onExpand();
+        return;
+      }
+
+      const candidates: SnapPointCandidate[] = resolvedSnapPoints.map((point) => [
         point,
         fitContent && point !== 'hidden' ? dragStart.heightPx : getSnapPointHeightPx(point),
       ]);
-      const [nearestSnapPoint] = candidates.reduce((closest, candidate) =>
-        Math.abs(candidate[1] - finalHeightPx) < Math.abs(closest[1] - finalHeightPx)
-          ? candidate
-          : closest
-      );
-
-      onSnapPointChange?.(nearestSnapPoint);
+      const nextSnapPoint = getDragSnapPoint({
+        candidates,
+        snapPoint,
+        startHeightPx: dragStart.heightPx,
+        finalHeightPx,
+        draggedUpBy: dragStart.draggedUpBy,
+        fitContent,
+      });
+      onSnapPointChange?.(nextSnapPoint);
     };
 
     function handleWindowPointerMove(pointerEvent: PointerEvent) {
@@ -173,12 +227,23 @@ export const useBottomSheetDrag = ({
 
       pointerEvent.preventDefault();
       const draggedUpBy = dragStart.pointerY - pointerEvent.clientY;
+      dragStart.draggedUpBy = draggedUpBy;
       if (Math.abs(draggedUpBy) >= DRAG_THRESHOLD_PX) {
         dragStart.hasDragged = true;
       }
 
-      const fullHeightPx = fitContent ? dragStart.heightPx : getSnapPointHeightPx('full');
-      const nextHeightPx = Math.min(fullHeightPx, Math.max(0, dragStart.heightPx + draggedUpBy));
+      const fullHeightPx = fitContent
+        ? Math.max(dragStart.heightPx, onExpand ? getSnapPointHeightPx('full') : dragStart.heightPx)
+        : getSnapPointHeightPx('full');
+      const minimumHeightPx = fitContent
+        ? canDismissFitContent
+          ? 0
+          : dragStart.heightPx
+        : Math.min(...resolvedSnapPoints.map(getSnapPointHeightPx));
+      const nextHeightPx = Math.min(
+        fullHeightPx,
+        Math.max(minimumHeightPx, dragStart.heightPx + draggedUpBy)
+      );
       dragHeightRef.current = nextHeightPx;
       scheduleHeightUpdate(nextHeightPx);
     }
@@ -197,17 +262,28 @@ export const useBottomSheetDrag = ({
     window.addEventListener('pointercancel', handleWindowPointerCancel);
   };
 
-  const handleClick = () => {
-    if (shouldIgnoreHandleClickRef.current) {
+  const handleClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    // NOTE: detail 0은 키보드·보조기술의 클릭이므로 드래그 후에도 허용한다.
+    if (shouldIgnoreHandleClickRef.current && event.detail > 0) {
       shouldIgnoreHandleClickRef.current = false;
+      event.preventDefault();
       return;
     }
 
+    shouldIgnoreHandleClickRef.current = false;
     onHandleClick?.();
   };
 
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (fitContent || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) {
+    if (fitContent) {
+      if (event.key === 'ArrowUp' && onExpand) {
+        event.preventDefault();
+        onExpand();
+      }
+      return;
+    }
+
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
       return;
     }
 

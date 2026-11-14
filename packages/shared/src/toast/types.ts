@@ -1,5 +1,5 @@
 /** Toast의 의미와 시각 스타일을 결정하는 상태입니다. */
-export type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'info' | 'info-neutral' | 'like';
 
 /** Toast를 노출할 때 전달하는 옵션입니다. */
 export type ShowToastOptions = {

@@ -1,4 +1,5 @@
 import { isBridgeEvent, parseBridgeMessage } from '@chapchap/shared/bridge';
+import { usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { AppState, BackHandler, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -13,6 +14,7 @@ import {
 import { getKakaoTalkShareTarget } from '@/bridge/kakaoTalkShare';
 import { requestWebViewNavigation, subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
 import { clearNotificationBadge, subscribeNotificationResponses } from '@/native/notifications';
+import { prepareNativeStickerBackground } from '@/native/sticker/stickerBackground';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
 import {
   createNativeAnalyticsScript,
@@ -34,12 +36,24 @@ import type { WebViewMessageEvent, WebViewProps } from 'react-native-webview';
  */
 export default function HomeScreen() {
   // 개발 빌드는 .env의 로컬 개발 서버를, preview·production 빌드는 eas.json에 지정한 배포 주소를 사용한다
+  const nativePathname = usePathname();
   const webUrl = process.env.EXPO_PUBLIC_WEB_URL;
   const trustedWebOrigin = webUrl ? getUrlOrigin(webUrl) : null;
   const initialWebUrl = trustedWebOrigin ? `${trustedWebOrigin}/` : null;
   const webViewRef = useRef<WebView>(null);
-  const { canGoBack, handleNavigationStateChange, handleRouteChange, isMapHome, isMonthlyReport } =
-    useWebViewNavigationState(initialWebUrl ?? undefined);
+  const {
+    canGoBack,
+    handleNavigationStateChange,
+    handleRouteChange,
+    isMapEdgeToEdge,
+    isMapHome,
+    isMonthlyReport,
+  } = useWebViewNavigationState(initialWebUrl ?? undefined);
+
+  useEffect(() => {
+    // 첫 사진 선택 전에 준비를 시작하며 실패는 실제 기록 요청에서 사용자에게 전달합니다.
+    void prepareNativeStickerBackground().catch(() => {});
+  }, []);
 
   useEffect(() => {
     let previousAppState = AppState.currentState;
@@ -60,7 +74,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (isMapHome || !canGoBack || !webViewRef.current) {
+      if (nativePathname !== '/' || isMapHome || !canGoBack || !webViewRef.current) {
         return false;
       }
 
@@ -69,7 +83,7 @@ export default function HomeScreen() {
     });
 
     return () => subscription.remove();
-  }, [canGoBack, isMapHome]);
+  }, [canGoBack, isMapHome, nativePathname]);
 
   useEffect(() => {
     if (!trustedWebOrigin) {
@@ -168,7 +182,7 @@ export default function HomeScreen() {
       }}
       loadErrorTitle="웹 화면을 불러오지 못했습니다"
       loadErrorDescriptions={webUrl ? [webUrl] : []}
-      safeAreaMode={isMapHome ? 'none' : 'except-bottom'}
+      safeAreaMode={isMapEdgeToEdge ? 'none' : 'except-bottom'}
       allowsBackForwardNavigationGestures={!isMapHome && !isMonthlyReport}
       onNavigationStateChange={({ canGoBack: nextCanGoBack, url }) =>
         handleNavigationStateChange(url, nextCanGoBack)
