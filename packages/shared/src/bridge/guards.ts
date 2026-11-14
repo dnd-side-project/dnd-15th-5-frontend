@@ -266,7 +266,11 @@ export const isBridgeEvent = (value: unknown): value is BridgeEvent => {
   }
 
   if (value.type === 'routeChanged') {
-    return typeof value.payload.pathname === 'string';
+    return (
+      typeof value.payload.pathname === 'string' &&
+      (value.payload.canGoBackInPage === undefined ||
+        typeof value.payload.canGoBackInPage === 'boolean')
+    );
   }
 
   if (

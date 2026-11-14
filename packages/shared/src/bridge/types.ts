@@ -35,6 +35,8 @@ export const RECEIPT_SHOP_SEARCH_SOURCE = 'receipt-native';
 
 /** 네이티브 앱이 백그라운드에서 활성 상태로 돌아왔음을 WebView에 알리는 DOM 이벤트 이름. */
 export const NATIVE_APP_ACTIVE_EVENT = 'chapchap:native-app-active';
+/** 네이티브 시스템 뒤로가기를 현재 웹 화면 내부 탐색에 전달합니다. */
+export const NATIVE_PAGE_BACK_EVENT = 'chapchap:native-page-back';
 
 /** 웹이 응답을 기다리지 않고 네이티브에 알리는 이벤트와 payload 타입. */
 export type BridgeEventMap = {
@@ -43,6 +45,7 @@ export type BridgeEventMap = {
   // 모바일이 /home의 WebView만 edge-to-edge로 표시할 수 있도록 현재 웹 경로를 전달한다.
   routeChanged: {
     pathname: string;
+    canGoBackInPage?: boolean;
   };
   // 영수증 리뷰에서 연 웹 검색 화면이 선택한 가게를 네이티브 폼에 전달한다.
   receiptShopSelected: {
