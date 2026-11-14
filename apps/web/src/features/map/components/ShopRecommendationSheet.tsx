@@ -1,248 +1,199 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
+import { useRecommendationNeighborhood } from '@/features/map/apis/hooks/useRecommendationNeighborhood';
 import { useTogglePlaceLikeMutation } from '@/features/map/apis/hooks/useTogglePlaceLikeMutation';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
+import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { useShopRecommendationStore } from '@/features/map/stores/shopRecommendationStore';
-import { getDistrict, getGoogleMapsPlaceUrl } from '@/features/map/utils/recommendation';
-import { BlueLocationPinIcon, ChevronRightIcon, LikeIcon } from '@/shared/assets/icons';
-import { cn } from '@/shared/lib/cn';
-import { PlaceTagCard } from '@/shared/ui/card';
+import { CaretRightIcon } from '@/shared/assets/icons';
+import { NeighborhoodEmptyImage } from '@/shared/assets/images/state';
+import { Button } from '@/shared/ui/button';
+import { CategoryChip } from '@/shared/ui/category-chip';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
 
-import type { UIEvent } from 'react';
+import RecommendationAddressHint from './RecommendationAddressHint';
+import RecommendationPlaceCard from './RecommendationPlaceCard';
 
-const CARD_GAP_PX = 12;
-const PROGRAMMATIC_SCROLL_FALLBACK_MS = 1_000;
+type ShopRecommendationSheetProps = { onOpenRecommendationSearch?: () => void };
 
-/** 가게 추천 바텀시트 안에 표시하는 추천 캐러셀 콘텐츠입니다. */
-export default function ShopRecommendationSheet({
-  onOpenRecommendationSearch,
-}: {
-  onOpenRecommendationSearch?: () => void;
-}) {
-  const { recommendations, isPending, isError, refetch } = useNearbyPlaceRecommendationsQuery();
-  const likeMutation = useTogglePlaceLikeMutation();
-  const showHome = useHomeBottomSheetStore((state) => state.showHome);
-  const activeRecommendationId = useShopRecommendationStore(
-    (state) => state.activeRecommendationId
-  );
-  const setActiveRecommendation = useShopRecommendationStore(
-    (state) => state.setActiveRecommendation
-  );
-  const carouselRef = useRef<HTMLUListElement>(null);
-  const programmaticScrollTargetRef = useRef<number | null>(null);
-  const programmaticScrollTimeoutRef = useRef<number | null>(null);
-  const activeIndex = Math.max(
-    0,
-    recommendations.findIndex(({ id }) => id === activeRecommendationId)
-  );
+type RecommendationContentProps = ShopRecommendationSheetProps & {
+  neighborhood: ReturnType<typeof useRecommendationNeighborhood>;
+};
 
-  useEffect(() => {
-    if (isPending || isError) {
-      return;
-    }
+const RECOMMENDATION_CATEGORIES = [
+  '카페',
+  '운동',
+  '편의점/마트',
+  '취미/놀거리',
+  '음식점',
+  '미용/뷰티',
+  '기타',
+] as const;
 
-    const hasActiveRecommendation = recommendations.some(({ id }) => id === activeRecommendationId);
-    if (!hasActiveRecommendation) {
-      setActiveRecommendation(recommendations[0]?.id ?? null);
-    }
-  }, [activeRecommendationId, isError, isPending, recommendations, setActiveRecommendation]);
+/** 동네 복원이 끝난 뒤에만 추천 목록을 마운트해 임의의 지도 중심으로 조회하지 않습니다. */
+export default function ShopRecommendationSheet(props: ShopRecommendationSheetProps) {
+  const neighborhood = useRecommendationNeighborhood();
+  return <RecommendationContent {...props} neighborhood={neighborhood} />;
+}
 
-  useEffect(() => {
-    const carousel = carouselRef.current;
-    const firstCard = carousel?.firstElementChild as HTMLElement | null;
-    if (!carousel || !firstCard) {
-      return;
-    }
-
-    const targetLeft = activeIndex * (firstCard.offsetWidth + CARD_GAP_PX);
-    if (!carousel.scrollTo || Math.abs(carousel.scrollLeft - targetLeft) <= 1) {
-      programmaticScrollTargetRef.current = null;
-      return;
-    }
-
-    programmaticScrollTargetRef.current = targetLeft;
-    programmaticScrollTimeoutRef.current = window.setTimeout(() => {
-      programmaticScrollTargetRef.current = null;
-      programmaticScrollTimeoutRef.current = null;
-    }, PROGRAMMATIC_SCROLL_FALLBACK_MS);
-    carousel.scrollTo({
-      left: targetLeft,
-      behavior: 'smooth',
-    });
-
-    return () => {
-      if (programmaticScrollTimeoutRef.current !== null) {
-        window.clearTimeout(programmaticScrollTimeoutRef.current);
-        programmaticScrollTimeoutRef.current = null;
-      }
-      programmaticScrollTargetRef.current = null;
-    };
-  }, [activeIndex]);
-
-  const handleCarouselScroll = (event: UIEvent<HTMLUListElement>) => {
-    const carousel = event.currentTarget;
-    const firstCard = carousel.firstElementChild as HTMLElement | null;
-    if (!firstCard) {
-      return;
-    }
-
-    const programmaticTarget = programmaticScrollTargetRef.current;
-    if (programmaticTarget !== null) {
-      if (Math.abs(carousel.scrollLeft - programmaticTarget) <= 1) {
-        programmaticScrollTargetRef.current = null;
-        if (programmaticScrollTimeoutRef.current !== null) {
-          window.clearTimeout(programmaticScrollTimeoutRef.current);
-          programmaticScrollTimeoutRef.current = null;
-        }
-      }
-      return;
-    }
-
-    const cardStep = firstCard.offsetWidth + CARD_GAP_PX;
-    if (cardStep === 0) {
-      return;
-    }
-
-    const nextIndex = Math.min(
-      recommendations.length - 1,
-      Math.max(0, Math.round(carousel.scrollLeft / cardStep))
-    );
-    const nextRecommendation = recommendations[nextIndex];
-    if (nextRecommendation) {
-      setActiveRecommendation(nextRecommendation.id);
-    }
-  };
-
-  if (isPending) {
+export function RecommendationContent({ neighborhood, ...props }: RecommendationContentProps) {
+  if (neighborhood.isLoading) {
     return (
       <div
         role="status"
-        aria-label="추천 가게 불러오는 중"
-        className="flex min-h-64 items-center justify-center"
+        aria-label="설정한 동네 불러오는 중"
+        className="flex h-full items-center justify-center"
       >
-        <Spinner className="size-6 text-primary-500" />
+        <Spinner />
       </div>
     );
   }
-
-  if (isError) {
+  if (neighborhood.isError) {
     return (
       <StateView
         variant="error"
-        headingAs="h2"
-        title="추천 가게를 불러오지 못했어요"
+        headingAs="h1"
+        title="설정한 동네를 불러오지 못했어요"
         description="잠시 후 다시 시도해주세요."
         actionLabel="다시 불러오기"
-        onAction={() => void refetch()}
-        className="py-8"
+        onAction={() => void neighborhood.refetch()}
       />
     );
   }
-
-  if (recommendations.length === 0) {
-    const changeNeighborhoodAction = onOpenRecommendationSearch
-      ? {
-          actionLabel: '다른 동네 선택',
-          onAction: () => {
-            showHome();
-            onOpenRecommendationSearch();
-          },
-        }
-      : {};
-
+  if (!neighborhood.hasNeighborhood) {
     return (
-      <StateView
-        variant="empty"
-        headingAs="h2"
-        title="아직 주변에 추천 가게가 없어요"
-        description={onOpenRecommendationSearch ? '다른 동네를 선택해 주변 가게를 찾아보세요.' : ''}
-        {...changeNeighborhoodAction}
-        className="py-8"
-      />
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col items-center justify-center rounded-16 bg-neutral-50 p-4">
+          <p className="text-center text-body-01-medium text-neutral-600">
+            동네를 설정하면
+            <br />
+            가까운 가게를 추천받을 수 있어요
+          </p>
+          <img
+            src={NeighborhoodEmptyImage}
+            alt=""
+            className="mt-4 h-25 max-w-full object-contain grayscale"
+          />
+        </div>
+        <Button onClick={props.onOpenRecommendationSearch}>동네 설정하기</Button>
+      </div>
     );
   }
+  return <RecommendationList {...props} />;
+}
+
+function RecommendationList({ onOpenRecommendationSearch }: ShopRecommendationSheetProps) {
+  const { recommendations, isPending, isError, refetch } = useNearbyPlaceRecommendationsQuery();
+  const address = useLocationSelectionStore((state) => state.confirmedAddress);
+  const selectedCategory = useShopRecommendationStore((state) => state.selectedCategory);
+  const setSelectedCategory = useShopRecommendationStore((state) => state.setSelectedCategory);
+  const setListScrollTop = useShopRecommendationStore((state) => state.setListScrollTop);
+  const showRecommendationPlace = useHomeBottomSheetStore((state) => state.showRecommendationPlace);
+  const setActiveRecommendation = useShopRecommendationStore(
+    (state) => state.setActiveRecommendation
+  );
+  const likeMutation = useTogglePlaceLikeMutation();
+  const listRef = useRef<HTMLDivElement>(null);
+  const filtered = recommendations.filter(
+    ({ place }) => !selectedCategory || place.category === selectedCategory
+  );
+
+  useLayoutEffect(() => {
+    if (listRef.current)
+      listRef.current.scrollTop = useShopRecommendationStore.getState().listScrollTop;
+  }, [isPending, selectedCategory]);
 
   return (
-    <section aria-labelledby="shop-recommendation-title">
-      <h1 id="shop-recommendation-title" className="px-2 text-title-01-semibold text-neutral-700">
-        가게 추천
-      </h1>
-
-      <ul
-        ref={carouselRef}
-        aria-label="추천 가게 목록"
-        onScroll={handleCarouselScroll}
-        className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto"
-      >
-        {recommendations.map(({ id, isLiked, reason, place, thumbnailSrc }, index) => {
-          return (
-            <li
-              key={id}
-              aria-label={`${index + 1}/${recommendations.length} ${place.name}`}
-              className="relative flex w-80 max-w-[calc(100vw-4.5rem)] shrink-0 snap-start flex-col overflow-hidden rounded-15 border border-neutral-200 bg-neutral-00"
-            >
-              <span className="absolute top-0 left-0 rounded-br-16 bg-primary-500 px-3 py-2 text-caption-01-medium text-neutral-00">
-                {reason}
-              </span>
-              <button
-                type="button"
-                aria-label={`${place.name} 관심 가게`}
-                aria-pressed={isLiked}
-                onClick={() => likeMutation.mutate({ placeId: Number(id), currentLiked: isLiked })}
-                disabled={likeMutation.isPending}
-                className={cn(
-                  'absolute top-4 right-4 flex size-7 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-300',
-                  isLiked ? 'text-red' : 'text-neutral-200'
-                )}
-              >
-                <LikeIcon aria-hidden="true" className="size-5" />
-              </button>
-
-              <div className="flex min-h-32 items-end px-4 pt-12 pb-4">
-                <PlaceTagCard
-                  thumbnailSrc={thumbnailSrc}
-                  title={place.name}
-                  tags={[
-                    ...(place.address
-                      ? [{ label: getDistrict(place.address), icon: BlueLocationPinIcon }]
-                      : []),
-                    { label: place.category },
-                  ]}
-                />
-              </div>
-
-              <a
-                href={getGoogleMapsPlaceUrl(place.name, place.address)}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`${place.name} 지도앱에서 확인하기`}
-                className="flex h-11 items-center gap-1 justify-center border-t border-neutral-200 text-body-02-regular text-neutral-500 outline-none hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-inset"
-              >
-                지도앱에서 확인하기
-                <ChevronRightIcon aria-hidden="true" className="size-3" />
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="mt-4 flex items-center justify-center gap-1" aria-hidden="true">
-        {recommendations.map(({ id }, index) => (
-          <span
-            key={id}
-            className={cn(
-              'size-1.5 rounded-full',
-              index === activeIndex ? 'w-5 bg-neutral-500' : 'bg-neutral-300'
-            )}
+    <section aria-label="가게 추천" className="flex h-full min-h-0 flex-col">
+      <div className="relative shrink-0 pt-1 pb-3">
+        <RecommendationAddressHint />
+        <button
+          type="button"
+          onClick={onOpenRecommendationSearch}
+          aria-label="추천 동네 변경"
+          className="flex max-w-full items-center gap-1 text-title-01-bold text-neutral-700"
+        >
+          <span className="truncate">{address || '선택한 동네'}</span>
+          <CaretRightIcon
+            aria-hidden="true"
+            className="size-6 rotate-90 shrink-0 text-neutral-900"
           />
-        ))}
+        </button>
+        <h1 className="mt-4 text-body-01-semibold text-neutral-700">동네 인기 장소</h1>
       </div>
-      <p className="sr-only" aria-live="polite">
-        {activeIndex + 1}번째 추천 가게
-      </p>
+      <nav aria-label="추천 가게 카테고리" className="flex shrink-0 gap-2 overflow-x-auto pb-4">
+        <CategoryChip
+          selected={!selectedCategory}
+          onSelectedChange={() => setSelectedCategory(null)}
+        >
+          전체
+        </CategoryChip>
+        {RECOMMENDATION_CATEGORIES.map((category) => (
+          <CategoryChip
+            key={category}
+            selected={selectedCategory === category}
+            onSelectedChange={(selected) => {
+              if (selected) setSelectedCategory(category);
+            }}
+          >
+            {category}
+          </CategoryChip>
+        ))}
+      </nav>
+      <div
+        ref={listRef}
+        onScroll={(event) => setListScrollTop(event.currentTarget.scrollTop)}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-4"
+      >
+        {isPending ? (
+          <div
+            role="status"
+            aria-label="추천 가게 불러오는 중"
+            className="flex min-h-32 items-center justify-center"
+          >
+            <Spinner />
+          </div>
+        ) : isError ? (
+          <StateView
+            variant="error"
+            headingAs="h2"
+            title="추천 가게를 불러오지 못했어요"
+            description="잠시 후 다시 시도해주세요."
+            actionLabel="다시 불러오기"
+            onAction={() => void refetch()}
+          />
+        ) : filtered.length === 0 ? (
+          <StateView
+            variant="empty"
+            headingAs="h2"
+            title="아직 추천 가게가 없어요"
+            description="다른 카테고리나 동네를 선택해보세요."
+          />
+        ) : (
+          <ul aria-label="추천 가게 목록" className="grid grid-cols-2 gap-4">
+            {filtered.map((recommendation) => (
+              <li key={recommendation.id}>
+                <RecommendationPlaceCard
+                  recommendation={recommendation}
+                  isLikePending={likeMutation.isPending}
+                  onToggleLike={() =>
+                    likeMutation.mutate({
+                      placeId: Number(recommendation.id),
+                      currentLiked: recommendation.isLiked,
+                    })
+                  }
+                  onSelect={() => {
+                    setActiveRecommendation(recommendation.id);
+                    showRecommendationPlace(recommendation.id);
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }

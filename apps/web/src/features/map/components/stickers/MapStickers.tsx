@@ -22,6 +22,8 @@ export default function MapStickers() {
     ? stickers.filter(({ place }) => place.category === selectedCategory)
     : stickers;
   const nonLikedStickers = visibleStickers.filter(({ isLiked }) => !isLiked);
+  if (activeSheet.type === 'recommendation' || activeSheet.type === 'recommendationPlace')
+    return null;
 
   const handleStickerSelect = (sticker: MapStickerData) => {
     showSelectedPlace(sticker.id);

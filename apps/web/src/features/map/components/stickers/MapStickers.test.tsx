@@ -1,15 +1,13 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
-import { useNearbyPlaceRecommendationsQuery } from '../../apis/hooks/useNearbyPlaceRecommendationsQuery';
-import { useTogglePlaceLikeMutation } from '../../apis/hooks/useTogglePlaceLikeMutation';
 import { useVisitedPlaceStickersQuery } from '../../apis/hooks/useVisitedPlaceStickersQuery';
 import { mockGoogleMapsIdleEvent } from '../../googleMapsEventMock';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 import { useShopRecommendationStore } from '../../stores/shopRecommendationStore';
-import { TEST_MAP_STICKERS, TEST_SHOP_RECOMMENDATIONS } from '../../testFixtures';
+import { TEST_MAP_STICKERS } from '../../testFixtures';
 import HomeCategoryFilter from '../home-overlay/HomeCategoryFilter';
 import HomeBottomSheet from '../HomeBottomSheet';
 
@@ -20,13 +18,16 @@ import type { PropsWithChildren } from 'react';
 const moveCamera = jest.fn();
 const panBy = jest.fn();
 
-jest.mock('../../apis/hooks/useNearbyPlaceRecommendationsQuery');
 jest.mock('../../apis/hooks/useVisitedPlaceStickersQuery');
-jest.mock('../../apis/hooks/useTogglePlaceLikeMutation');
+jest.mock('@/features/map/apis/hooks/useRecommendationNeighborhood', () => ({
+  useRecommendationNeighborhood: () => ({
+    hasNeighborhood: false,
+    isLoading: false,
+    isError: false,
+  }),
+}));
 
-const mockedUseNearbyPlaceRecommendationsQuery = jest.mocked(useNearbyPlaceRecommendationsQuery);
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
-const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation);
 
 jest.mock('@vis.gl/react-google-maps', () => ({
   AdvancedMarker: ({
@@ -67,16 +68,6 @@ describe('MapStickers', () => {
     mockedUseVisitedPlaceStickersQuery.mockReturnValue({
       stickers: TEST_MAP_STICKERS,
     } as unknown as ReturnType<typeof useVisitedPlaceStickersQuery>);
-    mockedUseNearbyPlaceRecommendationsQuery.mockReturnValue({
-      recommendations: TEST_SHOP_RECOMMENDATIONS,
-      isPending: false,
-      isError: false,
-      refetch: jest.fn(),
-    } as unknown as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
-    mockedUseTogglePlaceLikeMutation.mockReturnValue({
-      mutate: jest.fn(),
-      isPending: false,
-    } as unknown as ReturnType<typeof useTogglePlaceLikeMutation>);
   });
 
   it('카테고리를 선택하면 관련된 지도 스티커만 표시한다', async () => {
@@ -88,9 +79,7 @@ describe('MapStickers', () => {
 
     render(
       <>
-        <HomeCategoryFilter
-          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
-        />
+        <HomeCategoryFilter />
         <MapStickers />
       </>
     );
@@ -367,33 +356,31 @@ describe('MapStickers', () => {
     expect(screen.queryByRole('button', { name: '자주 소비한 곳' })).not.toBeInTheDocument();
   });
 
-  it('추천 시트가 열려 있어도 스티커를 누르면 추천 칩을 해제하고 장소 상세 시트 하나만 표시한다', async () => {
+  it('추천 목록과 추천 상세에서는 방문 스티커를 숨기고 홈으로 돌아오면 다시 표시한다', async () => {
     const user = userEvent.setup();
-    const sticker = TEST_MAP_STICKERS[0]!;
-    render(
-      <MemoryRouter>
-        <HomeCategoryFilter
-          onOpenRecommendationSearch={useHomeBottomSheetStore.getState().showRecommendation}
-        />
-        <MapStickers />
-        <HomeBottomSheet
-          renderFrequentShops={(headerContent) => <div>{headerContent}</div>}
-          renderSelectedPlace={() => <h2>{sticker.place.name}</h2>}
-          renderSpendingHistory={(headerContent) => <div>{headerContent}</div>}
-        />
-      </MemoryRouter>
-    );
+    render(<MapStickers />);
+    const visitedStickers = TEST_MAP_STICKERS.filter(({ isLiked }) => !isLiked);
+    expect(visitedStickers.length).toBeGreaterThan(0);
+    for (const sticker of visitedStickers) {
+      expect(screen.getByRole('button', { name: sticker.label + ' 스티커' })).toBeInTheDocument();
+    }
 
-    const recommendationChip = screen.getByRole('button', { name: '가게 추천' });
-    await user.click(recommendationChip);
+    act(() => useHomeBottomSheetStore.getState().showRecommendation());
+    expect(screen.queryByRole('button', { name: /스티커/ })).not.toBeInTheDocument();
+    act(() => useHomeBottomSheetStore.getState().showRecommendationPlace('101'));
+    expect(screen.queryByRole('button', { name: /스티커/ })).not.toBeInTheDocument();
+    expect(moveCamera).not.toHaveBeenCalled();
 
-    expect(screen.getByRole('heading', { level: 1, name: '가게 추천' })).toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: `${sticker.label} 스티커` }));
-
-    expect(recommendationChip).not.toHaveAttribute('aria-pressed');
-    expect(screen.queryByRole('heading', { level: 1, name: '가게 추천' })).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: sticker.place.name })).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: '바텀시트 높이 조절' })).toHaveLength(1);
+    act(() => useHomeBottomSheetStore.getState().showHome());
+    for (const sticker of visitedStickers) {
+      expect(screen.getByRole('button', { name: sticker.label + ' 스티커' })).toBeInTheDocument();
+    }
+    const sticker = visitedStickers[0]!;
+    await user.click(screen.getByRole('button', { name: sticker.label + ' 스티커' }));
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({
+      type: 'selectedPlace',
+      stickerId: sticker.id,
+    });
+    expect(moveCamera).toHaveBeenCalledWith({ center: sticker.position, zoom: 16 });
   });
 });

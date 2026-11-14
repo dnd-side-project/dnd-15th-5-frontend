@@ -8,14 +8,8 @@ import { HOME_CATEGORIES } from '../../constants';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
 
-type HomeCategoryFilterProps = {
-  onOpenRecommendationSearch: () => void;
-};
-
 /** 지도 홈 상단에 가게 추천과 방문·좋아요 장소의 카테고리 칩을 표시합니다. */
-export default function HomeCategoryFilter({
-  onOpenRecommendationSearch,
-}: HomeCategoryFilterProps) {
+export default function HomeCategoryFilter() {
   const { isSuccess, stickers, likedRecommendations = [] } = useVisitedPlaceStickersQuery();
   const activeSheet = useHomeBottomSheetStore((state) => state.activeSheet);
   const selectedLikedPlaceCategory =
@@ -51,10 +45,9 @@ export default function HomeCategoryFilter({
     visibleCategories,
   ]);
 
-  const handleOpenRecommendationSearch = () => {
+  const handleOpenRecommendation = () => {
     setSelectedCategory(null);
-    showHome();
-    onOpenRecommendationSearch();
+    useHomeBottomSheetStore.getState().showRecommendation();
   };
 
   const handleCategorySelection = (
@@ -75,7 +68,7 @@ export default function HomeCategoryFilter({
         <button
           type="button"
           className={categoryChipVariants({ variant: 'compact' })}
-          onClick={handleOpenRecommendationSearch}
+          onClick={handleOpenRecommendation}
         >
           <ShopRecommendIcon aria-hidden="true" />
           가게 추천

@@ -70,10 +70,7 @@ export default function HomePage() {
       {(actions) => (
         <div className="mobile-frame fixed inset-0 z-0 flex flex-col">
           <GoogleMapView />
-          <HomeMapOverlay
-            hasUnreadNotification={hasUnreadNotification}
-            onOpenRecommendationSearch={handleOpenRecommendationSearch}
-          />
+          <HomeMapOverlay hasUnreadNotification={hasUnreadNotification} />
           <HomeBottomSheet
             onOpenRecommendationSearch={handleOpenRecommendationSearch}
             onSelectedPlaceExpand={handleSelectedPlaceExpand}

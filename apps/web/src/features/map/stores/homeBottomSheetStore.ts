@@ -22,6 +22,7 @@ const SNAP_POINT_TO_STEP_INDEX: Record<BottomSheetSnapPoint, number> = {
 export type HomeBottomSheetContent =
   | { type: 'home' }
   | { type: 'recommendation' }
+  | { type: 'recommendationPlace'; recommendationId: string }
   | { type: 'selectedPlace'; stickerId: string }
   | {
       type: 'likedRecommendation';
@@ -42,6 +43,7 @@ type HomeBottomSheetStore = {
   closeLikedRecommendationIfMatches: (recommendationId: string) => void;
   showLikedRecommendation: (recommendationId: string) => void;
   showRecommendation: () => void;
+  showRecommendationPlace: (recommendationId: string) => void;
   showSelectedPlace: (stickerId: string) => void;
   setTopActionBottom: (bottomPx: number) => void;
   setVisibleHeight: (heightPx: number) => void;
@@ -89,6 +91,8 @@ export const useHomeBottomSheetStore = create<HomeBottomSheetStore>((set) => ({
       },
     }),
   showRecommendation: () => set({ activeSheet: { type: 'recommendation' } }),
+  showRecommendationPlace: (recommendationId) =>
+    set({ activeSheet: { type: 'recommendationPlace', recommendationId } }),
   showSelectedPlace: (stickerId) => set({ activeSheet: { type: 'selectedPlace', stickerId } }),
   setTopActionBottom: (bottomPx) =>
     set((state) =>

@@ -1,4 +1,5 @@
 import type { RecentNeighborhood } from '@/features/map/apis/hooks/useRecentNeighborhoods';
+import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import { CloseIcon, LocationPinOutlineIcon } from '@/shared/assets/icons';
 import { Spinner } from '@/shared/ui/spinner';
 
@@ -21,6 +22,19 @@ export default function RecentNeighborhoodList({
   onSelect,
   onRemove,
 }: RecentNeighborhoodListProps) {
+  const position = useLocationSelectionStore((state) => state.confirmedPosition);
+  const address = useLocationSelectionStore((state) => state.confirmedAddress);
+  const confirmedId = useLocationSelectionStore((state) => state.confirmedNeighborhoodId);
+  const currentNeighborhood = position
+    ? (neighborhoods.find((town) => town.id === confirmedId) ??
+      neighborhoods.find(
+        (town) =>
+          town.position.lat === position.lat &&
+          town.position.lng === position.lng &&
+          (!address || town.address === address)
+      ))
+    : neighborhoods[0];
+
   return (
     <>
       <h1 className="mt-8 text-body-01-semibold text-neutral-700">최근 설정한 동네</h1>
@@ -55,6 +69,11 @@ export default function RecentNeighborhoodList({
                 onClick={() => onSelect(neighborhood)}
               >
                 {neighborhood.address}
+                {currentNeighborhood?.id === neighborhood.id && (
+                  <span className="ml-2 text-label-01-medium text-primary-500">
+                    현재 설정된 동네
+                  </span>
+                )}
               </button>
               <button
                 type="button"
