@@ -1,5 +1,3 @@
-import { runInThisContext } from 'node:vm';
-
 import { render, screen } from '@testing-library/react';
 import { createBrowserRouter, createMemoryRouter, Outlet, RouterProvider } from 'react-router-dom';
 
@@ -49,11 +47,6 @@ jest.mock('@/pages/agreement/PoliciesPage', () => {
 });
 
 const routes = jest.mocked(createBrowserRouter).mock.calls[0][0];
-
-// NOTE: jsdom에 없는 Fetch API는 Node의 구현을 사용해 실제 데이터 라우터를 검증합니다.
-beforeAll(() => {
-  Object.assign(globalThis, runInThisContext('({ Request, Response, Headers })'));
-});
 
 it('직접 진입하면 초기 로딩 안내 후 해당 페이지를 표시한다', async () => {
   const router = createMemoryRouter(routes, { initialEntries: ['/'] });
