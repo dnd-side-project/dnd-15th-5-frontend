@@ -14,9 +14,7 @@ export const useCurrentReportQuery = () => {
     year: currentDate.getFullYear(),
     month: currentDate.getMonth() + 1,
   });
-  const hasReportError =
-    (query.isError && query.data === undefined) ||
-    (stickerQuery.isError && stickerQuery.data === undefined);
+  const hasReportError = query.isError && query.data === undefined;
 
   return {
     ...query,
@@ -26,8 +24,9 @@ export const useCurrentReportQuery = () => {
       currentDate,
       (stickerQuery.data ?? []).flatMap(({ stickerImages }) => stickerImages)
     ),
-    isPending: query.isPending || stickerQuery.isPending,
-    refetch: () => Promise.all([query.refetch(), stickerQuery.refetch()]),
+    isStickerPending: stickerQuery.isPending,
+    hasStickerError: stickerQuery.isError && stickerQuery.data === undefined,
+    refetchStickers: stickerQuery.refetch,
     hasReportError,
   };
 };

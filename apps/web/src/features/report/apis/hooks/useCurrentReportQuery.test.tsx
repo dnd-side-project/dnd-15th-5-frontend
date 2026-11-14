@@ -65,6 +65,7 @@ describe('useCurrentReportQuery', () => {
     });
     const { result } = renderHook(() => useCurrentReportQuery(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isPending).toBe(false));
+    await waitFor(() => expect(result.current.isStickerPending).toBe(false));
     expect(result.current.hasReportError).toBe(false);
     expect(result.current.data.monthlyStickerImages).toHaveLength(5);
     expect(result.current.data.monthlyStickerImages[1]).toBe('https://example.com/0.png');
@@ -72,15 +73,17 @@ describe('useCurrentReportQuery', () => {
     expect(result.current.data.monthlyCount).toBe(7);
   });
 
-  it('스티커보드 조회 실패를 오류로 표시하고 재시도 시 두 API를 갱신한다', async () => {
+  it('스티커보드 조회 실패는 영역 오류로 표시하고 스티커만 재조회한다', async () => {
     jest.mocked(getCurrentStatus).mockResolvedValue({ data: { monthlyCount: 1 } });
     jest.mocked(getStickerBoard).mockRejectedValue(new Error('사진 조회 실패'));
     const { result } = renderHook(() => useCurrentReportQuery(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.hasReportError).toBe(true));
+    await waitFor(() => expect(result.current.hasStickerError).toBe(true));
+    expect(result.current.hasReportError).toBe(false);
+    expect(result.current.data.monthlyCount).toBe(1);
     jest.mocked(getStickerBoard).mockResolvedValue({ data: { days: [] } });
-    await result.current.refetch();
-    await waitFor(() => expect(result.current.hasReportError).toBe(false));
-    expect(getCurrentStatus).toHaveBeenCalledTimes(2);
+    await result.current.refetchStickers();
+    await waitFor(() => expect(result.current.hasStickerError).toBe(false));
+    expect(getCurrentStatus).toHaveBeenCalledTimes(1);
     expect(getStickerBoard).toHaveBeenCalledTimes(2);
   });
 });
