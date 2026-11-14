@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 
 const MAP_HOME_PATH = '/home';
 const RECOMMENDATION_MAP_PATH = '/home/recommendation/map';
-const MONTHLY_REPORT_PATH = '/report/monthly-report';
 
 const normalizePathname = (pathname: string) => pathname.replace(/\/+$/, '') || '/';
 
@@ -34,7 +33,6 @@ export function useWebViewNavigationState(initialUrl: string | undefined) {
   const [pathname, setPathname] = useState(() => getPathname(initialUrl));
   const normalizedPathname = pathname ? normalizePathname(pathname) : null;
   const isMapHome = normalizedPathname === MAP_HOME_PATH;
-  const isMonthlyReport = normalizedPathname === MONTHLY_REPORT_PATH;
 
   const updatePathState = useCallback((pathname: string) => {
     setPathname(pathname);
@@ -66,6 +64,5 @@ export function useWebViewNavigationState(initialUrl: string | undefined) {
     handleRouteChange,
     isMapHome,
     isMapEdgeToEdge: isMapHome || normalizedPathname === RECOMMENDATION_MAP_PATH,
-    isMonthlyReport,
   };
 }

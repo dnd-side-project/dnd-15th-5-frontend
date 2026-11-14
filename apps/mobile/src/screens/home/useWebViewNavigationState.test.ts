@@ -9,7 +9,6 @@ describe('useWebViewNavigationState', () => {
     );
 
     expect(result.current.isMapHome).toBe(true);
-    expect(result.current.isMonthlyReport).toBe(false);
     expect(result.current.canGoBack).toBe(false);
 
     await act(async () => {
@@ -17,7 +16,6 @@ describe('useWebViewNavigationState', () => {
     });
 
     expect(result.current.isMapHome).toBe(false);
-    expect(result.current.isMonthlyReport).toBe(false);
     expect(result.current.canGoBack).toBe(true);
   });
 
@@ -35,23 +33,5 @@ describe('useWebViewNavigationState', () => {
       result.current.handleRouteChange('/my-page');
     });
     expect(result.current.isMapHome).toBe(false);
-  });
-
-  it('월간 리포트 경로를 다른 리포트 경로와 구분한다', async () => {
-    const { result } = await renderHook(() =>
-      useWebViewNavigationState('https://chapchap.example.com/report')
-    );
-
-    expect(result.current.isMonthlyReport).toBe(false);
-
-    await act(async () => {
-      result.current.handleRouteChange('/report/monthly-report/');
-    });
-    expect(result.current.isMonthlyReport).toBe(true);
-
-    await act(async () => {
-      result.current.handleRouteChange('/report/monthly-records');
-    });
-    expect(result.current.isMonthlyReport).toBe(false);
   });
 });
