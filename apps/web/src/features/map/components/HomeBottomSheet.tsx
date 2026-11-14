@@ -419,6 +419,11 @@ export default function HomeBottomSheet({
                 : showHome
         }
         fitContent={!isHomeSheet && !isRecommendationList}
+        dragFromContent={
+          isRecommendationDetail ||
+          activeSheet.type === 'selectedPlace' ||
+          activeSheet.type === 'likedRecommendation'
+        }
         onExpand={handleSelectedPlaceExpand}
         contentClassName={sheetPresentation.contentClassName}
         fullTopBoundaryPx={

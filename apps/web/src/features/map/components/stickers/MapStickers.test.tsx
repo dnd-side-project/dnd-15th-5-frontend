@@ -6,6 +6,7 @@ import { useVisitedPlaceStickersQuery } from '../../apis/hooks/useVisitedPlaceSt
 import { mockGoogleMapsIdleEvent } from '../../googleMapsEventMock';
 import { useHomeBottomSheetStore } from '../../stores/homeBottomSheetStore';
 import { useMapCategoryFilterStore } from '../../stores/mapCategoryFilterStore';
+import { useMapPlaceStampStore } from '../../stores/mapPlaceStampStore';
 import { useShopRecommendationStore } from '../../stores/shopRecommendationStore';
 import { TEST_MAP_STICKERS } from '../../testFixtures';
 import HomeCategoryFilter from '../home-overlay/HomeCategoryFilter';
@@ -56,7 +57,26 @@ jest.mock('@vis.gl/react-google-maps', () => ({
 }));
 
 describe('MapStickers', () => {
+  it('등록된 장소의 이미지가 로드된 뒤 해당 핀에만 스탬프 모션을 적용한다', () => {
+    const sticker = TEST_MAP_STICKERS[0]!;
+    useMapPlaceStampStore.getState().requestPlaceStamp(sticker.id);
+    const { rerender } = render(<MapStickers />);
+    const marker = screen.getByRole('button', { name: `${sticker.label} 스티커` });
+    expect(marker.querySelector('.map-place-stamp')).toBeNull();
+    const image = marker.querySelector('img')!;
+    fireEvent.load(image);
+    const animatedPin = marker.querySelector('.map-place-stamp');
+    expect(animatedPin).not.toBeNull();
+    expect(document.querySelectorAll('.map-place-stamp')).toHaveLength(1);
+    expect(useMapPlaceStampStore.getState().stampRequest).toBeNull();
+    rerender(<MapStickers />);
+    expect(marker.querySelector('.map-place-stamp')).toBe(animatedPin);
+    fireEvent.animationEnd(animatedPin!);
+    expect(marker.querySelector('.map-place-stamp')).toBeNull();
+  });
+
   beforeEach(() => {
+    useMapPlaceStampStore.setState(useMapPlaceStampStore.getInitialState());
     moveCamera.mockReset();
     panBy.mockReset();
     mockGoogleMapsIdleEvent();

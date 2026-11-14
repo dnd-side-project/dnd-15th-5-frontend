@@ -38,6 +38,15 @@ const mockedUseLikedPlaceDetailQuery = jest.mocked(useLikedPlaceDetailQuery);
 const mockedUseTogglePlaceLikeMutation = jest.mocked(useTogglePlaceLikeMutation);
 const mockedUseVisitedPlaceStickersQuery = jest.mocked(useVisitedPlaceStickersQuery);
 const mutateLike = jest.fn();
+const fireSheetPointerEvent = (element: Element, type: string, clientY: number) => {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperties(event, {
+    clientY: { value: clientY },
+    clientX: { value: 0 },
+    pointerId: { value: 1 },
+  });
+  fireEvent(element, event);
+};
 const render = (ui: Parameters<typeof renderUI>[0]) => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return renderUI(ui, {
@@ -89,6 +98,37 @@ const mockExpandAnimation = (sheet: HTMLElement) => {
 };
 
 describe('HomeBottomSheet', () => {
+  it.each(['selectedPlace', 'likedRecommendation', 'recommendationPlace'] as const)(
+    '%s 상세 본문을 아래로 끌면 이전 시트로 돌아간다',
+    (type) => {
+      const store = useHomeBottomSheetStore.getState();
+      if (type === 'selectedPlace') store.showSelectedPlace(TEST_MAP_STICKERS[0]!.id);
+      else if (type === 'likedRecommendation')
+        store.showLikedRecommendation(TEST_SHOP_RECOMMENDATIONS[0]!.id);
+      else store.showRecommendationPlace(TEST_SHOP_RECOMMENDATIONS[0]!.id);
+      const { container } = render(
+        <MemoryRouter>
+          <HomeBottomSheet
+            renderFrequentShops={(header) => <div>{header}</div>}
+            renderSelectedPlace={renderSelectedPlace}
+            renderSpendingHistory={(header) => <div>{header}</div>}
+          />
+        </MemoryRouter>
+      );
+      const sheet = container.querySelector<HTMLElement>('.z-bottom-sheet')!;
+      jest
+        .spyOn(sheet, 'getBoundingClientRect')
+        .mockReturnValue({ ...sheet.getBoundingClientRect(), height: 300 });
+      const content = sheet.lastElementChild!;
+      fireSheetPointerEvent(content, 'pointerdown', 300);
+      fireSheetPointerEvent(document.body, 'pointermove', 380);
+      fireSheetPointerEvent(document.body, 'pointerup', 380);
+      expect(useHomeBottomSheetStore.getState().activeSheet.type).toBe(
+        type === 'recommendationPlace' ? 'recommendation' : 'home'
+      );
+    }
+  );
+
   beforeEach(() => {
     useHomeBottomSheetStore.setState({
       activeSheet: { type: 'home' },
@@ -569,10 +609,10 @@ describe('HomeBottomSheet', () => {
     );
     const content = screen.getByRole('dialog', { name: '선택한 가게 정보' }).parentElement!;
 
-    fireEvent.touchStart(content, { touches: [{ clientY: 300 }] });
-    fireEvent.touchMove(content, { touches: [{ clientY: 200 }] });
+    fireSheetPointerEvent(content, 'pointerdown', 300);
+    fireSheetPointerEvent(document.body, 'pointermove', 200);
     expect(onSelectedPlaceExpand).not.toHaveBeenCalled();
-    fireEvent.touchEnd(content);
+    fireSheetPointerEvent(document.body, 'pointerup', 200);
 
     expect(onSelectedPlaceExpand).toHaveBeenCalledTimes(1);
     expect(onSelectedPlaceExpand).toHaveBeenCalledWith(selectedSticker.id);
@@ -595,9 +635,9 @@ describe('HomeBottomSheet', () => {
     const { animation, animate } = mockExpandAnimation(sheet);
 
     for (let gesture = 0; gesture < 2; gesture += 1) {
-      fireEvent.touchStart(content, { touches: [{ clientY: 300 }] });
-      fireEvent.touchMove(content, { touches: [{ clientY: 200 }] });
-      fireEvent.touchEnd(content);
+      fireSheetPointerEvent(content, 'pointerdown', 300);
+      fireSheetPointerEvent(document.body, 'pointermove', 200);
+      fireSheetPointerEvent(document.body, 'pointerup', 200);
     }
 
     expect(animate).toHaveBeenCalledTimes(1);

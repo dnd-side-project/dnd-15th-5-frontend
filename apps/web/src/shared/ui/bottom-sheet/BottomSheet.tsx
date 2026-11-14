@@ -27,6 +27,8 @@ type BottomSheetProps = {
   onExpand?: () => void;
   /** 콘텐츠 높이에 맞추고 내부 스크롤을 사용하지 않습니다. `hidden` 지정 시 아래로 드래그해 닫을 수 있습니다. */
   fitContent?: boolean;
+  /** 콘텐츠 맞춤 시트의 본문에서도 세로 드래그로 닫을 수 있습니다. */
+  dragFromContent?: boolean;
   showHandle?: boolean;
   children: ReactNode;
   contentClassName?: string;
@@ -100,6 +102,7 @@ export function BottomSheet({
   onHandleClick,
   onExpand,
   fitContent = false,
+  dragFromContent = false,
   showHandle = true,
   children,
   contentClassName,
@@ -142,6 +145,8 @@ export function BottomSheet({
     handleClick,
     handleKeyDown,
     handlePointerDown,
+    handleContentPointerDown,
+    handleContentClickCapture,
     isDragging,
   } = useBottomSheetDrag({
     fitContent,
@@ -154,6 +159,7 @@ export function BottomSheet({
     snapPoints,
   });
   const prefersReducedMotion = usePrefersReducedMotion();
+  const isContentDragEnabled = dragFromContent && canDismissFitContent;
   const isHidden = !isDragging && snapPoint === 'hidden';
   const isHandleInteractive =
     !fitContent || canDismissFitContent || Boolean(onHandleClick) || Boolean(onExpand);
@@ -190,6 +196,9 @@ export function BottomSheet({
   return (
     <div
       ref={handleRootRef}
+      onPointerDown={isContentDragEnabled ? handleContentPointerDown : undefined}
+      onClickCapture={isContentDragEnabled ? handleContentClickCapture : undefined}
+      onDragStart={isContentDragEnabled ? (event) => event.preventDefault() : undefined}
       aria-hidden={isHidden || undefined}
       inert={isHidden || undefined}
       style={{
@@ -206,7 +215,8 @@ export function BottomSheet({
       }}
       className={cn(
         'mobile-frame fixed right-0 bottom-0 left-0 z-bottom-sheet flex flex-col rounded-t-30 bg-neutral-00 shadow-sheet',
-        !fitContent && 'overflow-hidden',
+        isContentDragEnabled && 'touch-pan-x select-none',
+        (!fitContent || isContentDragEnabled) && 'overflow-hidden',
         !isDragging && 'transition-[height,transform]',
         isHidden && 'pointer-events-none shadow-none',
         isHidden && fitContent ? 'translate-y-full' : 'translate-y-0'
@@ -218,7 +228,10 @@ export function BottomSheet({
             type="button"
             onClick={handleClick}
             onKeyDown={handleKeyDown}
-            onPointerDown={handlePointerDown}
+            onPointerDown={(event) => {
+              event.stopPropagation();
+              handlePointerDown(event);
+            }}
             aria-label="바텀시트 높이 조절"
             className={cn(
               handleClassName,
@@ -232,10 +245,10 @@ export function BottomSheet({
         ))}
       <div
         onScroll={onContentScroll}
-        onTouchCancel={handleTouchCancel}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={handleTouchMove}
-        onTouchStart={handleTouchStart}
+        onTouchCancel={isContentDragEnabled ? undefined : handleTouchCancel}
+        onTouchEnd={isContentDragEnabled ? undefined : handleTouchEnd}
+        onTouchMove={isContentDragEnabled ? undefined : handleTouchMove}
+        onTouchStart={isContentDragEnabled ? undefined : handleTouchStart}
         onWheel={handleWheel}
         className={cn(
           'px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]',
