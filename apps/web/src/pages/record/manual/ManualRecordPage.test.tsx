@@ -122,7 +122,7 @@ describe('<ManualRecordPage />', () => {
     expect(screen.getByRole('button', { name: '음식점' })).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('지난달 기록에서 장소 선택을 마치면 해당 월 날짜 선택을 바로 연다', () => {
+  it('지난달 기록에서 장소 선택을 마치면 해당 월 날짜 선택을 바로 연다', async () => {
     render(
       <MemoryRouter
         initialEntries={[
@@ -139,7 +139,7 @@ describe('<ManualRecordPage />', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('dialog', { name: '방문 일시 선택' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: '방문 일시 선택' })).toBeInTheDocument();
     expect(screen.getByText('2025년 7월')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '2025년 7월 31일' })).toHaveAttribute(
       'aria-pressed',
@@ -416,7 +416,7 @@ describe('<ManualRecordPage />', () => {
 
     await user.click(screen.getByRole('button', { name: /방문 일시 변경/ }));
 
-    const openDialog = screen.getByRole('dialog', { name: '방문 일시 선택' });
+    const openDialog = await screen.findByRole('dialog', { name: '방문 일시 선택' });
     const openSheet = openDialog.parentElement?.parentElement;
 
     await waitFor(() => {
@@ -466,11 +466,12 @@ describe('<ManualRecordPage />', () => {
     });
     expect(confirmButton).toBeInTheDocument();
 
-    await user.click(confirmButton);
-
     const dialog = screen.getByRole('dialog', { name: '방문 일시 선택' });
     const sheet = dialog.parentElement?.parentElement;
+    await user.click(confirmButton);
+
     expect(sheet).toHaveClass('translate-y-full');
+    expect(sheet).toHaveAttribute('inert');
 
     await waitFor(() => {
       expect(
