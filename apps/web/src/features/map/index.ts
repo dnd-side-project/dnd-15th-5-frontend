@@ -18,5 +18,5 @@ export { toShopSearchResult } from './utils/placeAdapters';
 export type { MapSticker } from './types';
 export { useNeighborhoodSearch } from './apis/hooks/useNeighborhoodSearch';
 export { useRecentNeighborhoods } from './apis/hooks/useRecentNeighborhoods';
-export { useRecommendationLocationActions } from './hooks/useRecommendationLocationActions';
+export { useRecommendationLocationActions } from './apis/hooks/useRecommendationLocationActions';
 export { useResolveNeighborhoodPosition } from './apis/hooks/useResolveNeighborhoodPosition';

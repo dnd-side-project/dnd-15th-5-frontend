@@ -81,6 +81,7 @@ describe('useTogglePlaceLikeMutation', () => {
       type: 'like',
       message: '좋아요 목록에 추가했어요',
       placement: 'above-bottom-sheet',
+      duration: 3_000,
     });
   });
 
@@ -103,6 +104,7 @@ describe('useTogglePlaceLikeMutation', () => {
       type: 'like',
       message: '좋아요 목록에서 삭제했어요',
       placement: 'above-bottom-sheet',
+      duration: 3_000,
     });
   });
 
@@ -145,6 +147,7 @@ describe('useTogglePlaceLikeMutation', () => {
       type: 'like',
       message: '좋아요 목록에서 삭제했어요',
       placement: 'above-bottom-sheet',
+      duration: 3_000,
     });
   });
 
@@ -164,6 +167,7 @@ describe('useTogglePlaceLikeMutation', () => {
       type: 'like',
       message: '좋아요 목록에서 삭제했어요',
       placement: 'above-bottom-sheet',
+      duration: 3_000,
     });
     expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
   });
@@ -208,6 +212,7 @@ describe('useTogglePlaceLikeMutation', () => {
       type: 'like',
       message: '좋아요 목록에서 삭제했어요',
       placement: 'above-bottom-sheet',
+      duration: 3_000,
     });
     expect(
       queryClient.getQueryData<{ data: { places: Array<{ liked: boolean }> } }>(visitedPlacesKey)

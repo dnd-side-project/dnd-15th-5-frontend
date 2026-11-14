@@ -7,6 +7,13 @@ type DraftSelection =
   | { status: 'ready'; position: MapPosition; address: string };
 
 type LocationSelectionStore = {
+  confirmedAddress: string | null;
+  confirmedNeighborhoodId: number | null;
+  setConfirmedNeighborhood: (neighborhood: {
+    position: MapPosition;
+    address: string;
+    id?: number;
+  }) => void;
   /** 추천 조회의 기준 좌표입니다. 추천 가게로 지도가 이동해도 이 값은 유지됩니다. */
   confirmedPosition: MapPosition | null;
   /** 지도 이동이 끝났을 때 중앙 핀이 가리키는 좌표와 주소 조회 상태입니다. */
@@ -20,9 +27,24 @@ type LocationSelectionStore = {
 
 /** 지도에서 선택 중인 위치와 추천 조회에 확정한 위치를 관리합니다. */
 export const useLocationSelectionStore = create<LocationSelectionStore>((set) => ({
+  confirmedAddress: null,
+  confirmedNeighborhoodId: null,
+  setConfirmedNeighborhood: ({ position, address, id }) =>
+    set({
+      confirmedPosition: position,
+      confirmedAddress: address,
+      confirmedNeighborhoodId: id ?? null,
+      draftSelection: null,
+    }),
   confirmedPosition: null,
   draftSelection: null,
-  setConfirmedPosition: (confirmedPosition) => set({ confirmedPosition, draftSelection: null }),
+  setConfirmedPosition: (confirmedPosition) =>
+    set({
+      confirmedPosition,
+      confirmedAddress: null,
+      confirmedNeighborhoodId: null,
+      draftSelection: null,
+    }),
   startDraftSelection: (position) => set({ draftSelection: { status: 'loading', position } }),
   resolveDraftAddress: (position, address) =>
     set((state) => {

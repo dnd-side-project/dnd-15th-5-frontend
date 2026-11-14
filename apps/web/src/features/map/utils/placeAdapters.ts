@@ -176,7 +176,7 @@ const toRecommendation = (place: RecommendedPlaceItem): ShopRecommendation | nul
   };
 };
 
-/** 카테고리별 인기 장소 응답을 같은 장소가 중복되지 않는 캐러셀 모델로 변환합니다. */
+/** 카테고리별 인기 장소 응답을 같은 장소가 중복되지 않는 추천 목록 모델로 변환합니다. */
 export const toShopRecommendations = (response?: NearbyPlacesResponse): ShopRecommendation[] => {
   const categoryPlaces = (response?.categoryPlaces ?? []).flatMap((group) => group.places ?? []);
   const allPlaces = response?.allPlaces ?? [];
