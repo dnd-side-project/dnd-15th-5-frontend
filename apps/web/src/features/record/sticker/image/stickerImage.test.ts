@@ -1,7 +1,7 @@
+import { getAlphaBounds } from './stickerComposition';
 import {
   cropStickerImage,
   FULL_STICKER_CROP,
-  getAlphaBounds,
   moveCropCorner,
   prepareStickerImage,
   validateStickerFile,
