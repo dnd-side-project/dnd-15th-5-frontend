@@ -1,5 +1,5 @@
 import { EditIcon } from '@/shared/assets/icons';
-import PageHeader from '@/shared/layout/page-header';
+import { BackButton } from '@/shared/ui/back-button';
 import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 
 type MyPageProfileSectionProps = {
@@ -19,8 +19,8 @@ export default function MyPageProfileSection({
 }: MyPageProfileSectionProps) {
   return (
     <section className="shrink-0 pb-7" aria-labelledby="my-page-nickname">
-      <div className="px-4">
-        <PageHeader onBack={onBack} />
+      <div className="px-4 pt-4 pb-5">
+        <BackButton onClick={onBack} className="mt-0" />
       </div>
 
       <div className="flex flex-col items-center gap-4">
