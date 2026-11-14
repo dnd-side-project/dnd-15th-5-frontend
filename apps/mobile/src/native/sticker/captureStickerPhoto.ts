@@ -11,7 +11,11 @@ const stickerCamera = createCameraRequest<
   open: (captureId, context) =>
     router.push({
       pathname: '/sticker-camera',
-      params: { captureId, hasActiveRecord: context?.hasActiveRecord ? 'true' : 'false' },
+      params: {
+        captureId,
+        hasActiveRecord: context?.hasActiveRecord ? 'true' : 'false',
+        ...(context?.isChangingImage ? { isChangingImage: 'true' } : {}),
+      },
     }),
   alreadyOpenMessage: '카메라가 이미 열려 있어요.',
 });

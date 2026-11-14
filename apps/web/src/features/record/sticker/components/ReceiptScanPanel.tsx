@@ -49,7 +49,9 @@ export default function ReceiptScanPanel({
             <span className="text-body-01-semibold">
               {isOpeningReceipt ? '카메라를 열고 있어요' : '영수증 인식하기'}
             </span>
-            <span className="text-body-02-regular text-neutral-500">소비정보를 자동으로 기록</span>
+            <span className="text-body-02-regular text-neutral-500">
+              사진 한 장으로 한 번에 기록해요
+            </span>
           </span>
           <ChevronRightIcon aria-hidden="true" className="size-6 shrink-0" />
         </button>

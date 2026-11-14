@@ -24,13 +24,14 @@ export default function ConsumptionRecordActions({ children }: ConsumptionRecord
     if (deleteId !== null && (await deleteRecord(deleteId))) setDeleteId(null);
   };
 
-  const handleEditRecord = async (id: number, purchaseDate?: string) => {
+  const handleEditRecord = async (id: number, purchaseDate?: string, scrollTop?: number) => {
     if (isDeleting || !isPositiveSafeInteger(id)) return;
     const returnTo = `${location.pathname}${location.search}`;
     const returnState = {
       ...(location.state && typeof location.state === 'object' ? location.state : {}),
       scrollToConsumptionId: id,
       returnEntryKey: location.key,
+      ...(scrollTop !== undefined ? { returnScrollTop: scrollTop } : {}),
       ...(purchaseDate ? { scrollToDate: purchaseDate } : {}),
     };
     // NOTE: 돌아왔을 때 수정하던 기록의 월·날짜를 다시 보여주도록 현재 히스토리에 보존합니다.
@@ -61,7 +62,7 @@ export default function ConsumptionRecordActions({ children }: ConsumptionRecord
           if (!open && !isDeleting) setDeleteId(null);
         }}
         title="기록을 삭제할까요?"
-        description="서비스 전체에서 해당 기록이 삭제돼요"
+        description="한번 삭제한 기록은 다시 복구할 수 없어요"
         initialFocusRef={cancelRef}
         actions={
           <>

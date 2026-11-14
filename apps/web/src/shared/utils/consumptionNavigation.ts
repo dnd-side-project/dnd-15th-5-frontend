@@ -2,6 +2,13 @@ import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 
 import { isPositiveSafeInteger } from './isPositiveSafeInteger';
 
+/** 기록 수정 전 상세 목록의 스크롤 위치를 읽습니다. */
+export const getConsumptionReturnScrollTop = (state: unknown): number | undefined => {
+  if (!state || typeof state !== 'object' || !('returnScrollTop' in state)) return undefined;
+  const value = state.returnScrollTop;
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
+};
+
 /** 수정 화면에서 돌아갈 수 있는 앱 내부 경로를 라우트 상태에서 읽습니다. */
 export const getConsumptionReturnPath = (state: unknown) => {
   if (!state || typeof state !== 'object' || !('returnTo' in state)) return undefined;

@@ -14,6 +14,7 @@ import { openReceiptCamera } from '@/native/receipt/openReceiptCamera';
 import { scanReceipt } from '@/native/receipt/scanReceipt';
 import { saveImageToLibrary } from '@/native/save-image';
 import { captureStickerPhoto } from '@/native/sticker/captureStickerPhoto';
+import { pickStickerImage } from '@/native/sticker/pickStickerImage';
 import {
   hasNativeStickerBackground,
   prepareNativeStickerBackground,
@@ -40,6 +41,7 @@ type BridgeHandlerMap = {
  *
  */
 export const BRIDGE_HANDLERS: BridgeHandlerMap = {
+  pickStickerImage: () => pickStickerImage(),
   prepareStickerBackground: () => prepareNativeStickerBackground(),
   removeStickerBackground: (payload) => removeNativeStickerBackground(payload),
   cancelStickerBackground: (payload) => cancelNativeStickerBackground(payload),

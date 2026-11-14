@@ -19,6 +19,7 @@ import {
   getConsumptionScrollId,
   getConsumptionListReturn,
   getConsumptionReturnEntryKey,
+  getConsumptionReturnScrollTop,
 } from '@/shared/utils/consumptionNavigation';
 import { getRecordShopFromLocationState } from '@/shared/utils/recordNavigation';
 
@@ -112,6 +113,7 @@ export default function ShopDetailPage() {
             placeId={placeId}
             recordShop={recordShop}
             {...returnTarget}
+            restoreScrollTop={getConsumptionReturnScrollTop(location.state)}
             renderVisitSticker={(consumptionId) => (
               <ConsumptionSticker consumptionId={consumptionId} size="large" />
             )}

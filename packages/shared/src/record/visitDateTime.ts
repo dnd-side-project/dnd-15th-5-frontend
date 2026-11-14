@@ -54,6 +54,33 @@ export const getVisitPeriodForHour = (hour: number): VisitPeriod => {
   return 'night';
 };
 
+/** API 날짜·시각의 형식을 검증해 방문 일시로 복원합니다. 미래 여부는 사용처에서 판단합니다. */
+export const parsePurchaseDateTime = (
+  purchaseDate?: string | null,
+  purchaseTime?: string | null
+): VisitDateTimeValue | undefined => {
+  const dateMatch = purchaseDate?.match(/^(\d{4})-(\d{2})-(\d{2})$/u);
+  const timeMatch = purchaseTime?.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/u);
+  if (!dateMatch || !timeMatch) return undefined;
+  const year = Number(dateMatch[1]);
+  const month = Number(dateMatch[2]) - 1;
+  const day = Number(dateMatch[3]);
+  const hour = Number(timeMatch[1]);
+  const minute = Number(timeMatch[2]);
+  const second = Number(timeMatch[3] ?? 0);
+  const date = new Date(year, month, day, hour, minute, second);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month ||
+    date.getDate() !== day ||
+    date.getHours() !== hour ||
+    date.getMinutes() !== minute ||
+    date.getSeconds() !== second
+  )
+    return undefined;
+  return { date, period: getVisitPeriodForHour(hour) };
+};
+
 /** 시간대 값에 대응하는 한국어 라벨을 반환한다. */
 export const getVisitPeriodLabel = (period: VisitPeriod) =>
   VISIT_PERIODS.find((item) => item.value === period)?.label ?? '';
