@@ -17,6 +17,8 @@ const DEFAULT_SNAP_POINTS: BottomSheetSnapPoints = ['hidden', 'medium', 'full'];
 
 type DragStart = {
   pointerId: number;
+  pointerX: number;
+  fromContent: boolean;
   pointerY: number;
   heightPx: number;
   hasDragged: boolean;
@@ -149,27 +151,31 @@ export const useBottomSheetDrag = ({
     []
   );
 
-  const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  const handlePointerDown = (event: ReactPointerEvent<HTMLElement>, fromContent = false) => {
+    if (event.button > 0 || event.isPrimary === false) return;
     shouldIgnoreHandleClickRef.current = false;
     if (fitContent && !canDismissFitContent && !onExpand) {
       return;
     }
 
-    const fitContentHeightPx =
-      event.currentTarget.parentElement?.getBoundingClientRect().height ?? 0;
+    const fitContentHeightPx = sheetElementRef.current?.getBoundingClientRect().height ?? 0;
     const startHeightPx = fitContent ? fitContentHeightPx : getSnapPointHeightPx(snapPoint);
 
     removeDragListenersRef.current();
     dragStartRef.current = {
       pointerId: event.pointerId,
+      pointerX: event.clientX,
+      fromContent,
       pointerY: event.clientY,
       heightPx: startHeightPx,
       hasDragged: false,
       draggedUpBy: 0,
     };
     dragHeightRef.current = startHeightPx;
-    setDragStartHeightPx(startHeightPx);
-    setIsDragging(true);
+    if (!fromContent) {
+      setDragStartHeightPx(startHeightPx);
+      setIsDragging(true);
+    }
 
     const removeDragListeners = () => {
       window.removeEventListener('pointermove', handleWindowPointerMove);
@@ -199,6 +205,14 @@ export const useBottomSheetDrag = ({
       // NOTE: iOS WebView가 드래그 직후 발생시키는 click으로 한 단계 더 이동하지 않게 한다.
       shouldIgnoreHandleClickRef.current = true;
 
+      // 핸들과 본문 모두 같은 거리 기준으로 닫고, 짧은 드래그는 원래 단계로 복귀한다.
+      if (canDismissFitContent && dragStart.draggedUpBy < 0) {
+        onSnapPointChange?.(
+          dragStart.draggedUpBy < -BOTTOM_SHEET_PULL_THRESHOLD_PX ? 'hidden' : snapPoint
+        );
+        return;
+      }
+
       if (fitContent && dragStart.draggedUpBy > BOTTOM_SHEET_PULL_THRESHOLD_PX && onExpand) {
         onExpand();
         return;
@@ -225,8 +239,18 @@ export const useBottomSheetDrag = ({
         return;
       }
 
-      pointerEvent.preventDefault();
       const draggedUpBy = dragStart.pointerY - pointerEvent.clientY;
+      if (dragStart.fromContent && !dragStart.hasDragged) {
+        const horizontalDistance = Math.abs(pointerEvent.clientX - dragStart.pointerX);
+        if (horizontalDistance >= DRAG_THRESHOLD_PX && horizontalDistance > Math.abs(draggedUpBy)) {
+          finishDrag(pointerEvent, true);
+          return;
+        }
+        if (Math.abs(draggedUpBy) < DRAG_THRESHOLD_PX) return;
+        setDragStartHeightPx(dragStart.heightPx);
+        setIsDragging(true);
+      }
+      pointerEvent.preventDefault();
       dragStart.draggedUpBy = draggedUpBy;
       if (Math.abs(draggedUpBy) >= DRAG_THRESHOLD_PX) {
         dragStart.hasDragged = true;
@@ -300,6 +324,22 @@ export const useBottomSheetDrag = ({
   };
 
   return {
+    handleContentPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (!canDismissFitContent) return;
+      if (
+        event.target instanceof Element &&
+        event.target.closest('input, textarea, select, [contenteditable="true"]')
+      )
+        return;
+      handlePointerDown(event, true);
+    },
+    handleContentClickCapture: (event: ReactMouseEvent<HTMLDivElement>) => {
+      if (shouldIgnoreHandleClickRef.current && event.detail > 0) {
+        shouldIgnoreHandleClickRef.current = false;
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
     canDismissFitContent,
     dragStartHeightPx,
     handleClick,

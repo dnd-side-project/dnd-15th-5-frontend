@@ -9,9 +9,10 @@ const setInnerHeight = (height: number) => {
 // NOTE: jsdom의 PointerEvent 구현은 MouseEvent에서 물려받는 clientY를 생성자로 못 받는다
 // (https://github.com/jsdom/jsdom, 실제 브라우저에서는 정상 동작). 이벤트를 만들고 clientY를
 // 직접 정의해서 우회한다.
-const firePointerEvent = (element: Element, type: string, clientY: number) => {
+const firePointerEvent = (element: Element, type: string, clientY: number, clientX = 0) => {
   const event = new Event(type, { bubbles: true, cancelable: true });
   Object.defineProperty(event, 'clientY', { value: clientY, configurable: true });
+  Object.defineProperty(event, 'clientX', { value: clientX, configurable: true });
   Object.defineProperty(event, 'pointerId', { value: 1, configurable: true });
   fireEvent(element, event);
 };
@@ -61,6 +62,157 @@ const mockMatchMedia = (matches: boolean) => {
 };
 
 describe('BottomSheet', () => {
+  it.each([
+    ['handle', 64, false],
+    ['handle', 65, true],
+    ['content', 64, false],
+    ['content', 65, true],
+  ] as const)('%s에서 %s px 내리면 같은 닫힘 기준을 적용한다', (origin, distance, closes) => {
+    const onSnapPointChange = jest.fn();
+    const { container } = render(
+      <BottomSheet
+        snapPoint="medium"
+        fitContent
+        dragFromContent
+        snapPoints={['hidden', 'medium']}
+        onSnapPointChange={onSnapPointChange}
+      >
+        <p>본문</p>
+      </BottomSheet>
+    );
+    const sheet = container.firstElementChild as HTMLElement;
+    // 작은 시트에서도 절반 높이가 아닌 64px 기준을 사용한다.
+    jest
+      .spyOn(sheet, 'getBoundingClientRect')
+      .mockReturnValue({ ...sheet.getBoundingClientRect(), height: 100 });
+    const target =
+      origin === 'handle'
+        ? screen.getByRole('button', { name: '바텀시트 높이 조절' })
+        : screen.getByText('본문');
+    firePointerEvent(target, 'pointerdown', 300);
+    firePointerEvent(document.body, 'pointermove', 300 + distance);
+    firePointerEvent(document.body, 'pointerup', 300 + distance);
+    expect(onSnapPointChange).toHaveBeenCalledWith(closes ? 'hidden' : 'medium');
+  });
+
+  it('본문을 누르거나 가로로 움직일 때 높이를 고정하지 않고 세로 드래그가 확정되면 고정한다', () => {
+    const { container } = render(
+      <BottomSheet snapPoint="medium" fitContent dragFromContent snapPoints={['hidden', 'medium']}>
+        <p>본문</p>
+      </BottomSheet>
+    );
+    const sheet = container.firstElementChild as HTMLElement;
+    jest
+      .spyOn(sheet, 'getBoundingClientRect')
+      .mockReturnValue({ ...sheet.getBoundingClientRect(), height: 300 });
+    const target = screen.getByText('본문');
+    firePointerEvent(target, 'pointerdown', 300);
+    expect(sheet).toHaveStyle({ height: 'auto' });
+    firePointerEvent(document.body, 'pointermove', 302);
+    expect(sheet).toHaveStyle({ height: 'auto' });
+    firePointerEvent(document.body, 'pointermove', 303, 100);
+    expect(sheet).toHaveStyle({ height: 'auto' });
+    firePointerEvent(target, 'pointerdown', 300);
+    firePointerEvent(document.body, 'pointermove', 320);
+    expect(sheet).toHaveStyle({ height: '300px' });
+    firePointerEvent(document.body, 'pointerup', 320);
+  });
+
+  it.each([
+    { fitContent: false, hidden: true, dragFromContent: true },
+    { fitContent: true, hidden: false, dragFromContent: true },
+    { fitContent: true, hidden: true, dragFromContent: false },
+  ])(
+    '본문 드래그 조건이 맞지 않으면 기존 터치 처리를 유지한다 (%j)',
+    ({ fitContent, hidden, dragFromContent }) => {
+      const onContentPullDown = jest.fn();
+      const { container } = render(
+        <BottomSheet
+          snapPoint="medium"
+          fitContent={fitContent}
+          dragFromContent={dragFromContent}
+          snapPoints={hidden ? ['hidden', 'medium'] : ['medium']}
+          onContentPullDown={onContentPullDown}
+        >
+          <p>본문</p>
+        </BottomSheet>
+      );
+      const sheet = container.firstElementChild as HTMLElement;
+      expect(sheet).not.toHaveClass('touch-pan-x');
+      const content = sheet.lastElementChild!;
+      fireEvent.touchStart(content, { touches: [{ clientY: 300 }] });
+      fireEvent.touchMove(content, { touches: [{ clientY: 400 }] });
+      fireEvent.touchEnd(content);
+      expect(onContentPullDown).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it('버튼에서 시작한 본문 드래그는 시트를 닫고 버튼 클릭을 실행하지 않는다', () => {
+    const onSnapPointChange = jest.fn();
+    const onClick = jest.fn();
+    const { container } = render(
+      <BottomSheet
+        snapPoint="medium"
+        snapPoints={['hidden', 'medium']}
+        fitContent
+        dragFromContent
+        showHandle={false}
+        onSnapPointChange={onSnapPointChange}
+      >
+        <button type="button" onClick={onClick}>
+          기록하기
+        </button>
+      </BottomSheet>
+    );
+    const sheet = container.firstElementChild as HTMLElement;
+    jest
+      .spyOn(sheet, 'getBoundingClientRect')
+      .mockReturnValue({ ...sheet.getBoundingClientRect(), height: 300 });
+    const button = screen.getByRole('button', { name: '기록하기' });
+    firePointerEvent(button, 'pointerdown', 400);
+    firePointerEvent(document.body, 'pointermove', 470);
+    firePointerEvent(document.body, 'pointerup', 470);
+    fireEvent.click(button, { detail: 1 });
+    expect(onSnapPointChange).toHaveBeenCalledWith('hidden');
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it.each(['tap', 'horizontal', 'cancel', 'short'] as const)(
+    '본문의 %s 제스처는 시트를 닫지 않는다',
+    (gesture) => {
+      const onSnapPointChange = jest.fn();
+      const onClick = jest.fn();
+      const { container } = render(
+        <BottomSheet
+          snapPoint="medium"
+          snapPoints={['hidden', 'medium']}
+          fitContent
+          dragFromContent
+          onSnapPointChange={onSnapPointChange}
+        >
+          <button type="button" onClick={onClick}>
+            사진
+          </button>
+        </BottomSheet>
+      );
+      const sheet = container.firstElementChild as HTMLElement;
+      jest
+        .spyOn(sheet, 'getBoundingClientRect')
+        .mockReturnValue({ ...sheet.getBoundingClientRect(), height: 300 });
+      const button = screen.getByRole('button', { name: '사진' });
+      firePointerEvent(button, 'pointerdown', 400);
+      const endY = gesture === 'tap' ? 400 : gesture === 'short' ? 420 : 470;
+      firePointerEvent(document.body, 'pointermove', endY, gesture === 'horizontal' ? 160 : 0);
+      firePointerEvent(document.body, gesture === 'cancel' ? 'pointercancel' : 'pointerup', endY);
+      expect(onSnapPointChange).not.toHaveBeenCalledWith('hidden');
+      expect(sheet).toHaveClass('touch-pan-x');
+      if (gesture === 'tap') {
+        fireEvent.click(button, { detail: 1 });
+        expect(onClick).toHaveBeenCalledTimes(1);
+      }
+    }
+  );
+
   beforeEach(() => {
     setInnerHeight(800);
   });
