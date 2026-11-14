@@ -72,7 +72,7 @@ export const getSearchVisitedPlacesQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof searchVisitedPlaces>>> = ({ signal }) =>
     searchVisitedPlaces(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof searchVisitedPlaces>>,
     TError,
     TData
@@ -188,7 +188,7 @@ export const getSearchVisitedPlacesSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof searchVisitedPlaces>>> = ({ signal }) =>
     searchVisitedPlaces(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof searchVisitedPlaces>>,
     TError,
     TData
@@ -396,7 +396,7 @@ export const getGetPlaceDetailSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlaceDetail>>> = ({ signal }) =>
     getPlaceDetail(placeId, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getPlaceDetail>>,
     TError,
     TData
@@ -610,7 +610,7 @@ export const getGetPlaceVisitsSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getPlaceVisits>>> = ({ signal }) =>
     getPlaceVisits(placeId, params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getPlaceVisits>>,
     TError,
     TData

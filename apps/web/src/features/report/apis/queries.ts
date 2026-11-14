@@ -89,7 +89,7 @@ export const getGetConsumptionsQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getConsumptions>>> = ({ signal }) =>
     getConsumptions(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getConsumptions>>,
     TError,
     TData
@@ -195,7 +195,7 @@ export const getGetConsumptionsSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getConsumptions>>> = ({ signal }) =>
     getConsumptions(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getConsumptions>>,
     TError,
     TData
@@ -291,7 +291,7 @@ export const getGetSummaryHighlightQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getSummaryHighlight>>> = ({ signal }) =>
     getSummaryHighlight(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getSummaryHighlight>>,
     TError,
     TData
@@ -400,7 +400,7 @@ export const getGetSummaryHighlightSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getSummaryHighlight>>> = ({ signal }) =>
     getSummaryHighlight(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getSummaryHighlight>>,
     TError,
     TData
@@ -495,7 +495,7 @@ export const getGetStickerBoardQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getStickerBoard>>> = ({ signal }) =>
     getStickerBoard(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getStickerBoard>>,
     TError,
     TData
@@ -601,7 +601,7 @@ export const getGetStickerBoardSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getStickerBoard>>> = ({ signal }) =>
     getStickerBoard(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getStickerBoard>>,
     TError,
     TData
@@ -700,7 +700,7 @@ export const getGetCategoryDistributionQueryOptions = <
     signal,
   }) => getCategoryDistribution(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getCategoryDistribution>>,
     TError,
     TData
@@ -810,7 +810,7 @@ export const getGetCategoryDistributionSuspenseQueryOptions = <
     signal,
   }) => getCategoryDistribution(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getCategoryDistribution>>,
     TError,
     TData
@@ -905,7 +905,7 @@ export const getGetCalendarQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getCalendar>>> = ({ signal }) =>
     getCalendar(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getCalendar>>,
     TError,
     TData
@@ -1011,7 +1011,7 @@ export const getGetCalendarSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getCalendar>>> = ({ signal }) =>
     getCalendar(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getCalendar>>,
     TError,
     TData
@@ -1227,7 +1227,7 @@ export const getGetSharedPersonaCardSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getSharedPersonaCard>>> = ({ signal }) =>
     getSharedPersonaCard(shareToken, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getSharedPersonaCard>>,
     TError,
     TData
@@ -1326,7 +1326,7 @@ export const getGetMonthlyReportQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getMonthlyReport>>> = ({ signal }) =>
     getMonthlyReport(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getMonthlyReport>>,
     TError,
     TData
@@ -1432,7 +1432,7 @@ export const getGetMonthlyReportSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getMonthlyReport>>> = ({ signal }) =>
     getMonthlyReport(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getMonthlyReport>>,
     TError,
     TData
@@ -1531,7 +1531,7 @@ export const getGetCurrentStatusQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentStatus>>> = ({ signal }) =>
     getCurrentStatus(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getCurrentStatus>>,
     TError,
     TData
@@ -1637,7 +1637,7 @@ export const getGetCurrentStatusSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentStatus>>> = ({ signal }) =>
     getCurrentStatus(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getCurrentStatus>>,
     TError,
     TData
@@ -1736,7 +1736,7 @@ export const getGetFrequentPlacesQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getFrequentPlaces>>> = ({ signal }) =>
     getFrequentPlaces(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getFrequentPlaces>>,
     TError,
     TData
@@ -1844,7 +1844,7 @@ export const getGetFrequentPlacesSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getFrequentPlaces>>> = ({ signal }) =>
     getFrequentPlaces(params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getFrequentPlaces>>,
     TError,
     TData

@@ -179,7 +179,7 @@ export const getStartSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof start>>> = ({ signal }) =>
     start(provider, params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof start>>,
     TError,
     TData
@@ -399,7 +399,7 @@ export const getCompleteSocialOAuthSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof completeSocialOAuth>>> = ({ signal }) =>
     completeSocialOAuth(provider, params, requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof completeSocialOAuth>>,
     TError,
     TData

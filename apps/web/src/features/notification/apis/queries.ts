@@ -69,7 +69,7 @@ export const getGetNotificationSettingsQueryOptions = <
     signal,
   }) => getNotificationSettings(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getNotificationSettings>>,
     TError,
     TData
@@ -179,7 +179,7 @@ export const getGetNotificationSettingsSuspenseQueryOptions = <
     signal,
   }) => getNotificationSettings(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getNotificationSettings>>,
     TError,
     TData
@@ -271,7 +271,7 @@ export const getGetNotificationsQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotifications>>> = ({ signal }) =>
     getNotifications(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getNotifications>>,
     TError,
     TData
@@ -370,7 +370,7 @@ export const getGetNotificationsSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotifications>>> = ({ signal }) =>
     getNotifications(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getNotifications>>,
     TError,
     TData
@@ -462,7 +462,7 @@ export const getHasUnreadQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof hasUnread>>> = ({ signal }) =>
     hasUnread(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof hasUnread>>,
     TError,
     TData
@@ -559,7 +559,7 @@ export const getHasUnreadSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof hasUnread>>> = ({ signal }) =>
     hasUnread(requestOptions, signal);
 
-  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof hasUnread>>,
     TError,
     TData

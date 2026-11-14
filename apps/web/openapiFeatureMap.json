@@ -12,7 +12,7 @@
   },
   "features": {
     "auth": {
-      "tags": ["Authentication", "Social OAuth"],
+      "tags": ["Authentication", "Social OAuth", "Dev Authentication"],
       "operationIds": [
         "refreshApp",
         "refreshWeb",
@@ -21,7 +21,8 @@
         "logoutApp",
         "logoutWeb",
         "start",
-        "callback"
+        "callback",
+        "issueToken"
       ]
     },
     "map": {
