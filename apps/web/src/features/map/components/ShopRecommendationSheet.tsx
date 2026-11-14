@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
 import { useRecommendationNeighborhood } from '@/features/map/apis/hooks/useRecommendationNeighborhood';
@@ -87,9 +87,19 @@ function RecommendationList({ onOpenRecommendationSearch }: ShopRecommendationSh
   );
   const likeMutation = useTogglePlaceLikeMutation();
   const listRef = useRef<HTMLDivElement>(null);
+  const visibleCategories = HOME_CATEGORIES.filter((category) =>
+    recommendations.some(({ place }) => place.category === category)
+  );
+  const hasSelectedCategory =
+    selectedCategory === null || visibleCategories.includes(selectedCategory);
   const filtered = recommendations.filter(
     ({ place }) => !selectedCategory || place.category === selectedCategory
   );
+
+  useEffect(() => {
+    // NOTE: 조회 성공 후 선택한 카테고리의 결과가 사라지면 전체 목록으로 복귀합니다.
+    if (!isPending && !isError && !hasSelectedCategory) setSelectedCategory(null);
+  }, [isPending, isError, hasSelectedCategory, setSelectedCategory]);
 
   useLayoutEffect(() => {
     if (listRef.current)
@@ -123,7 +133,7 @@ function RecommendationList({ onOpenRecommendationSearch }: ShopRecommendationSh
         >
           전체
         </CategoryChip>
-        {HOME_CATEGORIES.map((category) => (
+        {visibleCategories.map((category) => (
           <CategoryChip
             key={category}
             selected={selectedCategory === category}

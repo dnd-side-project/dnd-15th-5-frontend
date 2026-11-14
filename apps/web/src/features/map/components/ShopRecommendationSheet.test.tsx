@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useNearbyPlaceRecommendationsQuery } from '@/features/map/apis/hooks/useNearbyPlaceRecommendationsQuery';
@@ -41,6 +41,65 @@ beforeEach(() => {
     .mockReturnValue({ mutate, isPending: false } as unknown as ReturnType<
       typeof useTogglePlaceLikeMutation
     >);
+});
+
+it('추천 결과가 있는 카테고리만 홈 순서로 표시하며 필터를 선택해도 다른 칩을 유지한다', async () => {
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
+    recommendations: [...TEST_SHOP_RECOMMENDATIONS].reverse(),
+    isPending: false,
+    isError: false,
+  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  render(<ShopRecommendationSheet />);
+  const navigation = within(screen.getByRole('navigation', { name: '추천 가게 카테고리' }));
+  expect(navigation.getAllByRole('button').map((button) => button.textContent)).toEqual([
+    '전체',
+    '카페',
+    '취미/놀거리',
+  ]);
+  await userEvent.click(navigation.getByRole('button', { name: '카페' }));
+  expect(navigation.getByRole('button', { name: '취미/놀거리' })).toBeInTheDocument();
+  expect(navigation.queryByRole('button', { name: '쇼핑' })).not.toBeInTheDocument();
+});
+
+it.each([
+  { isPending: true, isError: false },
+  { isPending: false, isError: true },
+])(
+  '로딩·오류 중에는 선택을 유지하고 성공한 결과에서 카테고리가 사라지면 전체로 복귀한다 (%j)',
+  (status) => {
+    useShopRecommendationStore.setState({ selectedCategory: '카페', listScrollTop: 100 });
+    jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
+      recommendations: [],
+      ...status,
+    } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    const { rerender } = render(<ShopRecommendationSheet />);
+    expect(useShopRecommendationStore.getState().selectedCategory).toBe('카페');
+
+    const remaining = TEST_SHOP_RECOMMENDATIONS.filter(({ place }) => place.category !== '카페');
+    jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
+      recommendations: remaining,
+      isPending: false,
+      isError: false,
+    } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+    rerender(<ShopRecommendationSheet />);
+    expect(useShopRecommendationStore.getState().selectedCategory).toBeNull();
+    expect(useShopRecommendationStore.getState().listScrollTop).toBe(0);
+    expect(screen.getByRole('button', { name: '전체' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getAllByRole('listitem')).toHaveLength(remaining.length);
+  }
+);
+
+it('추천 결과가 없으면 전체 칩을 유지하고 빈 목록을 안내한다', () => {
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
+    recommendations: [],
+    isPending: false,
+    isError: false,
+  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  render(<ShopRecommendationSheet />);
+  const navigation = within(screen.getByRole('navigation', { name: '추천 가게 카테고리' }));
+  expect(navigation.getAllByRole('button')).toHaveLength(1);
+  expect(navigation.getByRole('button', { name: '전체' })).toHaveAttribute('aria-pressed', 'true');
+  expect(screen.getByText('아직 추천 가게가 없어요')).toBeInTheDocument();
 });
 
 it('쇼핑 칩을 선택하면 쇼핑 가게만 표시하고 선택 상태를 유지한다', async () => {
