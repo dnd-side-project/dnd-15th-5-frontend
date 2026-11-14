@@ -1159,6 +1159,27 @@ describe('HomeBottomSheet', () => {
     expect(screen.getByText('기존 홈 시트')).toBeInTheDocument();
   });
 
+  it('추천 상세에서 Escape를 누르면 목록으로, 목록에서 누르면 홈으로 돌아간다', () => {
+    const recommendationId = TEST_SHOP_RECOMMENDATIONS[0]!.id;
+    useHomeBottomSheetStore.getState().showRecommendation();
+    render(
+      <MemoryRouter>
+        <HomeBottomSheet
+          renderFrequentShops={(header) => <div>{header}</div>}
+          renderSelectedPlace={renderSelectedPlace}
+          renderSpendingHistory={(header) => <div>{header}</div>}
+        />
+      </MemoryRouter>
+    );
+    act(() => useHomeBottomSheetStore.getState().showRecommendationPlace(recommendationId));
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'recommendation' });
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(useHomeBottomSheetStore.getState().activeSheet).toEqual({ type: 'home' });
+  });
+
   it('시트 전체를 재마운트하지 않고 콘텐츠만 fade로 전환한다', async () => {
     const originalRequestAnimationFrame = window.requestAnimationFrame;
     const originalCancelAnimationFrame = window.cancelAnimationFrame;

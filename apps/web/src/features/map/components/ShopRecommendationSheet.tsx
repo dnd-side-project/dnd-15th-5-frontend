@@ -94,7 +94,7 @@ function RecommendationList({ onOpenRecommendationSearch }: ShopRecommendationSh
   useLayoutEffect(() => {
     if (listRef.current)
       listRef.current.scrollTop = useShopRecommendationStore.getState().listScrollTop;
-  }, [isPending, selectedCategory]);
+  }, [isPending, isError, selectedCategory]);
 
   return (
     <section aria-label="가게 추천" className="flex h-full min-h-0 flex-col">
@@ -117,7 +117,9 @@ function RecommendationList({ onOpenRecommendationSearch }: ShopRecommendationSh
       <nav aria-label="추천 가게 카테고리" className="flex shrink-0 gap-2 overflow-x-auto pb-4">
         <CategoryChip
           selected={!selectedCategory}
-          onSelectedChange={() => setSelectedCategory(null)}
+          onSelectedChange={(selected) => {
+            if (selected) setSelectedCategory(null);
+          }}
         >
           전체
         </CategoryChip>
@@ -135,7 +137,10 @@ function RecommendationList({ onOpenRecommendationSearch }: ShopRecommendationSh
       </nav>
       <div
         ref={listRef}
-        onScroll={(event) => setListScrollTop(event.currentTarget.scrollTop)}
+        onScroll={(event) => {
+          // NOTE: 로딩·오류 화면으로 높이가 줄며 생기는 스크롤은 목록 위치로 저장하지 않는다.
+          if (!isPending && !isError) setListScrollTop(event.currentTarget.scrollTop);
+        }}
         className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-4"
       >
         {isPending ? (

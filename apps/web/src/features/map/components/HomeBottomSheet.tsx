@@ -172,6 +172,18 @@ export default function HomeBottomSheet({
     if (isRecommendationDetail) useHomeBottomSheetStore.getState().showRecommendation();
     else showHome();
   };
+  // NOTE: 추천 시트는 상단 닫기·뒤로 가기 버튼에 접근할 수 있도록 포커스를 가두지 않고 Escape만 연결한다.
+  useEffect(() => {
+    if (!isRecommendationFlow) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      const store = useHomeBottomSheetStore.getState();
+      if (store.activeSheet.type === 'recommendationPlace') store.showRecommendation();
+      else store.showHome();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isRecommendationFlow]);
   const { topSafeAreaRef, fullTopBoundaryPx } = useHomeSheetTopBoundary();
   const isCollapsed = activeSheet.type === 'home' && snapPoint === 'collapsed';
 

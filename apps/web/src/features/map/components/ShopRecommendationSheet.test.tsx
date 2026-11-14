@@ -139,6 +139,38 @@ it('카테고리를 바꾸면 해당 가게만 표시하고 새 목록은 맨 �
   expect(useShopRecommendationStore.getState().listScrollTop).toBe(0);
 });
 
+it('이미 선택된 전체 칩을 다시 눌러도 저장된 목록 스크롤을 유지한다', async () => {
+  useShopRecommendationStore.setState({ listScrollTop: 120 });
+  render(<ShopRecommendationSheet />);
+  await userEvent.click(screen.getByRole('button', { name: '전체' }));
+  expect(useShopRecommendationStore.getState().listScrollTop).toBe(120);
+});
+
+it('재조회 오류가 끝나 목록이 다시 나타나면 오류 전 스크롤 위치를 복원한다', () => {
+  useShopRecommendationStore.setState({ listScrollTop: 150 });
+  const { rerender } = render(<ShopRecommendationSheet />);
+  const list = screen.getByRole('list', { name: '추천 가게 목록' }).parentElement!;
+  expect(list.scrollTop).toBe(150);
+
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
+    recommendations: TEST_SHOP_RECOMMENDATIONS,
+    isPending: false,
+    isError: true,
+  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  rerender(<ShopRecommendationSheet />);
+  list.scrollTop = 0;
+  fireEvent.scroll(list);
+  expect(useShopRecommendationStore.getState().listScrollTop).toBe(150);
+
+  jest.mocked(useNearbyPlaceRecommendationsQuery).mockReturnValue({
+    recommendations: TEST_SHOP_RECOMMENDATIONS,
+    isPending: false,
+    isError: false,
+  } as ReturnType<typeof useNearbyPlaceRecommendationsQuery>);
+  rerender(<ShopRecommendationSheet />);
+  expect(list.scrollTop).toBe(150);
+});
+
 it('동네 변경 버튼은 검색 화면을 요청한다', async () => {
   const onOpenRecommendationSearch = jest.fn();
   render(<ShopRecommendationSheet onOpenRecommendationSearch={onOpenRecommendationSearch} />);
