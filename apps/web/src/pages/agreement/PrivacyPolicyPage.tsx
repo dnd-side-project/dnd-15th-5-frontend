@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { MarkdownPolicyContent, PRIVACY_POLICY_CONTENT } from '@/features/auth';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 
 export default function PrivacyPolicyPage() {
   const navigate = useNavigate();

@@ -89,15 +89,19 @@ export type ApiResponseRecentTownsResponse = {
 
 export type RecommendedPlaceDetailResponse = {
   placeId?: number;
+  /** Google Place ID. 구글 지도 딥링크(예: maps/place/?q=place_id:{googlePlaceId}) 생성에 사용 */
+  googlePlaceId?: string;
   name?: string;
   category?: string;
   dongName?: string;
+  /** 도로명주소 */
+  roadAddress?: string;
   latitude?: number;
   longitude?: number;
   /** Google Places 사진의 URL(장소당 최대 3장). 사진이 없거나 조회에 실패하면 빈 배열 */
   thumbnailUrls?: string[];
   /**
-   * 실제 Google 지도 링크, 사진 조회에 실패하면 null
+   * 사진 페이지 링크. 사진 조회에 실패하면 null
    * @nullable
    */
   googleMapsUri?: string | null;
@@ -131,6 +135,7 @@ export type CategoryPlacesResponse = {
 };
 
 export type NearbyPlacesResponse = {
+  currentDongName?: string;
   allPlaces?: RecommendedPlaceItem[];
   categoryPlaces?: CategoryPlacesResponse[];
 };

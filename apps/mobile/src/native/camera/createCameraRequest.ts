@@ -3,13 +3,16 @@ import { Camera } from 'expo-camera';
 const CAMERA_REQUEST_TIMEOUT_MS = 4 * 60_000;
 
 type CameraExitResult = { status: 'cancelled' } | { status: 'permissionDenied' };
-type CameraRequestOptions = {
-  open: (requestId: string) => void;
+type CameraRequestOptions<Context> = {
+  open: (requestId: string, context?: Context) => void;
   alreadyOpenMessage: string;
 };
 
 /** 카메라별 대기 요청을 격리하고 권한·시간 제한·늦은 결과 처리를 공통 관리합니다. */
-export const createCameraRequest = <Result>({ open, alreadyOpenMessage }: CameraRequestOptions) => {
+export const createCameraRequest = <Result, Context = void>({
+  open,
+  alreadyOpenMessage,
+}: CameraRequestOptions<Context>) => {
   type CameraResult = Result | CameraExitResult;
   let pending: {
     id: string;
@@ -27,7 +30,7 @@ export const createCameraRequest = <Result>({ open, alreadyOpenMessage }: Camera
     request.resolve(result);
   };
 
-  const request = async (): Promise<CameraResult> => {
+  const request = async (context?: Context): Promise<CameraResult> => {
     if (isOpening || pending) throw new Error(alreadyOpenMessage);
     isOpening = true;
     try {
@@ -41,7 +44,7 @@ export const createCameraRequest = <Result>({ open, alreadyOpenMessage }: Camera
         );
         pending = { id, resolve, timer };
         try {
-          open(id);
+          open(id, context);
         } catch (error) {
           clearTimeout(timer);
           pending = null;

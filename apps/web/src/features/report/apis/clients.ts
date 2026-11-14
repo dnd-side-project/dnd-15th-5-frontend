@@ -7,17 +7,23 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 
 import type {
   AggregateMonthlyReportParams,
+  ApiResponseCategoryDistributionResponse,
   ApiResponseConsumptionScrollResponse,
   ApiResponseCurrentStatusResponse,
   ApiResponseFrequentPlaceResponse,
   ApiResponseMonthlyReportAggregationResultInfo,
   ApiResponseMonthlyReportResponse,
   ApiResponsePersonaCardResponse,
+  ApiResponseReportCalendarResponse,
   ApiResponseShareLinkResponse,
+  ApiResponseStickerBoardResponse,
+  ApiResponseSummaryHighlightResponse,
+  GetCalendarParams,
   GetConsumptionsParams,
   GetCurrentStatusParams,
   GetFrequentPlacesParams,
   GetMonthlyReportParams,
+  GetStickerBoardParams,
   IssueShareLinkParams,
   SecondParameter,
 } from '@/features/report/apis/dto';
@@ -63,6 +69,64 @@ export const getConsumptions = (
 ) => {
   return apiClient<ApiResponseConsumptionScrollResponse>(
     { url: `/v1/consumptions`, method: 'GET', params, signal },
+    options
+  );
+};
+
+/**
+ * 방문 기록에서 발견된 특징 1개를 반환한다. 하루 동안은 동일 카드를 유지하고, 다음날은 이전에 노출한 유형을 제외하고 순환 노출한다. 기록이 부족하면 기본 안내 문구를 반환한다.
+ * @summary 상단 핵심요약 카드 조회
+ */
+export const getSummaryHighlight = (
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseSummaryHighlightResponse>(
+    { url: `/v2/reports/summary-highlight`, method: 'GET', signal },
+    options
+  );
+};
+
+/**
+ * 연월(yyyy-MM) 기준 날짜별 스티커/사진 비주얼을 반환한다. 기록 없는 날짜는 응답에서 제외된다.
+ * @summary 이번달 쌓인 기록 스티커보드 조회
+ */
+export const getStickerBoard = (
+  params: GetStickerBoardParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseStickerBoardResponse>(
+    { url: `/v2/reports/sticker-board`, method: 'GET', params, signal },
+    options
+  );
+};
+
+/**
+ * 오늘 기준 최근 1개월 소비기록의 카테고리별 비율을 내려준다.
+ * @summary 카테고리 분포도 조회
+ */
+export const getCategoryDistribution = (
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseCategoryDistributionResponse>(
+    { url: `/v2/reports/category-distribution`, method: 'GET', signal },
+    options
+  );
+};
+
+/**
+ * 연월(yyyy-MM) 기준 월별 캘린더, weekAnchor(해당 날짜가 속한 일~토)를 넘기면 주간 캘린더를 조회한다. 날짜별 소비기록 전체 목록을 반환한다.
+ * @summary 리포트 캘린더 조회
+ */
+export const getCalendar = (
+  params: GetCalendarParams,
+  options?: SecondParameter<typeof apiClient>,
+  signal?: AbortSignal
+) => {
+  return apiClient<ApiResponseReportCalendarResponse>(
+    { url: `/v2/reports/calendar`, method: 'GET', params, signal },
     options
   );
 };

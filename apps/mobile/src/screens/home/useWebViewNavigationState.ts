@@ -1,12 +1,10 @@
 import { useCallback, useState } from 'react';
 
 const MAP_HOME_PATH = '/home';
+const RECOMMENDATION_MAP_PATH = '/home/recommendation/map';
 const MONTHLY_REPORT_PATH = '/report/monthly-report';
 
 const normalizePathname = (pathname: string) => pathname.replace(/\/+$/, '') || '/';
-const isMapHomePathname = (pathname: string) => normalizePathname(pathname) === MAP_HOME_PATH;
-const isMonthlyReportPathname = (pathname: string) =>
-  normalizePathname(pathname) === MONTHLY_REPORT_PATH;
 
 const getPathname = (url: string | undefined) => {
   if (!url) {
@@ -21,11 +19,10 @@ const getPathname = (url: string | undefined) => {
 };
 
 /**
- * 전체 문서 이동과 웹 SPA의 `routeChanged` 이벤트를 합쳐 현재 경로가 지도 홈 또는 월간
- * 리포트인지 추적합니다.
+ * 전체 문서 이동과 웹 SPA의 `routeChanged` 이벤트로 현재 화면과 뒤로가기 가능 여부를 추적합니다.
  *
  * URL 파싱에 실패한 전체 문서 이동은 기존 상태를 유지하고, SPA 경로는 끝의 슬래시를 제거한 뒤
- * `/home`, `/report/monthly-report`와 정확히 일치하는지 판단합니다. Android 하드웨어 뒤로
+ * 화면별 경로와 정확히 일치하는지 판단합니다. Android 하드웨어 뒤로
  * 가기가 앱을 불필요하게 가로채지 않도록 WebView가 보고한 실제 뒤로 가기 가능 여부도 함께
  * 관리합니다.
  *
@@ -34,17 +31,13 @@ const getPathname = (url: string | undefined) => {
  */
 export function useWebViewNavigationState(initialUrl: string | undefined) {
   const [canGoBack, setCanGoBack] = useState(false);
-  const initialPathname = getPathname(initialUrl);
-  const [isMapHome, setIsMapHome] = useState(() =>
-    initialPathname ? isMapHomePathname(initialPathname) : false
-  );
-  const [isMonthlyReport, setIsMonthlyReport] = useState(() =>
-    initialPathname ? isMonthlyReportPathname(initialPathname) : false
-  );
+  const [pathname, setPathname] = useState(() => getPathname(initialUrl));
+  const normalizedPathname = pathname ? normalizePathname(pathname) : null;
+  const isMapHome = normalizedPathname === MAP_HOME_PATH;
+  const isMonthlyReport = normalizedPathname === MONTHLY_REPORT_PATH;
 
   const updatePathState = useCallback((pathname: string) => {
-    setIsMapHome(isMapHomePathname(pathname));
-    setIsMonthlyReport(isMonthlyReportPathname(pathname));
+    setPathname(pathname);
   }, []);
 
   const handleNavigationStateChange = useCallback(
@@ -72,6 +65,7 @@ export function useWebViewNavigationState(initialUrl: string | undefined) {
     handleNavigationStateChange,
     handleRouteChange,
     isMapHome,
+    isMapEdgeToEdge: isMapHome || normalizedPathname === RECOMMENDATION_MAP_PATH,
     isMonthlyReport,
   };
 }

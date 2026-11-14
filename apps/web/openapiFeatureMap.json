@@ -76,7 +76,11 @@
         "getConsumptions",
         "getFrequentPlaces",
         "issueShareLink",
-        "getSharedPersonaCard"
+        "getSharedPersonaCard",
+        "getSummaryHighlight",
+        "getStickerBoard",
+        "getCategoryDistribution",
+        "getCalendar"
       ]
     },
     "shop": {

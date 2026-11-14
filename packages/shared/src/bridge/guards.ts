@@ -89,6 +89,13 @@ export const isBridgeRequest = (value: unknown): value is BridgeRequest => {
     return isFiniteNumber(value.payload.sentAt);
   }
 
+  if (value.type === 'captureStickerPhoto') {
+    return (
+      value.payload.hasActiveRecord === undefined ||
+      typeof value.payload.hasActiveRecord === 'boolean'
+    );
+  }
+
   if (value.type === 'removeStickerBackground') {
     return (
       isStickerRequestId(value.payload.requestId) &&
@@ -169,7 +176,11 @@ export const isBridgeResponse = (value: unknown): value is BridgeResponse => {
   }
 
   if (value.type === 'captureStickerPhoto') {
-    if (value.result.status === 'cancelled' || value.result.status === 'permissionDenied')
+    if (
+      value.result.status === 'closed' ||
+      value.result.status === 'cancelled' ||
+      value.result.status === 'permissionDenied'
+    )
       return true;
     return (
       value.result.status === 'success' &&

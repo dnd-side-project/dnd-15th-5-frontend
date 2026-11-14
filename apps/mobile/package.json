@@ -1,6 +1,6 @@
 {
   "name": "@chapchap/mobile",
-  "main": "expo-router/entry",
+  "main": "index.js",
   "version": "0.0.0",
   "dependencies": {
     "@chapchap/shared": "workspace:*",

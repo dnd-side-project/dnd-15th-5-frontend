@@ -13,15 +13,17 @@ import { useEffect, useState } from 'react';
 
 import RecordNavigationHeader from '@/features/record/components/RecordNavigationHeader';
 import VisitDateTimeSheet from '@/features/record/components/visit-date-time-sheet/VisitDateTimeSheet';
+import { useStickerRecordCategory } from '@/features/record/sticker/hooks/useStickerRecordCategory';
 import type { StickerRecordDraft } from '@/features/record/types';
 import { isValidStickerRecordShop } from '@/features/record/utils/createStickerConsumptionRequest';
-import { CalendarIcon, ChevronRightIcon, SearchIcon } from '@/shared/assets/icons';
-import ReceiptScanIcon from '@/shared/assets/icons/ic-receipt-scan.svg?react';
+import { CalendarIcon, SearchIcon } from '@/shared/assets/icons';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 import { PlaceCard } from '@/shared/ui/card';
 import { CategoryChip } from '@/shared/ui/category-chip';
+
+import ReceiptScanPanel from './ReceiptScanPanel';
 
 import type { ReceiptScanData } from '@chapchap/shared/bridge';
 import type { RecordCategory, VisitDateTimeValue } from '@chapchap/shared/record';
@@ -99,10 +101,11 @@ export default function StickerRecordPreview({
   isCapturing = false,
 }: StickerRecordPreviewProps) {
   const isApp = isNativeApp();
-  const [photoCategory, setPhotoCategory] = useState<RecordCategory>(
-    initialDraft?.category ?? initialCategory
-  );
-  const category = defaultStickerCategory ?? photoCategory;
+  const [category, setCategory] = useStickerRecordCategory({
+    sticker,
+    stickerCategory: defaultStickerCategory,
+    initialCategory: initialDraft?.category ?? defaultStickerCategory ?? initialCategory,
+  });
   const [visitDateTime, setVisitDateTime] = useState(
     () => initialDraft?.visitDateTime ?? initialVisitDateTime ?? createInitialVisitDateTime()
   );
@@ -216,7 +219,7 @@ export default function StickerRecordPreview({
               aria-hidden="true"
               className="size-4 [--sticker-primary:var(--color-neutral-00)]"
             />
-            이미지 변경
+            {isDefaultSticker ? '이미지 변경' : '사진 변경'}
           </button>
           {isCapturing && (
             <p role="status" className="text-body-02-regular text-neutral-500">
@@ -233,29 +236,12 @@ export default function StickerRecordPreview({
         <div className="flex flex-1 flex-col rounded-t-32 bg-neutral-00 px-4 pt-8 pb-[max(32px,env(safe-area-inset-bottom))]">
           <h2 className="text-title-01-bold">소비정보를 입력해주세요</h2>
           {isApp && (
-            <button
-              type="button"
-              onClick={handleScanReceipt}
-              disabled={isOpeningReceipt}
-              aria-busy={isOpeningReceipt}
-              className="mt-3 flex h-18.5 items-center gap-4 rounded-16 bg-primary-50 px-6 text-left text-primary-500"
-            >
-              <ReceiptScanIcon aria-hidden="true" className="size-8 shrink-0" />
-              <span className="flex flex-1 flex-col gap-1">
-                <span className="text-body-01-semibold">
-                  {isOpeningReceipt ? '카메라를 열고 있어요' : '영수증 인식하기'}
-                </span>
-                <span className="text-body-02-regular text-neutral-500">
-                  소비정보를 자동으로 기록
-                </span>
-              </span>
-              <ChevronRightIcon aria-hidden="true" className="size-6 shrink-0" />
-            </button>
-          )}
-          {isApp && receiptError && (
-            <p role="alert" className="mt-2 text-body-02-regular text-red">
-              {receiptError}
-            </p>
+            <ReceiptScanPanel
+              hasReceipt={receiptImageId !== undefined}
+              isOpeningReceipt={isOpeningReceipt}
+              error={receiptError}
+              onScanReceipt={handleScanReceipt}
+            />
           )}
 
           <form
@@ -311,26 +297,18 @@ export default function StickerRecordPreview({
               </RecordField>
 
               <RecordField label="카테고리" required>
-                <div className="flex flex-wrap gap-2" inert={Boolean(defaultStickerCategory)}>
+                <div className="flex flex-wrap gap-2">
                   {RECORD_CATEGORIES.map((item) => (
                     <CategoryChip
                       key={item}
                       selected={category === item}
-                      aria-disabled={Boolean(defaultStickerCategory)}
-                      onSelectedChange={(selected) =>
-                        selected && !defaultStickerCategory && setPhotoCategory(item)
-                      }
+                      onSelectedChange={(selected) => selected && setCategory(item)}
                       className="h-8.5 px-4"
                     >
                       {item}
                     </CategoryChip>
                   ))}
                 </div>
-                {defaultStickerCategory && (
-                  <p className="mt-2 text-caption-01-regular text-neutral-500">
-                    카테고리를 바꾸려면 이미지 변경에서 다른 카테고리의 이모지를 선택해주세요.
-                  </p>
-                )}
               </RecordField>
 
               <RecordField label="금액">

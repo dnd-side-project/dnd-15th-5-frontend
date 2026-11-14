@@ -57,6 +57,17 @@
   --color-report-category-beauty: #e5eaff;
 
   /* Gradient */
+  --background-image-record-glass: radial-gradient(
+    closest-side in srgb,
+    color-mix(in srgb, var(--color-primary-600) 80%, transparent),
+    color-mix(
+        in srgb,
+        color-mix(in srgb, var(--color-primary-600), var(--color-primary-400)) 56%,
+        transparent
+      )
+      50%,
+    color-mix(in srgb, var(--color-primary-400) 32%, transparent)
+  );
   --background-image-map-sticker-glass-sheen: linear-gradient(
     135deg,
     color-mix(in srgb, var(--color-neutral-00) 32%, transparent),

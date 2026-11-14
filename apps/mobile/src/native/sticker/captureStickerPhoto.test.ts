@@ -34,7 +34,7 @@ it('전용 화면의 촬영 결과를 브릿지에 반환한다', async () => {
   expect(isStickerCaptureActive(id)).toBe(true);
   expect(router.push).toHaveBeenCalledWith({
     pathname: '/sticker-camera',
-    params: { captureId: id },
+    params: { captureId: id, hasActiveRecord: 'false' },
   });
   finishStickerCapture(id, { status: 'success', base64: 'cGhvdG8=', mimeType: 'image/jpeg' });
   await expect(request).resolves.toMatchObject({ status: 'success' });
@@ -46,6 +46,17 @@ it('중복 촬영 요청을 거절하고 닫으면 취소한다', async () => {
   await expect(captureStickerPhoto()).rejects.toThrow('이미');
   finishStickerCapture(getCaptureId(), { status: 'cancelled' });
   await expect(request).resolves.toEqual({ status: 'cancelled' });
+});
+it('작성 중인 기록 유무를 카메라 화면으로 전달한다', async () => {
+  const request = captureStickerPhoto({ hasActiveRecord: true });
+  await Promise.resolve();
+  const id = getCaptureId();
+  expect(router.push).toHaveBeenCalledWith({
+    pathname: '/sticker-camera',
+    params: { captureId: id, hasActiveRecord: 'true' },
+  });
+  finishStickerCapture(id, { status: 'closed' });
+  await expect(request).resolves.toEqual({ status: 'closed' });
 });
 it('이전 화면의 늦은 완료는 새 촬영을 완료시키지 않는다', async () => {
   const request = captureStickerPhoto();

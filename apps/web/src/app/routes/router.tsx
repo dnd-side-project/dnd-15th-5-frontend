@@ -11,6 +11,8 @@ import PrivacyPolicyPage from '@/pages/agreement/PrivacyPolicyPage';
 import TermsOfServicePage from '@/pages/agreement/TermsOfServicePage';
 import AuthCallbackPage from '@/pages/auth-callback/AuthCallbackPage';
 import HomePage from '@/pages/home/HomePage';
+import RecommendationLocationMapPage from '@/pages/home/recommendation/RecommendationLocationMapPage';
+import RecommendationLocationSearchPage from '@/pages/home/recommendation/RecommendationLocationSearchPage';
 import MapSearchPage from '@/pages/home/search/MapSearchPage';
 import ShopDetailPage from '@/pages/home/shop/ShopDetailPage';
 import LoginPage from '@/pages/login/LoginPage';
@@ -33,7 +35,7 @@ import MonthlyReportPage from '@/pages/report/MonthlyReportPage';
 import ReportPage from '@/pages/report/ReportPage';
 import SharedReportPage from '@/pages/report/shared/SharedReportPage';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
-import PaddedLayout from '@/shared/layout/PaddedLayout';
+import PaddedLayout from '@/shared/layout/padded-layout';
 
 const createSentryBrowserRouter = Sentry.wrapCreateBrowserRouter(createBrowserRouter);
 
@@ -76,7 +78,6 @@ export const router = createSentryBrowserRouter([
         element: <AuthenticatedRoute />,
         children: [
           {
-            // INFO: 온보딩 이미지는 전체 너비를 사용하고 조작 영역만 자체 여백을 적용한다.
             path: ROUTE_PATHS.onboarding,
             element: <OnboardingPage />,
           },
@@ -98,6 +99,14 @@ export const router = createSentryBrowserRouter([
                 element: <ReportPage />,
               },
             ],
+          },
+          {
+            path: ROUTE_PATHS.homeRecommendationSearch,
+            element: <RecommendationLocationSearchPage />,
+          },
+          {
+            path: ROUTE_PATHS.homeRecommendationMap,
+            element: <RecommendationLocationMapPage />,
           },
           // 사진 선택과 기록 입력은 화면 전체 너비와 자체 Safe Area를 사용한다.
           {

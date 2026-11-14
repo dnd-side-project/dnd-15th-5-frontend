@@ -58,7 +58,7 @@ export const getGetMyAccountQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyAccount>>> = ({ signal }) =>
     getMyAccount(requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseQueryOptions<
     Awaited<ReturnType<typeof getMyAccount>>,
     TError,
     TData
@@ -155,7 +155,7 @@ export const getGetMyAccountSuspenseQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyAccount>>> = ({ signal }) =>
     getMyAccount(requestOptions, signal);
 
-  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+  return { queryFn, ...queryOptions, queryKey } as UseSuspenseQueryOptions<
     Awaited<ReturnType<typeof getMyAccount>>,
     TError,
     TData

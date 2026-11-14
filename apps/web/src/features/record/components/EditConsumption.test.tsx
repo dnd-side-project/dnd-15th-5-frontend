@@ -48,6 +48,7 @@ jest.mock('@/features/record/sticker/image/stickerImage', () => ({
   composeSticker: jest.fn(),
 }));
 jest.mock('@/shared/lib/bridge', () => ({ isNativeApp: () => false }));
+jest.mock('@/shared/ui/toast', () => ({ useToast: () => ({ showToast: jest.fn() }) }));
 
 function Editor() {
   const navigate = useNavigate();
@@ -156,7 +157,7 @@ it('변경 후 닫으면 확인창에서 계속 수정하거나 변경을 버리
   await waitFor(() => expect(screen.getByText('기록 목록')).toBeInTheDocument());
 });
 
-it('사진 생성 후 사용을 확정하기 전에 닫아도 변경 확인을 표시하고 미리보기를 유지한다', async () => {
+it('사진 생성 모션 후 새 스티커를 적용하고 종료 확인에서 계속 수정하면 입력을 유지한다', async () => {
   let sequence = 0;
   URL.createObjectURL = jest.fn(() => `blob:edit-photo-${sequence++}`);
   URL.revokeObjectURL = jest.fn();
@@ -166,6 +167,10 @@ it('사진 생성 후 사용을 확정하기 전에 닫아도 변경 확인을 �
   jest.mocked(composeSticker).mockResolvedValue(new Blob());
   jest.mocked(removeStickerBackground).mockResolvedValue(new Blob());
   setup();
+  const originalSticker = screen.getByAltText('기록에 적용한 스티커').getAttribute('src');
+  fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
+    target: { value: '작성 중인 메모' },
+  });
   fireEvent.change(screen.getByLabelText('사진 가져오기'), { target: { files: [photo] } });
   const cropImage = screen.getByAltText('자를 사진');
   Object.defineProperties(cropImage, {
@@ -173,13 +178,19 @@ it('사진 생성 후 사용을 확정하기 전에 닫아도 변경 확인을 �
     naturalHeight: { value: 400 },
   });
   fireEvent.load(cropImage);
-  fireEvent.click(screen.getByRole('button', { name: '자르기 완료' }));
-  const preview = await screen.findByAltText('흰색 테두리가 적용된 스티커');
-  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+  fireEvent.click(screen.getByRole('button', { name: '스티커로 만들기' }));
+  await screen.findByAltText('흰색 테두리가 적용된 스티커');
+  expect(screen.queryByRole('button', { name: '변경 취소' })).not.toBeInTheDocument();
+  fireEvent.load(screen.getByAltText('흰색 테두리가 적용된 스티커'));
+  const chosenSticker = await screen.findByAltText('기록에 적용한 스티커');
+  expect(chosenSticker).not.toHaveAttribute('src', originalSticker);
+  const chosenUrl = chosenSticker.getAttribute('src');
+  expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('작성 중인 메모');
+  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
   expect(await screen.findByRole('dialog', { name: '수정을 그만할까요?' })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: '계속 수정하기' }));
-  expect(screen.getByAltText('흰색 테두리가 적용된 스티커')).toBe(preview);
-  fireEvent.click(screen.getByRole('button', { name: '닫기' }));
+  expect(screen.getByAltText('기록에 적용한 스티커')).toHaveAttribute('src', chosenUrl);
+  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
   fireEvent.click(await screen.findByRole('button', { name: '그만하기' }));
   expect(await screen.findByText('기록 목록')).toBeInTheDocument();
   expect(mockSubmit).not.toHaveBeenCalled();

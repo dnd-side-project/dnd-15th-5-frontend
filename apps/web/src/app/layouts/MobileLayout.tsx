@@ -5,9 +5,9 @@ import AnalyticsIdentity from '@/app/providers/AnalyticsIdentity';
 import AnalyticsTracker from '@/app/providers/AnalyticsTracker';
 import ScrollToTop from '@/app/routes/ScrollToTop';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
-import RouteHistoryProvider from '@/shared/layout/RouteHistoryProvider';
 import { notifyNative } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
+import RouteHistoryProvider from '@/shared/lib/route-history';
 
 import type { PropsWithChildren } from 'react';
 
@@ -27,13 +27,14 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   const isSharedReport = Boolean(matchPath(ROUTE_PATTERNS.sharedReport, pathname));
   const usesOwnBottomSafeArea =
     pathname === ROUTE_PATHS.home ||
+    pathname === ROUTE_PATHS.homeRecommendationMap ||
     pathname === ROUTE_PATHS.record ||
     isEditRecord ||
     isShopDetail ||
     isSharedReport;
 
   useEffect(() => {
-    // 모바일은 이 경로를 기준으로 /home에만 edge-to-edge를 적용한다.
+    // 모바일은 현재 경로를 기준으로 지도 화면의 edge-to-edge와 뒤로가기를 처리합니다.
     // 일반 브라우저에서는 ReactNativeWebView가 없어 전송 없이 종료된다.
     notifyNative('routeChanged', { pathname });
   }, [pathname]);

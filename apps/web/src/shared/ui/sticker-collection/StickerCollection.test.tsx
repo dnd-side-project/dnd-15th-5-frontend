@@ -4,6 +4,21 @@ import userEvent from '@testing-library/user-event';
 import StickerCollection from './StickerCollection';
 
 describe('StickerCollection', () => {
+  it('실패한 사진은 애니메이션을 다시 재생해도 대체 스티커를 유지한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <StickerCollection
+        replayStampAnimationOnClick
+        stickers={['https://example.com/expired.png']}
+      />
+    );
+    const button = screen.getByRole('button', { name: '1번째 스티커 붙이기' });
+    fireEvent.error(button.querySelector('img')!);
+    const fallback = button.querySelector('img')!.getAttribute('src');
+    await user.click(button);
+    expect(button.querySelector('img')).toHaveAttribute('src', fallback);
+    expect(button.querySelector('img')).toHaveClass('sticker-collection__stamp--playing');
+  });
   it('활성화된 스티커를 누를 때마다 도장 애니메이션을 다시 재생한다', async () => {
     const user = userEvent.setup();
 

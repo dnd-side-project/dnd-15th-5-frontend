@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/shared/lib/cn';
+import { StickerImage } from '@/shared/ui/sticker-image/StickerImage';
 
 import '@/shared/styles/stickerStamp.css';
 
@@ -153,12 +154,10 @@ function ShopStickerCanvas({
     return nextReplaySequenceRef.current;
   };
   const replayAllStickers = () => {
-    startAnimation();
     const replaySequence = createReplaySequence();
     setReplaySequences((current) => current.map(() => replaySequence));
   };
   const replaySticker = (targetIndex: number) => {
-    startAnimation();
     const replaySequence = createReplaySequence();
     setReplaySequences((current) =>
       current.map((sequence, index) => (index === targetIndex ? replaySequence : sequence))
@@ -235,21 +234,7 @@ function ShopStickerStamp({
   src,
 }: ShopStickerStampProps) {
   const [completedPlaybackSequence, setCompletedPlaybackSequence] = useState<number | null>(null);
-  const [hasImageError, setHasImageError] = useState(false);
   const isPlaying = shouldAnimate && isReady && completedPlaybackSequence !== playbackSequence;
-
-  if (hasImageError) {
-    return (
-      <span
-        role="img"
-        aria-label="스티커를 불러오지 못했어요"
-        className="absolute grid place-items-center rounded-08 bg-neutral-100 text-neutral-400"
-        style={getShopStickerSlotStyle(placement, heroWidth)}
-      >
-        —
-      </span>
-    );
-  }
 
   return (
     <button
@@ -259,8 +244,8 @@ function ShopStickerStamp({
       onClick={onReplay}
       style={getShopStickerSlotStyle(placement, heroWidth)}
     >
-      <img
-        key={playbackSequence}
+      <StickerImage
+        animationKey={playbackSequence}
         alt=""
         className={cn(
           'shop-sticker-hero__stamp pointer-events-none h-full w-full object-contain',
@@ -273,7 +258,6 @@ function ShopStickerStamp({
           onSettled(naturalWidth / naturalHeight);
         }}
         onError={() => {
-          setHasImageError(true);
           onSettled(1);
         }}
         src={src}

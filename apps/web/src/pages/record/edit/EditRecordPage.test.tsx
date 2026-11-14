@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import ConsumptionRecordActions from '@/features/record/components/ConsumptionRecordActions';
-import RouteHistoryProvider from '@/shared/layout/RouteHistoryProvider';
+import RouteHistoryProvider from '@/shared/lib/route-history';
 
 import EditRecordPage from './EditRecordPage';
 

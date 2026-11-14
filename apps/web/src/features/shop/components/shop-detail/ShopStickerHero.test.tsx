@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { StickerEyesImage } from '@/shared/assets/images/stickers';
+
 import ShopStickerHero from './ShopStickerHero';
 import {
   createShopStickerPlacements,
@@ -30,6 +32,41 @@ const getStickerStyles = (container: HTMLElement) =>
   }));
 
 describe('ShopStickerHero', () => {
+  it('실패한 사진은 다시 붙여도 대체 스티커를 유지한다', async () => {
+    const user = userEvent.setup();
+    render(
+      <ShopStickerHero
+        headerContent={null}
+        placeId={101}
+        stickerImages={['https://example.com/expired.png']}
+      />
+    );
+    const button = screen.getByRole('button', { name: '1번째 스티커 다시 붙이기' });
+    fireEvent.error(button.querySelector('img')!);
+    const fallback = button.querySelector('img')!.getAttribute('src');
+    fireEvent.load(button.querySelector('img')!);
+    await user.click(button);
+    expect(button.querySelector('img')).toHaveAttribute('src', fallback);
+  });
+
+  it('같은 사진의 재생 로드 이벤트를 다른 사진의 로드 완료로 세지 않는다', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <ShopStickerHero
+        headerContent={null}
+        placeId={101}
+        stickerImages={['https://example.com/first.png', 'https://example.com/slow.png']}
+      />
+    );
+    fireEvent.load(container.querySelector('img')!);
+    await user.click(screen.getByRole('button', { name: '1번째 스티커 다시 붙이기' }));
+    fireEvent.load(container.querySelector('img')!);
+    expect(container.querySelectorAll('img')[1]).not.toHaveClass(
+      'shop-sticker-hero__stamp--playing'
+    );
+    fireEvent.load(container.querySelectorAll('img')[1]!);
+    expect(container.querySelectorAll('img')[1]).toHaveClass('shop-sticker-hero__stamp--playing');
+  });
   afterEach(() => {
     jest.useRealTimers();
   });
@@ -241,7 +278,7 @@ describe('ShopStickerHero', () => {
     expect(firstImage).toHaveClass('shop-sticker-hero__stamp--playing');
   });
 
-  it('실패한 사진은 플레이스홀더로 바꾸고 성공·실패가 모두 끝나면 애니메이션을 시작한다', () => {
+  it('실패한 사진은 대체 스티커로 바꾸고 성공·실패가 모두 끝나면 애니메이션을 시작한다', () => {
     jest.useFakeTimers();
     const { container } = render(
       <ShopStickerHero
@@ -252,8 +289,7 @@ describe('ShopStickerHero', () => {
     );
     const [photo, sticker, last] = Array.from(container.querySelectorAll('img'));
     fireEvent.error(photo!);
-    expect(photo).not.toBeInTheDocument();
-    expect(screen.getByRole('img', { name: '스티커를 불러오지 못했어요' })).toBeInTheDocument();
+    expect(photo).toHaveAttribute('src', StickerEyesImage);
     fireEvent.load(sticker!);
     fireEvent.load(sticker!);
     expect(sticker).not.toHaveClass('shop-sticker-hero__stamp--playing');
@@ -267,15 +303,11 @@ describe('ShopStickerHero', () => {
       <ShopStickerHero headerContent={null} placeId={101} stickerImages={['expired.png']} />
     );
     fireEvent.error(container.querySelector('img')!);
-    expect(container.querySelector('img')).toBeNull();
-    expect(screen.getByRole('img', { name: '스티커를 불러오지 못했어요' })).toBeInTheDocument();
+    expect(container.querySelector('img')).toHaveAttribute('src', StickerEyesImage);
     rerender(
       <ShopStickerHero headerContent={null} placeId={101} stickerImages={['renewed.png']} />
     );
     expect(container.querySelector('img')).toHaveAttribute('src', 'renewed.png');
-    expect(
-      screen.queryByRole('img', { name: '스티커를 불러오지 못했어요' })
-    ).not.toBeInTheDocument();
   });
 
   it('폴백으로 애니메이션을 시작한 뒤 늦게 로드된 이미지가 스티커 배치를 바꾸지 않는다', () => {

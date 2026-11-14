@@ -1,8 +1,10 @@
 import { requestToNative } from '@/shared/lib/bridge';
 
+import type { BridgePayload } from '@chapchap/shared/bridge';
+
 /** 네이티브 카메라의 촬영 결과를 웹 이미지 처리에 사용할 File로 변환합니다. */
-export const captureStickerPhoto = async () => {
-  const photo = await requestToNative('captureStickerPhoto', {});
+export const captureStickerPhoto = async (payload: BridgePayload<'captureStickerPhoto'> = {}) => {
+  const photo = await requestToNative('captureStickerPhoto', payload);
   if (photo.status !== 'success') return photo;
 
   const bytes = Uint8Array.from(atob(photo.base64), (character) => character.charCodeAt(0));

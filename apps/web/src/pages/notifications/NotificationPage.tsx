@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { NotificationFeed } from '@/features/notification';
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 
 export default function NotificationPage() {
   const navigate = useNavigate();

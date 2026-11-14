@@ -38,7 +38,6 @@ export default function RecordPage() {
   const { scanReceipt, isOpeningReceipt, receiptError } = useScanReceipt();
   const { submit, isSubmitting, submitError } = useSubmitStickerRecord();
   const [hasChanges, setHasChanges] = useState(false);
-  const [isCloseRequested, setIsCloseRequested] = useState(false);
   const blocker = useUnsavedChangesBlocker(
     shouldKeepRecordFlow && hasChanges,
     ({ historyAction, nextLocation }) =>
@@ -50,13 +49,6 @@ export default function RecordPage() {
       )
   );
   const closeRecord = () => navigate(ROUTE_PATHS.home, { replace: true });
-  const handleClose = () => {
-    if (hasChanges) {
-      setIsCloseRequested(true);
-      return;
-    }
-    closeRecord();
-  };
   const handleSearchShop = () => {
     navigate(
       createYearMonthPath(ROUTE_PATHS.recordShopSearch, searchParams.get(YEAR_MONTH_SEARCH_PARAM)),
@@ -70,7 +62,8 @@ export default function RecordPage() {
         <div hidden={isShopSearchOpen}>
           <StickerRecordFlow
             onDirtyChange={setHasChanges}
-            onClose={handleClose}
+            onClose={closeRecord}
+            isExitBlocked={blocker.isBlocked}
             onSearchShop={handleSearchShop}
             onScanReceipt={scanReceipt}
             onReceiptShopSelected={setSelectedShop}
@@ -88,14 +81,8 @@ export default function RecordPage() {
       <Outlet
         context={{ onSelectStickerShop: setSelectedShop } satisfies StickerRecordShopSearchContext}
       />
-      {(blocker.isBlocked || isCloseRequested) && (
-        <RecordExitDialog
-          onExit={blocker.isBlocked ? blocker.proceed : closeRecord}
-          onContinue={() => {
-            blocker.reset();
-            setIsCloseRequested(false);
-          }}
-        />
+      {blocker.isBlocked && (
+        <RecordExitDialog onExit={blocker.proceed} onContinue={blocker.reset} />
       )}
     </>
   );

@@ -4,14 +4,32 @@
  */
 
 import type {
+  GetCalendarParams,
   GetConsumptionsParams,
   GetCurrentStatusParams,
   GetFrequentPlacesParams,
   GetMonthlyReportParams,
+  GetStickerBoardParams,
 } from '@/features/report/apis/dto';
 
 export const getGetConsumptionsQueryKey = (params?: GetConsumptionsParams) => {
   return [`/v1/consumptions`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetSummaryHighlightQueryKey = () => {
+  return [`/v2/reports/summary-highlight`] as const;
+};
+
+export const getGetStickerBoardQueryKey = (params?: GetStickerBoardParams) => {
+  return [`/v2/reports/sticker-board`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetCategoryDistributionQueryKey = () => {
+  return [`/v2/reports/category-distribution`] as const;
+};
+
+export const getGetCalendarQueryKey = (params?: GetCalendarParams) => {
+  return [`/v2/reports/calendar`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetSharedPersonaCardQueryKey = (shareToken: string) => {

@@ -87,6 +87,8 @@ describe('useCreateConsumptionMutation', () => {
     };
 
     expect(predicate({ queryKey: ['/v1/consumptions/visited-places'] })).toBe(true);
+    expect(predicate({ queryKey: ['/v1/consumptions/places/101'] })).toBe(true);
+    expect(predicate({ queryKey: ['/v1/consumptions/places/101/visits'] })).toBe(true);
     expect(predicate({ queryKey: ['/v1/consumptions/places/rank'] })).toBe(true);
     expect(predicate({ queryKey: ['/v1/reports/current'] })).toBe(true);
     expect(predicate({ queryKey: ['/v1/reports/monthly'] })).toBe(false);

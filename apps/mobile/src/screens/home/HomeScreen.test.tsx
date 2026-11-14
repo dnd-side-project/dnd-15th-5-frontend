@@ -240,7 +240,7 @@ describe('<HomeScreen />', () => {
     );
   });
 
-  it('지도 홈은 전체 화면, 다른 웹 경로는 하단 배경만 edge-to-edge로 표시한다', async () => {
+  it('지도 홈과 추천 지도는 전체 화면, 검색과 기록은 하단만 edge-to-edge로 표시한다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173';
     const { getByTestId } = await render(<HomeScreen />);
 
@@ -261,6 +261,9 @@ describe('<HomeScreen />', () => {
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
 
     for (const [pathname, edges] of [
+      ['/home/recommendation/search', bottomEdgeToEdgeEdges],
+      ['/home/recommendation/map', edgeToEdgeEdges],
+      ['/home/recommendation/search', bottomEdgeToEdgeEdges],
       ['/record', bottomEdgeToEdgeEdges],
       ['/record/shop/search', bottomEdgeToEdgeEdges],
       ['/record/manual', bottomEdgeToEdgeEdges],

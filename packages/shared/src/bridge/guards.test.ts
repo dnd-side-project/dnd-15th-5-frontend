@@ -298,7 +298,7 @@ describe('스티커 촬영 응답', () => {
     type: 'captureStickerPhoto',
     ok: true,
   };
-  it('촬영 성공·취소·권한 거부를 구분한다', () => {
+  it('촬영 성공·기록 종료·취소·권한 거부를 구분한다', () => {
     expect(
       isBridgeResponse({
         ...response,
@@ -306,7 +306,19 @@ describe('스티커 촬영 응답', () => {
       })
     ).toBe(true);
     expect(isBridgeResponse({ ...response, result: { status: 'cancelled' } })).toBe(true);
+    expect(isBridgeResponse({ ...response, result: { status: 'closed' } })).toBe(true);
     expect(isBridgeResponse({ ...response, result: { status: 'permissionDenied' } })).toBe(true);
+  });
+  it('작성 중인 기록 유무는 boolean으로 받고 기존 빈 payload도 허용한다', () => {
+    const request = {
+      kind: BRIDGE_MESSAGE_KIND.REQUEST,
+      id: 'capture',
+      type: 'captureStickerPhoto',
+    };
+    expect(isBridgeRequest({ ...request, payload: {} })).toBe(true);
+    expect(isBridgeRequest({ ...request, payload: { hasActiveRecord: true } })).toBe(true);
+    expect(isBridgeRequest({ ...request, payload: { hasActiveRecord: false } })).toBe(true);
+    expect(isBridgeRequest({ ...request, payload: { hasActiveRecord: 'true' } })).toBe(false);
   });
   it('파일 URI나 잘못된 이미지 데이터가 전달되면 거부한다', () => {
     expect(

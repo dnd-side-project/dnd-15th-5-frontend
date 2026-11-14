@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import PageHeader from '@/shared/layout/PageHeader';
+import PageHeader from '@/shared/layout/page-header';
 
 import RecordExitDialog from './RecordExitDialog';
 

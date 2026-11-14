@@ -12,7 +12,7 @@ import ConsumptionSticker from '@/features/record/components/ConsumptionSticker'
 import { ShopDetail } from '@/features/shop';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
-import { RouteHistoryContext } from '@/shared/lib/routeHistoryContext';
+import { RouteHistoryContext } from '@/shared/lib/route-history';
 import { BackButton } from '@/shared/ui/back-button';
 import {
   getConsumptionScrollDate,
@@ -30,6 +30,7 @@ type ShopDetailPageState = {
   fromMapSheet?: boolean;
 };
 
+/** 가게 상세에 기록별 스티커와 수정·삭제 동작을 연결하고 목록 복귀 위치와 지도 포커스를 복원합니다. */
 export default function ShopDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -112,7 +113,7 @@ export default function ShopDetailPage() {
             recordShop={recordShop}
             {...returnTarget}
             renderVisitSticker={(consumptionId) => (
-              <ConsumptionSticker consumptionId={consumptionId} />
+              <ConsumptionSticker consumptionId={consumptionId} size="large" />
             )}
             onViewOnMap={() => void handleViewOnMap()}
             headerContent={<BackButton onClick={() => void handleBack()} />}

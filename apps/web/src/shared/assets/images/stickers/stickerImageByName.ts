@@ -26,14 +26,33 @@ const STICKER_IMAGE_BY_NAME = new Map<string, string>([
 export const getStickerImageByName = (stickerName?: string) =>
   stickerName ? STICKER_IMAGE_BY_NAME.get(stickerName) : undefined;
 
-/** 사진 URL을 우선 사용하고, 기본 스티커는 이름으로 찾아 각 항목의 개수만큼 펼쳐 반환합니다. */
-export const getStickerImages = (
-  stickers: readonly { count?: number; itemName?: string; imageUrl?: string | null }[]
-) =>
-  stickers.flatMap(({ count, itemName, imageUrl }) => {
-    const stickerImage = imageUrl?.trim() || getStickerImageByName(itemName);
-    const stickerCount =
-      count === undefined ? 1 : Number.isSafeInteger(count) && count > 0 ? count : 0;
+type StickerImageSource = {
+  imageId?: number | null;
+  imageUrl?: string | null;
+  itemName?: string;
+};
 
+/** 업로드한 사진 URL을 우선 사용하고 기본 스티커는 이름으로 찾습니다. */
+export const getStickerImage = ({ imageId, imageUrl, itemName }: StickerImageSource) => {
+  const photoUrl = imageUrl?.trim();
+  if (photoUrl) return photoUrl;
+
+  const defaultImage = getStickerImageByName(itemName);
+  if (defaultImage) return defaultImage;
+
+  if (typeof imageId === 'number' && Number.isSafeInteger(imageId) && imageId > 0) {
+    return StickerEyesImage;
+  }
+
+  return undefined;
+};
+
+/** 사진과 기본 스티커를 응답 순서와 각 항목의 개수대로 펼쳐 반환합니다. */
+export const getStickerImages = (stickers: readonly (StickerImageSource & { count?: number })[]) =>
+  stickers.flatMap(({ count, ...source }) => {
+    const stickerCount = count === undefined ? 1 : count;
+    if (!Number.isSafeInteger(stickerCount) || stickerCount <= 0) return [];
+
+    const stickerImage = getStickerImage(source);
     return stickerImage ? Array.from({ length: stickerCount }, () => stickerImage) : [];
   });
