@@ -118,8 +118,6 @@ export default function EditConsumption(props: EditConsumptionProps) {
         <RecordNavigationHeader
           title="기록 수정"
           closeButtonLabel="기록 수정 종료"
-          showBack={false}
-          onBack={props.onClose}
           onClose={props.onClose}
         />
         <StateView

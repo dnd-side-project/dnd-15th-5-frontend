@@ -238,9 +238,7 @@ export default function StickerRecordFlow({
               isDefaultSticker={Boolean(recordedDefaultSticker)}
               defaultStickerCategory={recordedDefaultSticker?.category}
               onChangeImage={() => setIsImageChangeOpen(true)}
-              onBack={
-                initialValue && recordResult.source === 'saved' ? onClose : backToMediaSelection
-              }
+              onBack={initialValue ? undefined : backToMediaSelection}
               onClose={requestClose}
               onSearchShop={onSearchShop}
               onScanReceipt={onScanReceipt}
