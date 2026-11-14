@@ -135,6 +135,11 @@ apps/web/src/
 실제 URL은 `apps/web/src/shared/constants/routePaths.ts`를 기준으로 한다.
 (`pages`와 `features`에서도 화면 이동에 사용해야 하므로 `app`이 아닌 `shared`에서 관리한다.)
 
+페이지와 메인 탭 레이아웃은 React Router의 `lazy`로 경로에 진입할 때 불러온다.
+첫 URL의 코드 로딩 중에는 `RouteLoading`, 로딩 실패 시에는 공통 `RouteErrorPage`를 표시한다.
+전역 레이아웃·Provider는 화면 전체를 내보내는 feature 진입점 대신 필요한 API·저장소를 직접
+가져와 지연 로드할 화면이 초기 번들에 포함되지 않게 한다.
+
 ```text
 pages/
 ├── login/
@@ -196,6 +201,12 @@ pages/
 화면 전환·확정 미디어는 `useStickerRecordFlow`가, 비동기 요청 취소와 임시 이미지 URL 해제는
 `useStickerImageTask`가 언마운트 정리까지 담당한다. 배경 제거 Worker는 취소 시 종료되므로
 사진 가져오기·촬영 진입마다 다시 준비한다.
+
+알파 보정·흰색 외곽선·그림자 합성은 지원 환경에서 별도의 `stickerComposition.worker`가
+처리한다. Worker와 DOM 폴백은 `image/stickerComposition.ts`의 같은 합성 함수를 사용한다.
+Worker는 합성 완료·오류·취소·시간 초과 시 종료하고, Worker 또는 OffscreenCanvas를
+사용할 수 없는 환경에서는 기존 DOM Canvas 합성으로 복구한다. 리포트 이미지 캡처 라이브러리는
+저장·공유를 실행할 때만 동적으로 불러온다.
 
 소비 기록 수정은 `/record/:consumptionId/edit`에서 처리한다. 기존 사진·스티커 ID와 정확한 방문
 시각을 복원하고 이미지 교체 시에만 업로드한다. 지도 소비 기록·가게 상세·월별 소비내역의
