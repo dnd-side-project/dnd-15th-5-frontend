@@ -18,12 +18,18 @@ test('생성된 일반·Suspense 쿼리 옵션에서 기본 키와 사용자 지
 
   try {
     await mkdir(apiDirectory, { recursive: true });
-    const functions = ['getReportQueryOptions', 'getReportSuspenseQueryOptions'].map(
+    const functionNames = [
+      'getReportQueryOptions',
+      'getReportSuspenseQueryOptions',
+      'getEnabledReportQueryOptions',
+      'getEnabledReportSuspenseQueryOptions',
+    ];
+    const functions = functionNames.map(
       (name, index) => `
-export const ${name} = (queryOptions?: { queryKey?: string[]; queryFn?: () => string }) => {
+export const ${name} = (queryOptions?: { queryKey?: string[]; queryFn?: () => string; enabled?: boolean }) => {
   const queryKey = queryOptions?.queryKey ?? ['/reports'];
   const queryFn = () => 'default';
-  return ${index === 0 ? '{ queryKey, queryFn, ...queryOptions }' : `{\n    queryKey,\n    queryFn,\n    ...queryOptions\n  }`};
+  return ${index === 0 ? '{ queryKey, queryFn, ...queryOptions }' : `{\n    queryKey,\n    queryFn,\n    ${index >= 2 ? 'enabled: true,\n    ' : ''}...queryOptions${index >= 2 ? ',' : ''}\n  }`};
 };`
     );
     await writeFile(path.join(apiDirectory, 'swagger.ts'), functions.join('\n'));
@@ -36,7 +42,7 @@ export const ${name} = (queryOptions?: { queryKey?: string[]; queryFn?: () => st
       `data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`
     );
 
-    for (const name of ['getReportQueryOptions', 'getReportSuspenseQueryOptions']) {
+    for (const name of functionNames) {
       const createOptions = generated[name];
       assert.deepEqual(createOptions().queryKey, ['/reports']);
       assert.deepEqual(createOptions({ queryKey: undefined }).queryKey, ['/reports']);
@@ -45,6 +51,12 @@ export const ${name} = (queryOptions?: { queryKey?: string[]; queryFn?: () => st
       const options = createOptions({ queryKey: customKey, queryFn: customQueryFn });
       assert.equal(options.queryKey, customKey);
       assert.equal(options.queryFn, customQueryFn);
+      if (name.startsWith('getEnabled')) {
+        assert.equal(createOptions({ queryKey: undefined }).enabled, true);
+        const disabledOptions = createOptions({ queryKey: undefined, enabled: false });
+        assert.deepEqual(disabledOptions.queryKey, ['/reports']);
+        assert.equal(disabledOptions.enabled, false);
+      }
     }
   } finally {
     await rm(directory, { recursive: true, force: true });

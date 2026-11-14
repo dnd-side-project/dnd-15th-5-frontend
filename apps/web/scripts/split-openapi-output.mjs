@@ -257,8 +257,8 @@ for (const [group, statements] of Object.entries(groups)) {
   const moduleBody =
     group === 'queries'
       ? body.replace(
-          /return\s*\{\s*queryKey\s*,\s*queryFn\s*,\s*\.\.\.queryOptions\s*\}/g,
-          'return { queryFn, ...queryOptions, queryKey }'
+          /return\s*\{\s*queryKey\s*,\s*queryFn\s*,\s*([^}]*?)\.\.\.queryOptions\s*,?\s*\}/g,
+          'return { queryFn, $1...queryOptions, queryKey }'
         )
       : body;
   const output = [header, ...externalImports, ...crossImports, moduleBody || 'export {};'].join(

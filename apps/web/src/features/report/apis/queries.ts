@@ -1109,10 +1109,10 @@ export const getGetSharedPersonaCardQueryOptions = <
     getSharedPersonaCard(shareToken, requestOptions, signal);
 
   return {
-    queryKey,
     queryFn,
     enabled: shareToken !== null && shareToken !== undefined,
     ...queryOptions,
+    queryKey,
   } as UseQueryOptions<Awaited<ReturnType<typeof getSharedPersonaCard>>, TError, TData> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
