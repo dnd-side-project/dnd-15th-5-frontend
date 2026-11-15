@@ -155,7 +155,7 @@ it('카테고리 8개를 정해진 순서로 표시한다', () => {
     within(categories)
       .getAllByRole('button')
       .map((button) => button.textContent)
-  ).toEqual(['카페', '음식점', '운동', '미용/뷰티', '편의점/마트', '쇼핑', '취미/놀거리', '기타']);
+  ).toEqual(['카페', '음식점', '편의점/마트', '취미/놀거리', '쇼핑', '운동', '미용/뷰티', '기타']);
 });
 
 beforeEach(() => {

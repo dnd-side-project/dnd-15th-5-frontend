@@ -1,3 +1,4 @@
+import { SPENDING_CATEGORIES } from '@chapchap/shared/common/constants';
 import { useState } from 'react';
 import { fn } from 'storybook/test';
 
@@ -5,15 +6,7 @@ import { CategoryChip } from '.';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-const CATEGORIES = [
-  { label: '카페', value: 'cafe' },
-  { label: '운동', value: 'exercise' },
-  { label: '편의점/마트', value: 'convenience-store' },
-  { label: '취미/놀거리', value: 'entertainment' },
-  { label: '음식점', value: 'restaurant' },
-  { label: '미용/뷰티', value: 'beauty' },
-  { label: '기타', value: 'etc' },
-] as const;
+const CATEGORIES = SPENDING_CATEGORIES.map((category) => ({ label: category, value: category }));
 
 type CategoryValue = (typeof CATEGORIES)[number]['value'];
 type RecommendedCategoryValue = CategoryValue | 'recommendation';
@@ -81,7 +74,7 @@ export const CategoryFilter: Story = {
     children: '카페',
   },
   render: function CategoryFilterStory() {
-    const [selectedCategory, setSelectedCategory] = useState<CategoryValue>('cafe');
+    const [selectedCategory, setSelectedCategory] = useState<CategoryValue>('카페');
 
     return (
       <div role="group" aria-label="카테고리 필터" className="flex w-full max-w-88 flex-wrap gap-2">
