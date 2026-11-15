@@ -250,13 +250,14 @@ it('가게 검색에 직접 진입해 장소를 선택하면 새 기록에 가�
 });
 
 it('가게 검색에서 뒤로 돌아오면 선택을 바꾸지 않고 작성 중이던 폼을 유지한다', async () => {
-  const router = renderRecordPage();
+  renderRecordPage();
   const sticker = await selectDefaultSticker();
   fireEvent.change(screen.getByRole('textbox', { name: '메모' }), {
     target: { value: '검색 전 메모' },
   });
   fireEvent.click(screen.getByRole('button', { name: '가게 정보 검색' }));
-  await act(() => router.navigate(-1));
+  expect(screen.queryByRole('button', { name: '기록 닫고 홈으로 이동' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record');
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('검색 전 메모');
@@ -264,17 +265,6 @@ it('가게 검색에서 뒤로 돌아오면 선택을 바꾸지 않고 작성 �
   expect(screen.getByRole('button', { name: '가게 정보 검색' })).toHaveTextContent(
     '가게명 검색하기'
   );
-});
-
-it('가게 검색에서 작성을 종료할 때 확인한 뒤 홈으로 돌아가며 이미지 URL을 정리한다', async () => {
-  renderRecordPage();
-  await selectDefaultSticker();
-  fireEvent.click(screen.getByRole('button', { name: '가게 정보 검색' }));
-  fireEvent.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
-  expect(screen.getByRole('dialog', { name: '기록 작성을 그만둘까요?' })).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: '나가기' }));
-  expect(screen.getByText('홈 화면')).toBeInTheDocument();
-  expect(jest.mocked(URL.revokeObjectURL).mock.calls.map(([url]) => url)).toContain('blob:sticker');
 });
 
 it('초안 없이 닫기를 누르면 홈으로 돌아간다', () => {

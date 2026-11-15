@@ -1,7 +1,6 @@
 import { RECEIPT_SHOP_SEARCH_SOURCE } from '@chapchap/shared/bridge';
 import { useLocation, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
 
-import RecordNavigationHeader from '@/features/record/components/RecordNavigationHeader';
 import type {
   ShopSearchLocationState,
   StickerRecordShopSearchContext,
@@ -10,6 +9,7 @@ import { ShopSearch } from '@/features/shop';
 import type { ShopSearchResult } from '@/features/shop';
 import { createYearMonthPath, ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { YEAR_MONTH_SEARCH_PARAM } from '@/shared/constants/searchParams';
+import PageHeader from '@/shared/layout/page-header';
 import { notifyNative } from '@/shared/lib/bridge';
 
 export default function ShopSearchPage() {
@@ -22,7 +22,6 @@ export default function ShopSearchPage() {
     shopSearchState?.isStickerRecordShopSearch && stickerRecord
   );
   const isReceiptNativeSearch = searchParams.get('source') === RECEIPT_SHOP_SEARCH_SOURCE;
-  const shouldConfirmClose = isReceiptNativeSearch || isStickerRecordSearch;
   const recordPath = createYearMonthPath(
     ROUTE_PATHS.record,
     searchParams.get(YEAR_MONTH_SEARCH_PARAM)
@@ -51,21 +50,9 @@ export default function ShopSearchPage() {
     navigate(-1);
   };
 
-  const handleClose = () => {
-    if (isReceiptNativeSearch && notifyNative('receiptRecordCloseRequested', {})) {
-      return;
-    }
-
-    navigate(ROUTE_PATHS.home, { replace: true });
-  };
-
   return (
     <main className="flex min-h-full flex-col px-4">
-      <RecordNavigationHeader
-        onBack={handleBack}
-        onClose={handleClose}
-        confirmBeforeClose={shouldConfirmClose}
-      />
+      <PageHeader onBack={handleBack} />
 
       <div className="mt-8">
         <ShopSearch onSelectShop={handleSelectShop} />

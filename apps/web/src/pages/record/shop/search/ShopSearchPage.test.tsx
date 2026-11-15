@@ -136,38 +136,21 @@ describe('<ShopSearchPage />', () => {
     expect(mockNotifyNative).toHaveBeenCalledWith('receiptShopSearchCancelled', {});
   });
 
-  it('작성 중인 초안이 없는 검색 화면은 확인 없이 홈으로 이동한다', async () => {
-    const user = userEvent.setup();
+  it.each(['/record/shop/search', '/record/shop/search?source=receipt-native'])(
+    '%s에서 기록 종료 버튼 없이 뒤로 가기 버튼을 표시한다',
+    (path) => {
+      render(
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route path="/record/shop/search" element={<ShopSearchPage />} />
+          </Routes>
+        </MemoryRouter>
+      );
 
-    render(
-      <MemoryRouter initialEntries={['/record/shop/search']}>
-        <Routes>
-          <Route path="/record/shop/search" element={<ShopSearchPage />} />
-          <Route path="/home" element={<p>홈 화면</p>} />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
-
-    expect(screen.getByText('홈 화면')).toBeInTheDocument();
-  });
-
-  it('앱 영수증 플로우에서 X 버튼을 누르면 네이티브에 기록 종료를 요청한다', async () => {
-    mockNotifyNative.mockReturnValue(true);
-    const user = userEvent.setup();
-
-    render(
-      <MemoryRouter initialEntries={['/record/shop/search?source=receipt-native']}>
-        <Routes>
-          <Route path="/record/shop/search" element={<ShopSearchPage />} />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    await user.click(screen.getByRole('button', { name: '기록 닫고 홈으로 이동' }));
-    await user.click(screen.getByRole('button', { name: '나가기' }));
-
-    expect(mockNotifyNative).toHaveBeenCalledWith('receiptRecordCloseRequested', {});
-  });
+      expect(screen.getByRole('button', { name: '뒤로 가기' })).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: '기록 닫고 홈으로 이동' })
+      ).not.toBeInTheDocument();
+    }
+  );
 });
