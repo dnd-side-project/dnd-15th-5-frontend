@@ -386,6 +386,7 @@ export default function HomeBottomSheet({
       {topSafeAreaProbe}
       {isHomeSheet && snapPoint === 'full' && <Overlay />}
       <BottomSheet
+        className={isRecommendationList ? 'overflow-visible' : undefined}
         showHandle={!isRecommendationDetail}
         rootRef={sheetRef}
         snapPoint={
