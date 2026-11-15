@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { captureStickerPhoto } from '@/features/record/camera/utils/captureStickerPhoto';
 import {
@@ -116,6 +116,8 @@ export const useStickerRecordFlow = ({
     initialValue ? restoreSavedResult(initialValue) : null
   );
   const task = useStickerImageTask();
+  const isImageChangePausedRef = useRef(false);
+  const pendingResultRef = useRef<StickerResult | null>(null);
 
   const showScreen = (next: StickerFlowScreen) => {
     task.releaseUrls([...getResultUrls(recordResult), ...getScreenUrls(next)]);
@@ -125,10 +127,18 @@ export const useStickerRecordFlow = ({
     task.start();
     showScreen(next);
   };
-  const commitResult = (result: StickerResult) => {
+  const applyResult = (result: StickerResult) => {
     task.releaseUrls(getResultUrls(result));
     setRecordResult(result);
     setScreen({ stage: 'record' });
+  };
+  const commitResult = (result: StickerResult) => {
+    if (isImageChangePausedRef.current) {
+      pendingResultRef.current = result;
+      task.releaseUrls([...getResultUrls(recordResult), ...getResultUrls(result)]);
+      return;
+    }
+    applyResult(result);
   };
   const validateImage = (file: File) => {
     try {
@@ -210,11 +220,13 @@ export const useStickerRecordFlow = ({
     await task.run(request, '카메라를 열지 못했어요.', async () => {
       const photo = await captureStickerPhoto({
         hasActiveRecord: Boolean(recordResult) || screen.stage === 'preview',
+        ...(recordResult ? { isChangingImage: true } : {}),
       });
       if (request.signal.aborted) return;
       switch (photo.status) {
         case 'closed':
-          onCaptureClose?.();
+          if (recordResult) moveTo({ stage: 'record' });
+          else onCaptureClose?.();
           return;
         case 'cancelled':
           return;
@@ -283,11 +295,27 @@ export const useStickerRecordFlow = ({
     message: task.message,
     error: task.error,
     openCrop,
+    /** 단계 이동·변경 취소·새 이미지 작업 시작 시 갤러리 응답도 함께 무효화합니다. */
+    beginGallerySelection: () => task.start().signal,
     confirmCrop,
     capturePhoto,
     selectDefaultSticker,
     openDefaultStickers: () => moveTo({ stage: 'default' }),
     backToMediaSelection,
+    pauseImageChange: () => {
+      isImageChangePausedRef.current = true;
+    },
+    continueImageChange: () => {
+      isImageChangePausedRef.current = false;
+      const pending = pendingResultRef.current;
+      pendingResultRef.current = null;
+      if (pending) applyResult(pending);
+    },
+    cancelImageChange: () => {
+      isImageChangePausedRef.current = false;
+      pendingResultRef.current = null;
+      moveTo({ stage: 'record' });
+    },
     cancelPreview,
     failPreview,
     retry,

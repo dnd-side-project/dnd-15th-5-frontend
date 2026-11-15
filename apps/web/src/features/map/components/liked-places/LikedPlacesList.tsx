@@ -1,3 +1,4 @@
+import { SPENDING_CATEGORIES } from '@chapchap/shared/common/constants';
 import { useIsMutating } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -18,6 +19,9 @@ import LikedPlaceCardSkeleton from './LikedPlaceCardSkeleton';
 import LikedPlaceSummary from './LikedPlaceSummary';
 
 const ALL_CATEGORY = '전체';
+const CATEGORY_ORDER = new Map<string, number>(
+  [ALL_CATEGORY, ...SPENDING_CATEGORIES].map((category, index) => [category, index])
+);
 
 function LikedPlaceCard({ likedPlace }: { likedPlace: LikedPlaceResponse }) {
   const likeMutation = useTogglePlaceLikeMutation();
@@ -110,11 +114,19 @@ export default function LikedPlacesList({ onBack }: { onBack: () => void }) {
     ALL_CATEGORY,
     ...(categories ?? []).filter((category) => category !== ALL_CATEGORY),
   ];
-  const availableCategories =
-    isPlaceholderData && categoryOptionsSnapshot ? categoryOptionsSnapshot : responseCategories;
+  const availableCategories = [
+    ...(isPlaceholderData && categoryOptionsSnapshot
+      ? categoryOptionsSnapshot
+      : responseCategories),
+  ];
   if (selectedCategory !== ALL_CATEGORY && !availableCategories.includes(selectedCategory)) {
     availableCategories.push(selectedCategory);
   }
+  availableCategories.sort(
+    (first, second) =>
+      (CATEGORY_ORDER.get(first) ?? CATEGORY_ORDER.size) -
+      (CATEGORY_ORDER.get(second) ?? CATEGORY_ORDER.size)
+  );
   const activeCategory = availableCategories.includes(selectedCategory)
     ? selectedCategory
     : ALL_CATEGORY;

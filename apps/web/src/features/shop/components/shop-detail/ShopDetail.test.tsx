@@ -281,18 +281,46 @@ describe('ShopDetail', () => {
       </MemoryRouter>
     );
     const { rerender } = render(view());
-    const root = screen.getByRole('region', { name: '방문 요약과 방문 기록' });
+    const root = document.querySelector<HTMLElement>('[aria-label="방문 요약과 방문 기록"]')!;
     const row = root.querySelector<HTMLElement>('[data-visit-id="196"]')!;
-    const header = screen.getByRole('heading', { level: 1, name: '투썸플레이스' }).parentElement!
-      .parentElement!;
+    const header = root.querySelector('h1')!.parentElement!.parentElement!;
     jest.spyOn(root, 'getBoundingClientRect').mockReturnValue({ top: 58 } as DOMRect);
     jest.spyOn(row, 'getBoundingClientRect').mockReturnValue({ top: 678 } as DOMRect);
     jest.spyOn(header, 'getBoundingClientRect').mockReturnValue({ height: 120 } as DOMRect);
     expect(root.scrollTop).toBe(0);
+    expect(root).toHaveStyle({ visibility: 'hidden' });
 
     mockedUsePlaceVisitsInfiniteQuery.mockReturnValue({ ...visitsQuery, isRefetching: false });
     rerender(view());
     expect(root.scrollTop).toBe(500);
+    expect(root).not.toHaveStyle({ visibility: 'hidden' });
+  });
+
+  it('수정 복귀 시 목록이 준비되기 전 상단을 숨기고 저장한 스크롤 위치에서 바로 표시한다', () => {
+    const query = mockedUsePlaceVisitsInfiniteQuery(101);
+    mockedUsePlaceVisitsInfiniteQuery.mockReturnValue({ ...query, isRefetching: true });
+    const view = () => (
+      <MemoryRouter>
+        <ShopDetail
+          placeId={101}
+          headerContent={null}
+          onViewOnMap={jest.fn()}
+          restoreScrollTop={480}
+        />
+      </MemoryRouter>
+    );
+    const { rerender } = render(view());
+    const root = document.querySelector<HTMLElement>('[aria-label="방문 요약과 방문 기록"]')!;
+    expect(root).toHaveStyle({ visibility: 'hidden' });
+    expect(root.querySelector('.shop-sticker-hero__stamp--playing')).toBeNull();
+    expect(screen.getByRole('status', { name: '방문 기록 위치를 복원하는 중' })).toBeVisible();
+    mockedUsePlaceVisitsInfiniteQuery.mockReturnValue({ ...query, isRefetching: false });
+    rerender(view());
+    expect(root.scrollTop).toBe(480);
+    expect(root).not.toHaveStyle({ visibility: 'hidden' });
+    expect(
+      screen.queryByRole('status', { name: '방문 기록 위치를 복원하는 중' })
+    ).not.toBeInTheDocument();
   });
 
   it('방문 기록이 있으면 이미지가 없어도 스티커 미획득으로 안내하지 않는다', () => {

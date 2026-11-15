@@ -7,6 +7,7 @@ import type { BridgeMessageType } from '@chapchap/shared/bridge';
  * `BridgeMessageType`이 추가되면 대응하는 제한 시간도 반드시 정의해야 한다.
  */
 export const BRIDGE_REQUEST_TIMEOUT_MS = {
+  pickStickerImage: 5 * 60_000,
   prepareStickerBackground: 120_000,
   removeStickerBackground: 120_000,
   cancelStickerBackground: 10_000,

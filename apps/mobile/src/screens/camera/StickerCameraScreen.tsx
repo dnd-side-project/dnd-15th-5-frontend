@@ -13,11 +13,19 @@ import { useCameraPinchZoom } from '@/shared/hooks/useCameraPinchZoom';
 
 import type { BridgeResult } from '@chapchap/shared/bridge';
 
+const STICKER_HEADER_HEIGHT = 56;
+const STICKER_HEADER_TOP_OFFSET = 16;
+
 /** REC_Take picture의 393×852 시안을 기준으로 구성한 스티커 전용 카메라입니다. */
 export default function StickerCameraScreen() {
-  const { captureId = '', hasActiveRecord } = useLocalSearchParams<{
+  const {
+    captureId = '',
+    hasActiveRecord,
+    isChangingImage,
+  } = useLocalSearchParams<{
     captureId: string;
     hasActiveRecord?: string;
+    isChangingImage?: string;
   }>();
   const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
   const insets = useSafeAreaInsets();
@@ -86,10 +94,10 @@ export default function StickerCameraScreen() {
 
   return (
     <View className="flex-1 bg-neutral-900">
-      <View style={{ height: Math.max(134, insets.top + 86) }}>
+      <View style={{ height: insets.top + STICKER_HEADER_HEIGHT }}>
         <Text
           className="absolute inset-x-14 text-center font-pretendard-semibold text-title-02-semibold text-neutral-00"
-          style={{ top: Math.max(77, insets.top + 29) }}
+          style={{ top: insets.top + STICKER_HEADER_TOP_OFFSET }}
         >
           촬영하기
         </Text>
@@ -100,7 +108,7 @@ export default function StickerCameraScreen() {
           accessibilityLabel="촬영 닫기"
           hitSlop={12}
           className="absolute right-4 size-6 items-center justify-center"
-          style={{ top: Math.max(77, insets.top + 29) }}
+          style={{ top: insets.top + STICKER_HEADER_TOP_OFFSET }}
         >
           <CloseIcon width={16} height={16} color="#ffffff" />
         </Pressable>
@@ -160,6 +168,7 @@ export default function StickerCameraScreen() {
       </View>
       {isExitConfirmOpen && (
         <RecordExitConfirmDialog
+          mode={isChangingImage === 'true' ? 'imageChange' : 'record'}
           onExit={handleClose}
           onContinue={() => setIsExitConfirmOpen(false)}
         />

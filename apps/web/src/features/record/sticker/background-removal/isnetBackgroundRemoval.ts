@@ -53,6 +53,7 @@ const createSession = async (
     });
   }
   const { env, InferenceSession, Tensor } = runtime;
+  env.logLevel = 'error';
   env.wasm.numThreads = 1;
   env.wasm.proxy = false;
   env.wasm.wasmPaths = {
@@ -89,7 +90,11 @@ const createSession = async (
   let session: OnnxRuntime.InferenceSession;
   try {
     onUpdate({ type: 'diagnostic', backend, phase: 'initializing' });
-    session = await InferenceSession.create(model, { executionProviders: [backend] });
+    session = await InferenceSession.create(model, {
+      executionProviders: [backend],
+      // NOTE: 모델 정리·연산 배치 경고는 숨기고 실제 오류 이상의 로그는 유지합니다.
+      logSeverityLevel: 3,
+    });
   } catch (cause) {
     destroyDevice();
     throw new Error('배경 제거 모델을 시작하지 못했어요. 화면을 새로고침하고 다시 시도해주세요.', {

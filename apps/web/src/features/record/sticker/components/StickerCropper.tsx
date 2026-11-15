@@ -1,12 +1,10 @@
 import { useRef, useState } from 'react';
 
-import {
-  STICKER_FLOW_HEADER_HEIGHT_CLASS,
-  STICKER_FLOW_HEADER_TOP_CLASS,
-} from '@/features/record/sticker/constants';
+import { getStickerFlowLayout } from '@/features/record/sticker/constants';
 import { FULL_STICKER_CROP, moveCropCorner } from '@/features/record/sticker/image/stickerImage';
 import type { StickerCrop, StickerCropCorner } from '@/features/record/sticker/image/stickerImage';
 import PageHeader from '@/shared/layout/page-header';
+import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 
@@ -43,6 +41,7 @@ export default function StickerCropper({
   closeButtonLabel = '사진 자르기 닫기',
   onConfirm,
 }: StickerCropperProps) {
+  const layout = getStickerFlowLayout(isNativeApp());
   const imageBox = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState<number | null>(null);
   const [crop, setCrop] = useState(initialCrop);
@@ -77,17 +76,19 @@ export default function StickerCropper({
 
   return (
     <>
-      <div className={cn('relative shrink-0', STICKER_FLOW_HEADER_HEIGHT_CLASS)}>
+      <div className={cn('relative shrink-0', layout.headerHeight)}>
         <PageHeader
           title="사진 자르기"
           tone="inverse"
           onClose={onCancel}
           closeButtonLabel={closeButtonLabel}
-          className={cn('absolute inset-x-4 h-6 py-0', STICKER_FLOW_HEADER_TOP_CLASS)}
+          className={cn('absolute inset-x-4 h-6 py-0', layout.headerTop)}
         />
       </div>
       {/* NOTE: 낮은 화면에서도 모서리를 조절할 공간을 확보하고, 부족한 높이는 상위 화면에서 스크롤한다. */}
-      <div className="flex min-h-80 flex-1 flex-col overflow-hidden px-4 pt-16">
+      <div
+        className={cn('flex min-h-80 flex-1 flex-col overflow-hidden px-4', layout.cropPaddingTop)}
+      >
         <div className="flex min-h-0 flex-1 items-center justify-center @container-size">
           <div
             ref={imageBox}

@@ -30,7 +30,7 @@ const setup = () => {
         <ConsumptionRecordActions>
           {({ onEditRecord, onDeleteRecord }) => (
             <>
-              <button onClick={() => onEditRecord?.(196, '2020-06-01')}>수정</button>
+              <button onClick={() => onEditRecord?.(196, '2020-06-01', 480)}>수정</button>
               <button onClick={() => onDeleteRecord?.(196)}>삭제</button>
             </>
           )}
@@ -53,6 +53,7 @@ it('수정 화면에 진입하고 돌아오면 선택한 기록 날짜를 복원
   expect(JSON.parse(screen.getByTestId('return-state').textContent!)).toMatchObject({
     scrollToConsumptionId: 196,
     scrollToDate: '2020-06-01',
+    returnScrollTop: 480,
     returnEntryKey: expect.any(String),
   });
   fireEvent.click(screen.getByRole('button', { name: '돌아가기' }));

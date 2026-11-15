@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 
@@ -165,7 +165,9 @@ describe('FrequentShopList', () => {
     renderFrequentShopList();
 
     await user.click(screen.getByRole('button', { name: '기간 필터' }));
-    await user.click(screen.getByRole('button', { name: '전체' }));
+    await user.click(
+      within(screen.getByRole('dialog', { name: '기간' })).getByRole('button', { name: '전체' })
+    );
 
     expect(mockedUseFrequentPlacesInfiniteQuery).toHaveBeenLastCalledWith({
       category: undefined,
@@ -186,7 +188,9 @@ describe('FrequentShopList', () => {
     );
 
     await user.click(screen.getByRole('button', { name: '기간 필터' }));
-    await user.click(screen.getByRole('button', { name: '전체' }));
+    await user.click(
+      within(screen.getByRole('dialog', { name: '기간' })).getByRole('button', { name: '전체' })
+    );
 
     expect(onPeriodChange).toHaveBeenCalledWith('all');
   });

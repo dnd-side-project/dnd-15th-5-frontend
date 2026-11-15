@@ -24,7 +24,8 @@ type FrequentShopListProps = {
   period?: FrequentShopPeriod;
 };
 
-const CATEGORY_FILTERS = ['모두', ...RECORD_CATEGORIES] as const;
+const ALL_CATEGORY = '전체';
+const CATEGORY_FILTERS = [ALL_CATEGORY, ...RECORD_CATEGORIES] as const;
 type CategoryFilter = (typeof CATEGORY_FILTERS)[number];
 
 const PERIOD_PARAM_BY_FILTER = {
@@ -38,12 +39,12 @@ export default function FrequentShopList({
   onPeriodChange,
   period,
 }: FrequentShopListProps) {
-  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('모두');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>(ALL_CATEGORY);
   const [internalPeriod, setInternalPeriod] = useState<FrequentShopPeriod>('currentMonth');
   const [isPeriodFilterOpen, setIsPeriodFilterOpen] = useState(false);
   const selectedPeriod = period ?? internalPeriod;
   const category = useMemo(
-    () => (selectedCategory === '모두' ? undefined : [selectedCategory]),
+    () => (selectedCategory === ALL_CATEGORY ? undefined : [selectedCategory]),
     [selectedCategory]
   );
   const frequentPlacesQuery = useFrequentPlacesInfiniteQuery({

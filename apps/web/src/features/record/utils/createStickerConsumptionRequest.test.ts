@@ -14,6 +14,40 @@ const draft = {
   memo: '',
   category: '카페' as const,
 };
+
+it('현재보다 늦은 오늘의 시간대도 저장하고 내일 이후 날짜는 거부한다', () => {
+  jest.useFakeTimers({ now: new Date(2026, 10, 15, 1) });
+  try {
+    const today = {
+      ...draft,
+      visitDateTime: { date: new Date(2026, 10, 15, 17), period: 'evening' as const },
+    };
+    expect(createStickerConsumptionRequest(today, { imageId: 42 })).toMatchObject({
+      purchaseDate: '2026-11-15',
+      purchaseTime: '17:00:00',
+    });
+    expect(() =>
+      createStickerConsumptionRequest(
+        {
+          ...today,
+          visitDateTime: { ...today.visitDateTime, date: new Date(2026, 10, 16) },
+        },
+        { imageId: 42 }
+      )
+    ).toThrow('방문 일시를 확인해주세요.');
+    expect(() =>
+      createStickerConsumptionRequest(
+        {
+          ...today,
+          visitDateTime: { ...today.visitDateTime, date: new Date(NaN) },
+        },
+        { imageId: 42 }
+      )
+    ).toThrow('방문 일시를 확인해주세요.');
+  } finally {
+    jest.useRealTimers();
+  }
+});
 it('빈 금액·메모·영수증 ID는 전송하지 않고 이미지 ID만 선택한다', () => {
   const request = createStickerConsumptionRequest(draft, { imageId: 42 });
   expect(request).toMatchObject({
