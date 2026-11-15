@@ -4,6 +4,13 @@ const PHOTO_DAILY_LIMIT = 100;
 const PHOTO_USAGE_STORAGE_KEY = 'chapchap_google_places_photo_usage';
 const KOREA_TIME_OFFSET_MS = 9 * 60 * 60 * 1000;
 
+const isValidUsageDate = (date: string): boolean => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+
+  const parsedDate = new Date(`${date}T00:00:00Z`);
+  return Number.isFinite(parsedDate.getTime()) && parsedDate.toISOString().slice(0, 10) === date;
+};
+
 const reservePhotoRequest = (): boolean => {
   const date = new Date(Date.now() + KOREA_TIME_OFFSET_MS).toISOString().slice(0, 10);
   const storedUsage = window.localStorage.getItem(PHOTO_USAGE_STORAGE_KEY);
@@ -16,6 +23,7 @@ const reservePhotoRequest = (): boolean => {
       usage === null ||
       !('date' in usage) ||
       typeof usage.date !== 'string' ||
+      !isValidUsageDate(usage.date) ||
       !('count' in usage) ||
       typeof usage.count !== 'number' ||
       !Number.isSafeInteger(usage.count) ||

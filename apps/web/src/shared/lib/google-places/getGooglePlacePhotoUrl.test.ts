@@ -78,13 +78,33 @@ describe('getGooglePlacePhotoUrl', () => {
     expect(navigator.locks.request).not.toHaveBeenCalled();
   });
 
-  it.each(['invalid json', '{}', '{"date":"2026-11-14","count":-1}'])(
-    '손상된 사용량이면 사진을 요청하지 않는다: %s',
-    async (value) => {
-      localStorage.setItem(STORAGE_KEY, value);
+  it.each([
+    'invalid json',
+    '{}',
+    '{"date":"2026-11-14","count":-1}',
+    '{"date":"invalid","count":100}',
+    '{"date":"2026-1-01","count":100}',
+    '{"date":"2026-13-01","count":100}',
+    '{"date":"2026-11-31","count":100}',
+    '{"date":"2026-02-29","count":100}',
+  ])('손상된 사용량이면 사진을 요청하지 않는다: %s', async (value) => {
+    localStorage.setItem(STORAGE_KEY, value);
 
-      expect(await getGooglePlacePhotoUrl(photo, 128)).toBeNull();
-      expect(getURI).not.toHaveBeenCalled();
+    expect(await getGooglePlacePhotoUrl(photo, 128)).toBeNull();
+    expect(getURI).not.toHaveBeenCalled();
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(value);
+  });
+
+  it.each(['2026-11-13', '2024-02-29'])(
+    '유효한 과거 날짜이면 사용량을 초기화한다: %s',
+    async (date) => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ date, count: 100 }));
+
+      expect(await getGooglePlacePhotoUrl(photo, 128)).toBe('https://example.com/photo.jpg');
+      expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual({
+        date: '2026-11-14',
+        count: 1,
+      });
     }
   );
 
