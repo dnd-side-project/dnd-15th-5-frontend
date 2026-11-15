@@ -1,3 +1,5 @@
+import { getGooglePlacePhotoUrl } from './getGooglePlacePhotoUrl';
+
 import type { ShopSearchResult } from '@chapchap/shared/shop';
 
 const GOOGLE_PLACES_LANGUAGE = 'ko';
@@ -42,44 +44,54 @@ export const searchGooglePlaces = async (
     ...(locationBias === undefined ? {} : { locationBias }),
   });
 
-  return places.flatMap((place) => {
-    const id = place.id?.trim();
-    const name = place.displayName?.trim();
-    const address = place.formattedAddress?.trim();
-    const latitude = place.location?.lat();
-    const longitude = place.location?.lng();
+  const results = await Promise.all(
+    places.map(async (place): Promise<ShopSearchResult[]> => {
+      const id = place.id?.trim();
+      const name = place.displayName?.trim();
+      const address = place.formattedAddress?.trim();
+      const latitude = place.location?.lat();
+      const longitude = place.location?.lng();
 
-    if (
-      !id ||
-      !name ||
-      !address ||
-      typeof latitude !== 'number' ||
-      !Number.isFinite(latitude) ||
-      typeof longitude !== 'number' ||
-      !Number.isFinite(longitude)
-    ) {
-      return [];
-    }
+      if (
+        !id ||
+        !name ||
+        !address ||
+        typeof latitude !== 'number' ||
+        !Number.isFinite(latitude) ||
+        typeof longitude !== 'number' ||
+        !Number.isFinite(longitude)
+      ) {
+        return [];
+      }
 
-    const photoUrls =
-      place.photos?.slice(0, 3).flatMap((photo) => {
-        const photoUrl = photo.getURI({ maxWidth: GOOGLE_PLACES_GALLERY_PHOTO_MAX_WIDTH });
-        return photoUrl ? [photoUrl] : [];
-      }) ?? [];
+      const photos = includePhotos ? (place.photos ?? []) : [];
+      const photoUrl = photos[0]
+        ? await getGooglePlacePhotoUrl(photos[0], GOOGLE_PLACES_PHOTO_MAX_WIDTH)
+        : null;
+      const photoUrls = includePhotoUrls
+        ? (
+            await Promise.all(
+              photos
+                .slice(0, 3)
+                .map((photo) =>
+                  getGooglePlacePhotoUrl(photo, GOOGLE_PLACES_GALLERY_PHOTO_MAX_WIDTH)
+                )
+            )
+          ).filter((url): url is string => url !== null)
+        : [];
 
-    return [
-      {
-        id,
-        name,
-        address,
-        photoUrl:
-          (includePhotos
-            ? place.photos?.[0]?.getURI({ maxWidth: GOOGLE_PLACES_PHOTO_MAX_WIDTH })
-            : undefined) ?? fallbackPhotoUrl,
-        ...(includePhotoUrls ? { photoUrls } : {}),
-        latitude,
-        longitude,
-      },
-    ];
-  });
+      return [
+        {
+          id,
+          name,
+          address,
+          photoUrl: photoUrl ?? fallbackPhotoUrl,
+          ...(includePhotoUrls ? { photoUrls } : {}),
+          latitude,
+          longitude,
+        },
+      ];
+    })
+  );
+  return results.flat();
 };
