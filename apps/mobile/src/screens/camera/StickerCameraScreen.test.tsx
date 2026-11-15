@@ -1,5 +1,6 @@
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { finishStickerCapture, isStickerCaptureActive } from '@/native/sticker/captureStickerPhoto';
 import { prepareStickerPhoto } from '@/native/sticker/prepareStickerPhoto';
@@ -8,7 +9,7 @@ import StickerCameraScreen from './StickerCameraScreen';
 
 const mockTakePicture = jest.fn();
 jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0 })),
 }));
 jest.mock('expo-camera', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -38,6 +39,7 @@ jest.mock('@/native/sticker/prepareStickerPhoto', () => ({ prepareStickerPhoto: 
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.mocked(useSafeAreaInsets).mockReturnValue({ top: 0, bottom: 0, left: 0, right: 0 });
   jest.useFakeTimers();
   jest.mocked(useLocalSearchParams).mockReturnValue({ captureId: 'capture-01' });
   jest.mocked(isStickerCaptureActive).mockReturnValue(true);
@@ -59,6 +61,29 @@ it('촬영 후 WebView로 돌아가고 카메라 화면이 닫힌 뒤 사진을 
     mimeType: 'image/jpeg',
   });
 });
+it('이미지 변경 중 촬영을 닫으면 이미지 변경 종료 문구를 표시한다', async () => {
+  jest
+    .mocked(useLocalSearchParams)
+    .mockReturnValue({ captureId: 'capture-01', hasActiveRecord: 'true', isChangingImage: 'true' });
+  const { getByLabelText, getByText } = await render(<StickerCameraScreen />);
+  await fireEvent.press(getByLabelText('촬영 닫기'));
+  expect(getByText('이미지 변경을 그만둘까요?')).toBeTruthy();
+  await fireEvent.press(getByLabelText('계속하기'));
+  expect(router.back).not.toHaveBeenCalled();
+  await fireEvent.press(getByLabelText('촬영 닫기'));
+  await fireEvent.press(getByLabelText('그만두기'));
+  expect(finishStickerCapture).toHaveBeenCalledWith('capture-01', { status: 'closed' });
+});
+
+it.each([0, 47])('촬영 헤더는 상단 안전 영역 %s px 아래에 기본 간격만 둔다', async (top) => {
+  jest.mocked(useSafeAreaInsets).mockReturnValue({ top, bottom: 0, left: 0, right: 0 });
+  const { getByLabelText, getByText } = await render(<StickerCameraScreen />);
+  const closeButton = getByLabelText('촬영 닫기');
+  expect(closeButton).toHaveStyle({ top: top + 16 });
+  expect(getByText('촬영하기')).toHaveStyle({ top: top + 16 });
+  expect(closeButton.parent).toHaveStyle({ height: top + 56 });
+});
+
 it('전후면 카메라를 전환한다', async () => {
   const { getByLabelText, getByTestId } = await render(<StickerCameraScreen />);
   await fireEvent.press(getByLabelText('카메라 전환'));

@@ -8,6 +8,7 @@ import { cn } from '@/shared/lib/cn';
 import type { RecordLocationState } from '@/shared/types/recordNavigation';
 import { Chip } from '@/shared/ui/chip';
 import { RegularShopBadge } from '@/shared/ui/regular-shop-badge';
+import { Spinner } from '@/shared/ui/spinner';
 
 import ShopStickerHero from './ShopStickerHero';
 import VisitHistoryList from './VisitHistoryList';
@@ -28,6 +29,7 @@ type ShopDetailViewProps = {
   scrollToDate?: string;
   scrollToConsumptionId?: number;
   isRestoreTargetPending?: boolean;
+  restoreScrollTop?: number;
   visitHistory: Omit<ComponentProps<typeof VisitHistoryList>, 'scrollRootRef'>;
   loadedVisitPageCount: number;
 };
@@ -45,30 +47,51 @@ export default function ShopDetailView({
   scrollToDate,
   scrollToConsumptionId,
   isRestoreTargetPending,
+  restoreScrollTop,
 }: ShopDetailViewProps) {
   const scrollRootRef = useRef<HTMLDivElement>(null);
   const informationPanelRef = useRef<HTMLDivElement>(null);
   const stickyHeaderRef = useRef<HTMLDivElement>(null);
+  const restoreStatusRef = useRef<HTMLDivElement>(null);
+  const hasRestoreTarget = Boolean(
+    scrollToDate || scrollToConsumptionId || restoreScrollTop !== undefined
+  );
   useShopStickerCollapse({ scrollRootRef, informationPanelRef });
   useVisitHistoryRestore({
     ...visitHistory,
     scrollRootRef,
     stickyHeaderRef,
+    restoreStatusRef,
     scrollToDate,
     scrollToConsumptionId,
     isRestoreTargetPending,
     loadedPageCount: loadedVisitPageCount,
+    restoreScrollTop,
   });
   const hasRecordedVisits =
     (place.stats?.totalVisitCount ?? 0) > 0 || visitHistory.visits.length > 0;
 
   return (
-    <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
+    <article className="relative -mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
       <header className="relative z-30 h-14.5 shrink-0 bg-neutral-00 px-4">{headerContent}</header>
+      <div
+        ref={restoreStatusRef}
+        hidden={!hasRestoreTarget}
+        role="status"
+        aria-label="방문 기록 위치를 복원하는 중"
+        className="absolute inset-x-0 top-14.5 bottom-0"
+      >
+        <div className="flex h-full items-center justify-center text-primary-500">
+          <Spinner />
+        </div>
+      </div>
       <div
         ref={scrollRootRef}
         role="region"
         aria-label="방문 요약과 방문 기록"
+        style={{
+          visibility: hasRestoreTarget ? 'hidden' : undefined,
+        }}
         onScroll={(event) => {
           const panel = informationPanelRef.current;
           if (!panel) return;
@@ -89,6 +112,7 @@ export default function ShopDetailView({
           headerContent={null}
           placeId={placeId}
           stickerImages={stickerImages}
+          skipInitialAnimation={hasRestoreTarget}
         />
         <div
           ref={informationPanelRef}
@@ -127,7 +151,16 @@ export default function ShopDetailView({
               recordLocationState={recordLocationState}
               totalVisitCount={place.stats?.totalVisitCount ?? visitHistory.visits.length}
             />
-            <VisitHistoryList {...visitHistory} scrollRootRef={scrollRootRef} />
+            <VisitHistoryList
+              {...visitHistory}
+              onEditRecord={
+                visitHistory.onEditRecord
+                  ? (id, date) =>
+                      visitHistory.onEditRecord?.(id, date, scrollRootRef.current?.scrollTop)
+                  : undefined
+              }
+              scrollRootRef={scrollRootRef}
+            />
           </div>
         </div>
       </div>

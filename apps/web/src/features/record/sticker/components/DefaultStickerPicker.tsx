@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { getStickerFlowLayout } from '@/features/record/sticker/constants';
 import { CheckIcon } from '@/shared/assets/icons';
 import {
   DEFAULT_STICKER_CATEGORIES,
@@ -9,6 +10,7 @@ import type {
   DefaultSticker,
   DefaultStickerCategory,
 } from '@/shared/assets/images/ios-stickers/catalog';
+import { isNativeApp } from '@/shared/lib/bridge';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/button';
 import { CategoryChip } from '@/shared/ui/category-chip';
@@ -18,6 +20,7 @@ import StickerFlowHeader from './StickerFlowHeader';
 type DefaultStickerPickerProps = {
   initialSticker?: DefaultSticker | null;
   onClose: () => void;
+  closeButtonLabel?: string;
   onConfirm: (sticker: DefaultSticker) => void;
   isProcessing: boolean;
   error: string;
@@ -26,10 +29,12 @@ type DefaultStickerPickerProps = {
 export default function DefaultStickerPicker({
   initialSticker,
   onClose,
+  closeButtonLabel,
   onConfirm,
   isProcessing,
   error,
 }: DefaultStickerPickerProps) {
+  const layout = getStickerFlowLayout(isNativeApp());
   const [category, setCategory] = useState<DefaultStickerCategory>(
     initialSticker?.category ?? '카페'
   );
@@ -46,8 +51,8 @@ export default function DefaultStickerPicker({
 
   return (
     <section className="flex min-h-dvh flex-col bg-neutral-00 text-neutral-700">
-      <header className="relative h-32 shrink-0">
-        <StickerFlowHeader onClose={onClose} />
+      <header className={cn('relative shrink-0', layout.defaultHeaderHeight)}>
+        <StickerFlowHeader onClose={onClose} closeButtonLabel={closeButtonLabel} />
       </header>
 
       <h1 className="mx-4 mt-2.5 text-heading-01-bold">스티커를 골라주세요</h1>

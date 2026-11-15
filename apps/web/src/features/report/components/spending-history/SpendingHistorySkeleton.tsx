@@ -15,7 +15,7 @@ export default function SpendingHistorySkeleton() {
                 <Skeleton className="size-13 shrink-0 rounded-05" />
                 <div className="min-w-0 flex-1 space-y-2">
                   <Skeleton className="h-4.5 w-3/5 rounded-05" />
-                  <Skeleton className="h-3.5 w-4/5 rounded-05" />
+                  <Skeleton className="h-3.5 w-2/5 rounded-05" />
                 </div>
                 <Skeleton className="h-5 w-18 shrink-0 rounded-05" />
               </div>

@@ -4,6 +4,7 @@ export {
   MAX_RECORD_AMOUNT,
   RECORD_CATEGORIES,
   RECORD_EXIT_CONFIRM_TEXT,
+  IMAGE_CHANGE_EXIT_CONFIRM_TEXT,
 } from './constants';
 export {
   createInitialVisitDateTime,
@@ -14,6 +15,7 @@ export {
   getCalendarDays,
   getCalendarWeekCount,
   getVisitPeriodForHour,
+  parsePurchaseDateTime,
   getVisitPeriodLabel,
   isSameDate,
   isSameOrAfterMonth,

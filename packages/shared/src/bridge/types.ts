@@ -75,6 +75,10 @@ export type BridgeEvent<TType extends BridgeEventType = BridgeEventType> = {
  * NOTE: ping은 브릿지 동작 확인용이며 실제 기능에서 사용하지 않는다.
  */
 export type BridgeMessageMap = {
+  pickStickerImage: {
+    payload: Record<string, never>;
+    result: { status: 'success'; base64: string; mimeType: 'image/jpeg' } | { status: 'cancelled' };
+  };
   prepareStickerBackground: {
     payload: Record<string, never>;
     result: { ready: true; backend: StickerInferenceBackend };
@@ -118,7 +122,7 @@ export type BridgeMessageMap = {
     result: { saved: true };
   };
   captureStickerPhoto: {
-    payload: { hasActiveRecord?: boolean };
+    payload: { hasActiveRecord?: boolean; isChangingImage?: boolean };
     result:
       | { status: 'success'; base64: string; mimeType: 'image/jpeg' }
       | { status: 'closed' }

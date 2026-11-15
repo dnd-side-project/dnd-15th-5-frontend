@@ -71,20 +71,22 @@ export default function RecentNeighborhoodList({
               >
                 <span className="min-w-0 truncate">{neighborhood.address}</span>
                 {currentNeighborhood?.id === neighborhood.id && (
-                  <span className="shrink-0">
+                  <span className="ml-auto shrink-0">
                     <Chip>현재 설정된 동네</Chip>
                   </span>
                 )}
               </button>
-              <button
-                type="button"
-                aria-label={`${neighborhood.address} 최근 동네에서 삭제`}
-                className="flex size-6 shrink-0 items-center justify-center text-neutral-400"
-                disabled={isSelecting || removingId !== undefined}
-                onClick={() => onRemove(neighborhood.id)}
-              >
-                <CloseIcon aria-hidden="true" className="size-3.5" />
-              </button>
+              {currentNeighborhood?.id !== neighborhood.id && (
+                <button
+                  type="button"
+                  aria-label={`${neighborhood.address} 최근 동네에서 삭제`}
+                  className="flex size-6 shrink-0 items-center justify-center text-neutral-400"
+                  disabled={isSelecting || removingId !== undefined}
+                  onClick={() => onRemove(neighborhood.id)}
+                >
+                  <CloseIcon aria-hidden="true" className="size-3.5" />
+                </button>
+              )}
             </li>
           ))}
         </ul>

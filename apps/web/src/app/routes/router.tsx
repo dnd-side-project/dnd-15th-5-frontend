@@ -1,39 +1,19 @@
 import * as Sentry from '@sentry/react';
 import { createBrowserRouter } from 'react-router-dom';
 
-import AppMainLayout from '@/app/layouts/AppMainLayout';
 import MobileLayout from '@/app/layouts/MobileLayout';
 import { AuthenticatedRoute, GuestOnlyRoute, TermsAgreementRoute } from '@/app/routes/AuthRoute';
 import RouteErrorPage from '@/app/routes/RouteErrorPage';
-import AgreementPage from '@/pages/agreement/AgreementPage';
-import PoliciesPage from '@/pages/agreement/PoliciesPage';
-import PrivacyPolicyPage from '@/pages/agreement/PrivacyPolicyPage';
-import TermsOfServicePage from '@/pages/agreement/TermsOfServicePage';
-import AuthCallbackPage from '@/pages/auth-callback/AuthCallbackPage';
-import HomePage from '@/pages/home/HomePage';
-import RecommendationLocationMapPage from '@/pages/home/recommendation/RecommendationLocationMapPage';
-import RecommendationLocationSearchPage from '@/pages/home/recommendation/RecommendationLocationSearchPage';
-import MapSearchPage from '@/pages/home/search/MapSearchPage';
-import ShopDetailPage from '@/pages/home/shop/ShopDetailPage';
-import LoginPage from '@/pages/login/LoginPage';
-import LikedPlacesPage from '@/pages/my-page/LikedPlacesPage';
-import MyPage from '@/pages/my-page/MyPage';
-import MyProfileEditPage from '@/pages/my-page/MyProfileEditPage';
-import NotFoundPage from '@/pages/not-found/NotFoundPage';
-import NotificationPage from '@/pages/notifications/NotificationPage';
-import NotificationSettingsPage from '@/pages/notifications/NotificationSettingsPage';
-import OnboardingPage from '@/pages/onboarding/OnboardingPage';
-import EditRecordPage from '@/pages/record/edit/EditRecordPage';
-import RecordPage from '@/pages/record/RecordPage';
-import ShopSearchPage from '@/pages/record/shop/search/ShopSearchPage';
-import FrequentShopListPage from '@/pages/report/frequent-shops/FrequentShopListPage';
-import SpendingHistoryPage from '@/pages/report/history/SpendingHistoryPage';
-import MonthlyRecordListPage from '@/pages/report/monthly-records/MonthlyRecordListPage';
-import MonthlyReportPage from '@/pages/report/MonthlyReportPage';
-import ReportPage from '@/pages/report/ReportPage';
-import SharedReportPage from '@/pages/report/shared/SharedReportPage';
+import RouteLoading from '@/app/routes/RouteLoading';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
 import PaddedLayout from '@/shared/layout/padded-layout';
+
+import type { ComponentType } from 'react';
+
+/** 명시된 import 경로를 유지하며 페이지의 default export를 라우터의 Component로 연결합니다. */
+const lazyRoute = (load: () => Promise<{ default: ComponentType }>) => async () => ({
+  Component: (await load()).default,
+});
 
 const createSentryBrowserRouter = Sentry.wrapCreateBrowserRouter(createBrowserRouter);
 
@@ -42,6 +22,7 @@ export const router = createSentryBrowserRouter([
     // INFO: 모든 페이지에 모바일 최대 너비와 공통 배경을 적용한다.
     element: <MobileLayout />,
     errorElement: <RouteErrorPage />,
+    HydrateFallback: RouteLoading,
     children: [
       {
         // INFO: 로그인 및 약관 화면에 좌우 여백을 적용한다.
@@ -49,75 +30,95 @@ export const router = createSentryBrowserRouter([
         children: [
           {
             element: <GuestOnlyRoute />,
-            children: [{ path: ROUTE_PATHS.login, element: <LoginPage /> }],
+            children: [
+              {
+                path: ROUTE_PATHS.login,
+                lazy: lazyRoute(() => import('@/pages/login/LoginPage')),
+              },
+            ],
           },
           {
             path: ROUTE_PATHS.authCallback,
-            element: <AuthCallbackPage />,
+            lazy: lazyRoute(() => import('@/pages/auth-callback/AuthCallbackPage')),
           },
           {
             path: ROUTE_PATHS.oauthCallback,
-            element: <AuthCallbackPage />,
+            lazy: lazyRoute(() => import('@/pages/auth-callback/AuthCallbackPage')),
           },
           {
             element: <TermsAgreementRoute />,
-            children: [{ path: ROUTE_PATHS.agreement, element: <AgreementPage /> }],
+            children: [
+              {
+                path: ROUTE_PATHS.agreement,
+                lazy: lazyRoute(() => import('@/pages/agreement/AgreementPage')),
+              },
+            ],
           },
           // 약관 원문은 가입 전·후 모두 확인할 수 있다.
-          { path: ROUTE_PATHS.agreementPrivacyPolicy, element: <PrivacyPolicyPage /> },
-          { path: ROUTE_PATHS.agreementTermsOfService, element: <TermsOfServicePage /> },
+          {
+            path: ROUTE_PATHS.agreementPrivacyPolicy,
+            lazy: lazyRoute(() => import('@/pages/agreement/PrivacyPolicyPage')),
+          },
+          {
+            path: ROUTE_PATHS.agreementTermsOfService,
+            lazy: lazyRoute(() => import('@/pages/agreement/TermsOfServicePage')),
+          },
         ],
       },
       {
         path: ROUTE_PATTERNS.sharedReport,
-        element: <SharedReportPage />,
+        lazy: lazyRoute(() => import('@/pages/report/shared/SharedReportPage')),
       },
       {
         element: <AuthenticatedRoute />,
         children: [
           {
             path: ROUTE_PATHS.onboarding,
-            element: <OnboardingPage />,
+            lazy: lazyRoute(() => import('@/pages/onboarding/OnboardingPage')),
           },
           {
             path: ROUTE_PATHS.monthlyReport,
-            element: <MonthlyReportPage />,
+            lazy: lazyRoute(() => import('@/pages/report/MonthlyReportPage')),
           },
           {
             // INFO: 네비게이션 화면에만 앱 메인 레이아웃을 중첩 적용한다.
-            element: <AppMainLayout />,
+            lazy: lazyRoute(() => import('@/app/layouts/AppMainLayout')),
             children: [
               // 지도 홈은 좌우 여백 없이 전체 너비를 사용한다.
               {
                 path: ROUTE_PATHS.home,
-                element: <HomePage />,
+                lazy: lazyRoute(() => import('@/pages/home/HomePage')),
               },
               {
                 path: ROUTE_PATHS.report,
-                element: <ReportPage />,
+                lazy: lazyRoute(() => import('@/pages/report/ReportPage')),
               },
             ],
           },
           {
             path: ROUTE_PATHS.homeRecommendationSearch,
-            element: <RecommendationLocationSearchPage />,
+            lazy: lazyRoute(
+              () => import('@/pages/home/recommendation/RecommendationLocationSearchPage')
+            ),
           },
           {
             path: ROUTE_PATHS.homeRecommendationMap,
-            element: <RecommendationLocationMapPage />,
+            lazy: lazyRoute(
+              () => import('@/pages/home/recommendation/RecommendationLocationMapPage')
+            ),
           },
           // 사진 선택과 기록 입력은 화면 전체 너비와 자체 Safe Area를 사용한다.
           {
             path: ROUTE_PATTERNS.editRecord,
-            element: <EditRecordPage />,
+            lazy: lazyRoute(() => import('@/pages/record/edit/EditRecordPage')),
           },
           {
             path: ROUTE_PATHS.record,
-            element: <RecordPage />,
+            lazy: lazyRoute(() => import('@/pages/record/RecordPage')),
             children: [
               {
                 path: ROUTE_PATHS.recordShopSearch,
-                element: <ShopSearchPage />,
+                lazy: lazyRoute(() => import('@/pages/record/shop/search/ShopSearchPage')),
               },
             ],
           },
@@ -127,51 +128,53 @@ export const router = createSentryBrowserRouter([
             children: [
               {
                 path: ROUTE_PATHS.homeSearch,
-                element: <MapSearchPage />,
+                lazy: lazyRoute(() => import('@/pages/home/search/MapSearchPage')),
               },
               {
                 path: ROUTE_PATHS.notifications,
-                element: <NotificationPage />,
+                lazy: lazyRoute(() => import('@/pages/notifications/NotificationPage')),
               },
               {
                 path: ROUTE_PATHS.notificationSettings,
-                element: <NotificationSettingsPage />,
+                lazy: lazyRoute(() => import('@/pages/notifications/NotificationSettingsPage')),
               },
               {
                 path: ROUTE_PATHS.myPage,
-                element: <MyPage />,
+                lazy: lazyRoute(() => import('@/pages/my-page/MyPage')),
               },
               {
                 path: ROUTE_PATHS.myPageLikes,
-                element: <LikedPlacesPage />,
+                lazy: lazyRoute(() => import('@/pages/my-page/LikedPlacesPage')),
               },
               {
                 path: ROUTE_PATHS.myPageProfile,
-                element: <MyProfileEditPage />,
+                lazy: lazyRoute(() => import('@/pages/my-page/MyProfileEditPage')),
               },
               {
                 path: ROUTE_PATHS.myPagePolicies,
-                element: <PoliciesPage />,
+                lazy: lazyRoute(() => import('@/pages/agreement/PoliciesPage')),
               },
               {
                 path: ROUTE_PATTERNS.shopDetail,
-                element: <ShopDetailPage />,
+                lazy: lazyRoute(() => import('@/pages/home/shop/ShopDetailPage')),
               },
               {
                 path: ROUTE_PATHS.spendingHistory,
-                element: <SpendingHistoryPage />,
+                lazy: lazyRoute(() => import('@/pages/report/history/SpendingHistoryPage')),
               },
               {
                 path: ROUTE_PATHS.frequentShopList,
-                element: <FrequentShopListPage />,
+                lazy: lazyRoute(() => import('@/pages/report/frequent-shops/FrequentShopListPage')),
               },
               {
                 path: ROUTE_PATHS.monthlyRecordList,
-                element: <MonthlyRecordListPage />,
+                lazy: lazyRoute(
+                  () => import('@/pages/report/monthly-records/MonthlyRecordListPage')
+                ),
               },
               {
                 path: '*',
-                element: <NotFoundPage />,
+                lazy: lazyRoute(() => import('@/pages/not-found/NotFoundPage')),
               },
             ],
           },

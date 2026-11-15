@@ -15,7 +15,7 @@ export const createPhotoSticker = async (
   const foreground = await removeStickerBackground(image, signal, onProgress);
   signal.throwIfAborted();
   onProgress('흰색 테두리를 만들고 있어요');
-  const sticker = await composeSticker(foreground);
+  const sticker = await composeSticker(foreground, signal);
   signal.throwIfAborted();
   return sticker;
 };

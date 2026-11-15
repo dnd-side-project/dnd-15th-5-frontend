@@ -69,10 +69,3 @@ export const groupConsumptionsByDate = (
 
 export const formatSpendingYearMonth = ({ year, month }: YearMonth) =>
   `${year}-${String(month).padStart(2, '0')}`;
-
-/** 현재 월부터 지정한 개수만큼 과거 월 목록을 최신순으로 만듭니다. */
-export const createRecentSpendingMonths = (count: number, today = new Date()): YearMonth[] =>
-  Array.from({ length: count }, (_, index) => {
-    const date = new Date(today.getFullYear(), today.getMonth() - index, 1);
-    return { year: date.getFullYear(), month: date.getMonth() + 1 };
-  });

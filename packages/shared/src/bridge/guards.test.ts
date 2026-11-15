@@ -1,6 +1,27 @@
 import { isBridgeEvent, isBridgeRequest, isBridgeResponse } from './guards';
 import { BRIDGE_MESSAGE_KIND } from './types';
 
+it('갤러리 브릿지 요청과 JPEG 응답을 검증하고 잘못된 결과를 거부한다', () => {
+  expect(
+    isBridgeRequest({ kind: 'request', type: 'pickStickerImage', id: 'gallery', payload: {} })
+  ).toBe(true);
+  const response = { kind: 'response', type: 'pickStickerImage', id: 'gallery', ok: true };
+  expect(isBridgeResponse({ ...response, result: { status: 'cancelled' } })).toBe(true);
+  expect(
+    isBridgeResponse({
+      ...response,
+      result: { status: 'success', base64: 'cGhvdG8=', mimeType: 'image/jpeg' },
+    })
+  ).toBe(true);
+  expect(isBridgeResponse({ ...response, result: { status: 'closed' } })).toBe(false);
+  expect(
+    isBridgeResponse({
+      ...response,
+      result: { status: 'success', base64: '', mimeType: 'image/jpeg' },
+    })
+  ).toBe(false);
+});
+
 it('경로 이벤트의 화면 내부 뒤로가기 여부는 boolean만 허용한다', () => {
   const event = { kind: 'event', type: 'routeChanged', payload: { pathname: '/home' } };
   expect(isBridgeEvent(event)).toBe(true);

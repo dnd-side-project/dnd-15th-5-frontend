@@ -9,12 +9,36 @@ import {
   isSameOrAfterMonth,
   isValidRecordAmount,
   MAX_RECORD_AMOUNT,
+  parsePurchaseDateTime,
   sanitizeAmount,
   validateRecordRequiredFields,
   WEEKDAY_LABELS,
 } from './index';
 
 describe('shared record rules', () => {
+  it('저장된 방문 시각은 미래 여부와 무관하게 분·초까지 복원한다', () => {
+    expect(parsePurchaseDateTime('2099-11-15', '17:25:30')).toEqual({
+      date: new Date(2099, 10, 15, 17, 25, 30),
+      period: 'evening',
+    });
+    expect(parsePurchaseDateTime('2026-11-15', '01:30')).toEqual({
+      date: new Date(2026, 10, 15, 1, 30),
+      period: 'night',
+    });
+  });
+
+  it.each([
+    ['2026-02-30', '17:00:00'],
+    ['2026-11-15', '24:00:00'],
+    ['2026-11-15', '17:60:00'],
+    ['2026-11-15', '17:00:60'],
+    ['2026-11-15', '9:30'],
+    ['2026-11-15', undefined],
+    [undefined, '17:00:00'],
+  ])('잘못된 API 날짜·시각은 복원하지 않는다: %s %s', (date, time) => {
+    expect(parsePurchaseDateTime(date, time)).toBeUndefined();
+  });
+
   it('금액을 정제하고 세 자리마다 쉼표를 표시한다', () => {
     expect(sanitizeAmount('0012abc-000')).toBe('12000');
     expect(formatAmount('12345678901234567890')).toBe('12,345,678,901,234,567,890');

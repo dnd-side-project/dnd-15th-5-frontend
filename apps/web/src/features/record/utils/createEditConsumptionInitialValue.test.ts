@@ -2,6 +2,24 @@ import { TEST_CONSUMPTION_DETAIL } from '@/features/record/testFixtures';
 
 import { createEditConsumptionInitialValue } from './createEditConsumptionInitialValue';
 
+it('현재보다 늦은 오늘의 시간대로 저장된 기록도 정확한 시각을 유지해 복원한다', () => {
+  jest.useFakeTimers({ now: new Date(2026, 10, 15, 1) });
+  try {
+    const value = createEditConsumptionInitialValue({
+      ...TEST_CONSUMPTION_DETAIL,
+      purchaseDate: '2026-11-15',
+      purchaseTime: '17:00:00',
+    });
+    expect(value?.draft).toMatchObject({
+      visitDateTime: { date: new Date(2026, 10, 15, 17), period: 'evening' },
+      purchaseTime: '17:00:00',
+    });
+    expect(value?.media).toEqual({ source: 'saved', imageId: 42, category: '카페' });
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
 it('사진 ID와 기존 장소, 정확한 방문 시각 및 입력값을 복원한다', () => {
   const value = createEditConsumptionInitialValue(TEST_CONSUMPTION_DETAIL);
   expect(value?.media).toEqual({ source: 'saved', imageId: 42, category: '카페' });
@@ -29,7 +47,7 @@ it('기본 스티커는 사진 업로드 없이 유지할 서버 ID로 복원한
   expect(value?.defaultSticker).toMatchObject({ id: 'coffee', name: '커피', category: '카페' });
 });
 
-it('카탈로그에 없는 저장된 기본 스티커는 다른 스티커로 대신 선택하지 않는다', () => {
+it('카탈로그에 없는 저장된 기본 스티커는 수정 폼을 만들지 않는다', () => {
   const value = createEditConsumptionInitialValue({
     ...TEST_CONSUMPTION_DETAIL,
     imageId: null,
@@ -37,8 +55,7 @@ it('카탈로그에 없는 저장된 기본 스티커는 다른 스티커로 대
     stickerItemId: 5,
     stickerName: '도넛',
   });
-  expect(value).not.toBeNull();
-  expect(value?.defaultSticker).toBeUndefined();
+  expect(value).toBeNull();
 });
 
 it('소비 카테고리와 달라도 저장된 스티커 카테고리로 선택 항목을 찾는다', () => {

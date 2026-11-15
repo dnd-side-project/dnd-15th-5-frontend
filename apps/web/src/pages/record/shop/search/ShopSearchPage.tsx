@@ -67,7 +67,7 @@ export default function ShopSearchPage() {
         confirmBeforeClose={shouldConfirmClose}
       />
 
-      <div className="mt-4">
+      <div className="mt-8">
         <ShopSearch onSelectShop={handleSelectShop} />
       </div>
     </main>

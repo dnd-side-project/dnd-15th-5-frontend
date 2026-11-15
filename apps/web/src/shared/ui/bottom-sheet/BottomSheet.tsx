@@ -31,6 +31,7 @@ type BottomSheetProps = {
   dragFromContent?: boolean;
   showHandle?: boolean;
   children: ReactNode;
+  className?: string;
   contentClassName?: string;
   rootRef?: Ref<HTMLDivElement>;
   fullTopBoundaryPx?: number;
@@ -87,6 +88,7 @@ const assignRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
  * `full` 중 무엇을 넘겨도 결과가 같고, `hidden` 여부만 의미가 있습니다.
  * `onExpand`를 지정하면 위로 끌어올리는 동안 높이가 늘어나고 놓을 때 확장 동작을 요청합니다.
  * @param props.children - 바텀시트 안에 표시할 내용입니다.
+ * @param props.className - 시트 루트에 추가할 스타일입니다.
  * @param props.contentClassName - 콘텐츠 영역에 추가할 스타일입니다.
  * @param props.rootRef - 바텀시트 루트 요소를 참조합니다.
  * @param props.fullTopBoundaryPx - `full` 단계에서 시트 상단이 넘어가지 않을 화면 기준 Y 좌표입니다.
@@ -105,6 +107,7 @@ export function BottomSheet({
   dragFromContent = false,
   showHandle = true,
   children,
+  className,
   contentClassName,
   rootRef,
   fullTopBoundaryPx,
@@ -219,7 +222,8 @@ export function BottomSheet({
         (!fitContent || isContentDragEnabled) && 'overflow-hidden',
         !isDragging && 'transition-[height,transform]',
         isHidden && 'pointer-events-none shadow-none',
-        isHidden && fitContent ? 'translate-y-full' : 'translate-y-0'
+        isHidden && fitContent ? 'translate-y-full' : 'translate-y-0',
+        className
       )}
     >
       {showHandle &&

@@ -7,6 +7,13 @@ export const RECORD_CATEGORIES = SPENDING_CATEGORIES;
 export const MAX_RECORD_AMOUNT = 100_000_000;
 
 /** 웹·앱 기록 플로우의 작성 중단 확인 다이얼로그 문구. */
+export const IMAGE_CHANGE_EXIT_CONFIRM_TEXT = {
+  title: '이미지 변경을 그만둘까요?',
+  description: '변경 중인 이미지는 저장되지 않아요',
+  exit: '그만두기',
+  continue: '계속하기',
+} as const;
+
 export const RECORD_EXIT_CONFIRM_TEXT = {
   title: '기록 작성을 그만둘까요?',
   description: '입력한 내용은 저장되지 않아요.',

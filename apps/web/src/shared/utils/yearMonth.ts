@@ -51,6 +51,3 @@ export const parseYearMonth = (value?: string | null): YearMonth | null => {
 
   return { year: Number(match[1]), month: Number(match[2]) };
 };
-
-/** 값이 `YYYY-MM` 연월 형식인지 확인합니다. */
-export const isValidYearMonth = (value?: string | null) => parseYearMonth(value) !== null;

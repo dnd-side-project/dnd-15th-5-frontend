@@ -31,7 +31,7 @@ it('정규화한 사진으로 배경을 제거하고 결과에 테두리를 합�
   await expect(createPhotoSticker(photo, signal, onProgress)).resolves.toBe(sticker);
   expect(prepareStickerImage).toHaveBeenCalledWith(photo);
   expect(removeStickerBackground).toHaveBeenCalledWith(prepared, signal, onProgress);
-  expect(composeSticker).toHaveBeenCalledWith(foreground);
+  expect(composeSticker).toHaveBeenCalledWith(foreground, signal);
   expect(onProgress).toHaveBeenLastCalledWith('흰색 테두리를 만들고 있어요');
 });
 

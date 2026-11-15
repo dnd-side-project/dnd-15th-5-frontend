@@ -58,6 +58,23 @@ it('갤러리 기록에서 뒤로 가면 같은 원본과 자르기 영역을 �
   expect(URL.revokeObjectURL).not.toHaveBeenCalled();
 });
 
+it('화면 단계가 같아도 촬영을 시작하면 갤러리 선택 요청을 취소한다', () => {
+  jest.mocked(isNativeApp).mockReturnValue(true);
+  jest.mocked(requestToNative).mockReturnValueOnce(new Promise(() => {}));
+  const { result } = renderHook(useStickerRecordFlow);
+  let signal!: AbortSignal;
+  act(() => {
+    signal = result.current.beginGallerySelection();
+  });
+  expect(signal.aborted).toBe(false);
+  act(() => {
+    void result.current.capturePhoto();
+  });
+  expect(result.current.screen.stage).toBe('select');
+  expect(result.current.isCapturing).toBe(true);
+  expect(signal.aborted).toBe(true);
+});
+
 it('자르기에서 이미지 생성으로 넘어가면 자르기 대기 상태를 해제한다', async () => {
   let finish: (blob: Blob) => void = () => {};
   jest.mocked(createPhotoSticker).mockReturnValueOnce(

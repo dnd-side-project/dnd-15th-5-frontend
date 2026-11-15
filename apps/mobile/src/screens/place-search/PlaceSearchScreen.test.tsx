@@ -33,7 +33,7 @@ describe('<PlaceSearchScreen />', () => {
   const originalWebUrl = process.env.EXPO_PUBLIC_WEB_URL;
 
   beforeEach(() => {
-    process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173/record/receipt/camera';
+    process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173/record';
     jest.clearAllMocks();
     mockRespondToBridgeRequest.mockResolvedValue(true);
   });

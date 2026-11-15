@@ -1,5 +1,5 @@
 import type { MonthlyReport, MonthlyReportData } from '@/features/report/types';
-import { StickerCoffeeImage } from '@/shared/assets/images/stickers';
+import { coffee } from '@/shared/assets/images/ios-stickers';
 
 import { mapMonthlyReportResponse } from './monthlyReport';
 
@@ -116,7 +116,7 @@ describe('mapMonthlyReportResponse', () => {
     });
     expect(report.shops[0]?.stickerImages).toEqual([
       'https://example.com/custom-sticker.png',
-      StickerCoffeeImage,
+      coffee,
     ]);
     expect(report?.weekdaySpending).toEqual([
       { day: '월', count: 2 },

@@ -1,4 +1,4 @@
-import { parseReceiptVisitDateTime, RECORD_CATEGORIES } from '@chapchap/shared/record';
+import { parsePurchaseDateTime, RECORD_CATEGORIES } from '@chapchap/shared/record';
 
 import type { ConsumptionDetailResponse } from '@/features/record/apis/dto';
 import type { StickerRecordInitialValue, StickerRecordMedia } from '@/features/record/types';
@@ -16,7 +16,7 @@ export const createEditConsumptionInitialValue = (
   if (!detail.purchaseTime) return null;
   const category = RECORD_CATEGORIES.find((item) => item === detail.category);
   if (!category) return null;
-  const visitDateTime = parseReceiptVisitDateTime(detail.purchaseDate, detail.purchaseTime);
+  const visitDateTime = parsePurchaseDateTime(detail.purchaseDate, detail.purchaseTime);
   const shop: ShopSearchResult = {
     id: detail.googlePlaceId ?? '',
     name: detail.placeName ?? '',
