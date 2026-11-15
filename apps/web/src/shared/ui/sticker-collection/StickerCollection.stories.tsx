@@ -1,24 +1,17 @@
 import {
-  StickerCoffeeImage,
-  StickerDonutImage,
-  StickerEyesImage,
-  StickerFriesImage,
-  StickerPizzaImage,
-  StickerSpecialImage,
-} from '@/shared/assets/images/stickers';
+  cake,
+  coffee,
+  gamepad,
+  pizza,
+  shoppingBags,
+  sparkles,
+} from '@/shared/assets/images/ios-stickers';
 
 import StickerCollection from './StickerCollection';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-const stickers = [
-  StickerCoffeeImage,
-  StickerDonutImage,
-  StickerEyesImage,
-  StickerFriesImage,
-  StickerPizzaImage,
-  StickerSpecialImage,
-];
+const stickers = [coffee, cake, pizza, gamepad, shoppingBags, sparkles];
 
 const meta = {
   title: 'Shared/StickerCollection',

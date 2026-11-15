@@ -206,7 +206,7 @@ describe('<HomeScreen />', () => {
   });
 
   it('웹 주소가 설정되면 로그인 진입점인 루트 경로를 최초로 띄운다', async () => {
-    process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173/record/receipt/camera';
+    process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173/record';
 
     const { getByTestId } = await render(<HomeScreen />);
 
@@ -318,7 +318,7 @@ describe('<HomeScreen />', () => {
       ['/home/recommendation/search', bottomEdgeToEdgeEdges],
       ['/record', bottomEdgeToEdgeEdges],
       ['/record/shop/search', bottomEdgeToEdgeEdges],
-      ['/record/manual', bottomEdgeToEdgeEdges],
+      ['/record/135/edit', bottomEdgeToEdgeEdges],
     ] as const) {
       await act(async () => {
         await getByTestId('home-webview').props.onMessage({
