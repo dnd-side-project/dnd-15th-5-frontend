@@ -1,6 +1,5 @@
 import { useLayoutEffect, useState } from 'react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
-import { LiquidGlassScene } from 'simple-liquid-glass/backdrop';
 
 import {
   selectIsHomeSheetFullyExpanded,
@@ -63,7 +62,7 @@ function HomeBottomSheetCanvas({ initialSnapPoint, ...props }: HomeBottomSheetPr
   }, [initialSnapPoint]);
 
   return (
-    <LiquidGlassScene className="mobile-frame relative min-h-dvh bg-neutral-100">
+    <div className="mobile-frame relative min-h-dvh bg-neutral-100">
       {isReport ? (
         <StoryReportBackground />
       ) : isRecord ? (
@@ -109,7 +108,7 @@ function HomeBottomSheetCanvas({ initialSnapPoint, ...props }: HomeBottomSheetPr
           }}
         />
       )}
-    </LiquidGlassScene>
+    </div>
   );
 }
 
