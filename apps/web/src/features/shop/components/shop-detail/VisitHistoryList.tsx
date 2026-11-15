@@ -11,6 +11,8 @@ import SwipeActions from '@/shared/ui/swipe-actions/SwipeActions';
 import { formatTimePeriod } from '@/shared/utils/formatTimePeriod';
 import { isPositiveSafeInteger } from '@/shared/utils/isPositiveSafeInteger';
 
+import VisitHistoryListSkeleton from './VisitHistoryListSkeleton';
+
 import type { ReactNode, RefObject } from 'react';
 
 type VisitHistoryListProps = ConsumptionActions & {
@@ -60,11 +62,7 @@ export default function VisitHistoryList({
         방문 기록
       </h2>
 
-      {isLoading && (
-        <div role="status" aria-label="방문 기록 불러오는 중" className="flex justify-center py-10">
-          <Spinner className="size-6 text-primary-500" />
-        </div>
-      )}
+      {isLoading && <VisitHistoryListSkeleton />}
 
       {!isLoading && isError && (
         <div className="flex flex-col items-center py-8 text-body-02-regular text-neutral-500">

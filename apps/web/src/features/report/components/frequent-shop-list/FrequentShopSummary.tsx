@@ -4,10 +4,10 @@ import { GetFrequentPlacesPeriod } from '@/features/report/apis/dto';
 import { useFrequentPlacesInfiniteQuery } from '@/features/report/apis/hooks/useFrequentPlacesInfiniteQuery';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { cn } from '@/shared/lib/cn';
-import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
 
 import FrequentShopItem from './FrequentShopItem';
+import FrequentShopListSkeleton from './FrequentShopListSkeleton';
 
 import type { ReactNode } from 'react';
 
@@ -44,13 +44,7 @@ export default function FrequentShopSummary({
         </p>
       )}
       {query.isPending ? (
-        <div
-          role="status"
-          aria-label="자주 소비한 곳 불러오는 중"
-          className="flex justify-center py-12"
-        >
-          <Spinner className="size-6 text-primary-500" />
-        </div>
+        <FrequentShopListSkeleton />
       ) : query.isError ? (
         <StateView
           variant="error"

@@ -5,11 +5,12 @@ import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import { LinkButton } from '@/shared/ui/button';
 import { Chip } from '@/shared/ui/chip';
 import { RegularShopBadge } from '@/shared/ui/regular-shop-badge';
-import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
 import { StickerCollection } from '@/shared/ui/sticker-collection';
 
 import { createShopRecordLocationState } from '../../utils/createShopRecordLocationState';
+
+import SelectedPlaceSheetSkeleton from './SelectedPlaceSheetSkeleton';
 
 import type { ShopSearchResult } from '../../types';
 
@@ -39,15 +40,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
   }
 
   if (query.isPending) {
-    return (
-      <div
-        role="status"
-        aria-label="가게 요약 불러오는 중"
-        className="flex min-h-40 items-center justify-center"
-      >
-        <Spinner className="size-6 text-primary-500" />
-      </div>
-    );
+    return <SelectedPlaceSheetSkeleton />;
   }
 
   const place = query.data?.data;
@@ -75,7 +68,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
 
   return (
     <section aria-labelledby={`selected-place-${place.placeId}`}>
-      <div className="flex items-center gap-2.5">
+      <div className="flex min-h-6.5 items-center gap-2.5">
         <h1
           id={`selected-place-${place.placeId}`}
           className="min-w-0 truncate text-title-02-semibold text-neutral-700"
@@ -103,7 +96,7 @@ export default function SelectedPlaceSheet({ placeId, recordShop }: SelectedPlac
         maxItems={5}
         replayStampAnimationOnClick
         ariaLabel="최근 획득한 스티커"
-        className="mt-4"
+        className="mt-4 min-h-21.75"
       />
 
       <div className="mt-4 flex gap-4 pb-2">

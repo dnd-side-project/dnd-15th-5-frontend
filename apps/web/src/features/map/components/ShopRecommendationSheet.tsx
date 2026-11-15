@@ -16,6 +16,7 @@ import { StateView } from '@/shared/ui/state-view';
 
 import RecommendationAddressHint from './RecommendationAddressHint';
 import RecommendationPlaceCard from './RecommendationPlaceCard';
+import RecommendationPlaceListSkeleton from './RecommendationPlaceListSkeleton';
 
 type ShopRecommendationSheetProps = { onOpenRecommendationSearch?: () => void };
 
@@ -154,13 +155,7 @@ function RecommendationList({ onOpenRecommendationSearch }: ShopRecommendationSh
         className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-4"
       >
         {isPending ? (
-          <div
-            role="status"
-            aria-label="추천 가게 불러오는 중"
-            className="flex min-h-32 items-center justify-center"
-          >
-            <Spinner />
-          </div>
+          <RecommendationPlaceListSkeleton />
         ) : isError ? (
           <StateView
             variant="error"
