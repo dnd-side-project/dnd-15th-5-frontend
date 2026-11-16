@@ -31,7 +31,7 @@ export default function ReportPreferenceShareScreen({
       aria-label={`${nickname}님의 ${title} 취향 카드 공유 화면`}
       className={cn(
         'report-preference-share relative flex w-full shrink-0 items-center justify-center overflow-hidden',
-        isPhotoCapture ? 'h-full' : 'min-h-dvh',
+        isPhotoCapture ? 'h-full' : 'min-h-screen-safe-top',
         variantConfig.shareClassName
       )}
     >

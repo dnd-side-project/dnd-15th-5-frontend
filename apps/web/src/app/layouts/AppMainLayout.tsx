@@ -38,7 +38,7 @@ export default function AppMainLayout() {
   return (
     <div
       className={cn(
-        'flex min-h-screen flex-col',
+        'min-h-screen-safe-bottom flex flex-col',
         isNativeApp() ? '[--bottom-tab-bar-gap:0px]' : '[--bottom-tab-bar-gap:32px]'
       )}
     >

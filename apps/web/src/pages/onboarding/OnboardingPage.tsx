@@ -12,7 +12,7 @@ export default function OnboardingPage() {
   return (
     <main
       ref={scrollContainerRef}
-      className="h-[calc(100dvh-env(safe-area-inset-bottom))] overflow-x-hidden overflow-y-auto bg-neutral-00"
+      className="h-screen-safe-bottom overflow-x-hidden overflow-y-auto bg-neutral-00"
     >
       <div className="flex h-full min-h-160 flex-col">
         <OnboardingCarousel

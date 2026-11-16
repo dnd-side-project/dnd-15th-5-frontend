@@ -1,5 +1,6 @@
 import { act, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 
@@ -33,9 +34,14 @@ describe('<PlaceSearchScreen />', () => {
   const originalWebUrl = process.env.EXPO_PUBLIC_WEB_URL;
 
   beforeEach(() => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173/record';
     jest.clearAllMocks();
     mockRespondToBridgeRequest.mockResolvedValue(true);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   afterAll(() => {
@@ -52,11 +58,12 @@ describe('<PlaceSearchScreen />', () => {
 
     expect(getByTestId('place-search-safe-area')).toHaveStyle({ flex: 1 });
     expect(getByTestId('place-search-safe-area')).toHaveProp('edges', {
-      top: 'additive',
-      right: 'additive',
-      bottom: 'additive',
-      left: 'additive',
+      top: 'off',
+      right: 'off',
+      bottom: 'off',
+      left: 'off',
     });
+    expect(getByTestId('place-search-webview')).toHaveStyle({ height: '100%', width: '100%' });
     expect(getByTestId('place-search-webview')).toHaveProp('source', {
       uri: 'http://192.168.0.2:5173/record/shop/search?source=receipt-native',
     });

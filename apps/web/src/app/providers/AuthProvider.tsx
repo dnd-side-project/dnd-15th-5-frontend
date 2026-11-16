@@ -4,6 +4,7 @@ import { matchPath } from 'react-router-dom';
 import { restoreNativeAuthentication } from '@/app/configureAxiosAuth';
 import { refreshWeb } from '@/features/auth/apis/clients';
 import { ROUTE_PATHS, ROUTE_PATTERNS } from '@/shared/constants/routePaths';
+import PageFrame from '@/shared/layout/page-frame';
 import { isNativeApp } from '@/shared/lib/bridge';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { Spinner } from '@/shared/ui/spinner';
@@ -73,13 +74,15 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   if (!isInitialized) {
     return (
-      <div
-        className="flex min-h-dvh items-center justify-center bg-neutral-00"
-        role="status"
-        aria-label="로그인 상태 확인 중"
-      >
-        <Spinner className="size-6 text-primary-500" />
-      </div>
+      <PageFrame>
+        <div
+          className="min-h-screen-safe-bottom flex items-center justify-center"
+          role="status"
+          aria-label="로그인 상태 확인 중"
+        >
+          <Spinner className="size-6 text-primary-500" />
+        </div>
+      </PageFrame>
     );
   }
 
