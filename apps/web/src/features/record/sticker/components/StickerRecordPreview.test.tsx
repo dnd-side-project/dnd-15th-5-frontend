@@ -49,8 +49,9 @@ it.each([false, true])(
     const header = screen
       .getByRole('heading', { name: '기록 수정' })
       .closest('header')!.parentElement!;
-    if (isApp) expect(header).not.toHaveClass('pt-8');
-    else expect(header).toHaveClass('pt-8');
+    expect(header).toHaveClass(
+      isApp ? 'pt-[env(safe-area-inset-top)]' : 'pt-[max(2rem,env(safe-area-inset-top))]'
+    );
   }
 );
 

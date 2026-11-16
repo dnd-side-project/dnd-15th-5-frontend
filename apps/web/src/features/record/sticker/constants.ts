@@ -10,6 +10,9 @@ export const getStickerFlowLayout = (isApp: boolean) => ({
     ? 'h-[calc(3.5rem+env(safe-area-inset-top))]'
     : 'h-[max(7rem,calc(env(safe-area-inset-top)+4rem))]',
   defaultHeaderHeight: isApp ? 'h-[calc(3.5rem+env(safe-area-inset-top))]' : 'h-32',
+  recordHeaderPaddingTop: isApp
+    ? 'pt-[env(safe-area-inset-top)]'
+    : 'pt-[max(2rem,env(safe-area-inset-top))]',
   // 자르기 핸들이 이미지 바깥으로 돌출되는 공간은 남깁니다.
   cropPaddingTop: isApp ? 'pt-6' : 'pt-16',
 });
