@@ -21,7 +21,7 @@ export default function SharedReportPage() {
     return (
       <main
         aria-label="공유 취향 카드 불러오는 중"
-        className="flex min-h-dvh items-center justify-center"
+        className="min-h-screen-safe-top flex items-center justify-center"
         role="status"
       >
         <Spinner className="size-7 text-primary-500" />
@@ -31,7 +31,7 @@ export default function SharedReportPage() {
 
   if (!sharedCardQuery.data) {
     return (
-      <main className="flex min-h-dvh items-center bg-neutral-00 px-4">
+      <main className="min-h-screen-safe-top flex items-center bg-neutral-00 px-4">
         <StateView
           actionLabel="챱챱 시작하기"
           description={'공유 링크가 만료되었거나\n올바르지 않아요'}
@@ -45,7 +45,7 @@ export default function SharedReportPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-start justify-center overflow-x-hidden">
+    <main className="min-h-screen-safe-top flex items-start justify-center overflow-x-hidden">
       <ReportPreferenceShareScreen {...sharedCardQuery.data} />
     </main>
   );

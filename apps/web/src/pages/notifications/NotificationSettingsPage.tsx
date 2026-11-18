@@ -50,7 +50,7 @@ export default function NotificationSettingsPage() {
   };
 
   return (
-    <main className="mobile-frame fixed inset-0 flex flex-col overflow-y-auto bg-neutral-00">
+    <main className="mobile-frame top-safe pb-safe-bottom fixed inset-x-0 bottom-0 flex flex-col overflow-y-auto bg-neutral-00">
       <header className="relative flex h-24 shrink-0 items-center justify-center px-4 pt-4">
         <BackButton
           className="absolute top-7 left-4 mt-0"

@@ -8,7 +8,7 @@ export default function AgreementPage() {
   const { isLoading, submitTermsAgreement } = useTermsAgreement();
 
   return (
-    <main className="flex min-h-dvh flex-col">
+    <main className="min-h-screen-safe-bottom flex flex-col">
       <PageHeader onBack={() => navigate(-1)} />
 
       <h1 className="mt-9.5 px-2 text-heading-01-bold text-neutral-700">
