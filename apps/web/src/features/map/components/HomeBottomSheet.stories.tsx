@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useLayoutEffect, useState } from 'react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 
@@ -33,10 +34,16 @@ type StorySelectedPlaceProps = { placeId: string };
 
 /** 지도 API 없이 홈 시트와 네비게이션의 겹침·접힘·스크롤을 확인합니다. */
 function HomeBottomSheetPreview(props: HomeBottomSheetPreviewProps) {
+  const [queryClient] = useState(
+    () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  );
+
   return (
-    <MemoryRouter initialEntries={[ROUTE_PATHS.home]}>
-      <HomeBottomSheetCanvas {...props} />
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[ROUTE_PATHS.home]}>
+        <HomeBottomSheetCanvas {...props} />
+      </MemoryRouter>
+    </QueryClientProvider>
   );
 }
 
