@@ -257,7 +257,9 @@ it('가게 검색에서 뒤로 돌아오면 선택을 바꾸지 않고 작성 �
   });
   fireEvent.click(screen.getByRole('button', { name: '가게 정보 검색' }));
   expect(screen.queryByRole('button', { name: '기록 닫고 홈으로 이동' })).not.toBeInTheDocument();
+  const historyStateSpy = jest.spyOn(window.history, 'state', 'get').mockReturnValue({ idx: 1 });
   fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
+  historyStateSpy.mockRestore();
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record');
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('검색 전 메모');

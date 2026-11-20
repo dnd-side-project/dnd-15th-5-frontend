@@ -47,7 +47,13 @@ export default function ShopSearchPage() {
       return;
     }
 
-    navigate(-1);
+    const historyIndex = window.history.state?.idx;
+    if (typeof historyIndex === 'number' && historyIndex > 0) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(ROUTE_PATHS.home, { replace: true });
   };
 
   return (
