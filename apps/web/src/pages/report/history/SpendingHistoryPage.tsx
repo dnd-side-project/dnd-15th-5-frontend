@@ -18,7 +18,7 @@ export default function SpendingHistoryPage() {
   return (
     <ConsumptionRecordActions>
       {(actions) => (
-        <main className="mobile-frame pb-safe-bottom fixed inset-0 flex flex-col overflow-hidden bg-neutral-00 px-4">
+        <main className="mobile-frame top-safe pb-safe-bottom fixed inset-x-0 bottom-0 flex flex-col overflow-hidden bg-neutral-00 px-4">
           <SpendingHistory
             {...actions}
             renderRecordSticker={(consumptionId) => (

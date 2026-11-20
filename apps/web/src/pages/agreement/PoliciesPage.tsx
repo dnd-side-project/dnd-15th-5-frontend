@@ -39,7 +39,7 @@ export default function PoliciesPage() {
   };
 
   return (
-    <main className="flex min-h-dvh flex-col">
+    <main className="min-h-screen-safe-bottom flex flex-col">
       <PageHeader title="이용약관 및 개인정보처리방침" onBack={handleBack} />
 
       <SegmentedToggle

@@ -213,6 +213,46 @@ it('가게 검색을 오가도 이미지와 입력값을 유지한다', () => {
   );
 });
 
+it.each(['select', 'back'] as const)(
+  '가게 검색은 맨 위에서 시작하고 %s 복귀 시 수정 폼의 스크롤과 입력을 복원한다',
+  (returnMethod) => {
+    const scrollPosition = jest.replaceProperty(window, 'scrollY', 0);
+    const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation((_left, top) => {
+      scrollPosition.replaceValue(top);
+    });
+
+    try {
+      setup();
+      const memo = screen.getByRole('textbox', { name: '메모' });
+      fireEvent.change(memo, { target: { value: '스크롤을 복원해도 유지할 메모' } });
+      scrollPosition.replaceValue(420);
+
+      fireEvent.click(screen.getByRole('button', { name: '가게 정보 검색' }));
+      expect(scrollTo).toHaveBeenLastCalledWith(0, 0);
+      expect(window.scrollY).toBe(0);
+
+      scrollPosition.replaceValue(180);
+      fireEvent.click(
+        screen.getByRole('button', { name: returnMethod === 'select' ? '가게 선택' : '뒤로 가기' })
+      );
+
+      expect(scrollTo).toHaveBeenLastCalledWith(0, 420);
+      expect(window.scrollY).toBe(420);
+      expect(screen.getByRole('textbox', { name: '메모' })).toBe(memo);
+      expect(memo).toHaveValue('스크롤을 복원해도 유지할 메모');
+
+      scrollPosition.replaceValue(640);
+      fireEvent.click(screen.getByRole('button', { name: '가게 정보 검색' }));
+      expect(scrollTo).toHaveBeenLastCalledWith(0, 0);
+      fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
+      expect(scrollTo).toHaveBeenLastCalledWith(0, 640);
+    } finally {
+      scrollTo.mockRestore();
+      scrollPosition.restore();
+    }
+  }
+);
+
 it('브라우저 뒤로 가기로 나갈 때도 변경 사항을 확인한다', async () => {
   const router = setup();
   fireEvent.change(screen.getByRole('textbox', { name: '메모' }), { target: { value: '수정 중' } });

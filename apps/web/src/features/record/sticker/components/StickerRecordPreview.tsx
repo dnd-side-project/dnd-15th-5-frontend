@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 
 import RecordNavigationHeader from '@/features/record/components/RecordNavigationHeader';
 import VisitDateTimeSheet from '@/features/record/components/visit-date-time-sheet/VisitDateTimeSheet';
+import { getStickerFlowLayout } from '@/features/record/sticker/constants';
 import { useStickerRecordCategory } from '@/features/record/sticker/hooks/useStickerRecordCategory';
 import type { StickerRecordDraft } from '@/features/record/types';
 import { isValidStickerRecordShop } from '@/features/record/utils/createStickerConsumptionRequest';
@@ -101,6 +102,7 @@ export default function StickerRecordPreview({
   isCapturing = false,
 }: StickerRecordPreviewProps) {
   const isApp = isNativeApp();
+  const layout = getStickerFlowLayout(isApp);
   const [category, setCategory] = useStickerRecordCategory({
     sticker,
     stickerCategory: defaultStickerCategory,
@@ -188,7 +190,7 @@ export default function StickerRecordPreview({
   return (
     <section className="flex min-h-dvh flex-1 flex-col bg-primary-50 text-neutral-700">
       <fieldset disabled={isSubmitting} className="contents">
-        <header className={cn('shrink-0 px-4', !isApp && 'pt-8')}>
+        <header className={cn('shrink-0 px-4', layout.recordHeaderPaddingTop)}>
           <RecordNavigationHeader
             closeButtonLabel={isEditing ? '기록 수정 종료' : undefined}
             title={isEditing ? '기록 수정' : '기록하기'}

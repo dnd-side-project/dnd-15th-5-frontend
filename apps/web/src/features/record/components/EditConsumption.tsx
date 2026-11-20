@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { useBeforeUnload } from 'react-router-dom';
 
 import { useConsumptionDetailQuery } from '@/features/record/apis/hooks/useConsumptionDetailQuery';
@@ -9,6 +9,7 @@ import StickerRecordFlow from '@/features/record/sticker/components/StickerRecor
 import type { StickerRecordInitialValue } from '@/features/record/types';
 import { createEditConsumptionInitialValue } from '@/features/record/utils/createEditConsumptionInitialValue';
 import { useUnsavedChangesBlocker } from '@/shared/hooks/useUnsavedChangesBlocker';
+import PageFrame from '@/shared/layout/page-frame';
 import { UnsavedChangesDialog } from '@/shared/ui/dialog';
 import { Spinner } from '@/shared/ui/spinner';
 import { StateView } from '@/shared/ui/state-view';
@@ -32,12 +33,18 @@ function ConsumptionEditor({
   const [selectedShop, setSelectedShop] = useState(initialValue.draft.shop);
   const [hasChanges, setHasChanges] = useState(false);
   const [isShopSearchOpen, setIsShopSearchOpen] = useState(false);
+  const formScrollTopRef = useRef(0);
   const blocker = useUnsavedChangesBlocker(hasChanges);
   const { scanReceipt, isOpeningReceipt, receiptError } = useScanReceipt();
   const { submit, isSubmitting, submitError } = useUpdateConsumptionRecord(consumptionId, () => {
     blocker.allowNextNavigation();
     onClose();
   });
+  // NOTE: 가게 검색은 URL이 바뀌지 않으므로 스크롤도 화면 교체와 함께 직접 전환합니다.
+  useLayoutEffect(() => {
+    window.scrollTo(0, isShopSearchOpen ? 0 : formScrollTopRef.current);
+  }, [isShopSearchOpen]);
+
   useBeforeUnload(
     useCallback(
       (event) => {
@@ -49,6 +56,12 @@ function ConsumptionEditor({
       [hasChanges, isSubmitting]
     )
   );
+
+  const handleOpenShopSearch = () => {
+    formScrollTopRef.current = window.scrollY;
+    setIsShopSearchOpen(true);
+  };
+
   return (
     <>
       <div hidden={isShopSearchOpen} inert={isShopSearchOpen}>
@@ -58,7 +71,7 @@ function ConsumptionEditor({
           onClose={() => {
             if (!isSubmitting) onClose();
           }}
-          onSearchShop={() => setIsShopSearchOpen(true)}
+          onSearchShop={handleOpenShopSearch}
           selectedShop={selectedShop}
           onReceiptShopSelected={setSelectedShop}
           onScanReceipt={scanReceipt}
@@ -70,18 +83,20 @@ function ConsumptionEditor({
         />
       </div>
       {isShopSearchOpen && (
-        <main className="min-h-dvh bg-neutral-00 px-4">
-          <RecordNavigationHeader
-            title="가게 변경"
-            closeButtonLabel="기록 수정 종료"
-            onBack={() => setIsShopSearchOpen(false)}
-            onClose={onClose}
-          />
-          {renderShopSearch((shop) => {
-            setSelectedShop(shop);
-            setIsShopSearchOpen(false);
-          })}
-        </main>
+        <PageFrame>
+          <main className="min-h-screen-safe-bottom px-4">
+            <RecordNavigationHeader
+              title="가게 변경"
+              closeButtonLabel="기록 수정 종료"
+              onBack={() => setIsShopSearchOpen(false)}
+              onClose={onClose}
+            />
+            {renderShopSearch((shop) => {
+              setSelectedShop(shop);
+              setIsShopSearchOpen(false);
+            })}
+          </main>
+        </PageFrame>
       )}
       {blocker.isBlocked && (
         <UnsavedChangesDialog
@@ -103,35 +118,39 @@ export default function EditConsumption(props: EditConsumptionProps) {
   const query = useConsumptionDetailQuery(props.consumptionId);
   if (isValidId && (query.isPending || (!query.isFetchedAfterMount && query.isFetching)))
     return (
-      <div
-        role="status"
-        aria-label="기록 불러오는 중"
-        className="flex min-h-dvh items-center justify-center"
-      >
-        <Spinner />
-      </div>
+      <PageFrame>
+        <div
+          role="status"
+          aria-label="기록 불러오는 중"
+          className="min-h-screen-safe-bottom flex items-center justify-center"
+        >
+          <Spinner />
+        </div>
+      </PageFrame>
     );
   const initialValue = query.data?.data ? createEditConsumptionInitialValue(query.data.data) : null;
   if (!isValidId || !initialValue)
     return (
-      <main className="px-4">
-        <RecordNavigationHeader
-          title="기록 수정"
-          closeButtonLabel="기록 수정 종료"
-          onClose={props.onClose}
-        />
-        <StateView
-          variant="error"
-          headingAs="h1"
-          title="기록을 불러오지 못했어요"
-          description="기록 정보를 확인한 뒤 다시 시도해주세요."
-          actionLabel={isValidId ? '다시 불러오기' : '돌아가기'}
-          onAction={() => {
-            if (isValidId) void query.refetch();
-            else props.onClose();
-          }}
-        />
-      </main>
+      <PageFrame>
+        <main className="min-h-screen-safe-bottom px-4">
+          <RecordNavigationHeader
+            title="기록 수정"
+            closeButtonLabel="기록 수정 종료"
+            onClose={props.onClose}
+          />
+          <StateView
+            variant="error"
+            headingAs="h1"
+            title="기록을 불러오지 못했어요"
+            description="기록 정보를 확인한 뒤 다시 시도해주세요."
+            actionLabel={isValidId ? '다시 불러오기' : '돌아가기'}
+            onAction={() => {
+              if (isValidId) void query.refetch();
+              else props.onClose();
+            }}
+          />
+        </main>
+      </PageFrame>
     );
   return <ConsumptionEditor key={props.consumptionId} {...props} initialValue={initialValue} />;
 }
