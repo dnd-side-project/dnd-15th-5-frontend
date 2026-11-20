@@ -32,7 +32,7 @@ it('같은 가게의 기록도 기록별 이모지·사진 스티커를 표시�
             consumptions: [1, 2].map((id) => ({
               id,
               placeId: 42,
-              placeName: '챱챱 카페',
+              placeName: '찹찹 카페',
               purchaseDate: '2026-11-03',
               purchaseTime: '14:30:00',
               thumbnailUrl: storeThumbnail,

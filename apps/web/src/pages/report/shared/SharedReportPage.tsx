@@ -33,7 +33,7 @@ export default function SharedReportPage() {
     return (
       <main className="min-h-screen-safe-top flex items-center bg-neutral-00 px-4">
         <StateView
-          actionLabel="챱챱 시작하기"
+          actionLabel="찹찹 시작하기"
           description={'공유 링크가 만료되었거나\n올바르지 않아요'}
           headingAs="h1"
           title="취향 카드를 불러오지 못했어요"
