@@ -12,7 +12,7 @@ export default function AgreementPage() {
       <PageHeader onBack={() => navigate(-1)} />
 
       <h1 className="mt-9.5 px-2 text-heading-01-bold text-neutral-700">
-        챱챱 이용을 위한
+        찹찹 이용을 위한
         <br />
         약관에 동의해주세요
       </h1>

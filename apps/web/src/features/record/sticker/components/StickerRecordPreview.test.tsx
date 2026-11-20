@@ -211,7 +211,7 @@ it('가게 선택 결과를 받아도 작성 중인 카테고리와 메모를 �
       {...callbacks}
       selectedShop={{
         id: 'shop-01',
-        name: '챱챱 카페',
+        name: '찹찹 카페',
         address: '서울',
         photoUrl: null,
         latitude: 37.5,
@@ -219,7 +219,7 @@ it('가게 선택 결과를 받아도 작성 중인 카테고리와 메모를 �
       }}
     />
   );
-  expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
+  expect(screen.getByText('찹찹 카페')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '운동' })).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('친구와 방문');
 });

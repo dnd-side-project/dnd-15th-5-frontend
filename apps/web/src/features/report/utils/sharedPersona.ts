@@ -55,7 +55,7 @@ export const mapSharedPersonaCard = (persona: PersonaCardResponse) => {
   return {
     description: copy.description,
     metrics: createPreferenceMetrics(persona.scores),
-    nickname: persona.nickname?.trim() || '챱챱 사용자',
+    nickname: persona.nickname?.trim() || '찹찹 사용자',
     tags: createPreferenceTags(persona.type, copy.tags),
     title: copy.title,
     variant,

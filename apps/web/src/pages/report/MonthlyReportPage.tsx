@@ -63,7 +63,7 @@ export default function MonthlyReportPage() {
     selectedCardIndex,
     selectedMonth,
   } = useMonthlyReport();
-  const nickname = accountQuery.data?.data?.nickname?.trim() || '챱챱 사용자';
+  const nickname = accountQuery.data?.data?.nickname?.trim() || '찹찹 사용자';
   const { isKakaoShareReady, isPreparingKakaoShare, isSharing, shareToKakao } = useKakaoReportShare(
     {
       captureRef: kakaoThumbnailRef,

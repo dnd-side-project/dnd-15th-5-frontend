@@ -12,7 +12,7 @@ describe('PrivacyPolicyPage', () => {
     );
 
     expect(screen.getByRole('button', { name: '뒤로 가기' })).toBeInTheDocument();
-    expect(screen.getByText(/챱챱 개인정보 처리방침/)).toBeInTheDocument();
+    expect(screen.getByText(/찹찹 개인정보 처리방침/)).toBeInTheDocument();
     expect(screen.getByText(/처리 목적/)).toBeInTheDocument();
   });
 });
