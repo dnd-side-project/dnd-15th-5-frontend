@@ -10,8 +10,8 @@ AI 도구가 이 저장소에서 작업할 때 따르는 공통 지침입니다.
 
 pnpm workspace와 Turborepo로 관리하는 ChapChap 모노레포. 웹은 React + Vite + TypeScript,
 모바일은 Expo + React Native 기반이다. 모바일 앱은 웹 화면을 WebView로 띄우는 구조이며,
-웹과 네이티브가 주고받는 브릿지까지 적용되어 있다. 알림·영수증 촬영 같은 네이티브 기능은
-이 브릿지 위에 얹어 추후 구현한다.
+웹과 네이티브가 주고받는 브릿지가 적용되어 있으며, 알림·영수증 촬영 등 네이티브 기능을
+이 브릿지로 연결한다.
 
 ## Commands
 
@@ -36,15 +36,19 @@ pnpm preview       # 웹 빌드 결과 미리보기
 
 적용 완료: React, Vite, TypeScript, TanStack Query, Axios, Tailwind CSS, CVA.
 
-사용 확정: Zustand. 실제 도입 시점과 상태 범위는 기능 구현에 맞춰 결정한다.
+전역 클라이언트 상태는 Zustand를 사용하며, 상태 범위와 Store 위치는 아키텍처 규칙을 따른다.
 
 > 네이티브 기능 범위는 알림과 영수증으로 제한하며, 범위를 확대하기 전에 먼저 확인한다.
 
 ## Architecture & Code Style
 
+- 작업별 개발 문서 안내: [docs/README.md](docs/README.md)
 - 디자인 토큰과 공통 UI 사용 기준: [DESIGN.md](DESIGN.md)
 - 웹 디렉토리 구조, 의존 방향(`app → pages → features → shared`), 상태관리 규칙: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 모바일 디렉토리 구조(`app`/`screens`/`features`/`bridge`/`native`/`shared`): [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 기록·스티커 처리: [docs/RECORD_FLOW.md](docs/RECORD_FLOW.md)
+- WebView·Safe Area·iOS 모델 빌드: [docs/MOBILE_RUNTIME.md](docs/MOBILE_RUNTIME.md)
+- 웹·모바일 토큰과 글꼴 적용: [docs/STYLING.md](docs/STYLING.md)
 - 네이밍, Import(`@/` alias), Props/Type, TSDoc, 주석 규칙: [docs/CONVENTIONS.md](docs/CONVENTIONS.md)
 - 인증/토큰 처리는 `apps/web/src/shared/apis`에서만. feature별 `apis`는 공통 인스턴스만 가져다 쓴다.
 

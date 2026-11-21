@@ -30,6 +30,7 @@ export const initializeAnalytics = () => {
   if (isInitialized || !MIXPANEL_PROJECT_TOKEN) return;
 
   mixpanel.init(MIXPANEL_PROJECT_TOKEN, {
+    ip: false,
     autocapture: {
       click: true,
       input: false,

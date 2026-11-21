@@ -29,11 +29,9 @@ export default function NotificationFeed() {
   if (query.notifications.length === 0) {
     return (
       <StateView
-        actionLabel="다시 확인하기"
         className="pt-24"
         description="새로운 소식이 생기면 알려드릴게요."
         headingAs="h2"
-        onAction={() => void query.refetch()}
         title="아직 도착한 알림이 없어요"
         variant="empty"
       />

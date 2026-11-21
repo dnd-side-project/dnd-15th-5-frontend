@@ -50,10 +50,10 @@ export default function NotificationSettingsPage() {
   };
 
   return (
-    <main className="mobile-frame top-safe pb-safe-bottom fixed inset-x-0 bottom-0 flex flex-col overflow-y-auto bg-neutral-00">
-      <header className="relative flex h-24 shrink-0 items-center justify-center px-4 pt-4">
+    <main className="min-h-screen-safe-bottom flex flex-col bg-neutral-00">
+      <header className="relative flex h-24 shrink-0 items-center justify-center pt-4">
         <BackButton
-          className="absolute top-7 left-4 mt-0"
+          className="absolute top-7 left-0 mt-0"
           onClick={handleBack}
           aria-label="이전 화면으로 돌아가기"
         />
@@ -63,7 +63,7 @@ export default function NotificationSettingsPage() {
       {shouldShowNotificationPermissionNotice && (
         <section
           aria-label="스마트폰 알림 안내"
-          className="mx-4 mt-3 rounded-16 bg-neutral-50 px-4 py-4"
+          className="mt-3 rounded-16 bg-neutral-50 px-4 py-4"
         >
           <div className="flex items-center gap-1.5 text-body-01-semibold text-neutral-700">
             <CircleWarningIcon aria-hidden="true" className="size-4.5 shrink-0" />
@@ -85,7 +85,7 @@ export default function NotificationSettingsPage() {
 
       <div className={shouldShowNotificationPermissionNotice ? 'mt-8' : 'mt-3'}>
         {settingsQuery.isError ? (
-          <div className="px-4 py-6 text-center text-body-02-regular text-neutral-500" role="alert">
+          <div className="py-6 text-center text-body-02-regular text-neutral-500" role="alert">
             <p>알림 설정을 불러오지 못했어요.</p>
             <button
               type="button"
@@ -128,7 +128,7 @@ function NotificationSettingRow({
   onCheckedChange: () => void;
 }) {
   return (
-    <div className="flex min-h-19 items-center justify-between gap-3 border-b border-neutral-100 px-4 pt-6 pb-4 last:border-b-0">
+    <div className="flex min-h-19 items-center justify-between gap-3 border-b border-neutral-100 pt-6 pb-4 last:border-b-0">
       <div className="min-w-0">
         <h2 className="text-body-01-semibold text-black">{option.title}</h2>
         <p className="mt-2 text-body-01-regular text-neutral-500">{option.description}</p>
