@@ -11,6 +11,7 @@ type StateViewBaseProps = {
   title: string;
   description: string;
   headingAs: 'h1' | 'h2' | 'h3';
+  imageSrc?: string;
   className?: string;
 };
 
@@ -66,6 +67,7 @@ type StateViewActionProps = {
  * @param props.variant - `empty`는 기록이 없는 상태를, `error`는 오류가 발생한 상태를 표시합니다.
  * @param props.title - 상태 화면에 표시할 제목입니다. 줄바꿈 문자(`\n`)를 사용할 수 있습니다.
  * @param props.description - 상태 화면에 표시할 안내 문구입니다. 줄바꿈 문자(`\n`)를 사용할 수 있습니다.
+ * @param props.imageSrc - 기본 상태 이미지 대신 표시할 이미지 경로입니다.
  * @param props.actionLabel - 선택적 액션 버튼 또는 링크에 표시할 문구입니다.
  * @param props.headingAs - 페이지의 제목 구조에 맞춰 사용할 `h1`, `h2`, `h3` 태그입니다.
  * @param props.onAction - 버튼을 눌렀을 때 실행할 동작입니다. `to`와 함께 사용할 수 없습니다.
@@ -73,9 +75,17 @@ type StateViewActionProps = {
  * @param props.className - 최상위 `section` 요소에 추가할 클래스입니다.
  */
 export function StateView(props: StateViewProps) {
-  const { variant, title, description, actionLabel, headingAs: Heading, className } = props;
+  const {
+    variant,
+    title,
+    description,
+    actionLabel,
+    headingAs: Heading,
+    className,
+    imageSrc,
+  } = props;
   const titleId = useId();
-  const image = variant === 'empty' ? EmptyStateImage : ErrorStateImage;
+  const image = imageSrc ?? (variant === 'empty' ? EmptyStateImage : ErrorStateImage);
 
   return (
     <section

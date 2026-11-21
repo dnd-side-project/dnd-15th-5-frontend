@@ -170,7 +170,8 @@ function RecommendationList({ onOpenRecommendationSearch }: ShopRecommendationSh
             variant="empty"
             headingAs="h2"
             title="아직 추천 가게가 없어요"
-            description="다른 카테고리나 동네를 선택해보세요."
+            description="다른 동네를 선택해보세요"
+            imageSrc={NeighborhoodEmptyImage}
           />
         ) : (
           <ul aria-label="추천 가게 목록" className="grid grid-cols-2 gap-4">

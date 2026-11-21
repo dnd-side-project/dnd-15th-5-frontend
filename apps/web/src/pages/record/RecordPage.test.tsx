@@ -55,7 +55,7 @@ jest.mock('@/features/shop', () => ({
 
 const mockSelectedShop = {
   id: 'shop-01',
-  name: '챱챱 카페',
+  name: '찹찹 카페',
   address: '서울',
   photoUrl: null,
   latitude: 37.5,
@@ -207,7 +207,7 @@ it('가게 정보와 지난 기록 월을 유지하고 기본 이모지의 카�
     state: { shop: mockSelectedShop, category: '음식점' },
   });
   await selectDefaultSticker();
-  expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
+  expect(screen.getByText('찹찹 카페')).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '카페' })).toHaveAttribute('aria-pressed', 'true');
   expect(
     screen.getByRole('button', { name: /방문 일시 변경, 2020년 7월 31일/ })
@@ -231,7 +231,7 @@ it('기존 가게 검색 화면으로 이동하고 가게 선택 후 스티커�
   expect(URL.revokeObjectURL).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: '검색 결과 선택' }));
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
+  expect(screen.getByText('찹찹 카페')).toBeInTheDocument();
   expect(screen.getByAltText('기록에 적용한 스티커')).toBe(sticker);
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('점심 방문');
   expect(screen.getByRole('textbox', { name: '금액' })).toHaveValue('5,500');
@@ -245,7 +245,7 @@ it('가게 검색에 직접 진입해 장소를 선택하면 새 기록에 가�
   renderRecordPage('/record/shop/search?yearMonth=2020-07');
   fireEvent.click(screen.getByRole('button', { name: '검색 결과 선택' }));
   await selectDefaultSticker();
-  expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
+  expect(screen.getByText('찹찹 카페')).toBeInTheDocument();
   expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record?yearMonth=2020-07');
 });
 
@@ -257,7 +257,9 @@ it('가게 검색에서 뒤로 돌아오면 선택을 바꾸지 않고 작성 �
   });
   fireEvent.click(screen.getByRole('button', { name: '가게 정보 검색' }));
   expect(screen.queryByRole('button', { name: '기록 닫고 홈으로 이동' })).not.toBeInTheDocument();
+  const historyStateSpy = jest.spyOn(window.history, 'state', 'get').mockReturnValue({ idx: 1 });
   fireEvent.click(screen.getByRole('button', { name: '뒤로 가기' }));
+  historyStateSpy.mockRestore();
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(screen.getByLabelText('현재 경로')).toHaveTextContent('/record');
   expect(screen.getByRole('textbox', { name: '메모' })).toHaveValue('검색 전 메모');

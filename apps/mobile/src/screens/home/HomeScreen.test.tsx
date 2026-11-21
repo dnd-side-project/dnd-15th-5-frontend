@@ -1,7 +1,7 @@
 import { ANALYTICS_EVENTS, NATIVE_ANALYTICS_EVENT } from '@chapchap/shared/analytics';
 import { act, render } from '@testing-library/react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { AppState, BackHandler, Linking } from 'react-native';
+import { AppState, BackHandler, Linking, Platform } from 'react-native';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import { trackNativeAnalyticsEvent } from '@/shared/lib/analytics';
@@ -42,13 +42,6 @@ const edgeToEdgeEdges = {
   right: 'off',
   bottom: 'off',
   left: 'off',
-};
-
-const bottomEdgeToEdgeEdges = {
-  top: 'additive',
-  right: 'additive',
-  bottom: 'off',
-  left: 'additive',
 };
 
 jest.mock('react-native-webview', () => {
@@ -114,6 +107,7 @@ describe('<HomeScreen />', () => {
       type: WebBrowser.WebBrowserResultType.CANCEL,
     });
     mockNativePathname = '/';
+    jest.replaceProperty(Platform, 'OS', 'ios');
     resetNativeAnalyticsForTest();
     hardwareBackHandler = undefined;
     appStateChangeHandler = undefined;
@@ -213,11 +207,37 @@ describe('<HomeScreen />', () => {
     expect(getByTestId('home-webview')).toHaveProp('source', {
       uri: 'http://192.168.0.2:5173/',
     });
-    expect(getByTestId('home-safe-area').props.edges).toEqual(bottomEdgeToEdgeEdges);
+    expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
     expect(getByTestId('home-webview')).toHaveProp('automaticallyAdjustContentInsets', false);
     expect(getByTestId('home-webview')).toHaveProp('contentInsetAdjustmentBehavior', 'never');
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
     expect(getByTestId('home-webview')).toHaveProp('setSupportMultipleWindows', false);
+  });
+
+  it('Android에서는 기존 네이티브 상단 Safe Area 처리를 유지한다', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { getByTestId } = await render(<HomeScreen />);
+
+    expect(getByTestId('home-safe-area').props.edges).toEqual({
+      top: 'additive',
+      right: 'additive',
+      bottom: 'off',
+      left: 'additive',
+    });
+    await act(async () => {
+      await getByTestId('home-webview').props.onMessage({
+        nativeEvent: {
+          data: JSON.stringify({
+            kind: 'event',
+            type: 'routeChanged',
+            payload: { pathname: '/home' },
+          }),
+          url: 'https://chapchap.example.com/home',
+        },
+      });
+    });
+    expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
   });
 
   it('백그라운드에서 앱으로 돌아오면 WebView에 활성화 이벤트를 전달한다', async () => {
@@ -292,7 +312,7 @@ describe('<HomeScreen />', () => {
     );
   });
 
-  it('지도 홈과 추천 지도는 전체 화면, 검색과 기록은 하단만 edge-to-edge로 표시한다', async () => {
+  it('iOS 페이지 전환 중 WebView의 크기와 Safe Area를 유지한다', async () => {
     process.env.EXPO_PUBLIC_WEB_URL = 'http://192.168.0.2:5173';
     const { getByTestId } = await render(<HomeScreen />);
 
@@ -312,13 +332,19 @@ describe('<HomeScreen />', () => {
     expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', false);
 
-    for (const [pathname, edges] of [
-      ['/home/recommendation/search', bottomEdgeToEdgeEdges],
-      ['/home/recommendation/map', edgeToEdgeEdges],
-      ['/home/recommendation/search', bottomEdgeToEdgeEdges],
-      ['/record', bottomEdgeToEdgeEdges],
-      ['/record/shop/search', bottomEdgeToEdgeEdges],
-      ['/record/135/edit', bottomEdgeToEdgeEdges],
+    const initialWebView = getByTestId('home-webview');
+    const initialSource = initialWebView.props.source;
+    for (const pathname of [
+      '/report',
+      '/home',
+      '/home/search',
+      '/notifications',
+      '/my-page',
+      '/home/recommendation/search',
+      '/home/recommendation/map',
+      '/record',
+      '/record/shop/search',
+      '/record/135/edit',
     ] as const) {
       await act(async () => {
         await getByTestId('home-webview').props.onMessage({
@@ -328,7 +354,10 @@ describe('<HomeScreen />', () => {
           },
         });
       });
-      expect(getByTestId('home-safe-area').props.edges).toEqual(edges);
+      expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
+      expect(getByTestId('home-webview')).toBe(initialWebView);
+      expect(getByTestId('home-webview').props.source).toBe(initialSource);
+      expect(getByTestId('home-webview')).toHaveStyle({ height: '100%', width: '100%' });
     }
 
     await act(async () => {
@@ -344,7 +373,7 @@ describe('<HomeScreen />', () => {
       });
     });
 
-    expect(getByTestId('home-safe-area').props.edges).toEqual(bottomEdgeToEdgeEdges);
+    expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
 
     await act(async () => {
@@ -360,7 +389,7 @@ describe('<HomeScreen />', () => {
       });
     });
 
-    expect(getByTestId('home-safe-area').props.edges).toEqual(bottomEdgeToEdgeEdges);
+    expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
 
     await act(async () => {
@@ -376,7 +405,7 @@ describe('<HomeScreen />', () => {
       });
     });
 
-    expect(getByTestId('home-safe-area').props.edges).toEqual(bottomEdgeToEdgeEdges);
+    expect(getByTestId('home-safe-area').props.edges).toEqual(edgeToEdgeEdges);
     expect(getByTestId('home-webview')).toHaveProp('allowsBackForwardNavigationGestures', true);
   });
 

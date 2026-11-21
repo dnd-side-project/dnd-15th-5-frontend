@@ -15,6 +15,10 @@ jest.mock('@/app/providers/AnalyticsIdentity', () => ({
   __esModule: true,
   default: () => null,
 }));
+jest.mock('@/app/providers/AnalyticsTracker', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 jest.mock('@/app/providers/MapSessionBoundary', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => children,
@@ -62,6 +66,7 @@ describe('<MobileLayout />', () => {
     });
     const mobileFrame = container.firstElementChild?.firstElementChild;
     expect(mobileFrame).not.toHaveClass('pb-safe-bottom');
+    expect(mobileFrame).toHaveStyle({ '--page-safe-area-top': '0px' });
 
     await user.click(screen.getByRole('link', { name: '리포트로 이동' }));
 
@@ -69,16 +74,63 @@ describe('<MobileLayout />', () => {
       expect(mockNotifyNative).toHaveBeenLastCalledWith('routeChanged', { pathname: '/report' });
     });
     expect(mobileFrame).toHaveClass('pb-safe-bottom');
+    expect(mobileFrame).toHaveStyle({ '--page-safe-area-top': 'env(safe-area-inset-top)' });
   });
 
-  it('자체 스크롤을 사용하는 가게 상세에는 바깥 Safe Area 패딩을 추가하지 않는다', () => {
+  it.each([
+    ['/', 'env(safe-area-inset-top)'],
+    ['/auth/callback', 'env(safe-area-inset-top)'],
+    ['/oauth/callback', 'env(safe-area-inset-top)'],
+    ['/agreement', 'env(safe-area-inset-top)'],
+    ['/agreement/privacy-policy', 'env(safe-area-inset-top)'],
+    ['/agreement/terms-of-service', 'env(safe-area-inset-top)'],
+    ['/onboarding', 'env(safe-area-inset-top)'],
+    ['/home', '0px'],
+    ['/home/', '0px'],
+    ['/home/recommendation/map', '0px'],
+    ['/home/recommendation/search', '0px'],
+    ['/record', '0px'],
+    ['/record/135/edit', '0px'],
+    ['/record/135/edit/history', 'env(safe-area-inset-top)'],
+    ['/record/shop/search', 'env(safe-area-inset-top)'],
+    ['/home/search', 'env(safe-area-inset-top)'],
+    ['/notifications', 'env(safe-area-inset-top)'],
+    ['/my-page', 'env(safe-area-inset-top)'],
+    ['/my-page/likes', 'env(safe-area-inset-top)'],
+    ['/my-page/profile', 'env(safe-area-inset-top)'],
+    ['/my-page/policies', 'env(safe-area-inset-top)'],
+    ['/my-page/notifications', 'env(safe-area-inset-top)'],
+    ['/home/shop/101', 'env(safe-area-inset-top)'],
+    ['/report', 'env(safe-area-inset-top)'],
+    ['/report/monthly-report', 'env(safe-area-inset-top)'],
+    ['/report/history', 'env(safe-area-inset-top)'],
+    ['/report/frequent-shops', 'env(safe-area-inset-top)'],
+    ['/report/monthly-records', 'env(safe-area-inset-top)'],
+    ['/share/test-token', 'env(safe-area-inset-top)'],
+    ['/unknown-page', 'env(safe-area-inset-top)'],
+  ])('%s 경로의 상단 Safe Area를 화면의 처리 방식에 맞춘다', (pathname, topInset) => {
     const { container } = render(
-      <MemoryRouter initialEntries={['/home/shop/101']}>
-        <MobileLayout>가게 상세</MobileLayout>
+      <MemoryRouter initialEntries={[pathname]}>
+        <MobileLayout>화면</MobileLayout>
       </MemoryRouter>
     );
-    const mobileFrame = container.firstElementChild?.firstElementChild;
 
-    expect(mobileFrame).not.toHaveClass('pb-safe-bottom');
+    expect(container.firstElementChild?.firstElementChild).toHaveStyle({
+      '--page-safe-area-top': topInset,
+    });
   });
+
+  it.each(['/home/shop/101', '/my-page/notifications'])(
+    '%s 화면이 하단 Safe Area를 처리하면 프레임에 중복 패딩을 추가하지 않는다',
+    (pathname) => {
+      const { container } = render(
+        <MemoryRouter initialEntries={[pathname]}>
+          <MobileLayout>가게 상세</MobileLayout>
+        </MemoryRouter>
+      );
+      const mobileFrame = container.firstElementChild?.firstElementChild;
+
+      expect(mobileFrame).not.toHaveClass('pb-safe-bottom');
+    }
+  );
 });

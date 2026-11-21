@@ -151,7 +151,7 @@ describe('ShopDetail', () => {
     expect(screen.getByText('서울특별시 강남구 봉은사로 125 1층')).toBeInTheDocument();
 
     const scrollRegion = screen.getByRole('region', { name: '방문 요약과 방문 기록' });
-    expect(scrollRegion.closest('article')).toHaveClass('h-dvh');
+    expect(scrollRegion.closest('article')).toHaveClass('h-screen-safe-top');
     expect(scrollRegion).toHaveClass('overflow-y-auto', 'pb-safe-bottom');
     expect(
       within(scrollRegion).getByRole('heading', { level: 1, name: '투썸플레이스' })

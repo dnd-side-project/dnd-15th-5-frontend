@@ -22,7 +22,7 @@ export default function MyPage() {
   // TODO: 계정 정보 조회 중에는 프로필 영역에 스켈레톤 UI를 표시한다.
   if (accountQuery.isError || (!accountQuery.isPending && !account)) {
     return (
-      <main className="-mx-4 min-h-dvh bg-neutral-00 px-4">
+      <main className="min-h-screen-safe-bottom -mx-4 bg-neutral-00 px-4">
         <StateView
           variant="error"
           headingAs="h1"
@@ -37,7 +37,7 @@ export default function MyPage() {
   }
 
   return (
-    <main className="-mx-4 flex min-h-dvh flex-col bg-primary-100">
+    <main className="min-h-screen-safe-bottom -mx-4 flex flex-col bg-primary-100">
       <MyPageProfileSection
         nickname={account?.nickname}
         profileImageUrl={account?.profileImageUrl}

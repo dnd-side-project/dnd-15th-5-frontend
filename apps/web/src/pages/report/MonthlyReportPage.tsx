@@ -63,7 +63,7 @@ export default function MonthlyReportPage() {
     selectedCardIndex,
     selectedMonth,
   } = useMonthlyReport();
-  const nickname = accountQuery.data?.data?.nickname?.trim() || '챱챱 사용자';
+  const nickname = accountQuery.data?.data?.nickname?.trim() || '찹찹 사용자';
   const { isKakaoShareReady, isPreparingKakaoShare, isSharing, shareToKakao } = useKakaoReportShare(
     {
       captureRef: kakaoThumbnailRef,
@@ -120,7 +120,7 @@ export default function MonthlyReportPage() {
 
   if (hasReportError) {
     return (
-      <main className="flex min-h-dvh items-center px-4">
+      <main className="min-h-screen-safe-bottom flex items-center px-4">
         <StateView
           actionLabel="다시 불러오기"
           description="잠시 후 다시 시도해주세요."

@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react-native';
 import { act, createRef } from 'react';
+import { Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import { WebViewScreen } from './WebViewScreen';
@@ -19,6 +20,35 @@ const createDefaultProps = () => ({
 });
 
 describe('<WebViewScreen />', () => {
+  beforeEach(() => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('iOS는 호출 화면의 Safe Area 설정이 달라져도 같은 WebView 크기를 유지한다', async () => {
+    const props = createDefaultProps();
+    const { getByTestId, rerender } = await render(<WebViewScreen {...props} safeAreaMode="all" />);
+    const initialWebView = getByTestId('test-webview');
+    const initialSource = initialWebView.props.source;
+
+    for (const safeAreaMode of ['all', 'except-bottom', 'none'] as const) {
+      await rerender(<WebViewScreen {...props} safeAreaMode={safeAreaMode} />);
+
+      expect(getByTestId('test-safe-area').props.edges).toEqual({
+        top: 'off',
+        right: 'off',
+        bottom: 'off',
+        left: 'off',
+      });
+      expect(getByTestId('test-webview')).toBe(initialWebView);
+      expect(getByTestId('test-webview').props.source).toBe(initialSource);
+      expect(getByTestId('test-webview')).toHaveStyle({ height: '100%', width: '100%' });
+    }
+  });
+
   it('공통 WebView의 스크롤·확대·단일 창 설정을 적용한다', async () => {
     const onShouldStartLoadWithRequest = jest.fn(() => true);
     const { getByTestId } = await render(
@@ -46,6 +76,7 @@ describe('<WebViewScreen />', () => {
   });
 
   it('하단만 edge-to-edge이면 나머지 Safe Area를 유지한다', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
     const { getByTestId } = await render(
       <WebViewScreen {...createDefaultProps()} safeAreaMode="except-bottom" />
     );

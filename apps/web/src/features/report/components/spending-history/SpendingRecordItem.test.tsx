@@ -9,7 +9,7 @@ const consumption = {
   category: '카페',
   id: 1,
   placeId: 42,
-  placeName: '챱챱 카페',
+  placeName: '찹찹 카페',
   purchaseDate: '2026-08-29',
   purchaseTime: '14:30:00',
 };
@@ -39,7 +39,7 @@ describe('SpendingRecordItem', () => {
       </MemoryRouter>
     );
 
-    await user.click(screen.getByRole('link', { name: /챱챱 카페/ }));
+    await user.click(screen.getByRole('link', { name: /찹찹 카페/ }));
 
     expect(screen.getByText('가게 상세 화면')).toBeInTheDocument();
   });
@@ -57,7 +57,7 @@ describe('SpendingRecordItem', () => {
     );
 
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
+    expect(screen.getByText('찹찹 카페')).toBeInTheDocument();
   });
 
   it('가게 식별자가 null이면 링크 없이 기록만 표시한다', () => {
@@ -73,6 +73,6 @@ describe('SpendingRecordItem', () => {
     );
 
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(screen.getByText('챱챱 카페')).toBeInTheDocument();
+    expect(screen.getByText('찹찹 카페')).toBeInTheDocument();
   });
 });

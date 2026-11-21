@@ -5,9 +5,27 @@
   margin-inline: auto;
 }
 
-/** 하단 Safe Area를 부모가 담당하는 화면이 뷰포트를 초과하지 않게 합니다. */
+/** 상단 여백을 프레임이 확보한 화면에서 사용할 수 있는 높이입니다. */
+@utility h-screen-safe-top {
+  height: calc(100dvh - var(--page-safe-area-top, 0px));
+}
+
+@utility min-h-screen-safe-top {
+  min-height: calc(100dvh - var(--page-safe-area-top, 0px));
+}
+
+/** 상·하단 Safe Area를 부모가 담당하는 화면이 뷰포트를 초과하지 않게 합니다. */
+@utility h-screen-safe-bottom {
+  height: calc(100dvh - var(--page-safe-area-top, 0px) - env(safe-area-inset-bottom));
+}
+
 @utility min-h-screen-safe-bottom {
-  min-height: calc(100dvh - env(safe-area-inset-bottom));
+  min-height: calc(100dvh - var(--page-safe-area-top, 0px) - env(safe-area-inset-bottom));
+}
+
+/** fixed 화면도 일반 문서와 같은 상단 경계에서 시작합니다. */
+@utility top-safe {
+  top: var(--page-safe-area-top, 0px);
 }
 
 /** 스크롤 콘텐츠가 홈 인디케이터에 가려지지 않게 합니다. */

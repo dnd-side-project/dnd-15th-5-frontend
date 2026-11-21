@@ -208,7 +208,9 @@ Worker는 합성 완료·오류·취소·시간 초과 시 종료하고, Worker 
 사용할 수 없는 환경에서는 기존 DOM Canvas 합성으로 복구한다. 리포트 이미지 캡처 라이브러리는
 저장·공유를 실행할 때만 동적으로 불러온다.
 
-소비 기록 수정은 `/record/:consumptionId/edit`에서 처리한다. 기존 사진·스티커 ID와 정확한 방문
+소비 기록 수정은 `/record/:consumptionId/edit`에서 처리한다. 수정 폼에서 가게 검색을 열면 검색은
+맨 위에서 시작하고, 가게 선택이나 뒤로 가기로 복귀하면 폼의 입력과 기존 스크롤 위치를 복원한다.
+기존 사진·스티커 ID와 정확한 방문
 시각을 복원하고 이미지 교체 시에만 업로드한다. 지도 소비 기록·가게 상세·월별 소비내역의
 수정·삭제 동작은 페이지에서 `features/record`와 각 목록을 조합해 연결한다.
 공통 스와이프 UI는 `shared/ui/swipe-actions`, API 호출과 확인 모달은 `features/record`에서 관리한다.
@@ -375,7 +377,8 @@ apps/mobile/src/
   개발 서버는 pnpm의 `node_modules` 링크 대신 이 앱 내부 파일을 시작 URL로 사용한다.
 - 화면 컴포넌트는 `화면명 + Screen`으로 작성한다 (`HomeScreen`).
 - 웹과 모바일이 함께 쓰는 코드는 `apps/mobile/src/shared`가 아니라 `packages/shared`에 둔다.
-- WebView 화면은 `shared/layout/WebViewScreen`을 사용해 Safe Area·로딩·오류 복구 동작을 통일한다. 지도 홈(`/home`)은 전체 화면을 시스템 영역까지 표시하고, 나머지 웹 화면은 하단 배경만 확장한 뒤 웹의 `MobileLayout` 또는 자체 스크롤 영역에서 하단 Safe Area를 확보한다.
+- WebView 화면은 `shared/layout/WebViewScreen`을 사용해 Safe Area·로딩·오류 복구 동작을 통일한다. iOS는 메인 화면과 영수증 가게 검색을 포함한 모든 WebView에서 전체 화면 크기를 유지하고 웹이 Safe Area를 처리한다. Android는 `safeAreaMode`에 따라 네이티브 Safe Area를 유지한다.
+- 웹의 `shared/layout/page-frame`은 라우트·인증 복원·초기 로딩·오류·기록 수정의 내부 화면에 공통 모바일 프레임을 적용한다. 상단 여백과 `--page-safe-area-top`을 함께 설정하며, 지도·스티커 기록처럼 여백을 직접 처리하는 화면은 해당 가장자리의 처리를 위임한다. 경로별 처리 기준은 `app/layouts/getPageSafeArea.ts`에서 관리하고 `MobileLayout`이 해당 옵션을 프레임에 전달한다. 고정 화면은 `top-safe`, 높이가 고정된 화면은 `h-screen-safe-top` 또는 `h-screen-safe-bottom`으로 같은 경계를 사용한다. 하단 여백도 공통 프레임 또는 자체 스크롤 영역에서 확보한다. 기록 단계별 헤더 여백은 `features/record/sticker/constants.ts`의 `getStickerFlowLayout`에서 관리한다.
 - 스티커 기록과 영수증 입력의 공통 규칙은 `packages/shared/record`, 네이티브 영수증 UI와 상태는 `features/record`에서 관리한다.
 - 필요한 폴더만 만든다. 사용처가 생기기 전에는 만들지 않는다.
 

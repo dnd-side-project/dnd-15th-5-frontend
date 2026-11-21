@@ -72,7 +72,7 @@ export default function ShopDetailView({
     (place.stats?.totalVisitCount ?? 0) > 0 || visitHistory.visits.length > 0;
 
   return (
-    <article className="relative -mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
+    <article className="h-screen-safe-top relative -mx-4 flex flex-col overflow-hidden bg-neutral-00">
       <header className="relative z-30 h-14.5 shrink-0 bg-neutral-00 px-4">{headerContent}</header>
       <div
         ref={restoreStatusRef}

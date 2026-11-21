@@ -1,3 +1,4 @@
+import PageFrame from '@/shared/layout/page-frame';
 import { StateView } from '@/shared/ui/state-view';
 
 type ErrorPageProps = {
@@ -9,8 +10,8 @@ export default function ErrorPage({ onRetry }: ErrorPageProps) {
   const handleRetry = onRetry ?? (() => window.location.reload());
 
   return (
-    <div className="min-h-dvh bg-neutral-100">
-      <div className="mobile-frame bg-neutral-00 px-4 pb-safe-bottom">
+    <PageFrame>
+      <div className="px-4">
         <main className="flex min-h-screen-safe-bottom items-center py-8">
           <StateView
             actionLabel="다시 시도하기"
@@ -22,6 +23,6 @@ export default function ErrorPage({ onRetry }: ErrorPageProps) {
           />
         </main>
       </div>
-    </div>
+    </PageFrame>
   );
 }

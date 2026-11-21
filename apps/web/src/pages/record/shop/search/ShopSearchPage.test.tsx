@@ -43,6 +43,11 @@ describe('<ShopSearchPage />', () => {
   beforeEach(() => {
     mockNotifyNative.mockReset();
     mockNotifyNative.mockReturnValue(false);
+    jest.spyOn(window.history, 'state', 'get').mockReturnValue({ idx: 0 });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('장소를 선택하면 선택 정보를 가지고 기록 시작 화면으로 이동한다', async () => {
@@ -83,6 +88,7 @@ describe('<ShopSearchPage />', () => {
 
   it('일반적으로 진입했다면 뒤로 가기 버튼을 누르면 이전 화면으로 돌아간다', async () => {
     const user = userEvent.setup();
+    jest.spyOn(window.history, 'state', 'get').mockReturnValue({ idx: 1 });
 
     render(
       <MemoryRouter initialEntries={['/record', '/record/shop/search']} initialIndex={1}>
@@ -96,6 +102,24 @@ describe('<ShopSearchPage />', () => {
     await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
 
     expect(screen.getByText('기록 방법 선택 화면')).toBeInTheDocument();
+  });
+
+  it.each([0, undefined])('이전 이력이 없으면(%s) 뒤로 가기로 홈으로 이동한다', async (idx) => {
+    const user = userEvent.setup();
+    jest.spyOn(window.history, 'state', 'get').mockReturnValue({ idx });
+
+    render(
+      <MemoryRouter initialEntries={['/record/shop/search']}>
+        <Routes>
+          <Route path="/record/shop/search" element={<ShopSearchPage />} />
+          <Route path="/home" element={<p>홈 화면</p>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('button', { name: '뒤로 가기' }));
+
+    expect(screen.getByText('홈 화면')).toBeInTheDocument();
   });
 
   it('앱 영수증 플로우에서 장소를 선택하면 네이티브에 검색 결과를 전달한다', async () => {

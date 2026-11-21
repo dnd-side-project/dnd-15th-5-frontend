@@ -15,7 +15,7 @@ const VISIT_SUMMARY_STAT_COUNT = 3;
 /** 매장 상세 데이터를 불러오는 동안 실제 레이아웃과 비슷한 자리를 미리 보여줍니다. */
 export default function ShopDetailSkeleton({ headerContent }: ShopDetailSkeletonProps) {
   return (
-    <article className="-mx-4 flex h-dvh flex-col overflow-hidden bg-neutral-00">
+    <article className="h-screen-safe-top -mx-4 flex flex-col overflow-hidden bg-neutral-00">
       <span role="status" aria-label="가게 상세 불러오는 중" className="sr-only" />
       <header className="relative z-30 h-14.5 shrink-0 bg-neutral-00 px-4">{headerContent}</header>
       <div aria-hidden="true" className="pb-safe-bottom min-h-0 flex-1 overflow-y-auto">
