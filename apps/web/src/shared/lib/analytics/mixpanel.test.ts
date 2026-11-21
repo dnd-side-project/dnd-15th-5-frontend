@@ -44,6 +44,7 @@ describe('Mixpanel analytics', () => {
     expect(mockedMixpanel.init).toHaveBeenCalledWith(
       'test-project-token',
       expect.objectContaining({
+        ip: false,
         autocapture: expect.objectContaining({
           click: true,
           input: false,
