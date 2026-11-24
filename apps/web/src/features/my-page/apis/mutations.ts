@@ -17,17 +17,12 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 import type { ErrorType, BodyType } from '@/shared/apis/orvalMutator';
 
 import type {
-  AccountUpdateRequest,
   ApiResponse,
   ProfileUpdateRequest,
   SecondParameter,
 } from '@/features/my-page/apis/dto';
 
-import {
-  updateMyAccount,
-  updateMyProfile,
-  withdrawMyAccount,
-} from '@/features/my-page/apis/clients';
+import { updateMyProfile, withdrawMyAccount } from '@/features/my-page/apis/clients';
 
 export const getWithdrawMyAccountMutationOptions = <
   TError = ErrorType<ApiResponse>,
@@ -144,72 +139,4 @@ export const useUpdateMyProfile = <TError = ErrorType<unknown>, TContext = unkno
   TContext
 > => {
   return useMutation(getUpdateMyProfileMutationOptions(options), queryClient);
-};
-
-export const getUpdateMyAccountMutationOptions = <
-  TError = ErrorType<ApiResponse>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateMyAccount>>,
-    TError,
-    { data?: BodyType<AccountUpdateRequest> },
-    TContext
-  >;
-  request?: SecondParameter<typeof apiClient>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof updateMyAccount>>,
-  TError,
-  { data?: BodyType<AccountUpdateRequest> },
-  TContext
-> => {
-  const mutationKey = ['updateMyAccount'];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof updateMyAccount>>,
-    { data?: BodyType<AccountUpdateRequest> }
-  > = (props) => {
-    const { data } = props ?? {};
-
-    return updateMyAccount(data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type UpdateMyAccountMutationResult = NonNullable<
-  Awaited<ReturnType<typeof updateMyAccount>>
->;
-
-export type UpdateMyAccountMutationBody = BodyType<AccountUpdateRequest> | undefined;
-
-export type UpdateMyAccountMutationError = ErrorType<ApiResponse>;
-
-/**
- * @deprecated
- * @summary 내 정보 수정 (기존 파일 업로드 방식 · 사용 중단)
- */
-export const useUpdateMyAccount = <TError = ErrorType<ApiResponse>, TContext = unknown>(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof updateMyAccount>>,
-      TError,
-      { data?: BodyType<AccountUpdateRequest> },
-      TContext
-    >;
-    request?: SecondParameter<typeof apiClient>;
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof updateMyAccount>>,
-  TError,
-  { data?: BodyType<AccountUpdateRequest> },
-  TContext
-> => {
-  return useMutation(getUpdateMyAccountMutationOptions(options), queryClient);
 };
