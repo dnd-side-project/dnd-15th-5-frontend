@@ -6,11 +6,10 @@ type ProfileAvatarProps = {
   className?: string;
   backgroundColor?: string;
   profileImageCode?: string;
-  profileImageUrl?: string | null;
 };
 
 /**
- * 프로필 코드를 우선 표시하고, 코드가 없으면 기존 이미지 또는 기본 아바타를 표시합니다.
+ * 프로필 코드에 해당하는 아바타를 표시하며, 코드가 없으면 지정한 배경색 또는 기본 색상을 사용합니다.
  *
  * @example
  * ```tsx
@@ -21,19 +20,7 @@ export default function ProfileAvatar({
   className,
   backgroundColor,
   profileImageCode,
-  profileImageUrl,
 }: ProfileAvatarProps) {
-  if (!profileImageCode && profileImageUrl) {
-    return (
-      <img
-        className={cn('aspect-square rounded-full object-cover', className)}
-        src={profileImageUrl}
-        alt="프로필"
-        data-mp-block=""
-      />
-    );
-  }
-
   const avatarColor = profileImageCode
     ? getProfileImageOption(profileImageCode).color
     : (backgroundColor ?? getProfileImageOption().color);

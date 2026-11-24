@@ -4,7 +4,6 @@ import { ProfileAvatar } from '@/shared/ui/profile-avatar';
 
 type MyPageProfileSectionProps = {
   nickname?: string;
-  profileImageUrl?: string | null;
   profileImageCode?: string;
   onBack: () => void;
   onEdit: () => void;
@@ -12,7 +11,6 @@ type MyPageProfileSectionProps = {
 
 export default function MyPageProfileSection({
   nickname,
-  profileImageUrl,
   profileImageCode,
   onBack,
   onEdit,
@@ -30,11 +28,7 @@ export default function MyPageProfileSection({
           onClick={onEdit}
           className="relative size-25 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
-          <ProfileAvatar
-            className="size-full"
-            profileImageCode={profileImageCode}
-            profileImageUrl={profileImageUrl}
-          />
+          <ProfileAvatar className="size-full" profileImageCode={profileImageCode} />
           <span className="absolute right-0 bottom-0 flex size-7 items-center justify-center rounded-full bg-neutral-00">
             <EditIcon className="size-full" aria-hidden="true" />
           </span>
