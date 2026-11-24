@@ -18,7 +18,7 @@
 | ------------ | --------------- | --------- |
 | Server State | TanStack Query  | 적용 완료 |
 | HTTP Client  | Axios           | 적용 완료 |
-| Client State | Zustand         | 사용 확정 |
+| Client State | Zustand         | 적용 완료 |
 
 ### Styling
 
