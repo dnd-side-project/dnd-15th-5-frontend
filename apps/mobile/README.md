@@ -18,7 +18,7 @@ pnpm ios
 pnpm android
 ```
 
-모바일 앱은 iOS·Android만 대상으로 하며, 웹 화면은 `apps/web`에서 `pnpm dev:web`으로 실행합니다.
+모바일 앱은 iOS·Android만 대상으로 하며, 웹 화면은 저장소 루트에서 `pnpm dev:web`으로 실행합니다.
 
 Expo Router 라우트는 `src/app`에 추가합니다.
 
