@@ -1,5 +1,7 @@
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 
+import { releaseTemporaryImage, trackTemporaryImage } from '@/native/image/temporaryImageFiles';
+
 import type { BridgeResult } from '@chapchap/shared/bridge';
 const MAX_STICKER_EDGE = 1536;
 const MAX_BASE64_LENGTH = 4 * 1024 * 1024;
@@ -17,16 +19,20 @@ export const prepareStickerPhoto = async (asset: {
       );
     }
     const image = await context.renderAsync();
+    let photoUri: string | undefined;
     try {
       const photo = await image.saveAsync({
         format: SaveFormat.JPEG,
         compress: 0.85,
         base64: true,
       });
+      photoUri = photo.uri;
+      trackTemporaryImage(photoUri);
       if (!photo.base64 || photo.base64.length > MAX_BASE64_LENGTH)
         throw new Error('사진 용량이 너무 커요. 다시 촬영해주세요.');
       return { status: 'success', base64: photo.base64, mimeType: 'image/jpeg' };
     } finally {
+      releaseTemporaryImage(photoUri);
       image.release();
     }
   } finally {

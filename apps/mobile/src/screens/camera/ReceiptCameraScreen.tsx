@@ -15,6 +15,7 @@ import {
   ReceiptScanLoading,
 } from '@/features/record';
 import { createReceiptScanData } from '@/features/record/utils/createReceiptScanData';
+import { releaseTemporaryImage, trackTemporaryImage } from '@/native/image/temporaryImageFiles';
 import { pickReceiptImageFromLibrary } from '@/native/receipt/pickReceiptImageFromLibrary';
 import { finishReceiptScan, isReceiptScanActive } from '@/native/receipt/scanReceipt';
 import { CloseIcon, GalleryIcon } from '@/shared/assets/icons';
@@ -39,12 +40,18 @@ import type { BridgeResult } from '@chapchap/shared/bridge';
 export default function ReceiptCameraScreen() {
   const { scanId = '' } = useLocalSearchParams<{ scanId?: string }>();
   const mounted = useRef(false);
+  const sourceImageUri = useRef<string | null>(null);
+  const isProcessingRef = useRef(false);
   const scanResult = useRef<BridgeResult<'scanReceipt'> | null>(null);
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
       void Promise.resolve().then(() => {
+        if (!mounted.current && !isProcessingRef.current) {
+          releaseTemporaryImage(sourceImageUri.current);
+          sourceImageUri.current = null;
+        }
         if (!mounted.current && scanId)
           finishReceiptScan(scanId, scanResult.current ?? { status: 'cancelled' });
       });
@@ -56,7 +63,6 @@ export default function ReceiptCameraScreen() {
   const { showToast } = useToast();
   const cameraRef = useRef<CameraView>(null);
   const attemptCountRef = useRef(0);
-  const isProcessingRef = useRef(false);
   const isScanVisibleRef = useRef(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const { zoom, selectedLens, panHandlers, loadLenses } = useCameraPinchZoom(cameraRef);
@@ -66,6 +72,8 @@ export default function ReceiptCameraScreen() {
   const [scanImageUri, setScanImageUri] = useState<string | null>(null);
 
   const resetProcessing = () => {
+    releaseTemporaryImage(sourceImageUri.current);
+    sourceImageUri.current = null;
     isProcessingRef.current = false;
     if (isScanVisibleRef.current) {
       setIsCameraReady(false);
@@ -123,10 +131,10 @@ export default function ReceiptCameraScreen() {
     receipt: Awaited<ReturnType<typeof processReceiptImage>>,
     inputMethod: 'camera' | 'photo_library'
   ) => {
-    if (!mounted.current) return;
+    if (!mounted.current) return false;
     if (scanId && !isReceiptScanActive(scanId)) {
       resetProcessing();
-      return;
+      return false;
     }
     const webReceipt = scanId ? createReceiptScanData(receipt) : null;
     trackNativeAnalyticsEvent(ANALYTICS_EVENTS.stepCompleted, {
@@ -140,8 +148,31 @@ export default function ReceiptCameraScreen() {
     if (webReceipt) {
       scanResult.current = { status: 'success', receipt: webReceipt };
       router.back();
+      return false;
     } else {
       router.replace({ pathname: '/receipt-confirm', params: createReceiptConfirmParams(receipt) });
+      return true;
+    }
+  };
+
+  const processAndCompleteReceipt = async (
+    image: Parameters<typeof processReceiptImage>[0],
+    inputMethod: 'camera' | 'photo_library'
+  ) => {
+    const receipt = await processReceiptImage(image);
+    let transferredToConfirm = false;
+    try {
+      transferredToConfirm = completeReceiptScan(receipt, inputMethod);
+    } finally {
+      if (!transferredToConfirm) releaseTemporaryImage(receipt.uri);
+    }
+  };
+
+  const finishProcessing = () => {
+    isProcessingRef.current = false;
+    if (!mounted.current) {
+      releaseTemporaryImage(sourceImageUri.current);
+      sourceImageUri.current = null;
     }
   };
 
@@ -155,10 +186,11 @@ export default function ReceiptCameraScreen() {
     try {
       // NOTE: 압축은 normalizeReceiptImage가 백엔드 제약에 맞춰 처리하므로 최대 화질로 촬영한다.
       const picture = await cameraRef.current.takePictureAsync();
+      sourceImageUri.current = picture.uri;
+      trackTemporaryImage(picture.uri);
       if (!mounted.current) return;
       showScanLoading(picture.uri);
-      const processedReceipt = await processReceiptImage(picture);
-      completeReceiptScan(processedReceipt, 'camera');
+      await processAndCompleteReceipt(picture, 'camera');
     } catch (error) {
       if (!mounted.current) return;
       // NOTE: 촬영에 실패해도 화면을 유지해 다시 시도할 수 있게 한다.
@@ -171,6 +203,8 @@ export default function ReceiptCameraScreen() {
       }
 
       Alert.alert('사진을 처리하지 못했습니다', error instanceof Error ? error.message : undefined);
+    } finally {
+      finishProcessing();
     }
   };
 
@@ -181,6 +215,7 @@ export default function ReceiptCameraScreen() {
 
     try {
       const picked = await pickReceiptImageFromLibrary();
+      if (picked.status === 'picked') sourceImageUri.current = picked.uri;
       if (!mounted.current) return;
 
       if (picked.status === 'cancelled') {
@@ -190,8 +225,7 @@ export default function ReceiptCameraScreen() {
 
       trackReceiptScanAttempt('photo_library');
       showScanLoading(picked.uri);
-      const processedReceipt = await processReceiptImage(picked);
-      completeReceiptScan(processedReceipt, 'photo_library');
+      await processAndCompleteReceipt(picked, 'photo_library');
     } catch (error) {
       if (!mounted.current) return;
       resetProcessing();
@@ -204,6 +238,8 @@ export default function ReceiptCameraScreen() {
 
       // NOTE: 권한 거부는 다시 시도해도 바뀌지 않아 원인을 알려준다.
       Alert.alert('사진을 가져오지 못했습니다', error instanceof Error ? error.message : undefined);
+    } finally {
+      finishProcessing();
     }
   };
 

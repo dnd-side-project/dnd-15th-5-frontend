@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import { recognizeReceipt } from '@/features/record/apis/clients';
+import { releaseTemporaryImage, trackTemporaryImage } from '@/native/image/temporaryImageFiles';
 import { normalizeReceiptImage } from '@/native/receipt/normalizeReceiptImage';
 import { pickReceiptImageFromLibrary } from '@/native/receipt/pickReceiptImageFromLibrary';
 import { trackNativeAnalyticsEvent } from '@/shared/lib/analytics';
@@ -13,10 +14,11 @@ import ReceiptCameraScreen from './ReceiptCameraScreen';
 const mockTakePictureAsync = jest.fn();
 const mockShowToast = jest.fn();
 let mockScanId = '';
+let mockScanActive = true;
 const mockFinishReceiptScan = jest.fn();
 jest.mock('@/native/receipt/scanReceipt', () => ({
   finishReceiptScan: (...args: unknown[]) => mockFinishReceiptScan(...args),
-  isReceiptScanActive: () => true,
+  isReceiptScanActive: () => mockScanActive,
 }));
 
 jest.mock('expo-camera', () => {
@@ -43,6 +45,10 @@ jest.mock('expo-router', () => ({
 }));
 jest.mock('@/bridge/webViewNavigation', () => ({ requestWebViewNavigation: jest.fn() }));
 jest.mock('@/native/receipt/normalizeReceiptImage', () => ({ normalizeReceiptImage: jest.fn() }));
+jest.mock('@/native/image/temporaryImageFiles', () => ({
+  releaseTemporaryImage: jest.fn(),
+  trackTemporaryImage: jest.fn(),
+}));
 jest.mock('@/features/record/apis/clients', () => ({ recognizeReceipt: jest.fn() }));
 jest.mock('@/native/receipt/pickReceiptImageFromLibrary', () => ({
   pickReceiptImageFromLibrary: jest.fn(),
@@ -69,6 +75,7 @@ const mockReplace = jest.mocked(router.replace);
 describe('<ReceiptCameraScreen />', () => {
   beforeEach(() => {
     mockScanId = '';
+    mockScanActive = true;
     jest.clearAllMocks();
     jest.useFakeTimers();
     mockRecognizeReceipt.mockResolvedValue({
@@ -94,6 +101,7 @@ describe('<ReceiptCameraScreen />', () => {
     });
     expect(router.back).toHaveBeenCalled();
     expect(mockReplace).not.toHaveBeenCalled();
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://normalized.jpg');
     await unmount();
     await act(async () => {
       await Promise.resolve();
@@ -108,6 +116,7 @@ describe('<ReceiptCameraScreen />', () => {
         shop: null,
       },
     });
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://receipt.jpg');
   });
 
   it('웹 기록의 영수증 촬영을 취소하면 홈 이동 없이 취소를 반환한다', async () => {
@@ -163,6 +172,8 @@ describe('<ReceiptCameraScreen />', () => {
     });
 
     expect(mockNormalizeReceiptImage).toHaveBeenCalledWith(picture);
+    expect(trackTemporaryImage).toHaveBeenCalledWith(picture.uri);
+    expect(releaseTemporaryImage).not.toHaveBeenCalledWith('file://normalized.jpg');
     expect(trackNativeAnalyticsEvent).toHaveBeenCalledWith(ANALYTICS_EVENTS.stepAttempted, {
       step_name: 'REC_ReceiptScan',
       screen_name: 'REC_ReceiptScan',
@@ -443,6 +454,7 @@ describe('<ReceiptCameraScreen />', () => {
       expect.anything()
     );
     expect(mockNormalizeReceiptImage).not.toHaveBeenCalled();
+    expect(trackTemporaryImage).not.toHaveBeenCalled();
     expect(getByRole('button', { name: '영수증 촬영' })).toBeEnabled();
   });
 
@@ -460,7 +472,95 @@ describe('<ReceiptCameraScreen />', () => {
     });
 
     expect(mockShowToast).toHaveBeenCalledWith({ message, type: 'info' });
+    expect(releaseTemporaryImage).toHaveBeenCalledWith(picture.uri);
     expect(mockReplace).not.toHaveBeenCalled();
     expect(getByRole('button', { name: '영수증 촬영' })).toBeEnabled();
+  });
+
+  it('화면 이탈 후 도착한 촬영 원본은 처리하지 않고 정리한다', async () => {
+    let resolvePhoto!: (photo: { uri: string; width: number; height: number }) => void;
+    mockTakePictureAsync.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolvePhoto = resolve;
+      })
+    );
+    const { getByRole, unmount } = await render(<ReceiptCameraScreen />);
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '영수증 촬영' }));
+    });
+    await unmount();
+    await act(async () => {
+      resolvePhoto({ uri: 'file://late.jpg', width: 100, height: 100 });
+    });
+    expect(trackTemporaryImage).toHaveBeenCalledWith('file://late.jpg');
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://late.jpg');
+    expect(mockNormalizeReceiptImage).not.toHaveBeenCalled();
+  });
+
+  it('OCR 도중 이탈하면 처리가 끝난 후 원본과 결과를 정리하고 화면을 이동하지 않는다', async () => {
+    let resolveOcr!: (receipt: Awaited<ReturnType<typeof recognizeReceipt>>) => void;
+    mockTakePictureAsync.mockResolvedValue({ uri: 'file://captured.jpg', width: 100, height: 100 });
+    mockNormalizeReceiptImage.mockResolvedValue({ uri: 'file://normalized.jpg' });
+    mockRecognizeReceipt.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveOcr = resolve;
+      })
+    );
+    const { getByRole, unmount } = await render(<ReceiptCameraScreen />);
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '영수증 촬영' }));
+    });
+    await unmount();
+    expect(releaseTemporaryImage).not.toHaveBeenCalledWith('file://captured.jpg');
+    await act(async () => {
+      resolveOcr({ receiptImageId: 15 });
+      await jest.runAllTimersAsync();
+    });
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://captured.jpg');
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://normalized.jpg');
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('갤러리 OCR 중 요청이 만료되면 결과와 선택기 입력의 사용을 종료한다', async () => {
+    mockScanId = 'expired-scan';
+    mockPickReceiptImageFromLibrary.mockResolvedValue({
+      status: 'picked',
+      uri: 'file://gallery.jpg',
+      width: 100,
+      height: 100,
+    });
+    mockNormalizeReceiptImage.mockResolvedValue({ uri: 'file://normalized.jpg' });
+    const { getByRole, unmount } = await render(<ReceiptCameraScreen />);
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '사진 보관함에서 선택' }));
+      await Promise.resolve();
+      mockScanActive = false;
+      await jest.runAllTimersAsync();
+    });
+    await unmount();
+    expect(trackTemporaryImage).not.toHaveBeenCalledWith('file://gallery.jpg');
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://gallery.jpg');
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://normalized.jpg');
+    expect(router.back).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('화면 이탈 후 선택기가 반환한 캐시 복사본도 정리한다', async () => {
+    let resolvePick!: (picked: Awaited<ReturnType<typeof pickReceiptImageFromLibrary>>) => void;
+    mockPickReceiptImageFromLibrary.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolvePick = resolve;
+      })
+    );
+    const { getByRole, unmount } = await render(<ReceiptCameraScreen />);
+    await act(async () => {
+      fireEvent.press(getByRole('button', { name: '사진 보관함에서 선택' }));
+    });
+    await unmount();
+    await act(async () => {
+      resolvePick({ status: 'picked', uri: 'file:///cache/late.heic', width: 100, height: 100 });
+    });
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file:///cache/late.heic');
+    expect(mockNormalizeReceiptImage).not.toHaveBeenCalled();
   });
 });

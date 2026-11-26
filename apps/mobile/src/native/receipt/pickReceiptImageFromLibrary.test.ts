@@ -1,8 +1,11 @@
 import { launchImageLibraryAsync } from 'expo-image-picker';
 
+import { trackPickedImage } from '@/native/image/temporaryImageFiles';
+
 import { pickReceiptImageFromLibrary } from './pickReceiptImageFromLibrary';
 
 jest.mock('expo-image-picker', () => ({ launchImageLibraryAsync: jest.fn() }));
+jest.mock('@/native/image/temporaryImageFiles', () => ({ trackPickedImage: jest.fn() }));
 
 const mockLaunchLibrary = jest.mocked(launchImageLibraryAsync);
 
@@ -34,11 +37,13 @@ describe('pickReceiptImageFromLibrary', () => {
       width: 3000,
       height: 4000,
     });
+    expect(trackPickedImage).toHaveBeenCalledWith('file://picked.heic');
   });
 
   it('선택을 취소하면 실패가 아닌 취소 상태를 반환한다', async () => {
     mockLaunchLibrary.mockResolvedValue({ canceled: true, assets: null } as never);
 
     await expect(pickReceiptImageFromLibrary()).resolves.toEqual({ status: 'cancelled' });
+    expect(trackPickedImage).not.toHaveBeenCalled();
   });
 });

@@ -1,10 +1,12 @@
 import { recognizeReceipt } from '@/features/record/apis/clients';
+import { releaseTemporaryImage } from '@/native/image/temporaryImageFiles';
 import { normalizeReceiptImage } from '@/native/receipt/normalizeReceiptImage';
 
 import { processReceiptImage } from './processReceiptImage';
 
 jest.mock('@/features/record/apis/clients', () => ({ recognizeReceipt: jest.fn() }));
 jest.mock('@/native/receipt/normalizeReceiptImage', () => ({ normalizeReceiptImage: jest.fn() }));
+jest.mock('@/native/image/temporaryImageFiles', () => ({ releaseTemporaryImage: jest.fn() }));
 
 const mockRecognizeReceipt = jest.mocked(recognizeReceipt);
 const mockNormalizeReceiptImage = jest.mocked(normalizeReceiptImage);
@@ -39,5 +41,17 @@ describe('processReceiptImage', () => {
       amount: 12000,
     });
     expect(mockRecognizeReceipt).toHaveBeenCalledWith('file://normalized.jpg');
+    expect(releaseTemporaryImage).not.toHaveBeenCalled();
+  });
+
+  it('OCR 실패 시 정규화 파일을 정리하고 원래 오류를 반환한다', async () => {
+    mockNormalizeReceiptImage.mockResolvedValue({ uri: 'file://normalized.jpg' });
+    mockRecognizeReceipt.mockRejectedValue(new Error('OCR failed'));
+    const processing = processReceiptImage({ uri: 'file://original.jpg', width: 100, height: 100 });
+    const assertion = expect(processing).rejects.toThrow('OCR failed');
+    await jest.runAllTimersAsync();
+    await assertion;
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://normalized.jpg');
+    expect(releaseTemporaryImage).not.toHaveBeenCalledWith('file://original.jpg');
   });
 });

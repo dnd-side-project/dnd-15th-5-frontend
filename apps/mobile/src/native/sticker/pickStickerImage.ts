@@ -1,5 +1,7 @@
 import { launchImageLibraryAsync } from 'expo-image-picker';
 
+import { releaseTemporaryImage, trackPickedImage } from '@/native/image/temporaryImageFiles';
+
 import { prepareStickerPhoto } from './prepareStickerPhoto';
 
 import type { BridgeResult } from '@chapchap/shared/bridge';
@@ -10,7 +12,12 @@ export const pickStickerImage = async (): Promise<BridgeResult<'pickStickerImage
   if (result.canceled) return { status: 'cancelled' };
   const asset = result.assets[0];
   if (!asset) throw new Error('선택한 이미지를 가져오지 못했어요.');
-  const photo = await prepareStickerPhoto(asset);
-  if (photo.status !== 'success') throw new Error('이미지를 가져오지 못했어요.');
-  return photo;
+  trackPickedImage(asset.uri);
+  try {
+    const photo = await prepareStickerPhoto(asset);
+    if (photo.status !== 'success') throw new Error('이미지를 가져오지 못했어요.');
+    return photo;
+  } finally {
+    releaseTemporaryImage(asset.uri);
+  }
 };

@@ -1,19 +1,22 @@
 import { ANALYTICS_EVENTS } from '@chapchap/shared/analytics';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { StrictMode } from 'react';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import { createConsumption } from '@/features/record/apis/clients';
+import { releaseTemporaryImage } from '@/native/image/temporaryImageFiles';
 import { trackNativeAnalyticsEvent } from '@/shared/lib/analytics';
 
 import ReceiptConfirmScreen from './ReceiptConfirmScreen';
 
 const mockShowToast = jest.fn();
+let mockReceiptUri = 'file://receipt.jpg';
 
 jest.mock('expo-router', () => ({
   router: { dismissTo: jest.fn(), push: jest.fn(), replace: jest.fn() },
   useLocalSearchParams: () => ({
-    uri: 'file://receipt.jpg',
+    uri: mockReceiptUri,
     receiptImageId: '15',
     shopId: 'place-01',
     shopName: '카페 차차',
@@ -29,6 +32,7 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('@/features/record/apis/clients', () => ({ createConsumption: jest.fn() }));
+jest.mock('@/native/image/temporaryImageFiles', () => ({ releaseTemporaryImage: jest.fn() }));
 jest.mock('@/bridge/webViewNavigation', () => ({ requestWebViewNavigation: jest.fn() }));
 jest.mock('@/shared/lib/analytics', () => ({
   NATIVE_ANALYTICS_SCREENS: {
@@ -48,6 +52,23 @@ jest.mock('react-native-safe-area-context', () => ({
 describe('<ReceiptConfirmScreen />', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockReceiptUri = 'file://receipt.jpg';
+  });
+
+  it('StrictMode 재설정과 가게 검색 중에는 이미지를 유지하고 화면 이탈 시 정리한다', async () => {
+    const { getByRole, unmount } = await render(
+      <StrictMode>
+        <ReceiptConfirmScreen />
+      </StrictMode>
+    );
+    await fireEvent.press(getByRole('button', { name: '가게 정보 변경' }));
+    expect(releaseTemporaryImage).not.toHaveBeenCalled();
+    await unmount();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(releaseTemporaryImage).toHaveBeenCalledTimes(1);
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://receipt.jpg');
   });
 
   it('촬영 결과를 리뷰 폼에 표시한다', async () => {
@@ -59,6 +80,22 @@ describe('<ReceiptConfirmScreen />', () => {
     });
     expect(getByLabelText('금액')).toHaveProp('value', '12,000');
     expect(getByRole('button', { name: '기록하기' })).toBeEnabled();
+  });
+
+  it('확인할 이미지가 교체되면 이전 이미지만 정리한다', async () => {
+    const { rerender, unmount } = await render(<ReceiptConfirmScreen />);
+    mockReceiptUri = 'file://replacement.jpg';
+    await rerender(<ReceiptConfirmScreen />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://receipt.jpg');
+    expect(releaseTemporaryImage).not.toHaveBeenCalledWith('file://replacement.jpg');
+    await unmount();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(releaseTemporaryImage).toHaveBeenCalledWith('file://replacement.jpg');
   });
 
   it('뒤로 가기를 누르면 재촬영할 수 있도록 카메라로 이동한다', async () => {
