@@ -87,5 +87,6 @@ describe('<NotificationFeed />', () => {
     render(<NotificationFeed />);
 
     expect(screen.getByRole('heading', { name: '아직 도착한 알림이 없어요' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '다시 확인하기' })).not.toBeInTheDocument();
   });
 });

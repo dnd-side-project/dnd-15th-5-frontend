@@ -120,17 +120,24 @@ describe('<MobileLayout />', () => {
     });
   });
 
-  it.each(['/home/shop/101', '/my-page/notifications'])(
-    '%s 화면이 하단 Safe Area를 처리하면 프레임에 중복 패딩을 추가하지 않는다',
-    (pathname) => {
+  it.each([
+    ['/home/shop/101', false],
+    ['/my-page/notifications', true],
+  ] as const)(
+    '%s 경로의 하단 Safe Area 처리 주체에 맞춰 프레임 패딩을 적용한다',
+    (pathname, usesFrameBottomSafeArea) => {
       const { container } = render(
         <MemoryRouter initialEntries={[pathname]}>
-          <MobileLayout>가게 상세</MobileLayout>
+          <MobileLayout>화면</MobileLayout>
         </MemoryRouter>
       );
       const mobileFrame = container.firstElementChild?.firstElementChild;
 
-      expect(mobileFrame).not.toHaveClass('pb-safe-bottom');
+      if (usesFrameBottomSafeArea) {
+        expect(mobileFrame).toHaveClass('pb-safe-bottom');
+      } else {
+        expect(mobileFrame).not.toHaveClass('pb-safe-bottom');
+      }
     }
   );
 });
