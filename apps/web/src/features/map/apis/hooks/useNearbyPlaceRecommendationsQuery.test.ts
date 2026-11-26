@@ -17,7 +17,7 @@ const popularPlace = { ...categoryPlace, placeId: 1, name: '전체 인기 가게
 
 describe('useNearbyPlaceRecommendationsQuery', () => {
   beforeEach(() => {
-    useLocationSelectionStore.setState({ confirmedPosition: null, draftSelection: null });
+    useLocationSelectionStore.setState(useLocationSelectionStore.getInitialState());
     useMapViewportStore.setState({ center: { lat: 37.559334, lng: 126.990298 } });
     mockedUseGetNearbyPlaces.mockReset();
   });
@@ -69,7 +69,10 @@ describe('useNearbyPlaceRecommendationsQuery', () => {
     const { rerender } = renderHook(() => useNearbyPlaceRecommendationsQuery());
 
     act(() => {
-      useLocationSelectionStore.getState().setConfirmedPosition({ lat: 37.545, lng: 127.056 });
+      useLocationSelectionStore.getState().setConfirmedNeighborhood({
+        position: { lat: 37.545, lng: 127.056 },
+        address: '서울특별시 성동구 성수동',
+      });
     });
     rerender();
 
