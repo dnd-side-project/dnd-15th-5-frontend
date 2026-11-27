@@ -6,6 +6,7 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import RecordExitConfirmDialog from '@/features/record/components/RecordExitConfirmDialog';
+import { releaseTemporaryImage, trackTemporaryImage } from '@/native/image/temporaryImageFiles';
 import { finishStickerCapture, isStickerCaptureActive } from '@/native/sticker/captureStickerPhoto';
 import { prepareStickerPhoto } from '@/native/sticker/prepareStickerPhoto';
 import { CloseIcon } from '@/shared/assets/icons';
@@ -70,8 +71,12 @@ export default function StickerCameraScreen() {
     setIsProcessing(true);
     setError('');
     let failureStage = '촬영';
+    let photoUri: string | undefined;
     try {
       const photo = await camera.current.takePictureAsync();
+      photoUri = photo.uri;
+      trackTemporaryImage(photoUri);
+      if (!mounted.current) return;
       failureStage = '사진 변환';
       const result = await prepareStickerPhoto(photo);
       if (!mounted.current) return;
@@ -87,6 +92,7 @@ export default function StickerCameraScreen() {
         setError(`${failureStage}에 실패했어요. ${detail}`);
       }
     } finally {
+      releaseTemporaryImage(photoUri);
       processing.current = false;
       if (mounted.current) setIsProcessing(false);
     }

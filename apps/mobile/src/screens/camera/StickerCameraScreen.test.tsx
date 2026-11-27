@@ -2,6 +2,7 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { releaseTemporaryImage, trackTemporaryImage } from '@/native/image/temporaryImageFiles';
 import { finishStickerCapture, isStickerCaptureActive } from '@/native/sticker/captureStickerPhoto';
 import { prepareStickerPhoto } from '@/native/sticker/prepareStickerPhoto';
 
@@ -36,6 +37,10 @@ jest.mock('@/native/sticker/captureStickerPhoto', () => ({
   isStickerCaptureActive: jest.fn(),
 }));
 jest.mock('@/native/sticker/prepareStickerPhoto', () => ({ prepareStickerPhoto: jest.fn() }));
+jest.mock('@/native/image/temporaryImageFiles', () => ({
+  releaseTemporaryImage: jest.fn(),
+  trackTemporaryImage: jest.fn(),
+}));
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -53,6 +58,8 @@ it('촬영 후 WebView로 돌아가고 카메라 화면이 닫힌 뒤 사진을 
   const { getByLabelText, unmount } = await render(<StickerCameraScreen />);
   await act(async () => fireEvent.press(getByLabelText('스티커 사진 촬영')));
   expect(router.back).toHaveBeenCalled();
+  expect(trackTemporaryImage).toHaveBeenCalledWith('file://photo.jpg');
+  expect(releaseTemporaryImage).toHaveBeenCalledWith('file://photo.jpg');
   expect(finishStickerCapture).not.toHaveBeenCalled();
   await act(async () => unmount());
   expect(finishStickerCapture).toHaveBeenCalledWith('capture-01', {
@@ -116,7 +123,26 @@ it('사진 처리 실패 시 같은 화면에서 재시도할 수 있다', async
   const { getByLabelText, getByText } = await render(<StickerCameraScreen />);
   await act(async () => fireEvent.press(getByLabelText('스티커 사진 촬영')));
   expect(getByText('사진 변환에 실패했어요. failure')).toBeOnTheScreen();
+  expect(releaseTemporaryImage).toHaveBeenCalledWith('file://photo.jpg');
   expect(router.back).not.toHaveBeenCalled();
   await act(async () => fireEvent.press(getByLabelText('스티커 사진 촬영')));
   expect(router.back).toHaveBeenCalled();
+});
+
+it('화면 이탈 후 도착한 촬영 파일도 정리하고 변환을 시작하지 않는다', async () => {
+  let resolvePhoto!: (photo: { uri: string; width: number; height: number }) => void;
+  mockTakePicture.mockReturnValueOnce(
+    new Promise((resolve) => {
+      resolvePhoto = resolve;
+    })
+  );
+  const { getByLabelText, unmount } = await render(<StickerCameraScreen />);
+  await fireEvent.press(getByLabelText('스티커 사진 촬영'));
+  await unmount();
+  await act(async () => {
+    resolvePhoto({ uri: 'file://late.jpg', width: 100, height: 100 });
+  });
+  expect(trackTemporaryImage).toHaveBeenCalledWith('file://late.jpg');
+  expect(releaseTemporaryImage).toHaveBeenCalledWith('file://late.jpg');
+  expect(prepareStickerPhoto).not.toHaveBeenCalled();
 });

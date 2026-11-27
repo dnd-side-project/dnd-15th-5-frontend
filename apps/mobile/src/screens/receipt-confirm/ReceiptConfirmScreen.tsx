@@ -1,6 +1,6 @@
 import { ANALYTICS_EVENTS, createStepAttemptProperties } from '@chapchap/shared/analytics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
 import {
@@ -12,6 +12,7 @@ import {
   useSubmitReceiptConsumption,
 } from '@/features/record';
 import type { ReceiptReviewRouteParams } from '@/features/record';
+import { releaseTemporaryImage } from '@/native/image/temporaryImageFiles';
 import {
   NATIVE_ANALYTICS_SCREENS,
   trackNativeAnalyticsEvent,
@@ -52,6 +53,17 @@ export default function ReceiptConfirmScreen() {
     visitPeriod,
     shopId,
   } = useLocalSearchParams<ReceiptReviewRouteParams>();
+  const activeReceiptUri = useRef<string | null>(null);
+  useEffect(() => {
+    activeReceiptUri.current = uri;
+    return () => {
+      activeReceiptUri.current = null;
+      void Promise.resolve().then(() => {
+        // StrictMode의 사전 cleanup에서는 다음 setup이 같은 URI를 계속 사용합니다.
+        if (activeReceiptUri.current !== uri) releaseTemporaryImage(uri);
+      });
+    };
+  }, [uri]);
   const initialVisitDateTime = parseVisitDateTime(visitedAt, visitPeriod);
   const parsedReceiptImageId = parseRouteNumber(receiptImageId);
   const parsedLatitude = parseRouteNumber(latitude);
