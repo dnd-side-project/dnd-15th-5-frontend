@@ -15,7 +15,7 @@ type GoogleMapsProviderProps = PropsWithChildren;
  */
 function GoogleMapsProvider({ children }: GoogleMapsProviderProps) {
   return (
-    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places']}>
+    <APIProvider apiKey={GOOGLE_MAPS_API_KEY} libraries={['places']} language="ko" region="KR">
       {children}
     </APIProvider>
   );

@@ -39,9 +39,13 @@ React, Vite, TypeScript, TanStack Query, Axios, Tailwind CSS, CVA, Zustand.
 
 ## Architecture & Code Style
 
+- 작업별 개발 문서 안내: [docs/README.md](docs/README.md)
 - 디자인 토큰과 공통 UI 사용 기준: [DESIGN.md](DESIGN.md)
 - 웹 디렉토리 구조, 의존 방향(`app → pages → features → shared`), 상태관리 규칙: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 모바일 디렉토리 구조(`app`/`screens`/`features`/`bridge`/`native`/`shared`): [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 기록·스티커 처리: [docs/RECORD_FLOW.md](docs/RECORD_FLOW.md)
+- WebView·Safe Area·iOS 모델 빌드: [docs/MOBILE_RUNTIME.md](docs/MOBILE_RUNTIME.md)
+- 웹·모바일 토큰과 글꼴 적용: [docs/STYLING.md](docs/STYLING.md)
 - 네이밍, Import(`@/` alias), Props/Type, TSDoc, 주석 규칙: [docs/CONVENTIONS.md](docs/CONVENTIONS.md)
 - 인증/토큰 처리는 `apps/web/src/shared/apis`에서만. feature별 `apis`는 공통 인스턴스만 가져다 쓴다.
 

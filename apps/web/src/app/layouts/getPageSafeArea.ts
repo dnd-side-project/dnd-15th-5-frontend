@@ -16,7 +16,6 @@ const PAGE_SAFE_AREA_RULES: {
   { path: ROUTE_PATTERNS.editRecord, top: 'content', bottom: 'content' },
   { path: ROUTE_PATTERNS.shopDetail, top: 'frame', bottom: 'content' },
   { path: ROUTE_PATTERNS.sharedReport, top: 'frame', bottom: 'content' },
-  { path: ROUTE_PATHS.notificationSettings, top: 'frame', bottom: 'content' },
 ];
 
 /** 경로별로 프레임과 콘텐츠 중 어느 쪽이 각 Safe Area를 확보하는지 반환합니다. */
