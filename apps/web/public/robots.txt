@@ -1,0 +1,7 @@
+User-agent: *
+# Allow page crawling so search engines can read noindex metadata.
+Allow: /
+Disallow: /api/
+Disallow: /dev/api/
+
+Sitemap: https://chapchap.kr/sitemap.xml

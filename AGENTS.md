@@ -9,9 +9,8 @@ AI 도구가 이 저장소에서 작업할 때 따르는 공통 지침입니다.
 ## Project Overview
 
 pnpm workspace와 Turborepo로 관리하는 ChapChap 모노레포. 웹은 React + Vite + TypeScript,
-모바일은 Expo + React Native 기반이다. 모바일 앱은 웹 화면을 WebView로 띄우는 구조이며,
-웹과 네이티브가 주고받는 브릿지가 적용되어 있으며, 알림·영수증 촬영 등 네이티브 기능을
-이 브릿지로 연결한다.
+모바일은 Expo + React Native 기반이다. 모바일 앱은 웹 화면을 WebView로 띄우고, 브릿지로 웹과 네이티브 간 통신을 처리한다.
+알림·푸시와 영수증 촬영은 네이티브에서 제공하며, 영수증 OCR과 기록 저장은 백엔드 API와 연동한다.
 
 ## Commands
 
@@ -34,9 +33,7 @@ pnpm preview       # 웹 빌드 결과 미리보기
 
 ## Tech Stack
 
-적용 완료: React, Vite, TypeScript, TanStack Query, Axios, Tailwind CSS, CVA.
-
-전역 클라이언트 상태는 Zustand를 사용하며, 상태 범위와 Store 위치는 아키텍처 규칙을 따른다.
+React, Vite, TypeScript, TanStack Query, Axios, Tailwind CSS, CVA, Zustand.
 
 > 네이티브 기능 범위는 알림과 영수증으로 제한하며, 범위를 확대하기 전에 먼저 확인한다.
 

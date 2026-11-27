@@ -6,6 +6,7 @@ import AnalyticsIdentity from '@/app/providers/AnalyticsIdentity';
 import AnalyticsTracker from '@/app/providers/AnalyticsTracker';
 import MapSessionBoundary from '@/app/providers/MapSessionBoundary';
 import ScrollToTop from '@/app/routes/ScrollToTop';
+import SearchEngineMetadata from '@/app/routes/SearchEngineMetadata';
 import { useHomeBottomSheetStore } from '@/features/map/stores/homeBottomSheetStore';
 import { ROUTE_PATHS } from '@/shared/constants/routePaths';
 import PageFrame from '@/shared/layout/page-frame';
@@ -59,6 +60,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
       <AnalyticsIdentity />
       <AnalyticsTracker />
       <ScrollToTop />
+      <SearchEngineMetadata />
 
       <PageFrame {...safeArea}>
         <MapSessionBoundary>{children ?? <Outlet />}</MapSessionBoundary>

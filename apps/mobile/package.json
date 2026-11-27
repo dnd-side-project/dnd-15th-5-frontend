@@ -62,7 +62,6 @@
     "ios": "pnpm sticker:prepare && expo run:ios",
     "sticker:prepare": "node scripts/prepare-isnet-model.mjs",
     "eas-build-pre-install": "node scripts/prepare-isnet-model.mjs",
-    "web": "expo start --web",
     "lint": "expo lint",
     "test": "jest --runInBand"
   },

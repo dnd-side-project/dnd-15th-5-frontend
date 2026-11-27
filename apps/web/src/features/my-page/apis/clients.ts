@@ -8,7 +8,6 @@ import { apiClient } from '@/shared/apis/orvalMutator';
 import type { BodyType } from '@/shared/apis/orvalMutator';
 
 import type {
-  AccountUpdateRequest,
   ApiResponseAccountResponse,
   ApiResponseVoid,
   ProfileUpdateRequest,
@@ -60,49 +59,6 @@ export const updateMyProfile = (
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: profileUpdateRequest,
-      signal,
-    },
-    options
-  );
-};
-
-/**
- * 2026-10-09 사용 중단 - 기존S3 업로드 구현 보존용 API
- *
- * 닉네임과 프로필 이미지를 선택적으로 수정합니다.
- *
- * - `profileImage` 전달: 프로필 이미지를 등록하거나 교체합니다.
- * - `deleteProfileImage=true`: 기존 프로필 이미지를 삭제합니다.
- * - 이미지 관련 값을 전달하지 않으면 기존 프로필 이미지를 유지합니다.
- * - 이미지 파일과 삭제 요청은 동시에 사용할 수 없습니다.
- * @deprecated
- * @summary 내 정보 수정 (기존 파일 업로드 방식 · 사용 중단)
- */
-export const updateMyAccount = (
-  accountUpdateRequest?: BodyType<AccountUpdateRequest>,
-  options?: SecondParameter<typeof apiClient>,
-  signal?: AbortSignal
-) => {
-  const formData = new FormData();
-  if (accountUpdateRequest?.nickname !== undefined && accountUpdateRequest.nickname !== null) {
-    formData.append(`nickname`, accountUpdateRequest.nickname);
-  }
-  if (
-    accountUpdateRequest?.profileImage !== undefined &&
-    accountUpdateRequest.profileImage !== null
-  ) {
-    formData.append(`profileImage`, accountUpdateRequest.profileImage);
-  }
-  if (accountUpdateRequest?.deleteProfileImage !== undefined) {
-    formData.append(`deleteProfileImage`, accountUpdateRequest.deleteProfileImage.toString());
-  }
-
-  return apiClient<ApiResponseAccountResponse>(
-    {
-      url: `/v1/accounts/me/profile-upload`,
-      method: 'PATCH',
-      headers: { 'Content-Type': 'multipart/form-data' },
-      data: formData,
       signal,
     },
     options
