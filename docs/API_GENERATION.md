@@ -137,24 +137,20 @@ import { useExchangeSocialLoginCode } from '@/features/auth/apis/mutations';
 import { getStartQueryKey } from '@/features/auth/apis/queryKeys';
 ```
 
-현재 매핑은 다음과 같다.
+API 소유 feature는 `apps/web/openapiFeatureMap.json`의 `features.*.operationIds`에서 관리한다.
+operationId로 생성 대상을 결정하고, 태그 필터는 참조하지 않는 DTO를 제거하는 데 함께 사용한다.
 
-| feature   | operationId                                                                                   |
-| --------- | --------------------------------------------------------------------------------------------- |
-| auth      | refreshApp, refreshWeb, exchangeSocialLoginCode, agree, logoutApp, logoutWeb, start, callback |
-| map       | getVisitedPlaceMarkers, getNearbyPlaces, getLikedPlaces, getPlaceDetail, toggleLike, saveTown, searchTowns, getRecentTowns, deleteRecentTown |
-| my-page   | getMyAccount, updateMyAccount, updateMyProfile, withdrawMyAccount                              |
-| notification | unregisterDeviceToken, registerDeviceToken, getNotifications, hasUnread, getNotificationSettings, updateNotificationSettings |
-| record    | createConsumption, recognizeReceipt, getConsumption, updateConsumption, deleteConsumption, upload, findStickers, getReadUrl |
-| report    | getMonthlyReport, getCurrentStatus, getConsumptions, getFrequentPlaces, issueShareLink, getSharedPersonaCard, aggregateMonthlyReport |
-| shop      | getPlaceDetail_1, getPlaceVisits, searchVisitedPlaces                                          |
+사용 중단된 파일 업로드 방식의 `updateMyAccount`는 `openapiFeatureMap.json`의
+`excludedOperationIds`에 등록해 생성 대상에서 제외한다. 제외된 operation은 feature의
+`operationIds`에 함께 등록할 수 없다. 서버 명세에 남아 있어도 클라이언트·훅·전용 DTO를 생성하지 않는다.
 
-명세에 등록된 operationId가 사라지거나 변경되면 생성 단계가 실패한다. 새로운 API는
+feature에 등록된 operationId가 사라지거나 변경되면 생성 단계가 실패한다. 새로운 API는
 `openapiFeatureMap.json`에 소유 feature를 지정한 뒤 생성한다.
 
 다음 중 하나라도 발견되면 생성 전에 실패한다.
 
-- feature에 매핑되지 않은 새 operationId
+- feature에 매핑되지 않고 `excludedOperationIds`에도 없는 새 operationId
+- 생성 제외 목록과 feature에 동시에 등록한 operationId
 - Swagger에서 사라졌지만 매핑에는 남아 있는 operationId
 - 여러 feature에 중복으로 등록한 operationId
 - Swagger에서 중복된 operationId

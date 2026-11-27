@@ -6,6 +6,7 @@ const OPENAPI_REQUEST_TIMEOUT_MS = 30_000;
 
 const configPath = new URL('../openapiFeatureMap.json', import.meta.url);
 const config = JSON.parse(await readFile(configPath, 'utf8'));
+const excludedOperationIds = new Set(config.excludedOperationIds);
 const specSource = process.argv[2] ?? config.specUrl;
 
 const loadOpenApiDocument = async (source) => {
@@ -73,8 +74,8 @@ for (const [route, pathItem] of Object.entries(document.paths ?? {})) {
 
 const mappedFeatures = new Map();
 
-for (const [feature, options] of Object.entries(config.features ?? {})) {
-  for (const operationId of options.operationIds ?? []) {
+for (const [feature, options] of Object.entries(config.features)) {
+  for (const operationId of options.operationIds) {
     const features = mappedFeatures.get(operationId) ?? [];
     features.push(feature);
     mappedFeatures.set(operationId, features);
@@ -88,15 +89,18 @@ const duplicateMappings = [...mappedFeatures]
   .filter(([, features]) => features.length > 1)
   .map(([operationId, features]) => `${operationId}: ${features.join(', ')}`);
 const unmappedOperationIds = [...operationLocations.keys()].filter(
-  (operationId) => !mappedFeatures.has(operationId)
+  (operationId) => !mappedFeatures.has(operationId) && !excludedOperationIds.has(operationId)
+);
+const excludedMappings = [...mappedFeatures.keys()].filter((operationId) =>
+  excludedOperationIds.has(operationId)
 );
 const staleMappings = [...mappedFeatures.keys()].filter(
   (operationId) => !operationLocations.has(operationId)
 );
-const staleExpectedOperations = Object.keys(config.expectedOperations ?? {}).filter(
+const staleExpectedOperations = Object.keys(config.expectedOperations).filter(
   (operationId) => !mappedFeatures.has(operationId)
 );
-const operationPathMismatches = Object.entries(config.expectedOperations ?? {}).flatMap(
+const operationPathMismatches = Object.entries(config.expectedOperations).flatMap(
   ([operationId, expected]) => {
     const locations = operationLocations.get(operationId) ?? [];
 
@@ -117,6 +121,7 @@ const failures = [
   ['operationId가 없는 엔드포인트', operationsWithoutId],
   ['Swagger에서 중복된 operationId', duplicateSpecOperationIds],
   ['여러 feature에 중복 매핑된 operationId', duplicateMappings],
+  ['생성 제외 목록과 feature에 동시에 등록된 operationId', excludedMappings],
   ['feature에 매핑되지 않은 operationId', unmappedOperationIds],
   ['Swagger에 존재하지 않는 operationId 매핑', staleMappings],
   ['feature에 매핑되지 않은 기대 경로 설정', staleExpectedOperations],
@@ -134,5 +139,5 @@ if (failures.length > 0) {
 }
 
 process.stdout.write(
-  `OpenAPI operationId ${operationLocations.size}개가 ${Object.keys(config.features).length}개 feature에 모두 매핑되었습니다.\n`
+  `OpenAPI operationId ${operationLocations.size}개의 feature 매핑과 생성 제외 설정을 검증했습니다.\n`
 );

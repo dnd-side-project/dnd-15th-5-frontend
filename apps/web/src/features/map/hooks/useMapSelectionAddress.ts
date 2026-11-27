@@ -2,25 +2,34 @@ import { geocodeMapLocation } from '@/features/map/apis/services/googleMapsGeoco
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import type { MapPosition } from '@/features/map/types';
 
-const COORDINATE_LABEL_PRECISION = 5;
-
 /** 지도 이동이 끝난 좌표를 저장하고 중앙 핀의 주소를 조회합니다. */
 export const useMapSelectionAddress = () => {
   const startDraftSelection = useLocationSelectionStore((state) => state.startDraftSelection);
   const resolveDraftAddress = useLocationSelectionStore((state) => state.resolveDraftAddress);
+  const failDraftAddress = useLocationSelectionStore((state) => state.failDraftAddress);
 
   return (center: MapPosition) => {
-    const previous = useLocationSelectionStore.getState().draftSelection?.position;
-    if (previous?.lat === center.lat && previous.lng === center.lng) return;
-
-    const fallbackAddress = `선택한 위치 (${center.lat.toFixed(COORDINATE_LABEL_PRECISION)}, ${center.lng.toFixed(COORDINATE_LABEL_PRECISION)})`;
+    const previous = useLocationSelectionStore.getState().draftSelection;
+    if (
+      previous?.status !== 'error' &&
+      previous?.position.lat === center.lat &&
+      previous.position.lng === center.lng
+    ) {
+      return;
+    }
 
     startDraftSelection(center);
     void geocodeMapLocation({ location: center })
       .then(({ results }) => {
-        const address = results[0]?.formatted_address.replace(/^대한민국(?:\s+|$)/, '').trim();
-        resolveDraftAddress(center, address || fallbackAddress);
+        const address = results
+          .map((result) => result.formatted_address?.replace(/^대한민국(?:\s+|$)/, '').trim())
+          .find((address) => Boolean(address));
+        if (!address) {
+          failDraftAddress(center);
+          return;
+        }
+        resolveDraftAddress(center, address);
       })
-      .catch(() => resolveDraftAddress(center, fallbackAddress));
+      .catch(() => failDraftAddress(center));
   };
 };

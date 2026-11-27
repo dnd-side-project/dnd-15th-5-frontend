@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { useMapSelectionAddress } from '@/features/map/hooks/useMapSelectionAddress';
 import { useLocationSelectionStore } from '@/features/map/stores/locationSelectionStore';
 import type { MapPosition } from '@/features/map/types';
 import { RecommendationLocationPinIcon } from '@/shared/assets/icons';
@@ -21,6 +22,7 @@ export default function MapLocationSelectionOverlay({
 }: MapLocationSelectionOverlayProps) {
   const clearDraftSelection = useLocationSelectionStore((state) => state.clearDraftSelection);
   const draftSelection = useLocationSelectionStore((state) => state.draftSelection);
+  const updateSelectionAddress = useMapSelectionAddress();
   const [showLocationHint, setShowLocationHint] = useState(true);
 
   useEffect(() => {
@@ -41,6 +43,11 @@ export default function MapLocationSelectionOverlay({
     }
 
     onConfirm(draft);
+  };
+
+  const handleRetryAddress = () => {
+    const draft = useLocationSelectionStore.getState().draftSelection;
+    if (draft?.status === 'error') updateSelectionAddress(draft.position);
   };
 
   return (
@@ -76,9 +83,25 @@ export default function MapLocationSelectionOverlay({
             aria-live="polite"
             className="min-w-0 truncate text-title-02-semibold text-neutral-700"
           >
-            {draftSelection?.status === 'ready' ? draftSelection.address : '주소를 확인하고 있어요'}
+            {draftSelection?.status === 'ready'
+              ? draftSelection.address
+              : draftSelection?.status === 'error'
+                ? '주소를 확인하지 못했어요'
+                : '주소를 확인하고 있어요'}
           </p>
         </div>
+        {draftSelection?.status === 'error' && (
+          <div role="alert" className="px-2 text-body-02-regular text-neutral-600">
+            <p>다시 시도하거나 지도를 움직여 다른 위치를 선택해주세요.</p>
+            <button
+              type="button"
+              className="mt-2 text-primary-600 underline"
+              onClick={handleRetryAddress}
+            >
+              주소 다시 확인하기
+            </button>
+          </div>
+        )}
         <Button
           type="button"
           disabled={draftSelection?.status !== 'ready'}

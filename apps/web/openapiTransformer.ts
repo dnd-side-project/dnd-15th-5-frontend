@@ -4,8 +4,6 @@ const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'
 
 type MutableRecord = Record<string, unknown>;
 
-const REQUIRED_REQUEST_BODY_OPERATION_IDS = new Set(['recognizeReceipt']);
-
 const isRecord = (value: unknown): value is MutableRecord => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
@@ -30,69 +28,45 @@ const repairNullableReferences = (value: unknown): void => {
   Object.values(value).forEach(repairNullableReferences);
 };
 
-const repairResponseHeaders = (paths: MutableRecord) => {
-  for (const pathItem of Object.values(paths)) {
-    if (!isRecord(pathItem)) {
+const repairResponseHeaders = (operation: MutableRecord) => {
+  if (!isRecord(operation.responses)) {
+    return;
+  }
+
+  for (const response of Object.values(operation.responses)) {
+    if (!isRecord(response) || !isRecord(response.headers)) {
       continue;
     }
 
-    for (const method of HTTP_METHODS) {
-      const operation = pathItem[method];
-
-      if (!isRecord(operation) || !isRecord(operation.responses)) {
+    for (const header of Object.values(response.headers)) {
+      if (!isRecord(header) || '$ref' in header) {
         continue;
       }
 
-      for (const response of Object.values(operation.responses)) {
-        if (!isRecord(response) || !isRecord(response.headers)) {
-          continue;
-        }
+      delete header.style;
 
-        for (const header of Object.values(response.headers)) {
-          if (!isRecord(header) || '$ref' in header) {
-            continue;
-          }
-
-          delete header.style;
-
-          if (!isRecord(header.schema) && !isRecord(header.content)) {
-            header.schema = { type: 'string' };
-          }
-        }
+      if (!isRecord(header.schema) && !isRecord(header.content)) {
+        header.schema = { type: 'string' };
       }
     }
   }
 };
 
-const requireRequestBodies = (paths: MutableRecord) => {
-  for (const pathItem of Object.values(paths)) {
-    if (!isRecord(pathItem)) {
-      continue;
-    }
-
-    for (const method of HTTP_METHODS) {
-      const operation = pathItem[method];
-
-      if (
-        !isRecord(operation) ||
-        typeof operation.operationId !== 'string' ||
-        !REQUIRED_REQUEST_BODY_OPERATION_IDS.has(operation.operationId)
-      ) {
-        continue;
-      }
-
-      if (!isRecord(operation.requestBody)) {
-        throw new Error(
-          `필수 요청 본문을 보정할 수 없습니다: ${operation.operationId}의 requestBody가 없습니다.`
-        );
-      }
-
-      operation.requestBody.required = true;
-    }
+const requireReceiptRequestBody = (operation: MutableRecord) => {
+  if (operation.operationId !== 'recognizeReceipt') {
+    return;
   }
+
+  if (!isRecord(operation.requestBody)) {
+    throw new Error(
+      '필수 요청 본문을 보정할 수 없습니다: recognizeReceipt의 requestBody가 없습니다.'
+    );
+  }
+
+  operation.requestBody.required = true;
 };
 
-const filterOperations = (paths: MutableRecord, includedOperationIds: ReadonlySet<string>) => {
+const transformOperations = (paths: MutableRecord, includedOperationIds: ReadonlySet<string>) => {
   const foundOperationIds = new Set<string>();
 
   for (const [path, pathItem] of Object.entries(paths)) {
@@ -110,6 +84,8 @@ const filterOperations = (paths: MutableRecord, includedOperationIds: ReadonlySe
       const operationId = operation.operationId;
 
       if (typeof operationId === 'string' && includedOperationIds.has(operationId)) {
+        repairResponseHeaders(operation);
+        requireReceiptRequestBody(operation);
         foundOperationIds.add(operationId);
         continue;
       }
@@ -150,9 +126,7 @@ export const createFeatureOpenApiTransformer = (operationIds: readonly string[])
       return document;
     }
 
-    repairResponseHeaders(paths);
-    requireRequestBodies(paths);
-    filterOperations(paths, includedOperationIds);
+    transformOperations(paths, includedOperationIds);
 
     return document;
   });

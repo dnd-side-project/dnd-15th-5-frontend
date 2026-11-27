@@ -77,11 +77,7 @@ export default function HomePage() {
           <HomeMapOverlay
             hasUnreadNotification={hasUnreadNotification}
             profileAvatar={
-              <ProfileAvatar
-                className="size-full"
-                profileImageCode={account?.profileImageCode}
-                profileImageUrl={account?.profileImageUrl}
-              />
+              <ProfileAvatar className="size-full" profileImageCode={account?.profileImageCode} />
             }
           />
           <HomeBottomSheet

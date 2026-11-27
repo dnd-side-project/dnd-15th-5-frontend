@@ -1,579 +1,157 @@
-# 프론트엔드 기술 스택 및 프로젝트 구조
+# 프론트엔드 아키텍처
 
-## 1. Tech Stack
+코드의 위치와 계층별 책임을 정의한다. 실행 방법과 기능 상세는 [문서 안내](./README.md)를 참고한다.
 
-### Core
+## 기술 스택
 
-| 구분             | 기술                       |
-| ---------------- | -------------------------- |
-| Web              | React, Vite                 |
-| Mobile           | Expo, React Native          |
-| Language         | TypeScript                 |
-| Monorepo         | pnpm workspace, Turborepo |
-| UI Documentation | Storybook                  |
+| 구분              | 기술                               |
+| ----------------- | ---------------------------------- |
+| 웹                | React, Vite, TypeScript            |
+| 모바일            | Expo, React Native, TypeScript     |
+| 모노레포          | pnpm workspace, Turborepo          |
+| 상태·통신         | TanStack Query, Zustand, Axios     |
+| 스타일링          | Tailwind CSS, Uniwind, CVA         |
+| UI 문서·품질 검사 | Storybook, ESLint, Prettier, Husky |
 
-### State & Data
+모바일은 웹을 WebView로 표시하고 카메라·알림 등 네이티브 기능을 브릿지로 연결한다.
 
-| 구분         | 기술            | 상태      |
-| ------------ | --------------- | --------- |
-| Server State | TanStack Query  | 적용 완료 |
-| HTTP Client  | Axios           | 적용 완료 |
-| Client State | Zustand         | 사용 확정 |
+## 모노레포
 
-### Styling
+| 위치                     | 책임                                               |
+| ------------------------ | -------------------------------------------------- |
+| `apps/web`               | 웹 화면과 웹 전용 코드                             |
+| `apps/mobile`            | 네이티브 화면과 WebView·기기 기능 연결             |
+| `packages/shared/src`    | 두 앱에서 사용하는 타입·상수·순수 함수·브릿지 규약 |
+| `packages/shared/assets` | 두 앱이 공유하는 원본 에셋                         |
+| `packages/shared/design` | 공유 디자인 토큰 CSS                               |
+| `packages/*-config`      | 플랫폼에 독립적인 공통 개발 설정                   |
 
-| 구분              | 기술                       |
-| ----------------- | -------------------------- |
-| CSS               | Tailwind CSS               |
-| RN 스타일         | Uniwind (Tailwind 바인딩)  |
-| Component Variant | CVA                        |
-
-### Code Quality
-
-- ESLint
-- Prettier
-- Husky
-- CodeRabbit
-
-### Native & External
-
-| 기능             | 기술 및 소유권                 |
-| ---------------- | ------------------------------ |
-| 모바일 앱        | Expo + React Native            |
-| WebView 연동     | 적용 완료                      |
-| 웹·네이티브 브릿지 | 적용 완료 (요청·응답 규약은 `packages/shared`) |
-| 알림·푸시        | Expo Push Token 등록·수신·탭 이동 적용 |
-| 영수증 촬영·검토 | RN 네이티브 플로우 적용 (OCR·기록 저장 API 연동 완료) |
-
-> 실기기 테스트는 개발 빌드로 진행한다. Expo Go는 지원 SDK가 낮아 이 프로젝트를 실행할 수 없다.
-
----
-
-## 2. Architecture Rule
-
-### 공통화 기준
-
-- 하나의 Feature 안에서 여러 곳이 사용하면 해당 Feature 내부에서 공통화
-- 둘 이상의 Feature 또는 도메인에서 사용하면 `shared`로 이동
-- 둘 이상의 Feature에서 사용하는 Type, Constant만 `shared`에서 관리
-
-### 파일 분리 기준
-
-- 파일 수가 적으면 하나의 파일에서 관리
-- 파일 수가 많아지면 역할별 폴더로 확장
-- 과도한 폴더 분리 지양
-- 관련 코드는 최대한 가까운 위치에서 관리
-
-> `index.ts` 규칙은 [CONVENTIONS.md](./CONVENTIONS.md) 8번 참고
-
----
-
-## 3. Directory Structure
-
-### Monorepo
-
-```text
-.
-├── apps/
-│   ├── web/                    # React + Vite
-│   └── mobile/                 # Expo + React Native
-├── packages/
-│   ├── shared/                 # 웹과 모바일이 함께 쓰는 코드
-│   │   ├── assets/             # 웹과 모바일이 함께 쓰는 에셋
-│   │   ├── design/             # 디자인 토큰 CSS
-│   │   └── src/                # 브릿지 메시지 규약 등 런타임 코드
-│   ├── eslint-config/          # 공통 ESLint base 설정
-│   └── typescript-config/      # 공통 TypeScript base 설정
-├── docs/
-├── pnpm-workspace.yaml
-└── turbo.json
-```
-
-- 애플리케이션은 `apps/*`, 재사용 패키지와 공통 개발 설정은 `packages/*`에서 관리한다.
 - workspace 패키지는 `workspace:*`로 참조한다.
-- `packages/*-config`에는 플랫폼에 독립적인 공통 base만 두고 웹·모바일 전용 설정은 각 앱에서 관리한다.
-- `packages/shared/src`에는 웹과 모바일이 모두 사용하는 런타임 코드만 둔다. 양쪽에서 동작해야 하므로 DOM API와 React Native API를 사용하지 않으며, 타입·상수·순수 함수 위주로 관리한다.
-- `packages/shared/assets`에는 웹과 모바일이 같은 원본을 사용하는 에셋만 둔다. 플랫폼별 변환은 각 앱의 빌드 설정에서 처리한다.
-- `packages/shared/design`에는 두 앱이 함께 읽는 디자인 토큰 CSS만 둔다. 한쪽에서만 쓰는 스타일은 해당 앱의 진입 CSS에서 관리한다.
-- 웹이나 모바일 한쪽에서만 쓰는 코드는 `packages/shared`가 아니라 해당 앱 안에서 관리한다.
+- 공유 런타임 코드에는 DOM·React Native API를 사용하지 않는다.
+- 한 앱에서만 쓰는 코드·에셋·스타일과 플랫폼별 설정은 해당 앱에 둔다.
 
-### Web
-
-아래 구조와 규칙은 `apps/web`에만 적용한다.
+## 웹 계층
 
 ```text
 apps/web/src/
-├── app/                # 앱 진입점, 전역 설정
-│   ├── layouts/        # 라우트 최상위 레이아웃 셸 (4번 참고)
-│   ├── providers/
-│   ├── routes/
-│   ├── styles/
-│   └── App.tsx
-├── pages/              # 라우트 단위 화면, feature 조합만 담당
-├── features/           # 도메인 단위 기능
-└── shared/             # 도메인에 종속되지 않는 공통 코드
-    ├── ui/
-    ├── layout/
-    ├── hooks/
-    ├── stores/         # 2곳 이상에서 사용하는 전역 상태
-    ├── utils/
-    ├── apis/           # axiosInstance, 인터셉터, 공통 에러 핸들링
-    ├── constants/
-    ├── types/
-    ├── assets/
-    └── lib
+├── app/       # 진입점, Provider, 라우터와 최상위 레이아웃
+├── pages/     # 라우트별 feature 조합
+├── features/  # 도메인 기능
+└── shared/    # 도메인에 종속되지 않는 공통 코드
 ```
 
-`pages`는 라우트 또는 화면 목적을 기준으로 구성하고, `features`는 비즈니스 기능과 도메인을 기준으로 구성한다.
-두 계층의 이름은 필요할 때만 동일하게 사용한다.
-
-### Pages 구조
-
-`pages`는 라우트 단위 화면을 관리하며 비즈니스 로직을 직접 구현하지 않는다.
-각 페이지는 `features`와 `shared`의 컴포넌트를 조합한다.
-
-실제 URL은 `apps/web/src/shared/constants/routePaths.ts`를 기준으로 한다.
-(`pages`와 `features`에서도 화면 이동에 사용해야 하므로 `app`이 아닌 `shared`에서 관리한다.)
-
-페이지와 메인 탭 레이아웃은 React Router의 `lazy`로 경로에 진입할 때 불러온다.
-첫 URL의 코드 로딩 중에는 `RouteLoading`, 로딩 실패 시에는 공통 `RouteErrorPage`를 표시한다.
-전역 레이아웃·Provider는 화면 전체를 내보내는 feature 진입점 대신 필요한 API·저장소를 직접
-가져와 지연 로드할 화면이 초기 번들에 포함되지 않게 한다.
-
-```text
-pages/
-├── login/
-│   └── LoginPage.tsx
-├── agreement/
-│   └── AgreementPage.tsx
-├── onboarding/
-│   └── OnboardingPage.tsx
-├── home/
-│   ├── HomePage.tsx
-│   ├── search/
-│   │   └── MapSearchPage.tsx
-│   └── shop/
-│       └── ShopDetailPage.tsx
-├── record/
-│   ├── RecordPage.tsx
-│   ├── edit/
-│   │   └── EditRecordPage.tsx
-│   ├── shop/
-│   │   └── search/
-│   │       └── ShopSearchPage.tsx
-├── report/
-│   ├── ReportPage.tsx
-│   ├── MonthlyReportPage.tsx
-│   ├── history/
-│   │   └── SpendingHistoryPage.tsx
-│   ├── frequent-shops/
-│   │   └── FrequentShopListPage.tsx
-│   └── monthly-records/
-│       └── MonthlyRecordListPage.tsx
-├── notifications/
-│   └── NotificationPage.tsx
-├── my-page/
-│   └── MyPage.tsx
-└── not-found/
-    └── NotFoundPage.tsx
-```
-
-페이지를 추가하거나 이동할 때는 이 구조와 `apps/web/src/app/routes`의 라우트 설정을 함께 수정한다.
-
-사진 기록의 진입 경로는 `/record`다.
-기존 `/record/manual`과 `/record/receipt/camera` 라우트는 제거했으며, 영수증 인식은 기록 폼에서 시작한다.
-
-기록 방법 선택·사진 자르기·스티커 생성·정보 입력은 `features/record/sticker`의 로컬 단계로
-전환한다. 가져온 사진은 자르기 후 스티커를 약 1초간 한 번 튀어 오르게 표시하고 정보 입력으로
-자동 이동한다. 앱 촬영 결과는 같은 모션을 표시한 뒤 사용자가 `이 스티커 사용`으로 확정한다.
-모션은 `StickerReveal`에서 관리하며, 종료 확인 중에는 일시 정지하고 계속 작성 시 이어서 재생한다.
-시스템의 동작 줄이기 설정에서는 모션을 생략한다.
-
-새 기록의 입력 화면에서 뒤로 가면 작성 내용을 보존한 채 확정한 미디어를 만든 단계로 돌아간다.
-가져온 사진은 같은 원본과 자르기 영역으로, 촬영 사진은 다시 찍지 않고 생성 결과로, 기본 스티커는
-선택했던 스티커로 복원한다.
-작업 화면(방법 선택·자르기·기본 스티커·촬영 결과)의 X는 이미지 변경 중에도 기록 종료 확인을 거친다.
-가져온 사진의 생성 화면은 자동으로 넘어가는 경유 화면이라 뒤로가기·X·재시도 버튼을 두지 않고,
-생성이나 결과 표시가 실패하면 같은 원본과 자르기 영역으로 돌아가 오류 토스트를 띄운다.
-촬영 사진의 생성 화면은 화면 안에서 재시도·다시 찍기를 제공한다. 앱 카메라의 X는 작성 중인 기록이 있으면
-네이티브 확인창을 거친 뒤 `closed`를 반환하고, 웹은 확인 없이 바로 기록을 종료한다.
-기록 종료를 확인하면 홈으로 이동하며, 이동 완료 전까지 현재 화면과 확인창을 유지한다.
-화면 전환·확정 미디어는 `useStickerRecordFlow`가, 비동기 요청 취소와 임시 이미지 URL 해제는
-`useStickerImageTask`가 언마운트 정리까지 담당한다. 배경 제거 Worker는 취소 시 종료되므로
-사진 가져오기·촬영 진입마다 다시 준비한다.
-
-알파 보정·흰색 외곽선·그림자 합성은 지원 환경에서 별도의 `stickerComposition.worker`가
-처리한다. Worker와 DOM 폴백은 `image/stickerComposition.ts`의 같은 합성 함수를 사용한다.
-Worker는 합성 완료·오류·취소·시간 초과 시 종료하고, Worker 또는 OffscreenCanvas를
-사용할 수 없는 환경에서는 기존 DOM Canvas 합성으로 복구한다. 리포트 이미지 캡처 라이브러리는
-저장·공유를 실행할 때만 동적으로 불러온다.
-
-소비 기록 수정은 `/record/:consumptionId/edit`에서 처리한다. 수정 폼에서 가게 검색을 열면 검색은
-맨 위에서 시작하고, 가게 선택이나 뒤로 가기로 복귀하면 폼의 입력과 기존 스크롤 위치를 복원한다.
-기존 사진·스티커 ID와 정확한 방문
-시각을 복원하고 이미지 교체 시에만 업로드한다. 지도 소비 기록·가게 상세·월별 소비내역의
-수정·삭제 동작은 페이지에서 `features/record`와 각 목록을 조합해 연결한다.
-공통 스와이프 UI는 `shared/ui/swipe-actions`, API 호출과 확인 모달은 `features/record`에서 관리한다.
-수정·삭제 후 소비 기록·방문 장소·현재 리포트 캐시를 갱신하며, 서버에서 이미 생성한 월간
-리포트 스냅샷은 수정 API의 정책에 따라 유지한다.
-
-생성·수정 폼의 입력 검증·미디어 준비·중복 제출 방지는
-`features/record/apis/hooks/useStickerRecordSubmission`에서 공통으로 처리한다.
-업로드·스티커 ID 조회는 같은 feature의 `apis/services`에 두고, 생성·수정·삭제 훅은
-각 API 호출 뒤의 캐시 갱신과 완료 동작을 담당한다. 스와이프 UI의 제스처 처리는
-`shared/ui/swipe-actions/useSwipeActions`에서 관리하며 기록 API를 참조하지 않는다.
-
-- 일반 브라우저는 기존 ISNet WebGPU·WASM을, iOS 앱 WebView는 `removeStickerBackground` 브릿지와
-  `apps/mobile/modules/chapchap-isnet` 로컬 네이티브 모듈을 사용한다. 앱은 모델을 미리 준비해 재사용하고
-  투명 PNG만 웹으로 반환하며 외곽선·그림자와 기록 저장 흐름은 웹에 유지한다.
-  모델 준비와 빌드는 아래 [iOS 스티커 배경 제거](#ios-스티커-배경-제거)를 참고한다.
-
-- 사진 촬영·이미지 선택으로 만든 스티커는 최종 PNG를
-  `/v1/consumptions/images`에 업로드한 뒤, 반환된 `imageId`로 `/v1/consumptions`에 등록한다.
-- 지도 마커와 가게 상세의 스티커는 조회 응답의 `imageUrl`을 우선 표시하고, URL이 없는
-  기본 스티커는 `itemName`(지도는 `stickerName`)으로 로컬 이미지를 찾는다. 사진과 기본
-  스티커는 함께 표시하며 로딩에 실패한 이미지만 기본 대체 스티커로 바꾼다.
-- 기본 이모지는 프론트 이미지를 사용하고 `/v1/consumptions/stickers`에서 카테고리·이름으로
-  찾은 `stickerItemId`를 등록한다. 이모지 이미지는 업로드하지 않는다. 스티커 ID 조회는 이모지의
-  카테고리를 쓰고, 소비 카테고리는 이모지를 고를 때 그 카테고리로 맞춘 뒤 사용자가 따로 바꿀 수 있다.
-  이미지·카테고리·이름의 기준은 `shared/assets/images/ios-stickers/catalog.ts`이며, 서버 목록도
-  이 64종과 일치해야 한다. 목록에 없는 항목이나 유효하지 않은 ID는 등록하지 않고 오류를 안내한다.
-  카테고리의 표시 순서는 `packages/shared/common/constants`의 `SPENDING_CATEGORIES`를 따르며,
-  카테고리 안의 스티커는 `catalog.ts`의 배열 순서대로 4열로 표시한다.
-  기록 폼·이모지 선택·라우트 상태 복원도 같은 목록을 재사용하는 `RECORD_CATEGORIES`를 사용한다.
-  기본 스티커는 투명 PNG 64종(카페 8종)을 긴 변 최대 512px로 배포하며 외곽선·그림자는 파일에 포함한다.
-- 기록 폼의 영수증 인식은 `scanReceipt` 브릿지로 네이티브 카메라를 열고 OCR 결과를
-  같은 폼에 채운다. 최종 등록 시 선택한 이미지와 `receiptImageId`를 함께 전달한다.
-- 기존 `captureReceipt` 진입은 별도의 네이티브 영수증 확인 화면 흐름을 유지한다.
-
-### Features 구조
-
-`features`는 화면이 아닌 비즈니스 도메인을 기준으로 구성한다.
-스티커 기록과 영수증 인식은 모두 기록 생성 흐름에 속하므로 `receipt`를 별도 Feature로 분리하지 않고 `record`에서 관리한다.
-영수증 관련 코드의 규모가 커지면 `features/record/receipt`와 같이 하위 영역으로 구분한다.
-
-```text
-features/
-├── auth/
-├── map/
-├── my-page/
-├── notification/
-├── onboarding/
-├── profile/
-├── record/
-├── report/
-└── shop/
-```
-
-### Feature 내부 구조 (기본형)
-
-```text
-features/record/
-├── apis/
-│   ├── clients.ts      # 순수 API 요청 함수
-│   ├── queryKeys.ts    # TanStack Query key
-│   ├── queries.ts      # Query, Suspense Query
-│   ├── mutations.ts    # Mutation
-│   ├── dto.ts          # 요청·응답 타입
-│   └── hooks/          # 화면별 Query·Mutation 옵션이 필요할 때만 생성
-│       └── useRecordListQuery.ts
-├── components/
-├── hooks/          # API와 무관한 feature 훅
-├── stores/         # 해당 도메인 전용 전역 상태
-├── schemas.ts
-├── types.ts        # DTO가 아닌 feature 공통 타입
-├── constants.ts
-├── utils/
-└── index.ts
-```
-
-- `apis/`의 `clients.ts`, `queryKeys.ts`, `queries.ts`, `mutations.ts`, `dto.ts`는 OpenAPI에서 자동 생성하며 직접 수정하지 않는다
-- 페이지와 feature 코드는 역할에 맞는 파일에서 필요한 항목만 직접 import한다
-- 화면별 `enabled`, `select`, `staleTime` 등의 옵션이나 응답 가공이 필요하면 생성 훅을 감싼 파일을 `apis/hooks/`에 Query·Mutation 훅 하나당 하나씩 작성한다
-- API와 무관한 feature 공통 훅만 feature 루트의 `hooks/`에서 관리한다
-- `types.ts`는 Swagger DTO가 아닌 feature 공통 타입을 관리한다
-
-### Feature 내부 구조 (화면이 여러 개인 경우)
-
-```text
-features/report/
-├── apis/
-│   ├── clients.ts
-│   ├── queryKeys.ts
-│   ├── queries.ts
-│   ├── mutations.ts
-│   ├── dto.ts
-│   └── hooks/
-│       ├── useMonthlyReportQuery.ts
-│       └── useConsumptionListQuery.ts
-├── components/
-│   ├── common/     # feature 안에서 2곳 이상 쓰는 것
-│   ├── streak/
-│   └── monthly/
-├── hooks/
-│   ├── common/
-│   ├── streak/
-│   └── monthly/
-├── stores/
-├── schemas.ts
-├── types.ts
-├── constants.ts
-├── utils/
-└── index.ts
-```
-
-- 화면 단위로 나눌지는 컴포넌트 개수 보고 판단하고, 필요한 폴더만 만든다 (`mutations/`처럼 안 쓰면 비워두지 말고 아예 생략)
-- 파일이 적으면 파일 하나로 관리, 많아지면 화면·역할 단위 폴더로 확장
-- `apis/` 생성 파일 사용 규칙은 기본형과 동일하다
-- `apis/hooks/` 파일은 자동 생성 대상이 아니므로 화면 요구사항에 맞게 직접 작성하고 테스트한다
-
-기록 기능은 공통 코드와 스티커 처리 역할을 기준으로 다음과 같이 구분한다.
-
-```text
-features/record/
-├── apis/
-│   └── hooks/
-├── components/
-│   └── visit-date-time-sheet/
-├── hooks/
-├── camera/
-│   └── utils/               # 네이티브 촬영 결과를 웹 이미지로 변환
-├── sticker/
-│   ├── components/          # 선택·자르기·생성·기록 화면
-│   ├── hooks/               # 스티커 기록 흐름과 상태
-│   ├── image/               # 자르기·알파·외곽선·PNG 합성
-│   ├── background-removal/  # ISNet·Worker·네이티브 누끼 연동
-│   └── utils/
-├── utils/
-├── types.ts
-└── index.ts
-```
-
-- 기본 스티커 PNG는 `shared/assets/images/ios-stickers/img-*.png`로 관리하고, 해당 폴더의
-  `index.ts`에서 이미지를 export한다. `catalog.ts`는 이 export를 가져와 카테고리·이름과 연결한다.
-
-### Mobile
-
-아래 구조와 규칙은 `apps/mobile`에만 적용한다.
-
-```text
-apps/mobile/src/
-├── global.css          # Tailwind·Uniwind 진입점, 공유 디자인 토큰 import
-├── app/                # Expo Router 라우트·레이아웃 전용
-│   ├── _layout.tsx
-│   └── index.tsx
-├── screens/            # 화면 단위 컴포넌트, feature 조합만 담당
-│   └── home/
-│       └── HomeScreen.tsx
-├── bridge/             # 웹(WebView)과 주고받는 메시지 처리
-├── features/           # 도메인 단위 기능
-├── native/             # 카메라·위치 등 네이티브 기능 래퍼
-└── shared/             # 모바일 앱 안에서만 쓰는 공통 코드
-    └── assets/         # 모바일 전용 아이콘·이미지
-```
-
-- `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 관리한다. 웹의 `app/routes`와 `pages` 관계와 같다.
-- 모바일 번들의 진입점은 `apps/mobile/index.js`이며 `expo-router/entry`를 불러온다.
-  개발 서버는 pnpm의 `node_modules` 링크 대신 이 앱 내부 파일을 시작 URL로 사용한다.
-- 화면 컴포넌트는 `화면명 + Screen`으로 작성한다 (`HomeScreen`).
-- 웹과 모바일이 함께 쓰는 코드는 `apps/mobile/src/shared`가 아니라 `packages/shared`에 둔다.
-- WebView 화면은 `shared/layout/WebViewScreen`을 사용해 Safe Area·로딩·오류 복구 동작을 통일한다. iOS는 메인 화면과 영수증 가게 검색을 포함한 모든 WebView에서 전체 화면 크기를 유지하고 웹이 Safe Area를 처리한다. Android는 `safeAreaMode`에 따라 네이티브 Safe Area를 유지한다.
-- 웹의 `shared/layout/page-frame`은 라우트·인증 복원·초기 로딩·오류·기록 수정의 내부 화면에 공통 모바일 프레임을 적용한다. 상단 여백과 `--page-safe-area-top`을 함께 설정하며, 지도·스티커 기록처럼 여백을 직접 처리하는 화면은 해당 가장자리의 처리를 위임한다. 경로별 처리 기준은 `app/layouts/getPageSafeArea.ts`에서 관리하고 `MobileLayout`이 해당 옵션을 프레임에 전달한다. 고정 화면은 `top-safe`, 높이가 고정된 화면은 `h-screen-safe-top` 또는 `h-screen-safe-bottom`으로 같은 경계를 사용한다. 하단 여백도 공통 프레임 또는 자체 스크롤 영역에서 확보한다. 기록 단계별 헤더 여백은 `features/record/sticker/constants.ts`의 `getStickerFlowLayout`에서 관리한다.
-- 스티커 기록과 영수증 입력의 공통 규칙은 `packages/shared/record`, 네이티브 영수증 UI와 상태는 `features/record`에서 관리한다.
-- 필요한 폴더만 만든다. 사용처가 생기기 전에는 만들지 않는다.
-
-`native/receipt`는 영수증 촬영·앨범 선택·이미지 정규화·스캔 요청을, `native/sticker`는 스티커
-촬영·사진 준비·배경 제거 연동을 관리한다. 두 기능이 공유하는 카메라 요청 처리는
-`native/camera`에 둔다.
-
-#### iOS 스티커 배경 제거
-
-- `apps/mobile/modules/chapchap-isnet`은 Apple 전용 Expo 로컬 모듈이다. `ChapChapIsnetModule`은
-  요청·모델 세션·취소 상태를, `IsnetImageProcessor`는 이미지 검사·입력 변환·마스크 적용을 담당한다.
-- `HomeScreen`에서 ISNet을 미리 로딩·워밍업하고 재사용한다. UI·JS 스레드 밖의 단일 큐에서
-  Core ML 가속을 시도하고, 준비·실행 실패 시 네이티브 CPU로 한 번 전환한다.
-  서버로 사진을 전송하거나 WebView 추론으로 자동 재시도하지 않는다.
-- 웹에서 긴 변 1536px 이하 PNG를 전달하고, 네이티브는 1024×1024 입력으로 추론한 투명 PNG를 반환한다.
-  취소·브릿지 시간 초과 시 요청 대기를 정리하고, 이미 시작한 추론은 반환 후 결과를 버린다.
-  재시도는 거절하지 않고 기존 연산이 정리된 뒤 자동으로 이어 처리하며, 대기 중인 요청도 취소할 수 있다.
-- 모델은 약 170MiB이며 앱에 포함한다. 원본 URL·크기·체크섬은 `packages/shared/src/record/isnetModel.ts`에서
-  관리하고, `modules/chapchap-isnet/models/*.onnx`는 Git에서 제외한다. 관련 라이선스는 앱에 함께 포함한다.
-- EAS는 `eas-build-pre-install`에서 모델을 준비·검증한다. 직접 `expo prebuild`를 실행할 때도
-  Pod 리소스 목록 생성 전에 `sticker:prepare`를 실행한다. `onnxruntime-objc`는 1.23.0으로 고정한다.
-
-```powershell
-# 저장소 루트: 모델 준비 및 macOS iOS 개발 빌드
-pnpm --filter @chapchap/mobile sticker:prepare
-pnpm ios
-
-# Windows: EAS iOS 개발 빌드
-cd apps/mobile
-pnpm dlx eas-cli build --profile development --platform ios
-```
-
-네이티브 변경은 앱을 다시 빌드·설치해야 적용된다. Jest와 `expo export`는 Swift 컴파일을 검증하지 않으므로
-iOS 빌드와 실기기에서 Core ML 실행·속도·마스크 품질을 확인한다. 개발 로그의
-`[ISNet native] { backend, elapsedMs }`에는 웹↔앱 전송·외곽선 합성 시간이 포함되지 않는다.
-
----
-
-## 4. Component 위치 기준
-
-| 범위                                                                       | 위치                             |
-| -------------------------------------------------------------------------- | -------------------------------- |
-| 전역 공통 UI (Button, Modal 등)                                           | `shared/ui`                     |
-| 여러 페이지에 조합해서 쓰는 레이아웃 조각 (Header, TabBar, PaddedLayout 등) | `shared/layout`                 |
-| 라우트 최상위 레이아웃 셸 (앱 전체에 하나만 존재, `router`가 직접 참조)      | `app/layouts`                   |
-| 특정 기능 전용                                                             | `features/{feature}/components` |
-| 화면 조합                                                                  | `pages/{page}`                  |
-
-`shared/layout`은 여러 곳에 재사용해서 조합하는 조각을 둔다. 반대로 라우트 최상위에서 한 번만 마운트되는 셸(`AppMainLayout`, `MobileLayout` 등)은 `app/layouts`에 둔다 — feature를 조합해야 하면 `shared`가 feature를 import할 수 없기 때문이기도 하고(5번 참고), feature 의존이 없더라도 다른 최상위 셸과 위치를 맞추는 게 일관적이다.
-
----
-
-## 5. Dependency Direction
-
-### Web
-
-아래 의존 방향은 ESLint Boundary 검사로 강제하며 `apps/web/src`에만 적용한다.
+의존 방향은 ESLint Boundary 검사로 강제한다.
 
 ```text
 app → pages → features → shared
 ```
 
-- feature 간 직접 import 금지 (공통으로 올리거나 pages에서 조합)
-- `shared`는 어떤 feature도 import하지 않는다
-- `pages`에는 비즈니스 로직을 두지 않는다
+- feature 간 직접 import는 금지한다. 공통 코드를 올리거나 `pages`에서 조합한다.
+- `shared`는 feature를 참조하지 않고, `pages`에는 비즈니스 로직을 두지 않는다.
+- `pages`는 화면 목적, `features`는 비즈니스 도메인으로 나눈다. 두 이름을 억지로 맞추지 않는다.
+- 스티커 기록과 영수증 인식은 모두 `features/record`에서 관리한다.
 
-### Mobile
+### 라우팅과 레이아웃
 
-`apps/mobile/src`에 적용한다. ESLint로 강제하지 않으므로 코드 리뷰에서 확인한다.
+- URL은 `shared/constants/routePaths.ts`, 라우트 등록은 `app/routes`에서 관리한다.
+- 페이지와 메인 탭 레이아웃은 React Router의 `lazy`로 불러온다. 코드 로딩·실패는 `RouteLoading`·`RouteErrorPage`가 담당한다.
+- 전역 Provider·레이아웃은 필요한 API·저장소를 직접 import해 지연 로딩할 화면이 초기 번들에 포함되지 않게 한다.
+- 이미지 캡처처럼 사용 시점이 제한된 큰 의존성은 실행 시 동적으로 불러온다.
+
+### 컴포넌트 배치
+
+| 컴포넌트 범위                    | 위치                            |
+| -------------------------------- | ------------------------------- |
+| 공통 UI                          | `shared/ui`                     |
+| 재사용 레이아웃 조각             | `shared/layout`                 |
+| 라우터가 직접 참조하는 최상위 셸 | `app/layouts`                   |
+| 기능 전용 컴포넌트               | `features/{feature}/components` |
+| 화면 조합                        | `pages/{page}`                  |
+
+최상위 셸은 feature를 조합할 수 있다. 재사용 레이아웃은 `shared`의 의존 규칙을 따른다.
+Safe Area는 [WebView와 네이티브 실행](./MOBILE_RUNTIME.md#webview와-safe-area)을 참고한다.
+
+- 도메인 상태·규칙을 다루는 컴포넌트는 재사용되더라도 해당 feature 안에 둔다.
+- `shared/ui`에는 Button·Dialog처럼 도메인에 종속되지 않는 UI를 둔다. 데이터와 동작은 props로 전달받는다.
+- 작은 내부 컴포넌트는 같은 파일에 둘 수 있다. 역할이나 재사용 범위가 분리될 때 파일을 나눈다.
+
+### Feature 내부 구조
+
+아래는 역할별 배치 예시다. 실제 사용하는 파일·폴더만 만든다.
+
+```text
+features/{feature}/
+├── apis/          # API 요청·DTO·Query·Mutation
+│   └── hooks/     # 화면별 API 옵션과 응답 가공
+├── components/    # 기능 UI
+├── hooks/         # API와 무관한 기능 로직
+├── stores/        # 기능 전역 상태
+├── schemas.ts     # 입력 검증 스키마
+├── types.ts       # DTO를 제외한 feature 공통 타입
+├── constants.ts
+├── utils/         # 순수 데이터 변환·계산
+└── index.ts       # 외부에 공개하는 항목
+```
+
+- 컴포넌트 Props와 한 파일에서만 쓰는 타입은 사용하는 파일에 둔다.
+- 한 feature 안의 여러 화면에서 쓰는 코드는 내부에서 공유한다. 파일이 많아지면 `components`·`hooks` 등을 화면·역할별 하위 폴더로 나눈다.
+- API 생성 파일과 수기 훅의 구분은 [API 책임](#api-책임)을 따른다.
+- `index.ts`의 export 범위와 네이밍은 [코드 컨벤션](./CONVENTIONS.md)을 따른다.
+
+## 모바일 계층
+
+```text
+apps/mobile/src/
+├── app/       # Expo Router 라우트·레이아웃
+├── screens/   # 화면 조합
+├── features/  # 도메인 기능과 상태
+├── bridge/    # WebView 메시지 처리
+├── native/    # 카메라·알림·이미지 처리 래퍼
+└── shared/    # 모바일 전용 공통 코드
+```
 
 ```text
 app → screens → features → bridge · native → shared
 ```
 
-- `app`은 라우트 정의만 두고 화면 구현은 `screens`에서 조합한다
-- `bridge`·`native`는 네이티브 기능 계층이므로 `screens`·`features`가 가져다 쓰고, 반대로 화면을 참조하지 않는다
-- feature 간 직접 import 금지 (공통으로 올리거나 `screens`에서 조합)
-- 웹과 공유하는 타입·상수는 `packages/shared`에서 가져온다
+- `app`에는 라우트 정의만 두고 화면은 `screens`에서 조합한다.
+- `bridge`·`native`는 화면을 참조하지 않는다. feature 간 조합은 `screens`에서 한다.
+- 두 앱의 공유 코드는 모바일의 `shared`가 아닌 `packages/shared`에 둔다.
+- 모바일 의존 방향은 ESLint로 강제하지 않으므로 코드 리뷰에서 확인한다.
 
----
+## 공통화와 상태
 
-## 6. State Management
+한 feature에서만 사용하는 코드는 내부에 둔다. 도메인에 종속되지 않고 여러 feature가 사용하는 코드만 `shared`로 옮긴다.
 
-- 서버 상태: TanStack Query
-- 전역 상태: Zustand
-- 로컬 상태: useState, useReducer
-- Context: Theme 및 Provider 용도
+| 코드                    | feature 내부                                  | 여러 feature가 공유                |
+| ----------------------- | --------------------------------------------- | ---------------------------------- |
+| 도메인과 무관한 공통 훅 | `features/{feature}/hooks`                    | `shared/hooks`                     |
+| 순수 유틸리티           | `features/{feature}/utils`                    | `shared/utils`                     |
+| 타입·상수               | `features/{feature}/types.ts`, `constants.ts` | `shared/types`, `shared/constants` |
 
-### Store 위치
+도메인 간 조합은 페이지·화면에서 담당한다.
 
-| 범위                       | 위치                        |
-| -------------------------- | --------------------------- |
-| 하나의 Feature에서만 사용  | `features/{feature}/stores` |
-| 둘 이상의 Feature에서 사용 | `shared/stores`             |
+| 상태                 | 관리 방법                |
+| -------------------- | ------------------------ |
+| 서버 상태            | TanStack Query           |
+| 전역 클라이언트 상태 | Zustand                  |
+| 로컬 상태            | `useState`, `useReducer` |
+| Context              | Theme·Provider           |
 
----
+Store는 한 feature에서만 쓰면 `features/{feature}/stores`, 여러 feature에서 쓰면 `shared/stores`에 둔다.
 
-## 7. API Structure
+## API 책임
 
-### 공통 API (`apps/web/src/shared/apis`)
+| 위치                            | 책임                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------ |
+| `shared/apis`                   | 공통 Axios 인스턴스, 인증·토큰, 인터셉터, 공통 오류 처리와 Orval mutator |
+| `features/{feature}/apis`       | 해당 도메인의 API와 DTO                                                  |
+| `features/{feature}/apis/hooks` | 화면별 조회·변경 옵션과 응답 가공을 담당하는 수기 훅                     |
+| `features/{feature}/hooks`      | API와 무관한 기능 로직                                                   |
 
-- Axios 인스턴스 생성 및 설정 (baseURL, timeout 등)
-- 인증 토큰을 포함한 인터셉터(Request/Response Interceptor) 설정
-- 공통 에러 핸들링 로직
-- 여러 Feature에서 공통으로 사용하는 API 함수
-- OpenAPI 생성 코드가 사용하는 공통 Axios mutator
+- `clients.ts`, `queryKeys.ts`, `queries.ts`, `mutations.ts`, `dto.ts`는 생성 파일이므로 직접 수정하지 않는다.
+- 페이지·컴포넌트는 필요한 역할별 API 파일에서 import한다. 옵션이 필요할 때만 수기 훅으로 감싼다.
+- 인증·토큰은 `shared/apis`에서만 처리한다. 기능별 API는 공통 인스턴스를 사용하고 인증 헤더를 직접 설정하지 않는다.
+- DTO는 `apis/dto.ts`에서 가져오고, 그 외 feature 공통 타입은 `types.ts`에 둔다.
 
-### 기능별 API (`apps/web/src/features/{feature}/apis`)
-
-- 해당 Feature 전용 OpenAPI 생성 파일 (`clients.ts`, `queryKeys.ts`, `queries.ts`, `mutations.ts`, `dto.ts`)
-- `shared/apis`에서 만든 공통 Axios 인스턴스를 가져와서 사용
-- 이 Feature에서만 쓰는 엔드포인트 함수만 위치
-- DTO, 요청 함수, Query, Mutation을 역할별 파일로 분리해 생성
-- 화면별 옵션과 데이터 가공을 담당하는 수기 훅은 `apis/hooks/`에 위치
-
-### 규칙
-
-- 인증/토큰 처리는 `apps/web/src/shared/apis`에서만 관리하고, 생성된 API 파일에서 직접 헤더를 설정하지 않는다
-- 페이지와 컴포넌트는 필요한 항목을 feature의 역할별 API 파일에서 직접 import한다
-- 생성 훅을 그대로 사용할 수 있으면 `apis/queries.ts` 또는 `apis/mutations.ts`에서 직접 import한다
-- 화면별 옵션이나 응답 가공이 필요하면 생성 파일을 수정하지 않고 `apis/hooks/`에서 감싼 뒤 해당 수기 훅을 사용한다
-- API 생성 방법과 사용 규칙은 [API_GENERATION.md](./API_GENERATION.md)를 따른다
-
----
-
-## 8. Styling
-
-- Tailwind CSS 사용. 모바일은 Uniwind로 같은 `className`을 RN 스타일로 변환한다
-- Variant는 CVA 사용
-- variant가 2~3개를 넘으면 cva로, 조건부 클래스가 단순하면 cn() + 삼항/객체로 처리한다.
-- 상세 규칙은 `docs/CONVENTIONS.md`를 따른다
-
-### 디자인 토큰
-
-색상·타이포그래피·그림자·모서리 반경은 시안의 토큰만 사용하고 값을 직접 적지 않는다.
-
-토큰은 `packages/shared/design`의 Tailwind `@theme` CSS 한 곳에서만 정의하고 웹과 모바일이 같은 파일을 읽는다.
-모바일은 [Uniwind](https://uniwind.dev)가 Metro에서 이 CSS를 읽어 `className`을 RN 스타일로 바꿔주므로, 웹과 같은 유틸리티 이름을 그대로 쓴다.
-
-| 대상         | 정의 위치                                |
-| ------------ | ---------------------------------------- |
-| 색상         | `packages/shared/design/colors.css`      |
-| 타이포그래피 | `packages/shared/design/typography.css`  |
-| 그림자       | `packages/shared/design/shadows.css`     |
-| 모서리 반경  | `packages/shared/design/radius.css`      |
-
-| 앱     | 진입 CSS                          |
-| ------ | --------------------------------- |
-| 웹     | `apps/web/src/app/styles/index.css` |
-| 모바일 | `apps/mobile/src/global.css`        |
-
-- 타이포그래피 토큰은 크기·행간·굵기를 함께 적용하므로 웹은 `text-body-01-bold`처럼 하나만 사용한다.
-- **모바일은 글꼴 유틸리티를 함께 붙인다.** `text-body-01-bold`는 CSS `font-weight`만 지정하는데, Android는 번들한 글꼴에 `fontWeight`가 적용되지 않아 굵기별 글꼴을 직접 지정해야 한다. 토큰 이름의 굵기와 같은 것을 짝지어 쓴다.
-
-  ```tsx
-  <Text className="font-pretendard-bold text-body-01-bold">
-  ```
-
-  | 토큰 굵기  | 모바일에서 함께 쓸 유틸리티 |
-  | ---------- | --------------------------- |
-  | `regular`  | `font-pretendard-regular`   |
-  | `medium`   | `font-pretendard-medium`    |
-  | `semibold` | `font-pretendard-semibold`  |
-  | `bold`     | `font-pretendard-bold`      |
-
-- 행간은 `140%`가 아니라 `1.4`처럼 단위 없는 배수로 적는다. 웹은 결과가 같고, 모바일은 Uniwind가 배수에 글자 크기를 곱해 숫자로 변환한다.
-- 시안에서 행간이 `Auto`인 항목은 `normal`로 두고 두 플랫폼 모두 글꼴 기본 행간을 사용한다.
-- 글꼴만 플랫폼별로 정의가 다르다. 웹은 CDN에서 가변 글꼴 하나(`apps/web/src/app/styles/fonts.css`)를 받아 `font-weight`로 굵기를 조절하므로 글꼴 유틸리티가 필요 없다. 모바일은 `app.json`의 expo-font 설정으로 굵기별 글꼴을 앱 빌드에 포함하고 `apps/mobile/src/global.css`에서 유틸리티로 정의한다.
-- 색상은 `--color-*: initial`로 Tailwind 기본 팔레트를 꺼둬서 시안에 있는 색만 쓸 수 있다. `bg-red-500`이나 `bg-neutral-800`처럼 시안에 없는 색은 클래스가 아예 생성되지 않는다.
-- 시안에 없는 값이 필요하면 임의로 토큰을 만들지 말고 디자이너에게 확인한다.
-
----
-
-## 9. Package Manager
-
-### pnpm 선택 이유
-
-속도·디스크 효율이 좋고 npm 생태계와 호환성이 높으면서도 명령어가 npm과 유사해 러닝 커브가 낮다.
-
-### 사용 규칙
-
-- pnpm으로 통일
-- `pnpm-lock.yaml` Commit
-- `package-lock.json` 생성 금지
-- `yarn.lock` 생성 금지
-- Package Manager 혼용 금지
-
----
-
-## 10. Pending
-
-- 앱 배포 방식
-- 환경 변수 관리
-- CI/CD
-
----
-
-코드 네이밍 규칙은 [CONVENTIONS.md](./CONVENTIONS.md)를, Git/브랜치/커밋/PR 규칙은 [GIT_WORKFLOW.md](./GIT_WORKFLOW.md)를 참고하세요.
+생성 명령과 상세 사용법은 [API_GENERATION.md](./API_GENERATION.md)를 따른다.

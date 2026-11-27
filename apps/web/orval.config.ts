@@ -28,6 +28,7 @@ const createFeatureApiConfig = (feature: string, options: FeatureApiOptions): Op
   return {
     input: {
       target: OPENAPI_SPEC_URL,
+      // 참조하지 않는 DTO도 제거하므로 operationId 필터와 함께 유지합니다.
       filters: {
         tags: [...options.tags],
       },

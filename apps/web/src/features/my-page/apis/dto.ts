@@ -72,25 +72,4 @@ export type ProfileUpdateRequest = {
   profileImageCode: ProfileUpdateRequestProfileImageCode;
 };
 
-/**
- * 내 정보 수정 요청
- */
-export type AccountUpdateRequest = {
-  /**
-   * 변경할 닉네임
-   * @minLength 1
-   * @maxLength 16
-   * @nullable
-   * @pattern [가-힣ㄱ-ㅎㅏ-ㅣ ]+
-   */
-  nickname?: string | null;
-  /**
-   * 변경할 프로필 이미지 (JPEG, PNG, 최대 5MB, 최대 4096x4096)
-   * @nullable
-   */
-  profileImage?: Blob | null;
-  /** 기존 프로필 이미지 삭제 여부 */
-  deleteProfileImage?: boolean;
-};
-
 export type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];

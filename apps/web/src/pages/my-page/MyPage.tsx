@@ -40,7 +40,6 @@ export default function MyPage() {
     <main className="min-h-screen-safe-bottom -mx-4 flex flex-col bg-primary-100">
       <MyPageProfileSection
         nickname={account?.nickname}
-        profileImageUrl={account?.profileImageUrl}
         profileImageCode={account?.profileImageCode}
         onBack={() => navigate(-1)}
         onEdit={() => navigate(ROUTE_PATHS.myPageProfile)}

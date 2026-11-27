@@ -1,0 +1,31 @@
+# 소비 기록과 스티커 처리
+
+화면 구현에서 유지해야 할 동작과 정리 책임을 설명한다.
+
+## 화면 전환과 복원
+
+- 생성은 `/record`, 수정은 `/record/:consumptionId/edit`에서 시작한다.
+- 선택·자르기·생성·입력은 `features/record/sticker`의 로컬 단계로 전환한다.
+- 입력 화면에서 뒤로 가면 초안을 보존하고, 기존 원본·자르기 영역·촬영 결과·기본 스티커를 복원한다.
+- 가게 검색을 오가도 입력을 보존한다. 수정 폼은 복귀 시 기존 스크롤 위치도 복원한다.
+- 자동 전환하는 사진 생성 단계가 실패하면 원본과 자르기 영역으로 돌아가 오류를 안내한다.
+- 작성 중인 작업 화면을 닫으면 종료 확인을 거쳐 홈으로 이동한다. 앱 카메라가 종료를 이미 확인했다면 웹에서 다시 묻지 않는다.
+- 생성 모션은 종료 확인 중 일시 정지하고, 동작 줄이기 설정에서는 생략한다.
+
+## 미디어와 요청 정리
+
+- `useStickerRecordFlow`는 단계·확정 미디어를, `useStickerImageTask`는 요청 취소·임시 URL 해제를 담당한다.
+- 배경 제거 Worker는 취소 시 종료하므로 사진 선택·촬영 진입마다 다시 준비한다.
+- 외곽선·그림자 합성은 `stickerComposition.worker`에서 처리하고, Worker·OffscreenCanvas를 사용할 수 없으면 같은 합성 함수의 DOM 경로로 복구한다.
+- 일반 브라우저는 WebGPU·WASM, iOS WebView는 `removeStickerBackground` 브릿지와 로컬 네이티브 모듈로 배경을 제거한다. 외곽선 합성과 저장은 웹에서 처리한다.
+- 네이티브 모델 준비와 검증은 [MOBILE_RUNTIME.md](./MOBILE_RUNTIME.md#ios-스티커-배경-제거)를 참고한다.
+
+## 저장과 캐시
+
+- 생성·수정의 검증·미디어 준비·중복 제출 방지는 `useStickerRecordSubmission`에서 공통 처리한다.
+- 사진 스티커는 최종 PNG를 업로드한 뒤 반환된 이미지 ID로 기록한다. 수정 시 이미지를 교체한 경우에만 업로드한다.
+- 기본 스티커는 PNG를 업로드하지 않고 서버 목록에서 조회한 스티커 ID로 기록한다.
+- 기본 스티커 이름·카테고리는 `shared/assets/images/ios-stickers/catalog.ts`, 카테고리 순서는 공유 `SPENDING_CATEGORIES`를 기준으로 한다. 서버 목록과 일치하지 않는 항목은 등록하지 않는다.
+- 영수증 인식은 `scanReceipt`로 결과를 같은 폼에 채우고, 저장 시 `receiptImageId`를 전달한다. 별도 네이티브 검토 화면을 쓰는 `captureReceipt` 경로도 유지한다.
+- 수정·삭제 후 소비 기록·방문 장소·현재 리포트 캐시를 갱신한다. 서버의 월간 스냅샷은 수정 API 정책을 따른다.
+- 공통 스와이프 UI는 `shared/ui/swipe-actions`, 기록 API 호출과 확인 UI는 `features/record`에서 관리한다.
