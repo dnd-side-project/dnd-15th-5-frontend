@@ -42,6 +42,33 @@ beforeEach(() => {
   jest.mocked(createPhotoSticker).mockResolvedValue(new Blob());
 });
 
+it('기록 흐름을 열기만 하면 배경 제거를 준비하지 않는다', () => {
+  renderHook(useStickerRecordFlow);
+  expect(prepareStickerBackground).not.toHaveBeenCalled();
+});
+
+it('갤러리 진입 시 준비하고 선택 결과에서는 준비를 중복 호출하지 않는다', () => {
+  const { result } = renderHook(useStickerRecordFlow);
+  act(() => {
+    result.current.beginGallerySelection();
+  });
+  expect(prepareStickerBackground).toHaveBeenCalledTimes(1);
+  act(() => result.current.openCrop(photo));
+  expect(prepareStickerBackground).toHaveBeenCalledTimes(1);
+});
+
+it('촬영 의도가 있을 때 결과를 기다리는 동안 배경 제거를 준비한다', () => {
+  jest.mocked(isNativeApp).mockReturnValue(true);
+  jest.mocked(requestToNative).mockReturnValueOnce(new Promise(() => {}));
+  const { result } = renderHook(useStickerRecordFlow);
+  expect(prepareStickerBackground).not.toHaveBeenCalled();
+  act(() => {
+    void result.current.capturePhoto();
+  });
+  expect(prepareStickerBackground).toHaveBeenCalledTimes(1);
+  expect(result.current.isCapturing).toBe(true);
+});
+
 it('갤러리 기록에서 뒤로 가면 같은 원본과 자르기 영역을 복원한다', async () => {
   const { result } = renderHook(useStickerRecordFlow);
   const selectedCrop = { left: 0.1, top: 0.2, right: 0.8, bottom: 0.9 };
@@ -214,6 +241,10 @@ it('촬영 사진의 생성을 취소해 배경 제거 Worker가 종료돼도 �
   act(() => result.current.cancelPreview());
   expect(signal.aborted).toBe(true);
   expect(result.current.screen.stage).toBe('select');
+  act(() => {
+    result.current.beginGallerySelection();
+  });
+  expect(prepareStickerBackground).toHaveBeenCalledTimes(1);
   act(() => result.current.openCrop(photo));
   expect(prepareStickerBackground).toHaveBeenCalledTimes(1);
 });

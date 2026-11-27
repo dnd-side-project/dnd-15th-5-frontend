@@ -41,6 +41,21 @@ const setup = () => {
 
 beforeEach(() => jest.resetAllMocks());
 
+it('브라우저에서도 사진 선택기를 열기 전에 사진 작업을 시작한다', () => {
+  const onRequestStart = jest.fn(() => new AbortController().signal);
+  const { result } = renderHook(() =>
+    useStickerGallery({ isApp: false, onRequestStart, onSelect: jest.fn(), onError: jest.fn() })
+  );
+  const input = document.createElement('input');
+  const click = jest.spyOn(input, 'click').mockImplementation(() => {
+    expect(onRequestStart).toHaveBeenCalledTimes(1);
+  });
+  result.current.inputRef.current = input;
+  act(() => result.current.openGallery());
+  expect(click).toHaveBeenCalledTimes(1);
+  expect(requestToNative).not.toHaveBeenCalled();
+});
+
 it('앱 갤러리 중복 요청을 막고 응답은 최신 콜백으로 전달한다', async () => {
   const { result, options, rerender, finish } = setup();
   act(() => {

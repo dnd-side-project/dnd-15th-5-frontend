@@ -5,7 +5,10 @@ import { useState } from 'react';
 import { createMemoryRouter, RouterProvider, useNavigate } from 'react-router-dom';
 
 import { useGetConsumption } from '@/features/record/apis/queries';
-import { removeStickerBackground } from '@/features/record/sticker/background-removal/removeStickerBackground';
+import {
+  prepareStickerBackground,
+  removeStickerBackground,
+} from '@/features/record/sticker/background-removal/removeStickerBackground';
 import {
   cropStickerImage,
   prepareStickerImage,
@@ -119,6 +122,7 @@ it('기존 입력값을 복원하고 값이 바뀐 경우에만 저장할 수 �
     target: { value: '기존 메모' },
   });
   expect(submit).toBeDisabled();
+  expect(prepareStickerBackground).not.toHaveBeenCalled();
 });
 
 it('백그라운드 재조회가 실패해도 작성 중인 입력과 변경 확인을 유지한다', async () => {

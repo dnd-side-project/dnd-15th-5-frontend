@@ -4,6 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { AppState, BackHandler, Linking, Platform } from 'react-native';
 
 import { requestWebViewNavigation } from '@/bridge/webViewNavigation';
+import { prepareNativeStickerBackground } from '@/native/sticker/stickerBackground';
 import { trackNativeAnalyticsEvent } from '@/shared/lib/analytics';
 import { resetNativeAnalyticsForTest } from '@/shared/lib/analytics/nativeAnalytics';
 
@@ -102,6 +103,7 @@ describe('<HomeScreen />', () => {
   const originalWebUrl = process.env.EXPO_PUBLIC_WEB_URL;
 
   beforeEach(() => {
+    jest.mocked(prepareNativeStickerBackground).mockClear();
     jest.mocked(WebBrowser.openBrowserAsync).mockReset();
     jest.mocked(WebBrowser.openBrowserAsync).mockResolvedValue({
       type: WebBrowser.WebBrowserResultType.CANCEL,
@@ -130,6 +132,13 @@ describe('<HomeScreen />', () => {
       return { remove: removeAppStateHandler };
     });
     jest.spyOn(Linking, 'openURL').mockReset().mockResolvedValue(true);
+  });
+
+  it('홈 진입과 재렌더링만으로 배경 제거 모델을 초기화하지 않는다', async () => {
+    process.env.EXPO_PUBLIC_WEB_URL = 'https://chapchap.example.com';
+    const { rerender } = await render(<HomeScreen />);
+    await rerender(<HomeScreen />);
+    expect(prepareNativeStickerBackground).not.toHaveBeenCalled();
   });
 
   it('푸시 알림을 누르면 알림의 상세 경로로 이동한다', async () => {

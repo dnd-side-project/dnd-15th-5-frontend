@@ -51,8 +51,11 @@ afterEach(() => {
 it('캐시가 있으면 다음 준비에서는 네트워크 요청을 생략한다', async () => {
   const request = { ...options, cacheStorage, fetcher };
   expect(await loadCachedIsnetModel(request)).toEqual(new Uint8Array([1, 2, 3, 4]));
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(cache.put).toHaveBeenCalledTimes(1);
   expect(await loadCachedIsnetModel(request)).toEqual(new Uint8Array([1, 2, 3, 4]));
   expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(cache.put).toHaveBeenCalledTimes(1);
 });
 
 it('모델 버전이 바뀌면 이전 캐시를 사용하지 않는다', async () => {

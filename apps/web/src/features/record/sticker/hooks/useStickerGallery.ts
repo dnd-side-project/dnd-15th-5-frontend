@@ -38,6 +38,7 @@ export const useStickerGallery = ({
   };
   const openGallery = () => {
     if (!isApp) {
+      onRequestStart();
       inputRef.current?.click();
       return;
     }

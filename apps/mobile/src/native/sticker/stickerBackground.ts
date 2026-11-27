@@ -43,7 +43,7 @@ const waitForJob = <T>(operation: Promise<T>, signal: AbortSignal): Promise<T> =
     else signal.addEventListener('abort', onAbort, { once: true });
   });
 
-/** 모델은 앱 시작 시 미리 준비하고 앱 내 기록 화면이 바뀌어도 재사용합니다. */
+/** 사진 선택·촬영 진입 시 모델을 준비하고 앱 내 기록 화면이 바뀌어도 재사용합니다. */
 export const prepareNativeStickerBackground = (): Promise<
   BridgeResult<'prepareStickerBackground'>
 > => {
@@ -86,7 +86,7 @@ export const removeNativeStickerBackground = async (
     const result = await waitForJob(operation, signal);
     if (signal.aborted) throw cancelled();
     if (__DEV__) {
-      // eslint-disable-next-line no-console -- 실기기의 실제 추론 경로·시간만 기록하고 사진 데이터는 남기지 않습니다.
+      // eslint-disable-next-line no-console -- 네이티브 이미지 처리 경로·시간만 기록하고 사진 데이터는 남기지 않습니다.
       console.info('[ISNet native]', {
         backend: result.backend,
         elapsedMs: Math.round(result.elapsedMs),

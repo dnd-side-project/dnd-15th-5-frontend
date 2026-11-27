@@ -198,8 +198,14 @@ export const useStickerRecordFlow = ({
   /** 가져온 사진은 바로 스티커로 만들지 않고 자르기 화면을 먼저 보여줍니다. */
   const openCrop = (file: File) => {
     if (!validateImage(file)) return;
-    task.prepareBackground();
     moveTo({ stage: 'crop', cropSource: { file, url: task.createUrl(file) } });
+  };
+
+  const beginGallerySelection = () => {
+    const request = task.start();
+    // NOTE: 이전 작업의 Worker가 종료된 뒤 새 사진을 미리 준비합니다.
+    task.prepareBackground();
+    return request.signal;
   };
 
   const confirmCrop = async (crop: StickerCrop) => {
@@ -296,7 +302,7 @@ export const useStickerRecordFlow = ({
     error: task.error,
     openCrop,
     /** 단계 이동·변경 취소·새 이미지 작업 시작 시 갤러리 응답도 함께 무효화합니다. */
-    beginGallerySelection: () => task.start().signal,
+    beginGallerySelection,
     confirmCrop,
     capturePhoto,
     selectDefaultSticker,

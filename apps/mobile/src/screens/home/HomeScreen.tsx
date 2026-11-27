@@ -17,7 +17,6 @@ import { createPageBackScript } from '@/bridge/createPageBackScript';
 import { getKakaoTalkShareTarget } from '@/bridge/kakaoTalkShare';
 import { requestWebViewNavigation, subscribeWebViewNavigation } from '@/bridge/webViewNavigation';
 import { clearNotificationBadge, subscribeNotificationResponses } from '@/native/notifications';
-import { prepareNativeStickerBackground } from '@/native/sticker/stickerBackground';
 import { WebViewScreen } from '@/shared/layout/WebViewScreen';
 import {
   createNativeAnalyticsScript,
@@ -56,11 +55,6 @@ export default function HomeScreen() {
     isMapEdgeToEdge,
     isMapHome,
   } = useWebViewNavigationState(initialWebUrl ?? undefined);
-
-  useEffect(() => {
-    // 첫 사진 선택 전에 준비를 시작하며 실패는 실제 기록 요청에서 사용자에게 전달합니다.
-    void prepareNativeStickerBackground().catch(() => {});
-  }, []);
 
   useEffect(() => {
     let previousAppState = AppState.currentState;

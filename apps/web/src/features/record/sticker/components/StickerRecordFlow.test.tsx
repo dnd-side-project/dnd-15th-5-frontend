@@ -113,6 +113,24 @@ const expectAllUrlsReleased = () => {
   expect(releasedUrls).toEqual(expect.arrayContaining(createdUrls));
 };
 
+it.each([false, true])(
+  '웹·앱(%s)에서 사진을 고르기 전 갤러리 진입부터 모델을 준비한다',
+  (isApp) => {
+    jest.mocked(isNativeApp).mockReturnValue(isApp);
+    if (isApp) {
+      jest.mocked(requestToNative).mockReturnValueOnce(new Promise(() => {}));
+    }
+    const { unmount } = render(<StickerRecordFlow onClose={mockClose} />);
+    expect(prepareStickerBackground).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: '이미지 가져오기' }));
+    expect(prepareStickerBackground).toHaveBeenCalledTimes(1);
+    expect(mockRemove).not.toHaveBeenCalled();
+    expect(screen.queryByRole('heading', { name: '사진 자르기' })).not.toBeInTheDocument();
+    unmount();
+    expect(disposeStickerBackground).toHaveBeenCalledTimes(1);
+  }
+);
+
 it('앱에서 가져온 갤러리 이미지는 파일 선택 메뉴 없이 자르기 화면으로 연결한다', async () => {
   jest.mocked(isNativeApp).mockReturnValue(true);
   jest
@@ -792,6 +810,7 @@ it('테두리가 포함된 기본 스티커 PNG 원본을 기록과 다운로드
   expect(fetch).toHaveBeenCalledWith('cake.png', { signal: expect.any(AbortSignal) });
   expect(composeSticker).not.toHaveBeenCalled();
   expect(URL.createObjectURL).toHaveBeenCalledWith(defaultStickerImage);
+  expect(prepareStickerBackground).not.toHaveBeenCalled();
   expect(sticker).toHaveAttribute('src', 'blob:photo-0');
   expect(screen.getByRole('link', { name: '스티커 PNG 다운로드' })).toHaveAttribute(
     'href',
@@ -1038,9 +1057,10 @@ it('기본 스티커 선택 화면에는 뒤로가기 없이 종료 X만 제공�
   expect(mockClose).not.toHaveBeenCalled();
 });
 
-it('화면 진입 시 미리 준비하고 화면 이탈 시 Worker를 정리한다', () => {
+it('기록 진입과 기본 스티커 탐색에서는 모델을 준비하지 않고 이탈 시 자원을 정리한다', () => {
   const { unmount } = render(<StickerRecordFlow onClose={mockClose} />);
-  expect(prepareStickerBackground).toHaveBeenCalledTimes(1);
+  fireEvent.click(screen.getByRole('button', { name: '기본 스티커로 기록하기' }));
+  expect(prepareStickerBackground).not.toHaveBeenCalled();
   expect(mockRemove).not.toHaveBeenCalled();
   unmount();
   expect(disposeStickerBackground).toHaveBeenCalledTimes(1);

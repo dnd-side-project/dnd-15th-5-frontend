@@ -145,7 +145,7 @@ const engine = createIsnetEngine({
   warmupInput: () => new Float32Array(3 * ISNET_INPUT_SIZE * ISNET_INPUT_SIZE),
 });
 
-/** 화면 진입 시 호출해 모델 로딩과 GPU 워밍업을 먼저 완료합니다. */
+/** 사진 선택 진입 시 호출해 모델 로딩과 GPU 워밍업을 먼저 시작합니다. */
 export const prepareIsnetBackground = async (onUpdate: (update: StickerWorkerUpdate) => void) => {
   assertImageSupport();
   await engine.prepare(onUpdate);

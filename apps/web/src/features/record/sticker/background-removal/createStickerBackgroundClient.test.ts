@@ -37,6 +37,8 @@ it('사전 준비는 한 번만 요청하고 완료 후에도 Worker를 유지�
   expect(workers[0].postMessage).toHaveBeenCalledTimes(1);
   expect(workers[0].postMessage).toHaveBeenCalledWith({ type: 'prepare' });
   workers[0].respond({ type: 'ready' });
+  client.prepare();
+  expect(workers[0].postMessage).toHaveBeenCalledTimes(1);
   jest.advanceTimersByTime(180_000);
   expect(workers[0].terminate).not.toHaveBeenCalled();
 });
@@ -109,6 +111,8 @@ it('취소하면 실제 Worker를 종료하고 다음 요청에는 새 Worker를
   const first = client.remove(image, controller.signal, jest.fn());
   controller.abort();
   await expect(first).rejects.toMatchObject({ name: 'AbortError' });
+  client.prepare();
+  expect(workers[1].postMessage).toHaveBeenCalledWith({ type: 'prepare' });
   const next = client.remove(image, new AbortController().signal, jest.fn());
   workers[0].respond({ type: 'success', requestId: 1, blob: result });
   workers[0].onerror?.();
@@ -139,6 +143,8 @@ it('화면 이탈은 준비 중인 Worker와 사진 요청을 모두 정리한�
 it('워밍업 실패는 조용히 정리하고 사진 선택 시 새 Worker로 재시도한다', async () => {
   client.prepare();
   workers[0].respond({ type: 'error', message: 'prepare failed' });
+  client.prepare();
+  expect(workers[1].postMessage).toHaveBeenCalledWith({ type: 'prepare' });
   const promise = client.remove(image, new AbortController().signal, jest.fn());
   workers[1].respond({ type: 'success', requestId: 1, blob: result });
   await expect(promise).resolves.toBe(result);

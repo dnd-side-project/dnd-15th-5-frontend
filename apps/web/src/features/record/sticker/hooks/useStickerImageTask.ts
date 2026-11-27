@@ -33,7 +33,6 @@ export const useStickerImageTask = () => {
 
   useEffect(() => {
     const currentUrls = urls.current;
-    prepareStickerBackground();
     return () => {
       controller.current?.abort();
       disposeStickerBackground();
